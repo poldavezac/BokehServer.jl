@@ -14,8 +14,6 @@ end
 
 macro col_str(x) Column(x) end
 
-const MODELS = Dict{Symbol, DataType}()
-
 function _model_fields(mod, code, opts::Vector{Regex} = Regex[])
     isjs = if isempty(opts)
         # all fields are bokeh fields
@@ -41,8 +39,8 @@ function _model_fields(mod, code, opts::Vector{Regex} = Regex[])
     [
         begin
             (name, type) = (line.head ≡ :(::) ? line : line.args[1]).args
-            realtype = mod.eval(type)
 
+            realtype = mod.eval(type)
             (;
                 index, name, type,
                 default  = line.head ≡ :(::) ? nothing : Some(line.args[2]),
@@ -95,7 +93,7 @@ function _model_bkcls(
 )
     :(mutable struct $name <: Bokeh.$(hassource ? :iSourcedModel : hasprops ? :iHasProps : :iModel)
         id        :: Int64
-        values    :: $cls
+        original  :: $cls
         callbacks :: $(_model_cbcls(name))
         $(hassource ? :(source :: $(_model_srccls(name, hassource)[1])) : nothing)
     end)
@@ -170,33 +168,17 @@ function _model_code(mod::Module, code::Expr, hassource :: Bool, hasprops::Bool,
     end)
 end
 
-function _model_code(mod::Module, cls::Symbol, hassource :: Bool, hasprops::Bool, opts::Vararg{Regex})
-    fields = _model_fields(mod, code, opts...)
-    bkcls  = Symbol("Bokeh$cls")
-    quote
-        @Base.__doc__ $code
-
-        $(_model_srccls(cls, fields, hassource))
-        $(_model_cbcls(cls, fields))
-        @Base.__doc__ $(_model_bkcls(bkcls, cls, fields, hassource))
-
-        $bkcls(args...; id :: Int64 = Bokeh.Models.newmodelid(), kwa...) = $bkcls(
-            id,
-            $cls(args...; kwa...),
-            $(_model_cbcls(cls))(),
-            $((:($i()) for i ∈ _model_srccls(cls, hassource))...)
-        )
-
-        $(_model_funcs(bkcls, cls, fields, hassource))
-    end
-end
-
 macro model(args::Vararg{Union{Expr, String, Symbol}})
     expr = [x for x ∈ args if x isa Expr && x.head ≡ :struct]
     if isempty(expr)
         expr = [x for x ∈ expr if x isa Symbol && x ∉ (:source,)]
     end
+    @assert length(expr) ≡ 1 "Unrecognized expression: missing struct"
+
     getkw(key) = [i.args[2] for i ∈ args if i isa Expr && i.head ≡ :(=)  && i.args[1] ≡ key]
+
+    hasprops   = any(getkw(:parent) .≡ :iHasProps)
+    hassource  = !hasprops && !any(i ≡ false for i ∈ getkw(:source))
     internal   = append!(
         Regex[],
         (
@@ -204,39 +186,53 @@ macro model(args::Vararg{Union{Expr, String, Symbol}})
             for i ∈ getkw(:internal)
         )...
     )
-    @assert length(expr) ≡ 1 "Unrecognized expression: missing struct"
-    code = _model_code(
-        __module__,
-        expr[1],
-        :source ∈ args || any(getkw(:source)),
-        any(getkw(:parent) .≡ :iHasProps),
-        internal
-    )
+    _model_code(__module__, expr[1], hassource, hasprops, internal)
 end
 
 for (tpe, others) ∈ (iHasProps => (), iSourcedModel => (:data_source,)) 
     @eval function Base.propertynames(μ::$tpe; private::Bool = false)
         return if private
-            (propertynames(getfield(μ, :values))..., fieldnames(μ)..., $(Meta.quot.(others)...), :id)
+            (propertynames(getfield(μ, :original))..., fieldnames(μ)..., $(Meta.quot.(others)...), :id)
         else
-            (propertynames(getfield(μ, :values))..., $(Meta.quot.(others)...))
+            (propertynames(getfield(μ, :original))..., $(Meta.quot.(others)...))
         end
     end
 end
 
 function modeltype end
+function modelsource end
 function bokehproperties end
 
 function Base.getproperty(μ::T, α::Symbol) where {T <: iHasProps}
+    getfield(α ∈ fieldnames(T) ? μ : getfield(μ, :original), α)
+end
+
+function Base.setproperty!(
+        μ         :: T,
+        α         :: Symbol,
+        υ         :: Any;
+        dotrigger :: Bool = true,
+        force     :: Bool = false
+) where {T <: iHasProps}
+    return if α ∈ fieldnames(T)
+        setfield!(μ, α, υ)
+    else
+        old = getproperty(μ, α)
+        new = setfield!(getfield(μ, :original), α, υ)
+        dotrigger && (α ∈ bokehproperties(T)) && trigger(μ, α, old, new; force)
+    end
+end
+
+function Base.getproperty(μ::T, α::Symbol) where {T <: iSourcedModel}
     if α ∈ fieldnames(T)
         return getfield(μ, α)
     elseif α ≡ :data_source
-        return getfield(μ, :sourced).source
-    elseif α ∈ bokehproperties(T)
-        src = getfield(getfield(μ, :sourced), α)
+        return getfield(μ, :source).source
+    elseif hasfield(fieldtype(T, :source), α)
+        src = getfield(getfield(μ, :source), α)
         isnothing(src) || return src
     end
-    return getfield(getfield(μ, :values), α)
+    return getfield(getfield(μ, :original), α)
 end
 
 function Base.setproperty!(
@@ -249,58 +245,55 @@ function Base.setproperty!(
     return if α ∈ fieldnames(T)
         setfield!(μ, α, υ)
     elseif α ≡ :data_source
-        setfield!(getfield(μ, :sourced), :source, υ)
-    elseif α ∈ bokehproperties(T)
-        check_hasdoc()
-
+        setfield!(getfield(μ, :source), :source, υ)
+    elseif hasfield(fieldtype(T, :source), α)
         old = getproperty(μ, α)
         new = if μ isa Column
-            setfield!(getfield(μ, :sourced), α, υ.column)
+            setfield!(getfield(μ, :source), α, υ.column)
         else
-            setfield!(getfield(μ, :sourced), α, nothing)
-            setfield!(getfield(μ, :υs), α, υ)
+            setfield!(getfield(μ, :source), α, nothing)
+            setfield!(getfield(μ, :original), α, υ)
         end
         dotrigger && trigger(μ, α, old, new; force)
+        new
     else
-        setfield!(getfield(μ, :υs), α, υ)
+        setfield!(getfield(μ, :original), α, υ)
     end
 end
 
 modelid(μ::iModel) = getfield(μ, :id)
 
 function allmodels(μ::Vararg{iModel}) :: Dict{Int64, iModel}
-    found = Dict{Int64, iModel}(modelid(i) => i for i ∈ μ)
+    found = Dict{Int64, iModel}()
     todos = collect(iModel, μ)
     while !isempty(todos)
         cur = pop!(todos)
         key = modelid(cur)
-        (cur ∈ found) && continue
+        (key ∈ keys(found)) && continue
         found[modelid(cur)] = cur
-        for child in childmodels(cur)
-            if modelid(child) ∉ keys(found)
-                push!(todos, child) 
-            end
-        end
 
+        for child ∈ children(cur)
+            modelid(child) ∈ keys(found) || push!(todos, child) 
+        end
     end
     found
 end
 
-function childmodels(μ::T) where {T <: iModel}
-    return Iterators.flatten((childmodels(attr) for field ∈ bokehproperties(T))...)
+function children(μ::T) where {T <: iModel}
+    return Iterators.flatten(_children(getproperty(μ, field)) for field ∈ bokehproperties(T))
 end
 
-childmodels(::Union{AbstractString, Symbol, Number}) = ()
-childmodels(mdl::iModel) = (mdl,)
-childmodels(mdl::Union{Set{<:iModel}, AbstractArray{<:iModel}}) = mdl
-childmodels(mdl::Union{AbstractSet, AbstractArray}) = (i for i ∈ mdl if i isa iModel)
-childmodels(mdl::Dict) = (i for j ∈ mdl for i ∈ j if i isa iModel)
+_children(::Any) = ()
+_children(mdl::iModel) = (mdl,)
+_children(mdl::Union{Set{<:iModel}, AbstractArray{<:iModel}}) = mdl
+_children(mdl::Union{AbstractSet, AbstractArray}) = (i for i ∈ mdl if i isa iModel)
+_children(mdl::Dict) = (i for j ∈ mdl for i ∈ j if i isa iModel)
 
-const _MODELIDS = Int64[1000 for _ ∈ 1:Threads.nthreads()]
+const _MODELIDS = collect(1:Threads.nthreads())
 
-newmodelid() = (_MODELIDS[Threads.threadid()] += 1)
+newmodelid() = (_MODELIDS[Threads.threadid()] += 1000)
 
-export iModel, iDataSource, iHasProps, iSourcedModel, @model, Column, @col_str, allmodels, childmodels
+export iModel, iDataSource, iHasProps, iSourcedModel, @model, Column, @col_str, allmodels, children
 end
 
 using .Models
