@@ -38,13 +38,16 @@ function updatedoc!(func::Function, events::Events.EventList, docs::Vararg{iDocu
     end
 end
 
-function toclient!(doc::Document, models::Dict{Int64, Dict{Symbol, Any}}, oldids::DocIds)
-    models = let all = keys(allmodels(doc))
-        filter(models) do mdl
+function toclient!(doc::Document, events::Events.EventDict, oldids::DocIds)
+    all    = allmodels(doc)
+    events = let discarded = setdiff(oldids.models, keys(all))
+        filter(events) do (key, _)
             # keep only models which actually are in the doc
-            modelid(mdl) ∈ keys(all)
+            key[1] ∉ discarded
         end
     end
+
+    new    = setdiff(keys(all), oldids.models)
 end
 
 curdoc!(func::Function, doc::iDocument) = task_local_storage(func, :BOKEH_DOC, doc)

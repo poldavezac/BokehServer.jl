@@ -1,6 +1,7 @@
 module Models
 
-abstract type iModel end
+abstract type iHasProps end
+abstract type iModel <: iHasProps end
 abstract type iSourcedModel <: iModel end
 
 struct Column
@@ -11,7 +12,9 @@ end
 
 macro col_str(x) Column(x) end
 
-function _model_fields(code, opts::Vararg{Regex})
+const MODELS = Dict{Symbol, DataType}()
+
+function _model_fields(mod, code, opts::Vararg{Regex})
     isjs = if isempty(opts)
         # all fields are bokeh fields
         (_)->true
@@ -23,31 +26,33 @@ function _model_fields(code, opts::Vararg{Regex})
     end
 
     # filter expressions :(x::X) and :(x::X = y)
-    isfield(x) = if !Meta.isexpr(x)
+    isfield(x) = if !(x isa Expr)
         false
     elseif x.head ≡ :(::)
         true
     else
-        Meta.isexpr(i.args[1]) && i.args[1].head ≡ :(::)
+        (x.args[1] isa Expr) && (x.args[1].head ≡ :(::))
     end
 
     # create a named tuple containing all relevant info
     # for both means of defining a struture field
     [
         begin
-            (name, type) = (o.head ≡ :(::) ? o : o.args[1]).args
+            (name, type) = (line.head ≡ :(::) ? line : line.args[1]).args
+            realtype = mod.eval(type)
 
             (;
-                index,
-                name,
-                type,
-                default  = o.head ≡ :(::) ? nothing : Some(o.args[2]),
+                index, name, type,
+                default  = line.head ≡ :(::) ? nothing : Some(line.args[2]),
                 js       = isjs(name),
-                child    = type <: iModel,
-                children = eltype(type) <: iModel
+                child    = realtype <: iModel,
+                children = let els = eltype(realtype)
+                    # Pair comes out for Dict, for example
+                    any(i <: iModel for i ∈ (els <: Pair ? els.parameters : (els,)))
+                end
             )
         end
-        for (index, line) ∈ enumerate(code.args)
+        for (index, line) ∈ enumerate(code.args[end].args)
         if isfield(line)
     ]
 end
@@ -90,6 +95,10 @@ function _model_bkcls(cls::Symbol, fields::Vector{<:NamedTuple}, hassource :: Bo
     end)
 end
 
+function _child_models(cls, fields)
+    types = []
+end
+
 function _model_code(code::Expr, hassource :: Bool, opts::Vararg{Regex})
     @assert code.head ≡ :struct
     fields = _model_fields(code, opts...)
@@ -106,7 +115,7 @@ function _model_code(code::Expr, hassource :: Bool, opts::Vararg{Regex})
     params = Expr(
         :parameters,
         [
-            i.default ≡ none ? Expr(:kw, i.name) : Expr(:kw, i.name, i.default)
+            isnothing(i.default) ? Expr(:kw, i.name) : Expr(:kw, i.name, something(i.default))
             for i ∈ fields
         ]
     )
@@ -139,6 +148,8 @@ function _model_code(code::Expr, hassource :: Bool, opts::Vararg{Regex})
                 $(((Meta.quote(i.name) for i ∈ fields if i.js)...))
             end
         end
+
+        $(_child_models(cls, fields))
     end
 end
 
@@ -206,25 +217,33 @@ function allmodels(μ::Vararg{iModel}) :: Dict{Int64, iModel}
         cur = pop!(todos)
         key = modelid(cur)
         (cur ∈ found) && continue
-
-        type = modeltype(typeof(cur))
-        for field ∈ jsproperties(typeof(cur); child = true)
-            attr = getproperty(cur, field)
-            push!(todos, attr)
-            found[modelid(attr)] = attr
-        end
-
-        for field ∈ jsproperties(typeof(cur); children = true)
-            append!(todos, attr)
-            for child ∈ attr
-                found[modelid(child)] = child
+        found[modelid(cur)] = cur
+        for child in childmodels(cur)
+            if modelid(child) ∉ keys(found)
+                push!(todos, child) 
             end
         end
+
     end
     found
 end
 
-export iModel, iSourcedModel, @model, Column, @col_str, allmodels
+function childmodels(μ::iModel)
+    return Iterators.flatten(
+        (
+            childmodels(attr)
+            for field ∈ jsproperties(typeof(cur))
+        )...
+    )
+end
+
+childmodels(::Union{AbstractString, Symbol, Number}) = ()
+childmodels(mdl::iModel) = (mdl,)
+childmodels(mdl::Union{Set{<:iModel}, AbstractArray{<:iModel}}) = mdl
+childmodels(mdl::Union{AbstractSet, AbstractArray}) = (i for i ∈ mdl if i isa iModel)
+childmodels(mdl::Dict) = (i for j ∈ mdl for i ∈ j if i isa iModel)
+
+export iModel, iSourcedModel, @model, Column, @col_str, allmodels, childmodels
 end
 
 using .Models
