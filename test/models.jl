@@ -69,7 +69,7 @@ end
 end
 
 @testset "bokeh structure" begin
-    @Bokeh.model source = true mutable struct X
+    @Bokeh.model mutable struct X <: Bokeh.iSourcedModel
         a::Int32   = Int32(1)
         b::Float32 = 10f0
     end
@@ -79,7 +79,7 @@ end
     @test X().a ≡ one(Int32)
     @test X().b ≡ 10f0
 
-    @Bokeh.model source = false mutable struct Y
+    @Bokeh.model mutable struct Y <: Bokeh.iModel
         a::Int32   = Int32(1)
         b::Float32 = 10f0
     end
@@ -91,7 +91,7 @@ end
     @test Y().a ≡ one(Int32)
     @test Y().b ≡ 10f0
 
-    @Bokeh.model parent = iHasProps internal = [a] mutable struct Z
+    @Bokeh.model internal = [a] mutable struct Z <: Bokeh.iHasProps
         a::Int32   = Int32(1)
         b::Float32 = 10f0
     end
@@ -104,12 +104,12 @@ end
 
 @testset "bokeh children" begin
     # `evals` are needed to make sure X1 exists for Y1's declaration
-    @eval @Bokeh.model mutable struct X1
+    @eval @Bokeh.model mutable struct X1 <: Bokeh.iModel
         a::Int64 = 1
     end
 
     # `evals` are needed to make sure X1 exists for Y1's declaration
-    @eval @Bokeh.model source = false mutable struct Y1
+    @eval @Bokeh.model source = false mutable struct Y1 <: Bokeh.iModel
         a::Vector{X1}      = [X1(; a = 1), X1(; a = 2)]
         b::Dict{Int64, X1} = Dict(1 => X1(; a = 3), 2 => X1(; a = 4))
         c::Dict{X1, Int64} = Dict(X1(; a = 5) => 1, X1(; a = 6) => 2)

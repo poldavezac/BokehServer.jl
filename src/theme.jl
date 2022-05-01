@@ -6,7 +6,7 @@ using ..Models
 
 struct Theme <: iTheme
     items :: Dict{Symbol, Dict{Symbol, Any}}
-    Theme() = new(Dict{Symbol, Dict{Symbol, Any}}())
+    Theme() = new(Dict{Symbol, Dict{Symbol, Function}}())
 end
 
 function theme(T::Type)
@@ -15,33 +15,47 @@ function theme(T::Type)
 end
 
 function theme(dic::Theme, T::Type)
-    @assert Models.modeltype(T) <: iModel
+    bkT = Models.modeltype(T)
+    if !(bkT <: iModel)
+        T, bkT = bkT, T
+    end
+
     isempty(dic.items) && return T()
 
-    themed = dic.items
-    obj    = T()
-    for attr ∈ Models.bokehproperties(Models.modeltype(T))
-        attrtheme = get(themed, attr, nothing)
-        isnothing(attr) && continue
-
-        curcls   = T
-        while curcls ∉ (iModel, iSourcedModel, iDataSource)
-            if nameof(curcls) ∈ keys(attrtheme)
-                setproperty!(obj, attr, attrtheme[nameof(curcls)])
-                break
-            end
-            curcls   = supertype(T)
-        end
+    obj = T()
+    for attr ∈ Models.bokehproperties(bkT)
+        fcn = getvalue(dic, bkT, attr)
+        isnothing(fcn) || setproperty!(obj, attr, fcn())
     end
     return obj
 end
 
 function read!(dic::Theme, path::String; empty::Bool = true)
+    open(((io)->read!(dic, io; empty)), path)
+end
+
+function read!(dic::Theme, io::IO; empty::Bool = true)
     empty && empty!(dic.items)
-    for (cls, attrs) ∈ JSON.parse(path), (attr, val) ∈ attrs
-        get!(Dict{Symbol, Any}, dic.items, Symbol(cls))[Symbol(attr)] = val
+    for (cls, attrs) ∈ JSON.parse(io), (attr, val) ∈ attrs
+        setvalue!(dic, Symbol(cls), Symbol(attr), ()->copy(val))
     end
 end
 
+function setvalue!(dic::Theme, cls::Symbol, attr::Symbol, val::Function)
+    get!(Dict{Symbol, Any}, dic.items, attr)[cls] = val
+end
+
+function getvalue(dic::Theme, cls::Type, attr::Symbol) :: Union{Function, Nothing}
+    attrtheme = get(dic.items, attr, nothing)
+    isnothing(attrtheme) && return nothing
+
+    while cls ∉ (iModel, iSourcedModel, iDataSource, Any)
+        key = nameof(cls)
+        if key ∈ keys(attrtheme)
+            return attrtheme[key]
+        end
+        cls = supertype(cls)
+    end
+end
 end
 using .Themes

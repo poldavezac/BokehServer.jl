@@ -42,7 +42,7 @@ or `SrcXXX` classes.
 
 ```julia
 "X is a structure with a `data_source` property"
-@Bokeh.model struct X
+@Bokeh.model struct X <: Bokeh.iSourcedModel
     field1::Int     = 0
     field2::Float64 = 0.0
 end
@@ -51,7 +51,7 @@ end
 @assert X().field2 ≡ 0.0
 
 "Y is a structure *without* a `data_source` property"
-@Bokeh.model source = false struct Y
+@Bokeh.model struct Y <: Bokeh.iModel
     field1::Int     = 0
     field2::Float64 = 0.0
 end
@@ -61,7 +61,7 @@ end
 ```
 
 "Z is a structure where fields `nojs1` and `nojs2` are *not* passed to bokehjs"
-@Bokeh.model source = false internal = ["nojs.*"] struct Z
+@Bokeh.model internal = ["nojs.*"] struct Z <: Bokeh.iModel
     nojs1 :: Any  = []
     nojs2 :: Any  = Set([])
     field1::Int     = 0
@@ -143,13 +143,13 @@ function _model_cbcls(cls::Symbol, fields::Vector{<:NamedTuple})
 end
 
 function _model_bkcls(
-        name :: Symbol,
-        cls::Symbol,
-        fields::Vector{<:NamedTuple},
-        hassource :: Bool,
-        hasprops :: Bool;
+        name      :: Symbol,
+        cls       :: Symbol,
+        parents   :: Union{Symbol, Expr},
+        fields    :: Vector{<:NamedTuple},
+        hassource :: Bool
 )
-    :(mutable struct $name <: Bokeh.$(hassource ? :iSourcedModel : hasprops ? :iHasProps : :iModel)
+    :(mutable struct $name <: $parents
         id        :: Int64
         original  :: $cls
         callbacks :: $(_model_cbcls(name))
@@ -209,12 +209,15 @@ function _model_funcs(bkcls::Symbol, datacls::Symbol, fields::Vector{<:NamedTupl
     end
 end
 
-function _model_code(mod::Module, code::Expr, hassource :: Bool, hasprops::Bool, opts::Vector{Regex})
+function _model_code(mod::Module, code::Expr, opts::Vector{Regex})
     @assert code.head ≡ :struct
     if !code.args[1]
         @warn """Bokeh structure $mod.$(code.args[2]) is set to mutable.
         Add `mutable` to disable this warning"""
     end
+    @assert code.args[2] isa Expr "Bokeh class must have a parent (iHasProps, iModel, iSourcedModel?)"
+    @assert code.args[2].head ≡ :(<:) "Bokeh class cannot be templated"
+
     code.args[1] = true
     fields = _model_fields(mod, code, opts)
 
@@ -225,14 +228,11 @@ function _model_code(mod::Module, code::Expr, hassource :: Bool, hasprops::Bool,
         end
     end
 
-    if code.args[2] isa Expr
-        bkcls   = code.args[2].args[1]
-        datacls = code.args[2].args[1] = Symbol("Data$bkcls")
-    else
-        bkcls   = code.args[2]
-        datacls = code.args[2] = Symbol("Data$bkcls")
-    end
-    
+    parents   = code.args[2].args[2]
+    bkcls     = code.args[2].args[1]
+    datacls   = code.args[2] = Symbol("Data$bkcls")
+    hassource = mod.eval(parents) <: iSourcedModel
+
     params = Expr(
         :parameters,
         (
@@ -248,7 +248,7 @@ function _model_code(mod::Module, code::Expr, hassource :: Bool, hasprops::Bool,
 
         $(_model_srccls(bkcls, fields, hassource))
         $(_model_cbcls(bkcls, fields))
-        @Base.__doc__ $(_model_bkcls(bkcls, datacls, fields, hassource, hasprops))
+        @Base.__doc__ $(_model_bkcls(bkcls, datacls, parents, fields, hassource))
 
         function $bkcls(; id :: Int64 = Bokeh.Models.newbokehid(), kwa...)
             obj = $bkcls(
@@ -282,8 +282,6 @@ macro model(args::Vararg{Union{Expr, String, Symbol}})
 
     getkw(key) = [i.args[2] for i ∈ args if i isa Expr && i.head ≡ :(=)  && i.args[1] ≡ key]
 
-    hasprops   = any(getkw(:parent) .≡ :iHasProps)
-    hassource  = !hasprops && !any(i ≡ false for i ∈ getkw(:source))
     internal   = append!(
         Regex[],
         (
@@ -291,7 +289,7 @@ macro model(args::Vararg{Union{Expr, String, Symbol}})
             for i ∈ getkw(:internal)
         )...
     )
-    _model_code(__module__, expr[1], hassource, hasprops, internal)
+    _model_code(__module__, expr[1], internal)
 end
 
 for (tpe, others) ∈ (iHasProps => (), iSourcedModel => (:data_source,)) 
