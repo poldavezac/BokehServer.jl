@@ -2,17 +2,22 @@ module Documents
 using ..AbstractTypes
 using ..Models
 using ..Events
+using ..Themes
 
-struct Document
+const _MODELIDS = collect(1:Threads.nthreads())
+
+newbokehid() = (_MODELIDS[Threads.threadid()] += 1000)
+
+struct Document <: iDocument
     "private field for document id"
     index :: Int64
 
     "private field for storing roots"
     roots :: Vector{iModel}
 
-    theme :: Union{iTheme, Nothing}
+    theme :: Themes.Theme
 
-    Document() = Document(newmodelid(), iModel[], nothing)
+    Document() = new(newbokehid(), iModel[], Themes.Theme())
 end
 
 bokehid(doc::Document) = doc.id
@@ -71,7 +76,7 @@ curdoc!(func::Function, doc::iDocument) = task_local_storage(func, :BOKEH_DOC, d
 @inline check_hasdoc() :: Bool = !isnothing(curdoc())
 flushcurdoc!() = flush!(Events.task_eventlist(), curdoc())
 
-export Document, iDocument, curdoc, check_hasdoc, flushcurdoc!
+export Document, iDocument, curdoc, check_hasdoc, flushcurdoc!, curdoc!
 end
 
 using .Documents

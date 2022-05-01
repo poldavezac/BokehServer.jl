@@ -11,7 +11,7 @@ end
 
 function theme(T::Type)
     doc = Bokeh.curdoc()
-    return isnothing(doc) || isnothing(doc.theme) ? T() : theme(doc.theme, T())
+    return isnothing(doc) ? T() : theme(doc.theme, T)
 end
 
 function theme(dic::Theme, T::Type)
