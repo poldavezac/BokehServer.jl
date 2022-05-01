@@ -135,27 +135,32 @@ function trigger(μ :: Union{iDocument, iModel}, args...)
     trigger!(task_local_storage(:DOC_EVENTS), μ, args...)
 end
 
-function referencetojson_type(mdl::T) where {T <: iModel}
-    return (; type = nameof(T))
+module References
+    using ...AbstractTypes
+    using ...Models
+
+    type(mdl::T) where {T <: iModel} = (; type = nameof(T))
+
+    function attributes(mdl::T) where {T <: iModel}
+        return (;(
+           i => getproperty(mdl, i)
+           for i ∈ Models.bokehproperties(T; sorted = true)
+           if let dflt = Models.defaultvalue(T, i)
+               isnothing(dflt) || getproperty(mdl, i) ≢ something(dftl)
+           end
+        )...)
+    end
+
+    function namedtuple(itm::iModel) 
+        return (;
+            attributes = attributes(itm),
+            id         = modelid(itm),
+            referencetojson_type(itm)...
+        )
+    end
 end
 
-function referencetojson_attributes(mdl::T) where {T <: iModel}
-    return (;(
-       i => getproperty(mdl, i)
-       for i ∈ Models.bokehproperties(T; sorted = true)
-       if let dflt = Models.defaultvalue(T, i)
-           isnothing(dflt) || getproperty(mdl, i) ≢ something(dftl)
-       end
-    )...)
-end
-
-function referencetojson(itm::iModel) 
-    return (;
-        attributes = referencetojson_attributes(itm),
-        id         = modelid(itm),
-        referencetojson_type(itm)...
-    )
-end
+using .References
 
 function json(events::Events.EventDict, doc::iDocument, oldids::Set{Int64})
     all = allmodels(doc)
@@ -170,7 +175,7 @@ function json(events::Events.EventDict, doc::iDocument, oldids::Set{Int64})
             end
         end,
         references = [
-            referencetojson(all[i])
+            References.namedtuple(all[i])
             for i ∈ setdiff(keys(all), oldids)
         ]
     )
