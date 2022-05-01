@@ -1,5 +1,5 @@
 module Documents
-using ..Bokeh: iDocument
+using ..AbstractTypes
 using ..Models
 using ..Events
 
@@ -10,7 +10,9 @@ struct Document
     "private field for storing roots"
     roots :: Vector{iModel}
 
-    Document() = Document(newmodelid(), iModel)
+    theme :: Union{iTheme, Nothing}
+
+    Document() = Document(newmodelid(), iModel[], nothing)
 end
 
 bokehid(doc::Document) = doc.id
@@ -54,7 +56,7 @@ function updatedocs!(func::Function, events::Events.EventList, doc::iDocument, d
     end
 end
 
-function flush!(events::EventList, doc::iDocument, docs::Vararg{iDocument})
+function flush!(events::Events.EventList, doc::iDocument, docs::Vararg{iDocument})
     docs   = (doc, docs...)
     cbacks = Events.trigger!(events)
     jsons  = [
@@ -68,8 +70,6 @@ curdoc!(func::Function, doc::iDocument) = task_local_storage(func, :BOKEH_DOC, d
 @inline curdoc() :: Union{iDocument, Nothing} = get(task_local_storage(), :BOKEH_DOC, nothing)
 @inline check_hasdoc() :: Bool = !isnothing(curdoc())
 flushcurdoc!() = flush!(Events.task_eventlist(), curdoc())
-
-Base.propertynames(::Document; private :: Bool = false) =  private ? fieldnames(Document) : ()
 
 export Document, iDocument, curdoc, check_hasdoc, flushcurdoc!
 end

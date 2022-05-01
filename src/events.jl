@@ -1,7 +1,7 @@
 module Events
 using JSON
 using DataStructures: OrderedDict
-using ..Bokeh: iDocument, iModel
+using ..AbstractTypes
 using ..Models
 
 "Specifies module specific rules for json serialiation"
@@ -122,17 +122,16 @@ function trigger!(events::EventList) :: Dict{Int64, Dict{Symbol, Any}}
     return changes
 end
 
-hasevents() = :DOC_EVENTS ∈ task_local_storage()
-
+task_hasevents() = :DOC_EVENTS ∈ keys(task_local_storage())
 task_eventlist() = task_local_storage(:DOC_EVENTS)
 
 function events!(func::Function)
-    @assert !hasevents()
+    @assert !task_hasevents()
     task_local_storage(func, :DOC_EVENTS, EventList())
 end
 
 function trigger(μ :: Union{iDocument, iModel}, args...)
-    @assert hasevents() "Doc is readonly in this task!"
+    @assert task_hasevents() "Doc is readonly in this task!"
     trigger!(task_local_storage(:DOC_EVENTS), μ, args...)
 end
 
@@ -141,11 +140,12 @@ function referencetojson_type(mdl::T) where {T <: iModel}
 end
 
 function referencetojson_attributes(mdl::T) where {T <: iModel}
-    dflt = T()
     return (;(
        i => getproperty(mdl, i)
        for i ∈ Models.bokehproperties(T; sorted = true)
-       if getproperty(mdl, i) ≢ getproperty(dflt, i)
+       if let dflt = Models.defaultvalue(T, i)
+           isnothing(dflt) || getproperty(mdl, i) ≢ something(dftl)
+       end
     )...)
 end
 
@@ -157,7 +157,7 @@ function referencetojson(itm::iModel)
     )
 end
 
-function json(events::Events.EventDict, doc::Document, oldids::Set{Int64})
+function json(events::Events.EventDict, doc::iDocument, oldids::Set{Int64})
     all = allmodels(doc)
     obj = (;
         events = let discarded = setdiff(oldids, keys(all))

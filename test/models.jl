@@ -1,4 +1,3 @@
-
 @testset "model creation" begin
     @testset "extract fields" begin
         out = Bokeh.Models._model_fields(@__MODULE__, :(mutable struct X <: iModel
@@ -71,7 +70,7 @@
     end
 
     @testset "bokeh structure" begin
-        @Bokeh.model source = true struct X
+        @Bokeh.model source = true mutable struct X
             a::Int32   = Int32(1)
             b::Float32 = 10f0
         end
@@ -81,7 +80,7 @@
         @test X().a ≡ one(Int32)
         @test X().b ≡ 10f0
 
-        @Bokeh.model source = false struct Y
+        @Bokeh.model source = false mutable struct Y
             a::Int32   = Int32(1)
             b::Float32 = 10f0
         end
@@ -93,7 +92,7 @@
         @test Y().a ≡ one(Int32)
         @test Y().b ≡ 10f0
 
-        @Bokeh.model parent = iHasProps internal = [a] struct Z
+        @Bokeh.model parent = iHasProps internal = [a] mutable struct Z
             a::Int32   = Int32(1)
             b::Float32 = 10f0
         end
@@ -106,12 +105,12 @@
 
     @testset "bokeh children" begin
         # `evals` are needed to make sure X1 exists for Y1's declaration
-        @eval @Bokeh.model struct X1
+        @eval @Bokeh.model mutable struct X1
             a::Int64 = 1
         end
 
         # `evals` are needed to make sure X1 exists for Y1's declaration
-        @eval @Bokeh.model source = false struct Y1
+        @eval @Bokeh.model source = false mutable struct Y1
             a::Vector{X1}      = [X1(; a = 1), X1(; a = 2)]
             b::Dict{Int64, X1} = Dict(1 => X1(; a = 3), 2 => X1(; a = 4))
             c::Dict{X1, Int64} = Dict(X1(; a = 5) => 1, X1(; a = 6) => 2)
@@ -126,10 +125,10 @@
 
         y1  = Y1()
         all = Bokeh.allmodels(y1)
-        @test Bokeh.Models.modelid(y1) ∈ keys(all)
-        @test Bokeh.Models.modelid(y1.e) ∈ keys(all)
+        @test Bokeh.bokehid(y1) ∈ keys(all)
+        @test Bokeh.bokehid(y1.e) ∈ keys(all)
         @testset for i ∈ (y1.a, values(y1.b), keys(y1.c), y1.d), j ∈ i
-            @test Bokeh.Models.modelid(j) ∈ keys(all)
+            @test Bokeh.bokehid(j) ∈ keys(all)
         end
     end
 end
