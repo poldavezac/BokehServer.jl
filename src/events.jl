@@ -184,6 +184,8 @@ function json(events::Events.EventDict, doc::iDocument, oldids::Set{Int64})
         JSON.Writer.show_json(io, EventsSerialization(), itm)
     end
 end
+
+export trigger
 end
 
-using .Events: trigger
+using .Events

@@ -333,7 +333,7 @@ function Base.getproperty(μ::T, α::Symbol) where {T <: iSourcedModel}
         return getfield(μ, :source).source
     elseif hasfield(fieldtype(T, :source), α)
         src = getfield(getfield(μ, :source), α)
-        isnothing(src) || return src
+        isnothing(src) || return Column(src)
     end
     return getfield(getfield(μ, :original), α)
 end
@@ -393,7 +393,32 @@ const _MODELIDS = collect(1:Threads.nthreads())
 
 newbokehid() = (_MODELIDS[Threads.threadid()] += 1000)
 
+function removecallback!(model::T, attr::Symbol, func::Function) where {T <: iModel}
+    filter!(getfield(getfield(model, :callbacks), attr)) do opt
+        func ≢ opt
+    end
+end
+
+function addcallback!(model::T, attr::Symbol, func::Function) where {T <: iModel}
+    cb = getfield(getfield(model, :callbacks), attr)
+    if func ∈ cb
+        return false
+    elseif any(
+        let params = method.sig.parameters
+            length(params) ≥ 5 && T <: params[2] && Symbol <: params[3]
+        end
+        for method ∈ methods(func)
+    )
+        push!(cb, func)
+        return true
+    else
+        sig = "$(nameof(func))(::<:$T, ::<:Symbol, ::<:Any, ::<:Any)"
+        throw(KeyError("No correct signature: should be $sig"))
+    end
+end
+
 export iModel, iDataSource, iHasProps, iSourcedModel, @model, Column, @col_str, allmodels, children
+export addcallback!, removecallback!
 end
 
 using .Models
