@@ -1,11 +1,6 @@
 module Models
 using ..Bokeh: iModel
 
-abstract type iHasProps end
-abstract type iModel <: iHasProps end
-abstract type iDataSource <: iModel end
-abstract type iSourcedModel <: iModel end
-
 struct Column
     column :: String 
 
@@ -177,7 +172,7 @@ function _model_code(mod::Module, code::Expr, hassource :: Bool, hasprops::Bool,
 
         $bkcls($(Expr(
                 :parameters,
-                let expr = :(id :: Int64 = Bokeh.Models.newmodelid())
+                let expr = :(id :: Int64 = Bokeh.Models.newbokehid())
                     Expr(:kw, expr.args...)
                 end,
                 params.args...
@@ -285,19 +280,17 @@ function Base.setproperty!(
     end
 end
 
-modelid(μ::iModel) = getfield(μ, :id)
-
 function allmodels(μ::Vararg{iModel}) :: Dict{Int64, iModel}
     found = Dict{Int64, iModel}()
     todos = collect(iModel, μ)
     while !isempty(todos)
         cur = pop!(todos)
-        key = modelid(cur)
+        key = bokehid(cur)
         (key ∈ keys(found)) && continue
-        found[modelid(cur)] = cur
+        found[bokehid(cur)] = cur
 
         for child ∈ children(cur)
-            modelid(child) ∈ keys(found) || push!(todos, child) 
+            bokehid(child) ∈ keys(found) || push!(todos, child) 
         end
     end
     found
@@ -315,7 +308,7 @@ _children(mdl::Dict) = (i for j ∈ mdl for i ∈ j if i isa iModel)
 
 const _MODELIDS = collect(1:Threads.nthreads())
 
-newmodelid() = (_MODELIDS[Threads.threadid()] += 1000)
+newbokehid() = (_MODELIDS[Threads.threadid()] += 1000)
 
 export iModel, iDataSource, iHasProps, iSourcedModel, @model, Column, @col_str, allmodels, children
 end
