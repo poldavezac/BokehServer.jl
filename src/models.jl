@@ -1,5 +1,5 @@
 module Models
-using ..Bokeh
+using ..Bokeh: iModel
 
 abstract type iHasProps end
 abstract type iModel <: iHasProps end
@@ -100,17 +100,41 @@ function _model_bkcls(
 end
 
 function _model_funcs(bkcls::Symbol, datacls::Symbol, fields::Vector{<:NamedTuple}, hassource::Bool)
+    function items(select::Symbol, sort::Bool)
+        vals = if select ≡ :children
+            [i.name for i ∈ fields if i.js && i.children]
+        elseif select ≡ :child
+            [i.name for i ∈ fields if i.js && i.child]
+        else
+            [i.name for i ∈ fields if i.js]
+        end
+        sort && sort!(vals)
+        return Meta.quot.(vals)
+    end
+
+    contents = let fold = foldr(
+            Iterators.product((false, true), (:all, :children, :child));
+            init = Expr(:dummy)
+        ) do (expr, (select, sort))
+            push!(
+                exp.args,
+                Expr(
+                    :elseif, 
+                    :(sorted ≡ $sort && select ≡ $(Meta.quot(select))),
+                    :(tuple($(items(select, sort)...)))
+                )
+            )
+        end
+        # remove the :dummy expression and replace the first head by :if
+        fold.args[end].head = :if
+        fold.args[end]
+    end
+
     quote
         Bokeh.Models.modeltype(::Type{$datacls}) = $bkcls
         Bokeh.Models.modeltype(::Type{$bkcls}) = $datacls
-        @inline function Bokeh.Models.bokehproperties(::Type{$bkcls}; select::Symbol = :all)
-            if select ≡ :children
-                tuple($(((Meta.quot(i.name) for i ∈ fields if i.js && i.children)...)))
-            elseif select ≡ :child
-                tuple($(((Meta.quot(i.name) for i ∈ fields if i.js && i.child)...)))
-            else
-                tuple($(((Meta.quot(i.name) for i ∈ fields if i.js)...)))
-            end
+        @inline function Bokeh.Models.bokehproperties(::Type{$bkcls}; select::Symbol = :all, sorted::Bool = false)
+            $contents
         end
     end
 end

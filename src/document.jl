@@ -1,54 +1,43 @@
 module Documents
+using ..Bokeh: iDocument
 using ..Models
 using ..Events
 
-abstract type iDocument end
-
-struct Document
-    roots     :: Vector{iModel}
+@Base.kwdef struct Document
+    index :: Int64          = newmodelid()
+    roots :: Vector{iModel} = iModel[]
 end
 
 Models.allmodels(doc::Document) = allmodels(doc.roots)
 
-function updatedoc!(func::Function, doc::Document)
+function updatedocs!(func::Function, doc::iDocument, docs::Vararg{iDocument})
+    docs = (doc, docs...)
     Events.events!() do events :: Events.EventList
-        updatedoc!(func, events, doc)
+        updatedoc!(func, events, doc...)
     end
 end
 
-struct DocIds
-    roots :: Vector{Int64}
-    models:: Set{Int64}
-
-    DocIds(doc::Document) = new(
-        modelid.(doc.roots), Set{Int64}(keys(allmodels))
-    )
-end
-
-function updatedoc!(func::Function, events::Events.EventList, docs::Vararg{iDocument})
-    size(docs) > 1 || return
+function updatedocs!(func::Function, events::Events.EventList, doc::iDocument, docs::Vararg{iDocument})
+    docs = (doc, docs...)
     try
-        roots  = [doc => DocIds(doc)  for doc ∈ docs]
+        roots  = [Set{Int64}(keys(allmodels(doc)))  for doc ∈ docs]
         func()
     finally
-        cbacks = Events.trigger!(events)
-        for (doc, ids) ∈ docs
-            toclient(doc, cbacks, ids)
-        end
+        flush!(events, docs...)
     end
 end
 
-function toclient!(doc::Document, events::Events.EventDict, oldids::DocIds)
-    all    = allmodels(doc)
-    events = let discarded = setdiff(oldids.models, keys(all))
-        filter(events) do (key, _)
-            # keep only models which actually are in the doc
-            key[1] ∉ discarded
-        end
-    end
-
-    new    = setdiff(keys(all), oldids.models)
+function flush!(events::EventList, doc::iDocument, docs::Vararg{iDocument})
+    docs   = (doc, docs...)
+    cbacks = Events.trigger!(events)
+    jsons  = [
+        Events.json(doc, cbacks, ids)
+        for (doc, ids) ∈ zip(docs, roots)
+    ]
+    toclient(zip(docs, jsons))
 end
+
+flush!() = flush!(Events.task_eventlist(), curdoc())
 
 curdoc!(func::Function, doc::iDocument) = task_local_storage(func, :BOKEH_DOC, doc)
 @inline curdoc() :: Union{iDocument, Nothing} = get(task_local_storage(), :BOKEH_DOC, nothing)
