@@ -43,11 +43,9 @@ end
 for cls ∈ (:RootAddedKey, :RootRemovedKey)
     @eval begin
         struct $cls <: iEventKey
-            docid  :: Int64
-            rootid :: Int64
-            $cls(doc::iDocument, root::iModel) = new(bokehid(doc), bokehid(root))
+            doc  :: iDocument
+            root :: iModel
         end
-
 
         function JSON.Writer.show_json(io::JSON.Writer.SC, s::EventsSerialization, itm::Pair{$cls, Nothing})
             JSON.Writer.show_json(
@@ -98,7 +96,17 @@ function trigger!(λ::EventList, ::Type{RootRemovedKey}, doc :: iDocument, root:
     end
 end
 
-function _flushevents!(::Dict{Int64, Dict{Symbol, Any}}, ::Union{RootRemovedKey, RootAddedKey}, ::Nothing) end
+function _flushevents!(::Dict{Int64, Dict{Symbol, Any}}, ::RootRemovedKey, ::Nothing)
+    for cb ∈ key.doc.callbacks
+        cb(key.doc, :RootRemoved, key.model)
+    end
+end
+
+function _flushevents!(::Dict{Int64, Dict{Symbol, Any}}, ::RootAddedKey, ::Nothing)
+    for cb ∈ key.doc.callbacks
+        cb(key.doc, :RootAdded, key.model)
+    end
+end
 
 function _flushevents!(changes::Dict{Int64, Dict{Symbol, Any}}, key::ModelChangedKey, val::ModelChangedEvent)
     get!(Dict{Symbol, Any}, changes, bokehid(key.model))[key.attr] = val.new

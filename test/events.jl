@@ -52,8 +52,8 @@ end
         push!(doc, obj)
         @test length(lst.events) == 1
         @test first(keys(lst.events)) isa Bokeh.Events.RootAddedKey
-        @test first(keys(lst.events)).docid == doc.id
-        @test first(keys(lst.events)).rootid == obj.id
+        @test first(keys(lst.events)).doc.id == doc.id
+        @test first(keys(lst.events)).root.id == obj.id
 
         delete!(doc, obj)
         @test length(lst.events) == 0
@@ -61,8 +61,8 @@ end
         delete!(doc, ini)
         @test length(lst.events) == 1
         @test first(keys(lst.events)) isa Bokeh.Events.RootRemovedKey
-        @test first(keys(lst.events)).docid == doc.id
-        @test first(keys(lst.events)).rootid == ini.id
+        @test first(keys(lst.events)).doc.id == doc.id
+        @test first(keys(lst.events)).root.id == ini.id
     end
 end
 
