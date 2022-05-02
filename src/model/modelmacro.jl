@@ -1,18 +1,3 @@
-module Models
-using ..Bokeh
-using ..AbstractTypes
-
-"""
-Provides a type-specific way of specifying a data source column as field value.
-
-This can be created using col"my_col_name"
-"""
-struct Column
-    column :: String 
-
-    Column(x::Union{AbstractString, Symbol}) = new(string(x))
-end
-
 """
     macro model(args::Vararg{Union{Expr, String, Symbol}})
 
@@ -69,8 +54,6 @@ end
 end
 """
 :(@model)
-
-macro col_str(x) Column(x) end
 
 function _model_fields(mod, code, opts::Vector{Regex} = Regex[])
     isjs = if isempty(opts)
@@ -292,134 +275,13 @@ macro model(args::Vararg{Union{Expr, String, Symbol}})
     _model_code(__module__, expr[1], internal)
 end
 
-for (tpe, others) ∈ (iHasProps => (), iSourcedModel => (:data_source,)) 
-    @eval function Base.propertynames(μ::$tpe; private::Bool = false)
-        return if private
-            (propertynames(getfield(μ, :original))..., fieldnames(μ)..., $(Meta.quot.(others)...), :id)
-        else
-            (propertynames(getfield(μ, :original))..., $(Meta.quot.(others)...))
-        end
-    end
-end
-
 function modeltype end
 function defaultvalue end
 function modelsource end
 function bokehproperties end
 
-function Base.getproperty(μ::T, α::Symbol) where {T <: iHasProps}
-    getfield(α ∈ fieldnames(T) ? μ : getfield(μ, :original), α)
-end
-
-function Base.setproperty!(
-        μ         :: T,
-        α         :: Symbol,
-        υ         :: Any;
-        dotrigger :: Bool = true
-) where {T <: iHasProps}
-    return if α ∈ fieldnames(T)
-        setfield!(μ, α, υ)
-    else
-        old = getproperty(μ, α)
-        new = setfield!(getfield(μ, :original), α, υ)
-        dotrigger && (α ∈ bokehproperties(T)) && Bokeh.Events.trigger(μ, α, old, new)
-    end
-end
-
-function Base.getproperty(μ::T, α::Symbol) where {T <: iSourcedModel}
-    if α ∈ fieldnames(T)
-        return getfield(μ, α)
-    elseif α ≡ :data_source
-        return getfield(μ, :source).source
-    elseif hasfield(fieldtype(T, :source), α)
-        src = getfield(getfield(μ, :source), α)
-        isnothing(src) || return Column(src)
-    end
-    return getfield(getfield(μ, :original), α)
-end
-
-function Base.setproperty!(
-        μ         :: T,
-        α         :: Symbol,
-        υ         :: Any;
-        dotrigger :: Bool = true
-) where {T <: iSourcedModel}
-    return if α ∈ fieldnames(T)
-        setfield!(μ, α, υ)
-    elseif α ≡ :data_source
-        setfield!(getfield(μ, :source), :source, υ)
-    elseif hasfield(fieldtype(T, :source), α)
-        old = getproperty(μ, α)
-        new = if μ isa Column
-            setfield!(getfield(μ, :source), α, υ.column)
-        else
-            setfield!(getfield(μ, :source), α, nothing)
-            setfield!(getfield(μ, :original), α, υ)
-        end
-        dotrigger && Bokeh.Events.trigger(μ, α, old, new)
-        new
-    else
-        setfield!(getfield(μ, :original), α, υ)
-    end
-end
-
-function allmodels(μ::Vararg{iModel}) :: Dict{Int64, iModel}
-    found = Dict{Int64, iModel}()
-    todos = collect(iModel, μ)
-    while !isempty(todos)
-        cur = pop!(todos)
-        key = bokehid(cur)
-        (key ∈ keys(found)) && continue
-        found[bokehid(cur)] = cur
-
-        for child ∈ children(cur)
-            bokehid(child) ∈ keys(found) || push!(todos, child) 
-        end
-    end
-    found
-end
-
-function children(μ::T) where {T <: iModel}
-    return Iterators.flatten(_children(getproperty(μ, field)) for field ∈ bokehproperties(T))
-end
-
-_children(::Any) = ()
-_children(mdl::iModel) = (mdl,)
-_children(mdl::Union{Set{<:iModel}, AbstractArray{<:iModel}}) = mdl
-_children(mdl::Union{AbstractSet, AbstractArray}) = (i for i ∈ mdl if i isa iModel)
-_children(mdl::Dict) = (i for j ∈ mdl for i ∈ j if i isa iModel)
-
 const _MODELIDS = collect(1:Threads.nthreads())
 
 newbokehid() = (_MODELIDS[Threads.threadid()] += 1000)
 
-function removecallback!(model::T, attr::Symbol, func::Function) where {T <: iModel}
-    filter!(getfield(getfield(model, :callbacks), attr)) do opt
-        func ≢ opt
-    end
-end
-
-function addcallback!(model::T, attr::Symbol, func::Function) where {T <: iModel}
-    cb = getfield(getfield(model, :callbacks), attr)
-    if func ∈ cb
-        return false
-    elseif any(
-        let params = method.sig.parameters
-            length(params) ≥ 5 && T <: params[2] && Symbol <: params[3]
-        end
-        for method ∈ methods(func)
-    )
-        push!(cb, func)
-        return true
-    else
-        sig = "$(nameof(func))(::<:$T, ::<:Symbol, ::<:Any, ::<:Any)"
-        throw(KeyError("No correct signature: should be $sig"))
-    end
-end
-
-export iModel, iDataSource, iHasProps, iSourcedModel, @model, Column, @col_str, allmodels, children
-export addcallback!, removecallback!
-end
-
-using .Models
-iDataSource
+export @model
