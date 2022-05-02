@@ -10,7 +10,7 @@ newbokehid() = (_MODELIDS[Threads.threadid()] += 1000)
 
 struct Document <: iDocument
     "private field for document id"
-    index :: Int64
+    id    :: Int64
 
     "private field for storing roots"
     roots :: Vector{iModel}
@@ -20,33 +20,34 @@ struct Document <: iDocument
     Document() = new(newbokehid(), iModel[], Themes.Theme())
 end
 
-bokehid(doc::Document) = doc.id
 Base.propertynames(doc::Document, private :: Bool = false) = private ? fieldnames(doc) : ()
 Models.allmodels(doc::Document) = allmodels(doc.roots)
 
-function Base.push!(doc::Document, root::iModel, roots::Vararg{iModel}; dotrigger :: Bool = true)
-    roots = (root, roots...)
-    push!(doc.roots, roots...)
-    dotrigger && Events.trigger((Events.RootAddedKey(doc, root) for root ∈ roots)...)
+function Base.push!(doc::Document, roots::Vararg{iModel}; dotrigger :: Bool = true)
+    if !isempty(roots)
+        push!(doc.roots, roots...)
+        dotrigger && Events.trigger(Events.RootAddedKey, doc, roots...)
+    end
     return doc
 end
 
-function Base.delete!(doc::Document, root::iModel, roots::Vararg{iModel}; dotrigger :: Bool = true)
-    roots   = (root, roots...)
-
-    let rootids = [bokehid(i) for i ∈ roots]
-        filter!(doc.roots) do root
-            bokehid(root) ∉ rootids
+function Base.delete!(doc::Document, roots::Vararg{iModel}; dotrigger :: Bool = true)
+    if !isempty(roots)
+        let rootids = Set([bokehid(i) for i ∈ roots])
+            filter!(doc.roots) do root
+                bokehid(root) ∉ rootids
+            end
         end
-    end
 
-    dotrigger && Events.trigger((Events.RootRemovedKey(doc, root) for root ∈ roots)...)
+        dotrigger && Events.trigger(Events.RootRemovedKey, doc, roots...)
+    end
     return doc
 end
 
 function updatedocs!(func::Function, doc::iDocument, docs::Vararg{iDocument})
     docs = (doc, docs...)
-    Events.events!() do events :: Events.EventList
+    @assert !Events.task_hasevents()
+    Events.eventlist() do events :: Events.EventList
         updatedoc!(func, events, doc...)
     end
 end
@@ -61,9 +62,9 @@ function updatedocs!(func::Function, events::Events.EventList, doc::iDocument, d
     end
 end
 
-function flush!(events::Events.EventList, doc::iDocument, docs::Vararg{iDocument})
+function flushdoc!(events::Events.EventList, doc::iDocument, docs::Vararg{iDocument})
     docs   = (doc, docs...)
-    cbacks = Events.trigger!(events)
+    cbacks = Events.flushevents!(events)
     jsons  = [
         Events.json(doc, cbacks, ids)
         for (doc, ids) ∈ zip(docs, roots)
@@ -74,7 +75,7 @@ end
 curdoc!(func::Function, doc::iDocument) = task_local_storage(func, :BOKEH_DOC, doc)
 @inline curdoc() :: Union{iDocument, Nothing} = get(task_local_storage(), :BOKEH_DOC, nothing)
 @inline check_hasdoc() :: Bool = !isnothing(curdoc())
-flushcurdoc!() = flush!(Events.task_eventlist(), curdoc())
+flushcurdoc!() = flushdoc!(Events.task_eventlist(), curdoc())
 
 export Document, iDocument, curdoc, check_hasdoc, flushcurdoc!, curdoc!
 end
