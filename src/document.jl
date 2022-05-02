@@ -17,7 +17,9 @@ struct Document <: iDocument
 
     theme :: Themes.Theme
 
-    Document() = new(newbokehid(), iModel[], Themes.Theme())
+    callbacks :: Vector{Function}
+
+    Document() = new(newbokehid(), iModel[], Themes.Theme(), Function[])
 end
 
 Base.propertynames(doc::Document, private :: Bool = false) = private ? fieldnames(doc) : ()
@@ -81,3 +83,22 @@ export Document, iDocument, curdoc, check_hasdoc, flushcurdoc!, curdoc!
 end
 
 using .Documents
+
+function removecallback!(doc::iDocument, func::Function)
+    filter!(getfield(doc, :callbacks)) do opt
+        func ≢ opt
+    end
+end
+
+function addcallback!(doc::iDocument, func::Function)
+    cb = getfield(model, :callbacks)
+    if (func ∈ cb)
+       return nothing
+    elseif any(length(m.sig.parameters) ≥ 4 for m ∈ methods(func))
+        push!(cb, func)
+    else
+        sig = "$(nameof(func))(::<:iDocument, ::<:Symbol, ::<:iModel)"
+        throw(KeyError("No correct signature: should be $sig"))
+    end
+    return func
+end

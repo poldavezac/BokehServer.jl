@@ -4,24 +4,17 @@ function removecallback!(model::iModel, attr::Symbol, func::Function)
     end
 end
 
-function removecallback!(model::iModel, attr::Symbol, id::Int64)
-    filter!(getfield(getfield(model, :callbacks), attr)) do opt
-        func ≢ opt
-    end
-end
-
-function addcallback!(model::T, attr::Symbol, func::Function) where {T <: iModel}
+function addcallback!(model::iModel, attr::Symbol, func::Function)
     cb = getfield(getfield(model, :callbacks), attr)
-    (func ∈ cb) && return nothing
-    for method ∈ methods(func)
-        params = method.sig.parameters
-        if length(params) ≥ 5 && T <: params[2] && Symbol <: params[3]
-            push!(cb, func)
-            return func
-        end
+    if (func ∈ cb)
+       return nothing
+    elseif any(length(m.sig.parameters) ≥ 5 for m ∈ methods(func))
+        push!(cb, func)
+    else
+        sig = "$(nameof(func))(::<:$T, ::<:Symbol, ::<:Any, ::<:Any)"
+        throw(KeyError("No correct signature: should be $sig"))
     end
-    sig = "$(nameof(func))(::<:$T, ::<:Symbol, ::<:Any, ::<:Any)"
-    throw(KeyError("No correct signature: should be $sig"))
+    return func
 end
 
 macro addcallback!(elems...)
@@ -52,11 +45,7 @@ macro addcallback!(elems...)
         let func = function($model :: Bokeh.iModel, $(sig...))
                 $body
             end
-            cb   = getfield(getfield($model, :callbacks), $(Meta.quot(attr)))
-            push!(cb, func)
-            func
+            Bokeh.addcallback!($model, $(Meta.quot(attr)), func)
         end
     end)
 end
-
-export removecallback!, addcallback!, @addcallback!
