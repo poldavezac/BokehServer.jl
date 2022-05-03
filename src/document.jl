@@ -23,7 +23,7 @@ struct Document <: iDocument
 end
 
 Base.propertynames(doc::Document, private :: Bool = false) = private ? fieldnames(doc) : ()
-Models.allmodels(doc::Document) = allmodels(doc.roots)
+Models.allmodels(doc::Document) = allmodels(doc.roots...)
 
 function Base.push!(doc::Document, roots::Vararg{iModel}; dotrigger :: Bool = true)
     if !isempty(roots)

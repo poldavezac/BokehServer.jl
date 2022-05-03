@@ -1,20 +1,12 @@
 module Events
-using JSON
 using DataStructures: OrderedDict
 using ..AbstractTypes
 using ..Models
 
-"Specifies module specific rules for json serialiation"
-struct EventsSerialization <: JSON.Serializations.CommonSerialization
-end
-
-function JSON.Writer.show_json(io::JSON.Writer.SC, s::EventsSerialization, itm::iModel)
-    JSON.Writer.show_json(io, s, (; id = bokehid(itm)))
-end
-
 abstract type iEventList end
 abstract type iEvent end
 abstract type iEventKey end
+abstract type iRootEventKey <: iEventKey end
 
 struct ModelChangedKey <: iEventKey
     model :: iModel
@@ -27,39 +19,17 @@ struct ModelChangedEvent <: iEvent
     new :: Any
 end
 
-function JSON.Writer.show_json(io::JSON.Writer.SC, s::EventsSerialization, itm::Pair{ModelChangedKey, ModelChangedEvent})
-    JSON.Writer.show_json(
-        io, s, 
-        (
-            kind  = :ModelChanged,
-            model = (; id = itm[1].id),
-            attr  = itm[1].attr,
-            new   = item[2].new,
-            hint  = nothing
-        )
-    )
-end
-
 for cls ∈ (:RootAddedKey, :RootRemovedKey)
     @eval begin
-        struct $cls <: iEventKey
+        struct $cls <: iRootEventKey
             doc  :: iDocument
             root :: iModel
-        end
-
-        function JSON.Writer.show_json(io::JSON.Writer.SC, s::EventsSerialization, itm::Pair{$cls, Nothing})
-            JSON.Writer.show_json(
-                io, s, 
-                (
-                    kind  = $(Meta.quot(Symbol(string(cls)[1:end-3]))),
-                    model = (; itm = itm[1].model),
-                )
-            )
         end
     end
 end
 
 const EventDict = OrderedDict{iEventKey, Union{iEvent, Nothing}}
+
 struct EventList <: iEventList
     events :: EventDict
     EventList() = new(EventDict())
@@ -134,7 +104,7 @@ function trigger(μ::iModel, args...)
     trigger!(task_eventlist(), μ, args...)
 end
 
-function trigger(T::Type{<:Union{RootAddedKey, RootRemovedKey}}, doc :: iDocument, roots::Vararg{iModel})
+function trigger(T::Type{<:iRootEventKey}, doc :: iDocument, roots::Vararg{iModel})
     @assert task_hasevents() "No event list was set: doc is readonly in this task!"
     evts = task_eventlist()
     for root ∈ roots
@@ -142,54 +112,86 @@ function trigger(T::Type{<:Union{RootAddedKey, RootRemovedKey}}, doc :: iDocumen
     end
 end
 
-module References
+module JSONWriter
+    using JSON
     using ...AbstractTypes
     using ...Models
+    using ..Events
 
-    type(mdl::T) where {T <: iModel} = (; type = nameof(T))
+    "Specifies module specific rules for json serialiation"
+    struct Serialization <: JSON.Serializations.CommonSerialization
+    end
 
-    function attributes(mdl::T) where {T <: iModel}
+    jsontype(mdl::T) where {T <: iModel} = (; type = nameof(T))
+
+    function jsattributes(mdl::T) where {T <: iModel}
         return (;(
            i => getproperty(mdl, i)
            for i ∈ Models.bokehproperties(T; sorted = true)
            if let dflt = Models.defaultvalue(T, i)
-               isnothing(dflt) || getproperty(mdl, i) ≢ something(dftl)
+               isnothing(dflt) || getproperty(mdl, i) ≢ something(dflt)
            end
         )...)
     end
 
-    function namedtuple(itm::iModel) 
-        return (;
-            attributes = attributes(itm),
-            id         = bokehid(itm),
-            referencetojson_type(itm)...
+    function jsnamedtuple(itm::iModel) 
+        return (; attributes = jsattributes(itm), id = bokehid(itm), jsontype(itm)...)
+    end
+
+    for cls ∈ (:RootAddedKey, :RootRemovedKey)
+        @eval function JSON.Writer.show_json(
+                io::JSON.Writer.SC,
+                s::Serialization,
+                itm::Pair{Events.$cls, Nothing}
+        )
+            JSON.Writer.show_json(
+                io, s, 
+                (
+                    kind  = $(Meta.quot(Symbol(string(cls)[1:end-3]))),
+                    model = (; id = bokehid(first(itm).root)),
+                )
+            )
+        end
+    end
+
+    function JSON.Writer.show_json(
+            io::JSON.Writer.SC,
+            s::Serialization,
+            itm::Pair{Events.ModelChangedKey, Events.ModelChangedEvent}
+    )
+        JSON.Writer.show_json(
+            io, s, 
+            (
+                attr  = first(itm).attr,
+                hint  = nothing,
+                kind  = :ModelChanged,
+                model = (; id = bokehid(first(itm).model)),
+                new   = last(itm).new,
+            )
         )
     end
-end
 
-using .References
+    function JSON.Writer.show_json(io::JSON.Writer.SC, s::Serialization, itm::iModel)
+        JSON.Writer.show_json(io, s, (; id = bokehid(itm)))
+    end
+
+    function dojson(obj)
+        sprint(obj) do io, itm
+            JSON.Writer.show_json(io, Serialization(), itm)
+        end
+    end
+end
+using .JSONWriter
 
 function json(λ::Events.EventList, doc::iDocument, oldids::Set{Int64})
     all = allmodels(doc)
-    obj = (;
-        events = let discarded = setdiff(oldids, keys(all))
-            filter(events) do (key, value)
-                if key isa ModelChangedEvent
-                    key.id ∉ discarded
-                elseif key isa Union{RootRemovedKey, RootAddedKey}
-                    key.docid ≡ bokehid(doc)
-                end
-            end
-        end,
-        references = [
-            References.namedtuple(all[i])
-            for i ∈ setdiff(keys(all), oldids)
-        ]
-    )
+    filt(k::ModelChangedKey) = bokehid(k.model) ∈ keys(all)
+    filt(k::iRootEventKey)   = k.doc ≡ doc
 
-    sprint(obj) do io, itm
-        JSON.Writer.show_json(io, EventsSerialization(), itm)
-    end
+    JSONWriter.dojson((;
+        events     = [i for i ∈ λ.events if filt(first(i))],
+        references = [JSONWriter.jsnamedtuple(j) for (i, j) ∈ all if i ∉ oldids]
+    ))
 end
 
 export trigger
