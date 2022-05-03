@@ -114,6 +114,7 @@ end
 
 module JSONWriter
     using JSON
+    import JSON.Writer: show_json
     using ...AbstractTypes
     using ...Models
     using ..Events
@@ -134,50 +135,47 @@ module JSONWriter
         )...)
     end
 
-    function jsnamedtuple(itm::iModel) 
-        return (; attributes = jsattributes(itm), id = bokehid(itm), jsontype(itm)...)
-    end
+    jsreference(μ::iModel) = (; attributes = jsattributes(μ), jsmodel(μ)..., jsontype(μ)...)
+    jsmodel(μ::iModel)     = (; id = "$(bokehid(μ))")
 
     for cls ∈ (:RootAddedKey, :RootRemovedKey)
-        @eval function JSON.Writer.show_json(
+        @eval function show_json(
                 io::JSON.Writer.SC,
                 s::Serialization,
                 itm::Pair{Events.$cls, Nothing}
         )
-            JSON.Writer.show_json(
+            show_json(
                 io, s, 
                 (
                     kind  = $(Meta.quot(Symbol(string(cls)[1:end-3]))),
-                    model = (; id = bokehid(first(itm).root)),
+                    model = jsmodel(first(itm).root)
                 )
             )
         end
     end
 
-    function JSON.Writer.show_json(
+    function show_json(
             io::JSON.Writer.SC,
             s::Serialization,
             itm::Pair{Events.ModelChangedKey, Events.ModelChangedEvent}
     )
-        JSON.Writer.show_json(
+        show_json(
             io, s, 
             (
                 attr  = first(itm).attr,
                 hint  = nothing,
                 kind  = :ModelChanged,
-                model = (; id = bokehid(first(itm).model)),
+                model = jsmodel(first(itm).model),
                 new   = last(itm).new,
             )
         )
     end
 
-    function JSON.Writer.show_json(io::JSON.Writer.SC, s::Serialization, itm::iModel)
-        JSON.Writer.show_json(io, s, (; id = bokehid(itm)))
-    end
+    show_json(io::JSON.Writer.SC, s::Serialization, μ::iModel) = show_json(io, s, jsmodel(μ))
 
     function dojson(obj)
         sprint(obj) do io, itm
-            JSON.Writer.show_json(io, Serialization(), itm)
+            show_json(io, Serialization(), itm)
         end
     end
 end
@@ -190,7 +188,7 @@ function json(λ::Events.EventList, doc::iDocument, oldids::Set{Int64})
 
     JSONWriter.dojson((;
         events     = [i for i ∈ λ.events if filt(first(i))],
-        references = [JSONWriter.jsnamedtuple(j) for (i, j) ∈ all if i ∉ oldids]
+        references = [JSONWriter.jsreference(j) for (i, j) ∈ all if i ∉ oldids]
     ))
 end
 

@@ -86,21 +86,21 @@ end
 
 @testset "json" begin
     doc  = Bokeh.Document()
-    mdl  = EventsX(; id = 6001)
+    mdl  = EventsX(; id = 1)
     E   = Bokeh.Events
     json = E.JSONWriter.dojson
 
     val   = json(E.ModelChangedKey(mdl, :a) => E.ModelChangedEvent(10, 20))
-    truth = """{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":$(mdl.id)},"new":20}"""
+    truth = """{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"new":20}"""
     @test val == truth
 
     val   = json(E.RootAddedKey(doc, mdl)=>nothing)
-    truth = """{"kind":"RootAdded","model":{"id":$(mdl.id)}}"""
+    truth = """{"kind":"RootAdded","model":{"id":"1"}}"""
     @test val == truth
 
 
     val   = json(E.RootRemovedKey(doc, mdl)=>nothing)
-    truth = """{"kind":"RootRemoved","model":{"id":$(mdl.id)}}"""
+    truth = """{"kind":"RootRemoved","model":{"id":"1"}}"""
     @test val == truth
 
     E.eventlist() do
@@ -109,9 +109,9 @@ end
         mdl.a = 100
         val   = E.json(E.task_eventlist(), doc, Set{Int64}())
         truth = (
-            """{"events":[{"kind":"RootAdded","model":{"id":6001}}"""*
-            """,{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":6001},"""*
-            """"new":100}],"references":[{"attributes":{"a":100},"id":6001,"type":"EventsX"}]}"""
+            """{"events":[{"kind":"RootAdded","model":{"id":"1"}}"""*
+            """,{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"""*
+            """"new":100}],"references":[{"attributes":{"a":100},"id":"1","type":"EventsX"}]}"""
         )
         @test val == truth
 
