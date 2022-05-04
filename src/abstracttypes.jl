@@ -8,6 +8,15 @@ module AbstractTypes
 
     bokehid(μ::Union{iModel, iDocument}) = getfield(μ, :id)
 
-    export iHasProps, iModel, iDataSource, iSourcedModel, iDocument, iTheme, bokehid
+    struct BokehIdMaker
+        ids :: Vector{Int}
+        BokehIdMaker() = new(collect(1:Threads.nthreads()))
+    end
+
+    function (self::BokehIdMaker)() :: Int64
+        return (self.ids[Threads.threadid()] += 1000)
+    end
+
+    export iHasProps, iModel, iDataSource, iSourcedModel, iDocument, iTheme, bokehid, BokehIdMaker
 end
 using .AbstractTypes

@@ -233,7 +233,7 @@ function _model_code(mod::Module, code::Expr, opts::Vector{Regex})
         $(_model_cbcls(bkcls, fields))
         @Base.__doc__ $(_model_bkcls(bkcls, datacls, parents, fields, hassource))
 
-        function $bkcls(; id :: Int64 = Bokeh.Models.newbokehid(), kwa...)
+        function $bkcls(; id :: Int64 = Bokeh.Models.ID(), kwa...)
             obj = $bkcls(
                 id,
 
@@ -280,8 +280,6 @@ function defaultvalue end
 function modelsource end
 function bokehproperties end
 
-const _MODELIDS = collect(1:Threads.nthreads())
-
-newbokehid() = (_MODELIDS[Threads.threadid()] += 1000)
+const ID = BokehIdMaker()
 
 export @model

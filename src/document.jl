@@ -4,9 +4,7 @@ using ..Models
 using ..Events
 using ..Themes
 
-const _MODELIDS = collect(1:Threads.nthreads())
-
-newbokehid() = (_MODELIDS[Threads.threadid()] += 1000)
+const ID = BokehIdMaker()
 
 struct Document <: iDocument
     "private field for document id"
@@ -19,7 +17,7 @@ struct Document <: iDocument
 
     callbacks :: Vector{Function}
 
-    Document() = new(newbokehid(), iModel[], Themes.Theme(), Function[])
+    Document() = new(ID(), iModel[], Themes.Theme(), Function[])
 end
 
 Base.propertynames(doc::Document, private :: Bool = false) = private ? fieldnames(doc) : ()
@@ -57,21 +55,16 @@ end
 function updatedocs!(func::Function, events::Events.EventList, doc::iDocument, docs::Vararg{iDocument})
     docs = (doc, docs...)
     try
-        roots  = [Set{Int64}(keys(allmodels(doc)))  for doc ∈ docs]
+        roots  = [doc => Set{Int64}(keys(allmodels(doc)))  for doc ∈ docs]
         func()
     finally
-        flush!(events, docs...)
+        flushdoc!(events, roots...)
     end
 end
 
-function flushdoc!(events::Events.EventList, doc::iDocument, docs::Vararg{iDocument})
-    docs   = (doc, docs...)
-    cbacks = Events.flushevents!(events)
-    jsons  = [
-        Events.json(doc, cbacks, ids)
-        for (doc, ids) ∈ zip(docs, roots)
-    ]
-    toclient(zip(docs, jsons))
+function flushdoc!(events::Events.EventList, docs::Vararg{Pair{<:iDocument, Set{Int64}}})
+    Events.flushevents!(events)
+    toclient((doc => Events.json(events, doc, oldids) for (doc, oldids) ∈ docs))
 end
 
 curdoc!(func::Function, doc::iDocument) = task_local_storage(func, :BOKEH_DOC, doc)

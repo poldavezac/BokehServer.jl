@@ -66,32 +66,28 @@ function trigger!(λ::EventList, ::Type{RootRemovedKey}, doc :: iDocument, root:
     end
 end
 
-function _flushevents!(::Dict{Int64, Dict{Symbol, Any}}, ::RootRemovedKey, ::Nothing)
+function _flushevents!(::RootRemovedKey, ::Nothing)
     for cb ∈ key.doc.callbacks
         cb(key.doc, :RootRemoved, key.model)
     end
 end
 
-function _flushevents!(::Dict{Int64, Dict{Symbol, Any}}, ::RootAddedKey, ::Nothing)
+function _flushevents!(::RootAddedKey, ::Nothing)
     for cb ∈ key.doc.callbacks
         cb(key.doc, :RootAdded, key.model)
     end
 end
 
-function _flushevents!(changes::Dict{Int64, Dict{Symbol, Any}}, key::ModelChangedKey, val::ModelChangedEvent)
-    get!(Dict{Symbol, Any}, changes, bokehid(key.model))[key.attr] = val.new
+function _flushevents!(key::ModelChangedKey, val::ModelChangedEvent)
     for cb ∈ getfield(getfield(key.model, :callbacks), key.attr)
         cb(key.model, key.attr, val.old, val.new)
     end
 end
 
-function flushevents!(λ::EventList) :: Dict{Int64, Dict{Symbol, Any}}
-    changes = Dict{Int64, Dict{Symbol, Any}}()
+function flushevents!(λ::EventList)
     while !isempty(λ.events)
-        _flushevents!(changes, popfirst!(λ.events)...)
+        _flushevents!(popfirst!(λ.events)...)
     end
-
-    return changes
 end
 
 task_hasevents() = :DOC_EVENTS ∈ keys(task_local_storage())
