@@ -1,4 +1,4 @@
-module JSONWriter
+module Send
     using JSON
     import JSON.Writer: show_json
     using ...AbstractTypes
@@ -10,6 +10,7 @@ module JSONWriter
     end
 
     jsontype(mdl::T) where {T <: iModel} = (; type = nameof(T))
+    jsontype(::Type{T}) where {T <: iModel} = (; type = nameof(T))
 
     function jsattributes(mdl::T) where {T <: iModel}
         return (;(
@@ -65,15 +66,15 @@ module JSONWriter
         end
     end
 end
-using .JSONWriter
+using .Send
 
 function json(λ::Events.EventList, doc::iDocument, oldids::Set{Int64})
     all = allmodels(doc)
     filt(k::ModelChangedKey) = bokehid(k.model) ∈ keys(all)
     filt(k::iRootEventKey)   = k.doc ≡ doc
 
-    JSONWriter.dojson((;
+    Send.dojson((;
         events     = [i for i ∈ λ.events if filt(first(i))],
-        references = [JSONWriter.jsreference(j) for (i, j) ∈ all if i ∉ oldids]
+        references = [Send.jsreference(j) for (i, j) ∈ all if i ∉ oldids]
     ))
 end

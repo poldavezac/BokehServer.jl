@@ -41,4 +41,3 @@ function trigger(T::Type{<:iRootEventKey}, doc :: iDocument, roots::Vararg{iMode
         trigger!(evts, T, doc, root)
     end
 end
-

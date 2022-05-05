@@ -88,7 +88,7 @@ end
     doc  = Bokeh.Document()
     mdl  = EventsX(; id = 1)
     E   = Bokeh.Events
-    json = E.JSONWriter.dojson
+    json = E.Send.dojson
 
     val   = json(E.ModelChangedKey(mdl, :a) => E.ModelChangedEvent(10, 20))
     truth = """{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"new":20}"""

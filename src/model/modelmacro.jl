@@ -55,6 +55,9 @@ end
 """
 :(@model)
 
+"Stores every class created by the @model macro"
+const _MODELS = Set{DataType}()
+
 function _model_fields(mod, code, opts::Vector{Regex} = Regex[])
     isjs = if isempty(opts)
         # all fields are bokeh fields
@@ -132,12 +135,16 @@ function _model_bkcls(
         fields    :: Vector{<:NamedTuple},
         hassource :: Bool
 )
-    :(mutable struct $name <: $parents
-        id        :: Int64
-        original  :: $cls
-        callbacks :: $(_model_cbcls(name))
-        $(hassource ? :(source :: $(_model_srccls(name, hassource)[1])) : nothing)
-    end)
+    quote
+        mutable struct $name <: $parents
+            id        :: Int64
+            original  :: $cls
+            callbacks :: $(_model_cbcls(name))
+            $(hassource ? :(source :: $(_model_srccls(name, hassource)[1])) : nothing)
+        end
+
+        push!(_MODELS, $name)
+    end
 end
 
 function _model_funcs(bkcls::Symbol, datacls::Symbol, fields::Vector{<:NamedTuple}, hassource::Bool)
