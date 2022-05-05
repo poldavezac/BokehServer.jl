@@ -143,7 +143,7 @@ function _model_bkcls(
             $(hassource ? :(source :: $(_model_srccls(name, hassource)[1])) : nothing)
         end
 
-        push!(_MODELS, $name)
+        push!(Bokeh.Models._MODELS, $name)
     end
 end
 

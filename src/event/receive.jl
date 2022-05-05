@@ -1,5 +1,6 @@
 module Receive
 using ...AbstractTypes
+using ...Models
 using ..Send
 
 const Models       = Dict{Int64, iHasProps}

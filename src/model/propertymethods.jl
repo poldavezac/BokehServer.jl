@@ -63,3 +63,5 @@ function Base.setproperty!(
         setfield!(getfield(μ, :original), α, υ)
     end
 end
+
+Base.repr(mdl::T) where {T <: iHasProps} = "$T(id = $(bokehid(mdl)))" 

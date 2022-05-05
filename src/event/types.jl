@@ -22,7 +22,7 @@ for (ind, cls) ∈ enumerate((:RootAddedKey, :RootRemovedKey))
             root :: iModel
         end
 
-        Base.hash(key::$cls) = hash(($ind, bokehid(key.doc), bokehid(key.model)))
+        Base.hash(key::$cls) = hash(($ind, bokehid(key.doc), bokehid(key.root)))
     end
 end
 

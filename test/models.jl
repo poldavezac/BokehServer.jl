@@ -109,7 +109,7 @@ end
     end
 
     # `evals` are needed to make sure X1 exists for Y1's declaration
-    @eval @Bokeh.model source = false mutable struct Y1 <: Bokeh.iModel
+    @eval @Bokeh.model mutable struct Y1 <: Bokeh.iModel
         a::Vector{X1}      = [X1(; a = 1), X1(; a = 2)]
         b::Dict{Int64, X1} = Dict(1 => X1(; a = 3), 2 => X1(; a = 4))
         c::Dict{X1, Int64} = Dict(X1(; a = 5) => 1, X1(; a = 6) => 2)
