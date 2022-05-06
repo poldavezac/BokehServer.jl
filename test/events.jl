@@ -5,6 +5,10 @@
     c::Int = 1
 end
 
+@Bokeh.model mutable struct EventsY <: Bokeh.iModel
+    a::EventsX = EventsX(; a = -1)
+end
+
 @testset "create model events" begin
     obj = EventsX()
 
@@ -84,10 +88,10 @@ end
     @test calls == [(obj1, :a, 1, 10)]
 end
 
-@testset "json" begin
+@testset "send" begin
     doc  = Bokeh.Document()
     mdl  = EventsX(; id = 1)
-    E   = Bokeh.Events
+    E    = Bokeh.Events
     json = E.Send.dojson
 
     val   = json(E.ModelChangedKey(mdl, :a) => E.ModelChangedEvent(10, 20))
@@ -115,5 +119,93 @@ end
         )
         @test val == truth
 
+    end
+end
+
+@testset "receive" begin
+    doc  = Bokeh.Document()
+    mdl  = EventsX(; id = 100,a  = 10)
+    E    = Bokeh.Events
+    buf  = Bokeh.Protocol.Buffers(undef, 0)
+    JSON = E.Send.JSON
+    jsref(x) = JSON.parse(E.Send.dojson(E.Send.jsreference(x)))
+    js(x)    = JSON.parse(E.Send.dojson(x))
+    @testset "add first root" begin
+        E.eventlist() do
+            cnt = Dict(
+                "references" => [jsref(mdl)],
+                "events" =>  [js(E.RootAddedKey(doc, mdl)=>nothing)],
+            )
+
+            @test isempty(doc.roots)
+            E.patchdoc!(doc, cnt, buf)
+            @test length(doc.roots) == 1
+            @test Bokeh.bokehid(doc.roots[1]) == 100
+            @test doc.roots[1].a == 10
+            @test doc.roots[1] ≢ mdl
+        end
+    end
+
+    @testset "add root again" begin
+        E.eventlist() do
+            cnt = Dict(
+                "references" => [],
+                "events" =>  [js(E.RootAddedKey(doc, mdl)=>nothing)],
+            )
+
+            @test length(doc.roots) == 1
+            E.patchdoc!(doc, cnt, buf)
+            @test length(doc.roots) == 2
+            @test doc.roots[2] ≡ doc.roots[1]
+        end
+    end
+
+    @testset "remove root" begin
+        E.eventlist() do
+            cnt = Dict(
+                "references" => [],
+                "events" =>  [js(E.RootRemovedKey(doc, mdl)=>nothing)],
+            )
+
+            @test length(doc.roots) == 2
+            E.patchdoc!(doc, cnt, buf)
+            @test length(doc.roots) == 0
+        end
+    end
+
+    ymdl  = EventsY()
+    @testset "add y root" begin
+        E.eventlist() do
+            cnt = Dict(
+                "references" => [jsref(ymdl), jsref(ymdl.a), jsref(mdl)],
+                "events" =>  [
+                    js(E.RootAddedKey(doc, mdl)=>nothing),
+                    js(E.RootAddedKey(doc, ymdl)=>nothing)
+                ],
+            )
+
+            @test length(doc.roots) == 0
+            E.patchdoc!(doc, cnt, buf)
+            @test length(doc.roots) == 2
+            @test doc.roots[1].id ≡ mdl.id
+            @test doc.roots[2].id ≡ ymdl.id
+            @test doc.roots[2].a.id ≡ ymdl.a.id
+        end
+    end
+
+    @testset "change attribute" begin
+        E.eventlist() do
+            other = EventsX()
+            cnt = Dict(
+                "references" => [jsref(other)],
+                "events" =>  [js(E.ModelChangedKey(ymdl, :a)=>E.ModelChangedEvent(nothing, other))],
+            )
+
+            @test length(doc.roots) == 2
+            @test doc.roots[end].a.id ≢ other.id
+            E.patchdoc!(doc, cnt, buf)
+            @test length(doc.roots) == 2
+            @test doc.roots[end].a.id ≡ other.id
+        end
     end
 end

@@ -56,7 +56,7 @@ end
 :(@model)
 
 "Stores every class created by the @model macro"
-const _MODELS = Set{DataType}()
+const MODEL_TYPES = Set{DataType}()
 
 function _model_fields(mod, code, opts::Vector{Regex} = Regex[])
     isjs = if isempty(opts)
@@ -143,7 +143,7 @@ function _model_bkcls(
             $(hassource ? :(source :: $(_model_srccls(name, hassource)[1])) : nothing)
         end
 
-        push!(Bokeh.Models._MODELS, $name)
+        push!(Bokeh.Models.MODEL_TYPES, $name)
     end
 end
 

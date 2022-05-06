@@ -9,10 +9,10 @@ module Send
     struct Serialization <: JSON.Serializations.CommonSerialization
     end
 
-    jsontype(mdl::T) where {T <: iModel} = (; type = nameof(T))
-    jsontype(::Type{T}) where {T <: iModel} = (; type = nameof(T))
+    jsontype(mdl::T) where {T <: iHasProps} = (; type = nameof(T))
+    jsontype(::Type{T}) where {T <: iHasProps} = (; type = nameof(T))
 
-    function jsattributes(mdl::T) where {T <: iModel}
+    function jsattributes(mdl::T) where {T <: iHasProps}
         return (;(
            i => getproperty(mdl, i)
            for i ∈ Models.bokehproperties(T; sorted = true)
@@ -22,8 +22,8 @@ module Send
         )...)
     end
 
-    jsreference(μ::iModel) = (; attributes = jsattributes(μ), jsmodel(μ)..., jsontype(μ)...)
-    jsmodel(μ::iModel)     = (; id = "$(bokehid(μ))")
+    jsreference(μ::iHasProps) = (; attributes = jsattributes(μ), jsmodel(μ)..., jsontype(μ)...)
+    jsmodel(μ::iHasProps)     = (; id = "$(bokehid(μ))")
 
     for cls ∈ (:RootAddedKey, :RootRemovedKey)
         @eval function show_json(
@@ -58,7 +58,7 @@ module Send
         )
     end
 
-    show_json(io::JSON.Writer.SC, s::Serialization, μ::iModel) = show_json(io, s, jsmodel(μ))
+    show_json(io::JSON.Writer.SC, s::Serialization, μ::iHasProps) = show_json(io, s, jsmodel(μ))
 
     function dojson(obj)
         sprint(obj) do io, itm
