@@ -6,27 +6,32 @@ using ..Themes
 
 const ID = BokehIdMaker()
 
-struct Document <: iDocument
+@Base.kwdef struct Document <: iDocument
     "private field for document id"
-    id    :: Int64
+    id        :: Int64            = ID()
 
     "private field for storing roots"
-    roots :: Vector{iModel}
+    roots     :: Vector{iModel}   = iModel[]
 
-    theme :: Themes.Theme
+    theme     :: Themes.Theme     = Themes.Theme()
 
-    callbacks :: Vector{Function}
+    title     :: String           = ""
 
-    Document() = new(ID(), iModel[], Themes.Theme(), Function[])
+    callbacks :: Vector{Function} = Function[]
 end
 
-Base.propertynames(doc::Document, private :: Bool = false) = private ? fieldnames(doc) : ()
+function Base.propertynames(doc::Document, private :: Bool = false)
+    private ? fieldnames(doc) : (:theme, :title)
+end
+
 Models.allmodels(doc::Document) = allmodels(doc.roots...)
 
 function Base.push!(doc::Document, roots::Vararg{iModel}; dotrigger :: Bool = true)
     if !isempty(roots)
         push!(doc.roots, roots...)
-        dotrigger && Events.trigger(Events.RootAddedKey, doc, roots...)
+        dotrigger && for root ∈ roots
+            Events.trigger(RootAddedEvent(doc, root))
+        end
     end
     return doc
 end
@@ -39,7 +44,9 @@ function Base.delete!(doc::Document, roots::Vararg{iModel}; dotrigger :: Bool = 
             end
         end
 
-        dotrigger && Events.trigger(Events.RootRemovedKey, doc, roots...)
+        dotrigger && for root ∈ roots
+            Events.trigger(RootRemovedEvent(doc, root))
+        end
     end
     return doc
 end

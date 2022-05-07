@@ -25,17 +25,17 @@ module Send
     jsreference(μ::iHasProps) = (; attributes = jsattributes(μ), jsmodel(μ)..., jsontype(μ)...)
     jsmodel(μ::iHasProps)     = (; id = "$(bokehid(μ))")
 
-    for cls ∈ (:RootAddedKey, :RootRemovedKey)
+    for cls ∈ (:RootAddedEvent, :RootRemovedEvent)
         @eval function show_json(
                 io::JSON.Writer.SC,
                 s::Serialization,
-                itm::Pair{Events.$cls, Nothing}
+                itm::$cls
         )
             show_json(
                 io, s, 
                 (
-                    kind  = $(Meta.quot(Symbol(string(cls)[1:end-3]))),
-                    model = jsmodel(first(itm).root)
+                    kind  = $(Meta.quot(Symbol(string(cls)[1:end-5]))),
+                    model = jsmodel(itm.root)
                 )
             )
         end
@@ -44,16 +44,16 @@ module Send
     function show_json(
             io::JSON.Writer.SC,
             s::Serialization,
-            itm::Pair{Events.ModelChangedKey, Events.ModelChangedEvent}
+            itm::ModelChangedEvent
     )
         show_json(
             io, s, 
             (
-                attr  = first(itm).attr,
+                attr  = itm.attr,
                 hint  = nothing,
                 kind  = :ModelChanged,
-                model = jsmodel(first(itm).model),
-                new   = last(itm).new,
+                model = jsmodel(itm.model),
+                new   = itm.new,
             )
         )
     end
@@ -70,11 +70,11 @@ using .Send
 
 function json(λ::Events.EventList, doc::iDocument, oldids::Set{Int64})
     all = allmodels(doc)
-    filt(k::ModelChangedKey) = bokehid(k.model) ∈ keys(all)
-    filt(k::iRootEventKey)   = k.doc ≡ doc
+    filt(k::ModelChangedEvent) = bokehid(k.model) ∈ keys(all)
+    filt(k::iDocumentEvent)    = k.doc ≡ doc
 
     Send.dojson((;
-        events     = [i for i ∈ λ.events if filt(first(i))],
+        events     = [i for i ∈ λ.events if filt(i)],
         references = [Send.jsreference(j) for (i, j) ∈ all if i ∉ oldids]
     ))
 end

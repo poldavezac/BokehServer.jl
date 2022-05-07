@@ -7,8 +7,6 @@ Classes are created and aggregated into the final class `XXX`:
 
 * `DataXXX`: a class as provided in the macro arguments. It stores the fields
 with the exact types provided in the macro.
-* `CbXXX`: a class with the same fields as `DataXXX` but with types
-`Vector{Function}`, used for callbacks.
 * Optionally `SrcXXX`: a class with the same fields as `XXX` but with types
 `Symbol`, used for overloading the `XXX` fields with a data source column.
 
@@ -20,8 +18,8 @@ practice to always provide default values. If not
 
 ** Note ** Internal fields, not passed to `bokehjs` can be specified using
 `internal = ["a regex", "another regex"]`. Any field matching one of the
-regular expressions is *internal*. Internal fields are not added to the `CbXXX`
-or `SrcXXX` classes.
+regular expressions is *internal*. Internal fields are not added to the 
+`SrcXXX` class.
 
 ## Examples
 
@@ -118,16 +116,6 @@ function _model_srccls(cls::Symbol, fields::Vector{<:NamedTuple}, hassource :: B
     end
 end
 
-_model_cbcls(cls::Symbol)  = Symbol("Cb$cls")
-
-function _model_cbcls(cls::Symbol, fields::Vector{<:NamedTuple})
-    cbcls = _model_cbcls(cls)
-    return :(struct $cbcls
-        $((:($(i.name) :: Vector{Function}) for i ∈ fields if i.js)...)
-        $cbcls() = new((Function[] for _ ∈ 1:$(sum(1 for i ∈ fields if i.js)))...)
-    end)
-end
-
 function _model_bkcls(
         name      :: Symbol,
         cls       :: Symbol,
@@ -139,7 +127,7 @@ function _model_bkcls(
         mutable struct $name <: $parents
             id        :: Int64
             original  :: $cls
-            callbacks :: $(_model_cbcls(name))
+            callbacks :: Vector{Function}
             $(hassource ? :(source :: $(_model_srccls(name, hassource)[1])) : nothing)
         end
 
@@ -237,7 +225,6 @@ function _model_code(mod::Module, code::Expr, opts::Vector{Regex})
         $datacls($params) = $datacls($((i.name for i ∈ fields)...))
 
         $(_model_srccls(bkcls, fields, hassource))
-        $(_model_cbcls(bkcls, fields))
         @Base.__doc__ $(_model_bkcls(bkcls, datacls, parents, fields, hassource))
 
         function $bkcls(; id :: Int64 = Bokeh.Models.ID(), kwa...)
@@ -248,7 +235,7 @@ function _model_code(mod::Module, code::Expr, opts::Vector{Regex})
                 Bokeh.Themes.theme($datacls),
 
                 # the callback instance
-                $(_model_cbcls(bkcls))(),
+                Function[],
 
                 # the optional data source instance
                 $((:($i()) for i ∈ _model_srccls(bkcls, hassource))...)

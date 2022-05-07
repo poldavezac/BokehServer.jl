@@ -43,15 +43,6 @@
     end
 end
 
-@testset "callback structure" begin
-    eval(Bokeh.Models._model_cbcls(:__A, [
-        (; js = true, name = :a), (; js = false, name = :b)]
-    ))
-    @test fieldnames(Cb__A) == (:a,)
-    @test fieldtypes(Cb__A) == (Vector{Function},)
-    @test Cb__A() isa Cb__A
-end
-
 @testset "data source structure" begin
     eval(Bokeh.Models._model_srccls(
         :__A,

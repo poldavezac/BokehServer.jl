@@ -1,23 +1,19 @@
 abstract type iEventList end
 abstract type iEvent end
-abstract type iEventKey end
-abstract type iRootEventKey <: iEventKey end
-
-struct ModelChangedKey <: iEventKey
-    model :: iModel
-    attr  :: Symbol
-end
+abstract type iDocumentEvent <: iEvent end
 
 struct ModelChangedEvent <: iEvent
-    old :: Any
-    new :: Any
+    model :: iModel
+    attr  :: Symbol
+    old   :: Any
+    new   :: Any
 end
 
-Base.hash(key::ModelChangedKey) = hash((bokehid(key.model), key.attr))
+Base.hash(key::ModelChangedEvent) = hash((bokehid(key.model), key.attr))
 
-for (ind, cls) ∈ enumerate((:RootAddedKey, :RootRemovedKey))
+for (ind, cls) ∈ enumerate((:RootAddedEvent, :RootRemovedEvent))
     @eval begin
-        struct $cls <: iRootEventKey
+        struct $cls <: iDocumentEvent
             doc  :: iDocument
             root :: iModel
         end
@@ -26,9 +22,31 @@ for (ind, cls) ∈ enumerate((:RootAddedKey, :RootRemovedKey))
     end
 end
 
-const EventDict = OrderedDict{iEventKey, Union{iEvent, Nothing}}
-
 struct EventList <: iEventList
-    events :: EventDict
-    EventList() = new(EventDict())
+    events :: Vector{iEvent}
+    EventList() = new(iEvent[])
 end
+
+function Base.in(evts::EventList, ε::iEvent)
+    h = hash(ε)
+    return any(h ≡ hash(i) for i ∈ evts.events)
+end
+
+for fcn ∈ (:isempty, :popfirst!)
+    @eval Base.$fcn(evts::EventList) = $fcn(evts.events)
+end
+
+Base.push!(evts::EventList, ε::iEvent) = push!(evts.events, ε)
+
+function Base.pop!(evts::EventList, ε::iEvent)
+    h = hash(ε)
+    for i ∈ eachindex(evts.events)
+        if hash(evts.events[i]) ≡ h
+            return popat!(evts.events, i)
+        end
+    end
+
+    return nothing
+end
+
+export ModelChangedEvent, ModelChangedEvent, RootAddedEvent, RootRemovedEvent

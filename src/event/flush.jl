@@ -1,23 +1,11 @@
-function _flushevents!(::RootRemovedKey, ::Nothing)
-    for cb ∈ key.doc.callbacks
-        cb(key.doc, :RootRemoved, key.model)
-    end
-end
-
-function _flushevents!(::RootAddedKey, ::Nothing)
-    for cb ∈ key.doc.callbacks
-        cb(key.doc, :RootAdded, key.model)
-    end
-end
-
-function _flushevents!(key::ModelChangedKey, val::ModelChangedEvent)
-    for cb ∈ getfield(getfield(key.model, :callbacks), key.attr)
-        cb(key.model, key.attr, val.old, val.new)
-    end
-end
+eventcallbacks(key::iDocumentEvent)    = key.doc.callbacks
+eventcallbacks(key::ModelChangedEvent) = getfield(key.model, :callbacks)
 
 function flushevents!(λ::EventList)
-    while !isempty(λ.events)
-        _flushevents!(popfirst!(λ.events)...)
+    while !isempty(λ)
+        evt = popfirst!(λ)
+        for cb ∈ eventcallbacks(evt)
+            cb(evt)
+        end
     end
 end

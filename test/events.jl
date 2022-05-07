@@ -1,4 +1,3 @@
-
 @Bokeh.model mutable struct EventsX <: Bokeh.iModel
     a::Int = 1
     b::Int = 1
@@ -14,30 +13,29 @@ end
 
     Bokeh.Events.eventlist() do
         lst = Bokeh.Events.task_eventlist()
-        @test length(lst.events) == 0
+        @test isempty(lst)
 
         obj.a = 2   
         @test length(lst.events) == 1
         itm = first(lst.events)
-        @test (itm[1].model.id, itm[1].attr) == (obj.id, :a)
-        @test (itm[2].old, itm[2].new) == (1, 2)
+        @test (itm.model.id, itm.attr) == (obj.id, :a)
+        @test (itm.old, itm.new) == (1, 2)
 
         obj.b += 2 
         @test length(lst.events) == 2
-        itm = collect(lst.events)[end]
-        @test (itm[1].model.id,  itm[1].attr) == (obj.id, :b)
-        @test (itm[2].old, itm[2].new)  == (1, 3)
+        itm = lst.events[end]
+        @test (itm.model.id,  itm.attr) == (obj.id, :b)
+        @test (itm.old, itm.new)  == (1, 3)
 
         obj.a = 3
         @test length(lst.events) == 2
-        itm = first(lst.events)
-        @test (itm[1].model.id, itm[1].attr) == (obj.id, :a)
-        @test (itm[2].old, itm[2].new) == (1, 3)
-
+        itm = last(lst.events)
+        @test (itm.model.id, itm.attr) == (obj.id, :a)
+        @test (itm.old, itm.new) == (1, 3)
 
         obj.a = 1
         @test length(lst.events) == 1
-        @test first(keys(lst.events)).attr == :b
+        @test first(lst.events).attr == :b
     end
 end
 
@@ -51,31 +49,37 @@ end
 
     Bokeh.Events.eventlist() do
         lst = Bokeh.Events.task_eventlist()
-        @test length(lst.events) == 0
+        @test isempty(lst)
 
         push!(doc, obj)
         @test length(lst.events) == 1
-        @test first(keys(lst.events)) isa Bokeh.Events.RootAddedKey
-        @test first(keys(lst.events)).doc.id == doc.id
-        @test first(keys(lst.events)).root.id == obj.id
+        @test first(lst.events) isa Bokeh.Events.RootAddedEvent
+        @test first(lst.events).doc.id == doc.id
+        @test first(lst.events).root.id == obj.id
 
         delete!(doc, obj)
-        @test length(lst.events) == 0
+        @test isempty(lst.events)
 
         delete!(doc, ini)
         @test length(lst.events) == 1
-        @test first(keys(lst.events)) isa Bokeh.Events.RootRemovedKey
-        @test first(keys(lst.events)).doc.id == doc.id
-        @test first(keys(lst.events)).root.id == ini.id
+        @test first(lst.events) isa Bokeh.Events.RootRemovedEvent
+        @test first(lst.events).doc.id == doc.id
+        @test first(lst.events).root.id == ini.id
     end
 end
 
 @testset "check callback" begin
     obj1 = EventsX()
     obj2 = EventsX()
-    calls = []
+    calls1 = []
+    calls2 = Bokeh.ModelChangedEvent[]
 
-    @Bokeh.addcallback! obj1.a push!(calls, (obj1, attribute, old, new))
+    Bokeh.onchange(obj1) do obj, attr, new, old 
+        push!(calls1, (obj, attr, old, new))
+    end
+    Bokeh.onchange(obj2) do evt
+        push!(calls2, evt)
+    end
 
     Bokeh.Events.eventlist() do
         obj1.a = 10
@@ -85,7 +89,8 @@ end
         Bokeh.Events.flushevents!(Bokeh.Events.task_eventlist())
     end
 
-    @test calls == [(obj1, :a, 1, 10)]
+    @test length(calls1) == 2
+    @test length(calls2) == 1
 end
 
 @testset "send" begin
@@ -94,16 +99,16 @@ end
     E    = Bokeh.Events
     json = E.Send.dojson
 
-    val   = json(E.ModelChangedKey(mdl, :a) => E.ModelChangedEvent(10, 20))
+    val   = json(E.ModelChangedEvent(mdl, :a, 10, 20))
     truth = """{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"new":20}"""
     @test val == truth
 
-    val   = json(E.RootAddedKey(doc, mdl)=>nothing)
+    val   = json(E.RootAddedEvent(doc, mdl))
     truth = """{"kind":"RootAdded","model":{"id":"1"}}"""
     @test val == truth
 
 
-    val   = json(E.RootRemovedKey(doc, mdl)=>nothing)
+    val   = json(E.RootRemovedEvent(doc, mdl))
     truth = """{"kind":"RootRemoved","model":{"id":"1"}}"""
     @test val == truth
 
@@ -134,7 +139,7 @@ end
         E.eventlist() do
             cnt = Dict(
                 "references" => [jsref(mdl)],
-                "events" =>  [js(E.RootAddedKey(doc, mdl)=>nothing)],
+                "events" =>  [js(E.RootAddedEvent(doc, mdl))],
             )
 
             @test isempty(doc.roots)
@@ -150,7 +155,7 @@ end
         E.eventlist() do
             cnt = Dict(
                 "references" => [],
-                "events" =>  [js(E.RootAddedKey(doc, mdl)=>nothing)],
+                "events" =>  [js(E.RootAddedEvent(doc, mdl))],
             )
 
             @test length(doc.roots) == 1
@@ -164,7 +169,7 @@ end
         E.eventlist() do
             cnt = Dict(
                 "references" => [],
-                "events" =>  [js(E.RootRemovedKey(doc, mdl)=>nothing)],
+                "events" =>  [js(E.RootRemovedEvent(doc, mdl))],
             )
 
             @test length(doc.roots) == 2
@@ -179,8 +184,8 @@ end
             cnt = Dict(
                 "references" => [jsref(ymdl), jsref(ymdl.a), jsref(mdl)],
                 "events" =>  [
-                    js(E.RootAddedKey(doc, mdl)=>nothing),
-                    js(E.RootAddedKey(doc, ymdl)=>nothing)
+                    js(E.RootAddedEvent(doc, mdl)),
+                    js(E.RootAddedEvent(doc, ymdl))
                 ],
             )
 
@@ -198,7 +203,7 @@ end
             other = EventsX()
             cnt = Dict(
                 "references" => [jsref(other)],
-                "events" =>  [js(E.ModelChangedKey(ymdl, :a)=>E.ModelChangedEvent(nothing, other))],
+                "events" =>  [js(E.ModelChangedEvent(ymdl, :a, nothing, other))],
             )
 
             @test length(doc.roots) == 2

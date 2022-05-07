@@ -23,7 +23,9 @@ function Base.setproperty!(
     else
         old = getproperty(μ, α)
         new = setfield!(getfield(μ, :original), α, υ)
-        dotrigger && (α ∈ bokehproperties(T)) && Bokeh.Events.trigger(μ, α, old, new)
+        if dotrigger && (α ∈ bokehproperties(T))
+            Bokeh.Events.trigger(Bokeh.ModelChangedEvent(μ, α, old, new))
+        end
     end
 end
 
@@ -57,7 +59,9 @@ function Base.setproperty!(
             setfield!(getfield(μ, :source), α, nothing)
             setfield!(getfield(μ, :original), α, υ)
         end
-        dotrigger && Bokeh.Events.trigger(μ, α, old, new)
+        if dotrigger
+            Bokeh.Events.trigger(Bokeh.ModelChangedEvent(μ, α, old, new))
+        end
         new
     else
         setfield!(getfield(μ, :original), α, υ)
