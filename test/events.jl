@@ -68,7 +68,7 @@ end
     end
 end
 
-@testset "check callback" begin
+@testset "check model callback" begin
     obj1 = EventsX()
     obj2 = EventsX()
     calls1 = []
@@ -77,6 +77,7 @@ end
     Bokeh.onchange(obj1) do obj, attr, new, old 
         push!(calls1, (obj, attr, old, new))
     end
+
     Bokeh.onchange(obj2) do evt
         push!(calls2, evt)
     end
@@ -89,6 +90,33 @@ end
         Bokeh.Events.flushevents!(Bokeh.Events.task_eventlist())
     end
 
+    @test length(calls1) == 2
+    @test length(calls2) == 1
+end
+
+@testset "check document callback" begin
+    obj1 = EventsX()
+    obj2 = EventsX()
+    doc  = Bokeh.Document()
+    push!(doc.roots, obj2)
+    calls1 = Bokeh.Events.iDocumentEvent[]
+    calls2 = Bokeh.RootAddedEvent[]
+
+    Bokeh.onchange(doc) do evt
+        push!(calls1, (evt))
+    end
+
+    Bokeh.onchange(doc) do evt::Bokeh.RootAddedEvent
+        push!(calls2, (evt))
+    end
+
+    Bokeh.Events.eventlist() do
+        push!(doc, obj1)
+        delete!(doc, obj2)
+        Bokeh.Events.flushevents!(Bokeh.Events.task_eventlist())
+    end
+
+    @show length(calls1), length(calls2)
     @test length(calls1) == 2
     @test length(calls2) == 1
 end

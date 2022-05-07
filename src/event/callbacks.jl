@@ -18,17 +18,17 @@ function onchange(func::Function, model::iDocument)
         params = Set([
             method.sig.parameters[2]
             for method ∈ methods(func)
-            if let params = method.sig.parameters[2]
-                length(params) ≡ 2 && params[2] <: iDocumentEvent
+            if let params = method.sig.parameters
+                length(params) ≡ 2 && (params[2] <: iEvent || iEvent <: params[2])
             end
         ])
-        return if iEvent ∈ params || iDocumentEvent ∈ params
+        return if any(i ∈ params for i ∈ (Any, iEvent, iDocumentEvent))
             push!(cb, func)
             func
         else
-            uni  = Union{params...}
+            uni  = length(params) == 1 ? first(params) : Union{params...}
             wrap = (e::iDocumentEvent) -> (e isa uni) && func(e)
-            push!(cg, func)
+            push!(cb, wrap)
             wrap
         end
     else
@@ -54,7 +54,7 @@ function onchange(func::Function, model::iModel)
         throw(KeyError("""
             No correct signature. It should be:
             * function (::ModelChangedEvent)
-            * function (model::<:iModel, attr::Symbol, old::Any, new::Any)
+            * function (obj::iModel, attr::Symbol, old::Any, new::Any)
         """))
     end
 end
