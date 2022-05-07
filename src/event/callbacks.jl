@@ -10,6 +10,37 @@ function hasparameters(func::Function, args...)
     )
 end
 
+"""
+    onchange(func::Function, model::iDocument)
+
+Adds a callback to the document.
+
+# Examples
+```julia
+julia > begin
+        doc = Bokeh.Document
+
+        onchange(doc) do evt
+            @assert evt isa Bokeh.Events.iDocumentEvent
+            println("callback 1: any doc events")
+        end
+
+        onchange(doc) do evt::Bokeh.RootAddedEvent
+            @assert evt isa Bokeh.RootAddedEvent
+            println("callback 2: only RootAddedEvent")
+        end
+
+        Bokeh.Events.eventlist() do
+            push!(doc, Model1())
+            delete!(doc, Model2())
+            Bokeh.Events.flushevents!(Bokeh.Events.task_eventlist())
+        end
+    end;
+
+callback 1: any doc events
+callback 2: only RootAddedEvent
+callback 1: any doc events
+"""
 function onchange(func::Function, model::iDocument)
     cb = getfield(model, :callbacks)
     (func ∈ cb) && return nothing
@@ -39,6 +70,34 @@ function onchange(func::Function, model::iDocument)
     end
 end
 
+"""
+    onchange(func::Function, model::ModelChangedEvent)
+
+Adds a callback to the model.
+
+# Examples
+```julia
+julia > begin
+        obj = Model()
+        onchange(obj) do evt
+            @assert evt isa Bokeh.ModelChangedEvent
+            println("callback 1: receive events")
+        end
+
+        onchange(obj) do model, attr, old, new
+            println("callback 2: just sugar")
+        end
+
+        Bokeh.Events.eventlist() do
+            obj.a = 1
+            Bokeh.Events.flushevents!(Bokeh.Events.task_eventlist())
+        end
+    end;
+
+callback 1: receive events
+callback 2: just sugar
+"""
+function onchange(func::Function, model::iDocument)
 function onchange(func::Function, model::iModel)
     cb = getfield(model, :callbacks)
     return if func ∈ cb
