@@ -116,7 +116,6 @@ end
         Bokeh.Events.flushevents!(Bokeh.Events.task_eventlist())
     end
 
-    @show length(calls1), length(calls2)
     @test length(calls1) == 2
     @test length(calls2) == 1
 end
