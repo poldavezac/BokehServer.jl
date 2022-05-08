@@ -1,3 +1,4 @@
+using UUIDs
 abstract type iApplication end
 sessions(app::iApplication) = app.sessions
 
@@ -38,6 +39,8 @@ end
 Create a new session, leaving the document empty.
 """
 newsession(::iApplication, req::HTTP.Request) = SessionContext(request)
+
+makeid(::iApplication) = "$(UUIDs.uuid4())"
 
 function getsession!(app::iApplication, request::HTTP.Request)
     session = newsession(request)

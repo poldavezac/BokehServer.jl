@@ -68,20 +68,13 @@ function staticbundle(
     version = addversion ? "" : ""  # TODO: extract the hex from the files and add a `?v=...`
     root    = "$address/static/js/bokeh"
     return (;
-        js_files  = [
+        js_files  = String[
             "$root-$suffix.min.js$version"
             for suffix ∈ (Symbol(""), :gl, :widgets, :tables, :mathjax)
         ],
-        js_raw    =  ["""Bokeh.set_log_level("$clientlog");"""],
-        css_files = [],
-        css_raw   = [],
+        js_raw    = String["""Bokeh.set_log_level("$clientlog");"""],
+        css_files = String[],
+        css_raw   = String[],
         hashes    = Dict{String, String}()
-    )
-end
-
-function renderdict(roots::Vararg{iModel})
-    return Dict{String, String}(
-        bokehid(r) => string(UUIDs.uuid4())
-        for r ∈ iterroots(session.document)
     )
 end

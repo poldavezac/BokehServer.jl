@@ -4,7 +4,7 @@ using JSON
 function scripttag(
         code :: String;
         type :: String = "text/javascript",
-        id   :: Union{String, Nothing} = "$(UUIDs.uuid4())"
+        id   :: Union{String, Nothing} = nothing,
 )
     if isnothing(id)
         """<script type="$type">$code</script>"""
@@ -43,7 +43,7 @@ function docjs(
         absolute_url = ""
 )
     tryrun("""
-        const docs_json = $docs_json;
+        const docs_json = $doc_json;
         const render_items = $(JSON.json(render_items));
         root.Bokeh.embed.embed_items(docs_json, render_items
             $(join(", $i" for i ∈ (app_path, absolute_url) if !isempty(i))));""")
@@ -59,7 +59,7 @@ function onload(code::String)
     })();"""
 end
 
-embed(roots::AbstractDict{<:AbstractString, <:AbstractString}) = join(embed.(roots), "\n    ")
+embed(roots::AbstractDict{<:AbstractString, <:AbstractString}) = join((embed(r) for r ∈ roots), "\n    ")
 embed(pair::Pair{<:AbstractString, <:AbstractString}) = embed(pair...)
 function embed(rootid::String, elementid::String)
     if isempty(rootid)

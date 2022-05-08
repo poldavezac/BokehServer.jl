@@ -1,46 +1,45 @@
-module DocRouter
+module DocRoute
 using HTTP
+using JSON
+using ...Bokeh
 using ...AbstractTypes
-using ..Server: iApplication, SessionContext
+using ..Server
 using ..Server.Templates
 
-function docroute(::Val{:GET}, app::iApplication, session::SessionContext)
+function docroute(::Val{:GET}, app::Server.iApplication, session::Server.SessionContext)
     HTTP.Response(
         200,
         ["Content-Type" => "text/html"];
-        body    = docbody(app, session),
+        body    = body(app, session),
         request = session.request
     )
 end
 
-staticbundle(app::iApplication) = staticbundle(:server)
+Server.staticbundle(app::Server.iApplication) = Server.staticbundle(Val(:server))
 
-function doctitle(::iApplication, session::SessionContext)
-    title = session.document.title
-    return isempty(title) ? CONFIG.title : title
-end
-
-function docscript(::iApplication, token::String, roots::Dict{String, String})
-    id         = "$(UUIDs.uuid4())"
+function script(app::Server.iApplication, token::String, roots::Dict{String, String})
+    id         = Server.makeid(app)
     plotscript = let json = Templates.scripttag(JSON.json([]); type = "application/json", id)
-        script = Templates.scripttag(Templates.onload(Templates.safely(Templates.docjs(
+        json * Templates.scripttag(Templates.onload(Templates.safely(Templates.docjs(
             "document.getElementById('$id').textContent",
             (; token, roots, root_ids = collect(keys(roots)), use_for_title = true)
-        ))))
-        json + script
+           ))); id = Server.makeid(app))
     end
 end
 
-docdiv(::iApplication, roots::Dict{String, String}) = Templates.embed(roots)
+div(::Server.iApplication, roots::Dict{String, String}) = Templates.embed(roots)
 
-function docbody(app::iApplication, session::SessionContext)
-    bundle = staticbundle(app)
-    roots  = renderdict(app, Bokeh.iterroots(session.document)...)
+function body(app::Server.iApplication, session::Server.SessionContext)
+    bundle = Server.staticbundle(app)
+    roots  = Dict{String, String}((
+        bokehid(r) => "$(makeid(app))" for r ∈ Bokeh.iterroots(session.doc)
+    )...)
     return filetemplate(
-        docscript(app, session.token, roots),
-        docdiv(app, roots),
-        doctitle(app, session),
+        script(app, session.token, roots),
+        div(app, roots),
+        session.doc.title,
         bundle.js_files,
+        bundle.js_raw,
         bundle.css_files,
     )
 end
@@ -50,17 +49,31 @@ function filetemplate(
         plot_div    :: AbstractString,
         title       :: AbstractString,
         js_files    :: AbstractVector{<:AbstractString},
+        js_raw      :: AbstractVector{<:AbstractString},
         css_files   :: AbstractVector{<:AbstractString},
         langage     :: String = "en"
 )
+    css = [
+        """<link rel="stylesheet" href="$file" type="text/css" />"""
+        for file ∈ css_files
+    ]
+    js = [
+        """<script type="text/javascript" src="$file"></script>"""
+        for file ∈ js_files
+    ]
+    raw = [
+        """<script type="text/javascript"> $js </script>"""
+        for js ∈ js_raw
+    ]
     return """
         <!DOCTYPE html>
         <html lang="$langage">
         <head>
             <meta charset="utf-8">
             <title>$(isempty(title) ? "Bokeh Plot" : title)</title>
-            $(join(css_files, "\n    "))
-            $(join(js_files,  "\n    "))
+            $(join(css, "\n    "))
+            $(join(js,  "\n    "))
+            $(join(raw, "\n    "))
         </head>
         <body>
             $plot_div
@@ -72,4 +85,4 @@ end
 
 export docroute
 end
-using .DocRouter
+using .DocRoute

@@ -78,7 +78,7 @@ curdoc!(func::Function, doc::iDocument) = task_local_storage(func, :BOKEH_DOC, d
 @inline curdoc() :: Union{iDocument, Nothing} = get(task_local_storage(), :BOKEH_DOC, nothing)
 @inline check_hasdoc() :: Bool = !isnothing(curdoc())
 flushcurdoc!() = flushdoc!(Events.task_eventlist(), curdoc())
-iterroots(doc::iDocument) = (r for r ∈ doc.roots)
+iterroots(doc::iDocument) = doc.roots
 
 export Document, iDocument, curdoc, check_hasdoc, flushcurdoc!, curdoc!, iterroots
 end
