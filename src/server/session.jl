@@ -1,21 +1,23 @@
+using ..Documents
+
 struct SessionContext
     id      :: String
     token   :: String
     request :: HTTP.Request
-    doc     :: Document
+    doc     :: iDocument
 
     # force the non-initialization of the `doc` field
     SessionContext(args...) = new(args..., Document())
 end
 
 """
-    SessionContext(request::HTPP.Request)
+    SessionContext(request::HTTP.Request)
 
 Create a new SessionContext from the request. This
 leaves the `doc` field empty. We will call on `initialize(::iApplication, ::iDocument)`
 *if* we need to do so.
 """
-function SessionContext(request::HTPP.Request)
+function SessionContext(request::HTTP.Request)
     arguments = getparams(request)
     id        = get(arguments, "bokeh-session-id", nothing)
     if HTTP.hasheader(request, "Bokeh-Session-Id")

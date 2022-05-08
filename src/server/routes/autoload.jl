@@ -1,8 +1,8 @@
 module AutoloadRouter
 using HTTP
 using ...AbstractTypes
-using ..Server
-using ..Server.Templates
+using ..Server: iApplication, SessionContext
+using ..Templates
 
 autoloadroute(::Val{:OPTIONS}, ::iApplication, ::SessionContext) = HTTP.Response(200, [])
 
@@ -15,7 +15,7 @@ function autoloadroute(::Val{:GET}, app::iApplication, session::SessionContext)
             "Access-Control-Allow-Methods"  => "PUT, GET, OPTIONS",
             "Access-Control-Allow-Origin"   => "*",
         ];
-        body    = autoloadbody(app, session)
+        body    = autoloadbody(app, session),
         request = session.request
     )
 end
@@ -45,7 +45,7 @@ function autoloadbody(app::iApplication, session::SessionContext)
            "{}", (; session.token, elementid, use_for_title = false);
             app_path, absolute_url
     )))
-    return autoloadtemplate(elementid, bundle.bokeh_js, bundle.bokeh_css, [script])
+    return autoloadtemplate(elementid, bundle.js_files, bundle.css_files, [script])
 end
 
 """
@@ -57,9 +57,9 @@ calls it with the rendered model.
 """
 function autoloadtemplate(
         elementid :: String,
-        bokeh_js  :: AbstractVector{<:AbstractString},
-        bokeh_css :: AbstractVector{<:AbstractString},
-        js_raw    :: AbstractVector{<:AbstractString} = String[]
+        js_files  :: AbstractVector{<:AbstractString},
+        css_files :: AbstractVector{<:AbstractString},
+        js_raw    :: AbstractVector{<:AbstractString} = String[],
         force     :: Bool = false
 )
     return """(function(root) {
@@ -143,8 +143,8 @@ function autoloadtemplate(
             document.body.appendChild(element);
         }
 
-        const js_urls   = $bokeh_js;
-        const css_urls  = $bokeh_css;
+        const js_urls   = $js_files;
+        const css_urls  = $css_files;
         const inline_js = [
             $(("function(Bokeh){ $r }," for r ∈ js_raw)...)
             function(Bokeh) {}

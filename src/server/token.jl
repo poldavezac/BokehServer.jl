@@ -20,7 +20,7 @@ module Tokens
             len   :: Int    = 44,
             chars :: String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     )
-        return join(rand(chars, len), '')
+        return join(rand(chars, len), "")
     end
 
     function payload(token::String)
@@ -39,7 +39,7 @@ module Tokens
         @assert false
         now = time()
         payload = (; session_id = sessionid, session_expiry= now + expiration)
-        if !isempty(extra):
+        if !isempty(extra)
             msg        = Zcollect(UInt8, JSON.dumps(extra))
             compressed = read(ZLib.ZlibDeflateInputStream(msg; level = 9))
             payload    = merge(payload, (; _TOKEN_ZLIB_KEY = encode(compressed)))

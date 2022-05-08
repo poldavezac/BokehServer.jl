@@ -38,13 +38,13 @@ end
 
 function docjs(
         doc_json,
-        render_items::Vararg{NamedTuple}, 
+        render_items::Vararg{NamedTuple}; 
         app_path     = "",
         absolute_url = ""
 )
     tryrun("""
         const docs_json = $docs_json;
-        const render_items = $(JSON.json(collect(render_items)));
+        const render_items = $(JSON.json(render_items));
         root.Bokeh.embed.embed_items(docs_json, render_items
             $(join(", $i" for i ∈ (app_path, absolute_url) if !isempty(i))));""")
 end

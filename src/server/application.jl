@@ -6,18 +6,12 @@ struct SessionList
     SessionList() = new(Dict{String, SessionContext()})
 end
 
-function Base.get!(app::SessionList, sess::SessionContext)
-    return get!(app.sessions, sess.id, sess)
-end
-Base.get!(app::iApplication, sess::SessionContext) =  get!(session(app), sess)
-
-function Base.pop!(app::SessionList, sess::SessionContext)
-    return pop!(app.sessions, sess.id, nothing)
-end
+Base.get!(app::SessionList,  sess::SessionContext) = get!(app.sessions, sess.id, sess)
+Base.get!(app::iApplication, sess::SessionContext) = get!(session(app), sess)
+Base.pop!(app::SessionList,  sess::SessionContext) = pop!(app.sessions, sess.id, nothing)
 Base.pop!(app::iApplication, sess::SessionContext) = pop!(session(app), sess)
-
-Base.in(app::SessionList, sess::SessionContext) = session.id ∈ keys(app.session)
-Base.in(app::iApplication, sess::SessionContext) = session ∈ app.session
+Base.in(app::SessionList,    sess::SessionContext) = session.id ∈ keys(app.session)
+Base.in(app::iApplication,   sess::SessionContext) = session ∈ app.session
 
 struct Application <: iApplication
     initializer :: Function
@@ -25,8 +19,8 @@ struct Application <: iApplication
     Application(func::Function) = new(func, Dict{String, SessionContext()})
 end
 
-urlprefix(::iApplication) = ""
-applicationurl(::iApplication) = ""
+urlprefix(::iApplication)           = ""
+applicationurl(::iApplication)      = ""
 applicationmetadata(::iApplication) = "{}"
 
 """

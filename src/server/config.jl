@@ -1,6 +1,7 @@
-module Config
-HOST::String = "localhost"
-PORT::Int    = 5006
-LOG::Symbol  = :info
+@Base.kwdef struct Configuration
+    host           :: String = "localhost"
+    port           :: Int    = 5006
+    clientloglevel :: Symbol = :info
 end
-using .Config
+
+CONFIG = Configuration()

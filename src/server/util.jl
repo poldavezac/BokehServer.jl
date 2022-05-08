@@ -61,8 +61,9 @@ staticbundle(type::Symbol) = staticbundle(Val(type))
 
 function staticbundle(
         ::Val{:server};
-        address    :: String = "http://$(Config.HOST):$(Config.PORT)",
-        addversion :: Bool   = false
+        address    :: String = "http://$(CONFIG.host):$(CONFIG.port)",
+        addversion :: Bool   = false,
+        clientlog  :: Symbol = CONFIG.clientloglevel
 )
     version = addversion ? "" : ""  # TODO: extract the hex from the files and add a `?v=...`
     root    = "$address/static/js/bokeh"
@@ -71,7 +72,7 @@ function staticbundle(
             "$root-$suffix.min.js$version"
             for suffix ∈ (Symbol(""), :gl, :widgets, :tables, :mathjax)
         ],
-        js_raw    =  ["Bokeh.set_log_level("$(Config.LOG)");"],
+        js_raw    =  ["""Bokeh.set_log_level("$clientlog");"""],
         css_files = [],
         css_raw   = [],
         hashes    = Dict{String, String}()

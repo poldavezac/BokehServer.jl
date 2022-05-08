@@ -43,7 +43,7 @@ end
 
 getevents(λ::Immediate{<:iEventList}) = getevents(λ.list)
 
-function push!(λ::Immediate{<:iEventList}, ε::iList)
+function push!(λ::Immediate{<:iEventList}, ε::iEvent)
     push!(λ.list, ε)
     flushevents!(λ.list)
 end
