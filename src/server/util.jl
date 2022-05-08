@@ -69,8 +69,8 @@ function staticbundle(
     root    = "$address/static/js/bokeh"
     return (;
         js_files  = String[
-            "$root-$suffix.min.js$version"
-            for suffix ∈ (Symbol(""), :gl, :widgets, :tables, :mathjax)
+            "$root$suffix.min.js$version"
+            for suffix ∈ ("", "-gl", "-widgets", "-tables", "-mathjax")
         ],
         js_raw    = String["""Bokeh.set_log_level("$clientlog");"""],
         css_files = String[],

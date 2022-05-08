@@ -42,11 +42,12 @@ function docjs(
         app_path     = "",
         absolute_url = ""
 )
+    args = join(", \"$i\"" for i ∈ (app_path, absolute_url) if !(isnothing(i) || isempty(i)))
     tryrun("""
         const docs_json = $doc_json;
         const render_items = $(JSON.json(render_items));
-        root.Bokeh.embed.embed_items(docs_json, render_items
-            $(join(", $i" for i ∈ (app_path, absolute_url) if !isempty(i))));""")
+        root.Bokeh.embed.embed_items(docs_json, render_items$args);"""
+    )
 end
 
 safely(code::String) = """Bokeh.safely(function() { $code; });"""

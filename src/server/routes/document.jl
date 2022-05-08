@@ -83,6 +83,5 @@ function filetemplate(
         """
 end
 
-export docroute
 end
-using .DocRoute
+using .DocRoute: docroute

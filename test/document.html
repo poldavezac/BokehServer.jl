@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>Bokeh Plot</title>
     
-    <script type="text/javascript" src="http://localhost:5006/static/js/bokeh-.min.js"></script>
+    <script type="text/javascript" src="http://localhost:5006/static/js/bokeh.min.js"></script>
     <script type="text/javascript" src="http://localhost:5006/static/js/bokeh-gl.min.js"></script>
     <script type="text/javascript" src="http://localhost:5006/static/js/bokeh-widgets.min.js"></script>
     <script type="text/javascript" src="http://localhost:5006/static/js/bokeh-tables.min.js"></script>
@@ -17,8 +17,7 @@
     const fn = function() { Bokeh.safely(function() { (function(root) {
     function embed_document(root) { const docs_json = document.getElementById('a').textContent;
 const render_items = [{"token":"b","roots":{},"root_ids":[],"use_for_title":true}];
-root.Bokeh.embed.embed_items(docs_json, render_items
-    );; }
+root.Bokeh.embed.embed_items(docs_json, render_items);; }
     if (root.Bokeh !== undefined) {
         embed_document(root);
     } else {

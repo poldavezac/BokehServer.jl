@@ -1,12 +1,13 @@
-module AutoloadRouter
+module AutoloadRoute
 using HTTP
+using JSON
 using ...AbstractTypes
-using ..Server: iApplication, SessionContext
+using ..Server
 using ..Templates
 
-autoloadroute(::Val{:OPTIONS}, ::iApplication, ::SessionContext) = HTTP.Response(200, [])
+autoloadroute(::Val{:OPTIONS}, ::Server.iApplication, ::Server.SessionContext) = HTTP.Response(200, [])
 
-function autoloadroute(::Val{:GET}, app::iApplication, session::SessionContext)
+function autoloadroute(::Val{:GET}, app::Server.iApplication, session::Server.SessionContext)
     HTTP.Response(
         200,
         [
@@ -15,27 +16,26 @@ function autoloadroute(::Val{:GET}, app::iApplication, session::SessionContext)
             "Access-Control-Allow-Methods"  => "PUT, GET, OPTIONS",
             "Access-Control-Allow-Origin"   => "*",
         ];
-        body    = autoloadbody(app, session),
+        body    = body(app, session, Server.getparams(session.request)),
         request = session.request
     )
 end
 
-function autoloadbody(app::iApplication, session::SessionContext)
-    params    = getparams(request)
+function body(app::Server.iApplication, session::Server.SessionContext, params::Dict{String, String})
     elementid = get(params, "bokeh-autoload-element", nothing)
     if isnothing(elementid)
-        httperror(400, "No bokeh-autoload-element query parameter")
+        Server.httperror(400, "No bokeh-autoload-element query parameter")
     end
 
     app_path     = get(params, "bokeh-app-path", "/")
     absolute_url = get(params, "bokeh-absolute-url", nothing)
     bundle       = if get(params, "resources", "default") == "none"
-        staticbundle(Val(:server))
+        Server.staticbundle(Val(:server))
     elseif isnothing(absolute_url)
-        staticbundle(Val(:server))
+        Server.staticbundle(Val(:server))
     else
         uri = HTTP.URIs.URI(absolute_url)
-        staticbundle(
+        Server.staticbundle(
             Val(:server);
             host = joinpath("$(uri.scheme)://$(uri.host)", urlprefix(app))
         )
@@ -45,7 +45,7 @@ function autoloadbody(app::iApplication, session::SessionContext)
            "{}", (; session.token, elementid, use_for_title = false);
             app_path, absolute_url
     )))
-    return autoloadtemplate(elementid, bundle.js_files, bundle.css_files, [script])
+    return template(elementid, bundle.js_files, bundle.css_files, [script])
 end
 
 """
@@ -55,7 +55,7 @@ The code automatically and asynchronously loads BokehJS (if necessary) and
 then replaces the AUTOLOAD_TAG ``<script>`` tag that
 calls it with the rendered model.
 """
-function autoloadtemplate(
+function template(
         elementid :: String,
         js_files  :: AbstractVector{<:AbstractString},
         css_files :: AbstractVector{<:AbstractString},
@@ -143,8 +143,8 @@ function autoloadtemplate(
             document.body.appendChild(element);
         }
 
-        const js_urls   = $js_files;
-        const css_urls  = $css_files;
+        const js_urls   = $(JSON.json(js_files));
+        const css_urls  = $(JSON.json(css_files));
         const inline_js = [
             $(("function(Bokeh){ $r }," for r ∈ js_raw)...)
             function(Bokeh) {}
@@ -168,4 +168,4 @@ function autoloadtemplate(
     }(window));"""
 end
 end
-using .AutoloadRouter
+using .AutoloadRoute: autoloadroute
