@@ -125,7 +125,7 @@ function _model_bkcls(
 )
     quote
         mutable struct $name <: $parents
-            id        :: Int64
+            id        :: String
             original  :: $cls
             callbacks :: Vector{Function}
             $(hassource ? :(source :: $(_model_srccls(name, hassource)[1])) : nothing)
@@ -227,7 +227,7 @@ function _model_code(mod::Module, code::Expr, opts::Vector{Regex})
         $(_model_srccls(bkcls, fields, hassource))
         @Base.__doc__ $(_model_bkcls(bkcls, datacls, parents, fields, hassource))
 
-        function $bkcls(; id :: Int64 = Bokeh.Models.ID(), kwa...)
+        function $bkcls(; id :: String = string(Bokeh.Models.ID()), kwa...)
             obj = $bkcls(
                 id,
 

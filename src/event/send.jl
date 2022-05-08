@@ -23,7 +23,7 @@ module Send
     end
 
     jsreference(μ::iHasProps) = (; attributes = jsattributes(μ), jsmodel(μ)..., jsontype(μ)...)
-    jsmodel(μ::iHasProps)     = (; id = "$(bokehid(μ))")
+    jsmodel(μ::iHasProps)     = (; id = bokehid(μ))
 
     for cls ∈ (:RootAddedEvent, :RootRemovedEvent)
         @eval function show_json(

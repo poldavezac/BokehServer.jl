@@ -8,7 +8,7 @@ const ID = BokehIdMaker()
 
 @Base.kwdef struct Document <: iDocument
     "private field for document id"
-    id        :: Int64            = ID()
+    id        :: String           = string(ID())
 
     "private field for storing roots"
     roots     :: Vector{iModel}   = iModel[]
@@ -78,8 +78,9 @@ curdoc!(func::Function, doc::iDocument) = task_local_storage(func, :BOKEH_DOC, d
 @inline curdoc() :: Union{iDocument, Nothing} = get(task_local_storage(), :BOKEH_DOC, nothing)
 @inline check_hasdoc() :: Bool = !isnothing(curdoc())
 flushcurdoc!() = flushdoc!(Events.task_eventlist(), curdoc())
+iterroots(doc::iDocument) = (r for r ∈ doc.roots)
 
-export Document, iDocument, curdoc, check_hasdoc, flushcurdoc!, curdoc!
+export Document, iDocument, curdoc, check_hasdoc, flushcurdoc!, curdoc!, iterroots
 end
 
 using .Documents
