@@ -2,7 +2,7 @@ module Protocol
 using ..AbstractTypes
 using JSON
 
-const ID = BokehIdMaker()
+const ID      = bokehidmaker()
 const Buffers = Vector{Pair{String, String}}
 
 function header(
@@ -18,62 +18,74 @@ function header(
     return msg * "}"
 end
 
-function _send(chan::AbstractChannel, hdr::Symbol, meta::Base.Pairs; kwa...)
-    return _send(chan, hrd, "{}", meta; kwa...)
+struct ProtocolIterator
+    hdr         :: String
+    hdrkeywords :: Base.Pairs
+    cnt         :: Union{String, NamedTuple}
+    meta        :: Base.Pairs
+    buffers     :: Union{Buffers, Nothing}
 end
 
-function _send(chan::AbstractChannel, hdr::Symbol, content::NamedTuple, meta::Base.Pairs; kwa...)
-    return _send(chan, hrd, JSON.json(content), meta; kwa...)
-end
+Base.eltype(::Type{ProtocolIterator}) = String
+Base.length(itr::ProtocolIterator) = isnothing(itr.buffers) ? 3 : 3 + 2length(itr.buffers)
 
-function _send(
-        chan::AbstractChannel,
-        hdr::Symbol,
-        cnt::String,
-        meta::Base.Pairs;
-        buffers::Union{Buffers, Nothing} = nothing, 
-        kwa...
-)
-    put!(
-        chan,
-        header(
-            hdr;
-            num_buffers = isnothing(buffers) ? 0 : length(buffers),
-            kwa...
+function Base.iterate(itr::ProtocolIterator, state = 1)
+    if state ≡ 1
+        outp = header(
+            itr.hdr;
+            num_buffers = isnothing(itr.buffers) ? 0 : length(itr.buffers),
+            itr.kwa...
         )
-    )
-    put!(chan, JSON.json(meta))
-    put!(chan, cnt)
-    for i ∈ buffers, j ∈ i
-        put!(j)
+    elseif state ≡ 2
+        outp  = JSON.json(itr.meta)
+    elseif state ≡ 3
+        outp  = itr.cnt isa String ? itr.cnt : JSON.json(itr.cnt)
+    elseif isnothing(itr.buffers) || state > 3 + 2length(itr.buffers)
+        return nothing
+    else
+        ind  = state - 3
+        outp = itr.buffers[ind ÷ 2][ind % 2]
+    end
+    return outp, state+1
+end
+
+function ProtocolIterator(hdr::Symbol, meta::Base.Pairs; kwa...)
+    return ProtocolIterator(hrd, kwa, "{}", meta, nothing)
+end
+
+function ProtocolIterator(hdr::Symbol, content::NamedTuple, meta::Base.Pairs; kwa...)
+    return ProtocolIterator(hrd, kwa, content, meta, nothing)
+end
+
+message(::Val{:ACK}, meta...)            = ProtocolIterator(:ACK, "{}", meta)
+message(::Val{:OK}, reqid::Int, meta...) = ProtocolIterator(:OK, "{}", meta; requid)
+message(::Val{:ERROR}, reqid::Int, text::String; meta...) = ProtocolIterator(
+    :ERROR,
+    (; 
+        text,
+        traceback = let io = IOBuffer()
+           for (exc, bt) in current_exceptions()
+               showerror(io, exc, bt)
+               println(io)
+           end
+           string(take!(io))
+       end
+    ),
+    meta;
+    reqid
+)
+
+function message(::Val{:PATCHDOC}, evts::String, buffers::Buffers; meta...)
+    return ProtocolIterator(Symbol("PATCH-DOC"), evts, meta; buffers)
+end
+
+send(ws, tpe::Symbol, args...; kwa...) = send(ws, Val(tpe), args...; kwa...)
+function send(ws, tpe::Val, args...; kwa...)
+    for line ∈ message(tpe, args...; kwa...)
+        write(ws, line)
     end
 end
 
-sendack(chan::AbstractChannel; meta...) = _send(:ACK, "{}", meta)
-sendok(chan::AbstractChannel; reqid::Int, meta...) = _send(:OK, "{}", meta; requid)
-
-function senderror(chan::AbstractChannel, reqid::Int, text::String; meta...)
-    return _send(
-        chan,
-        val,
-        (; 
-            text,
-            traceback = let io = IOBuffer()
-               for (exc, bt) in current_exceptions()
-                   showerror(io, exc, bt)
-                   println(io)
-               end
-               string(take!(io))
-           end
-        ),
-        meta;
-        reqid
-    )
-end
-
-function sendpatchdoc(chan::AbstractChannel, evts::String, buffers::Buffers; meta...)
-    return _send(Symbol("PATCH-DOC"), evts, meta; buffers)
-end
 
 function receive(chan::AbstractChannel)
     hdr     = JSON.parse(take!(chan))

@@ -47,3 +47,4 @@ function SessionContext(request::HTTP.Request)
     return SessionContext(id, token, request)
 end
 
+getparams(s::SessionContext) = getparams(s.request)

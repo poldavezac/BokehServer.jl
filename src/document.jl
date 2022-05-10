@@ -4,7 +4,7 @@ using ..Models
 using ..Events
 using ..Themes
 
-const ID = BokehIdMaker()
+const ID = bokehidmaker()
 
 @Base.kwdef struct Document <: iDocument
     "private field for document id"

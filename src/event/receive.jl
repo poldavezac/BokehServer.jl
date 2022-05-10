@@ -7,7 +7,7 @@ const ModelDict    = Dict{Int64, iHasProps}
 const _MODEL_TYPES = Dict{NTuple{N, Symbol} where {N}, DataType}()
 const _LOCK        = Threads.SpinLock()
 
-getid(info::Dict{String}) = parse(Int64, info["id"])
+getid(info::Dict{String}) :: Int64 = parse(Int64, info["id"])
 
 createreference(::Type{T}, info::Dict{String}) where {T<:iHasProps} = T(; id = getid(info))
 

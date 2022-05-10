@@ -9,7 +9,7 @@ for (tpe, others) ∈ (iHasProps => (), iSourcedModel => (:data_source,))
 end
 
 function Base.getproperty(μ::T, α::Symbol) where {T <: iHasProps}
-    getfield(α ∈ fieldnames(T) ? μ : getfield(μ, :original), α)
+    getfield(hasfield(T, α) ? μ : getfield(μ, :original), α)
 end
 
 function Base.setproperty!(
@@ -18,7 +18,7 @@ function Base.setproperty!(
         υ         :: Any;
         dotrigger :: Bool = true
 ) where {T <: iHasProps}
-    return if α ∈ fieldnames(T)
+    return if hasfield(T, α)
         setfield!(μ, α, υ)
     else
         old = getproperty(μ, α)
@@ -30,7 +30,7 @@ function Base.setproperty!(
 end
 
 function Base.getproperty(μ::T, α::Symbol) where {T <: iSourcedModel}
-    if α ∈ fieldnames(T)
+    if hasfield(T, α)
         return getfield(μ, α)
     elseif α ≡ :data_source
         return getfield(μ, :source).source
@@ -47,7 +47,7 @@ function Base.setproperty!(
         υ         :: Any;
         dotrigger :: Bool = true
 ) where {T <: iSourcedModel}
-    return if α ∈ fieldnames(T)
+    return if hasfield(T, α)
         setfield!(μ, α, υ)
     elseif α ≡ :data_source
         setfield!(getfield(μ, :source), :source, υ)

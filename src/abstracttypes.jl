@@ -17,6 +17,17 @@ module AbstractTypes
         return (self.ids[Threads.threadid()] += 1000)
     end
 
-    export iHasProps, iModel, iDataSource, iSourcedModel, iDocument, iTheme, bokehid, BokehIdMaker
+    struct BokehSymbolIdMaker
+        ids :: BokehIdMaker
+        BokehStringIdMaker() = new(BokehIdMaker())
+    end
+
+    function (self::BokehSymbolIdMaker)() :: Symbol
+        return Symbol(string(self.ids()))
+    end
+
+    bokehidmaker(T::Type = Int64) = T ≡ Symbol ? BokehSymbolIdMaker() : BokehIdMaker()
+
+    export iHasProps, iModel, iDataSource, iSourcedModel, iDocument, iTheme, bokehid, bokehidmaker
 end
 using .AbstractTypes

@@ -16,7 +16,7 @@ function autoloadroute(::Val{:GET}, app::Server.iApplication, session::Server.Se
             "Access-Control-Allow-Methods"  => "PUT, GET, OPTIONS",
             "Access-Control-Allow-Origin"   => "*",
         ];
-        body    = body(app, session, Server.getparams(session.request)),
+        body    = body(app, session, Server.getparams(session)),
         request = session.request
     )
 end

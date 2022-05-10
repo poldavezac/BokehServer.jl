@@ -23,6 +23,7 @@ end
 urlprefix(::iApplication)           = ""
 applicationurl(::iApplication)      = ""
 applicationmetadata(::iApplication) = "{}"
+checktokensignature(::iApplication, ::String) = true
 
 """
     initialize(app::iApplication, doc::iDocument)

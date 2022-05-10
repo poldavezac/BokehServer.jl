@@ -9,7 +9,12 @@ end
 httperror(reason, status = 403) = throw(HTTPError(status, reason))
 
 function getparams(req::HTTP.Request)
-    merge(HTTP.queryparams(req), bodyparams(req))
+    merge(HTTP.queryparams(HTTP.uri(req)), bodyparams(req))
+end
+
+function getparam(req::HTTP.Request, key::String, default::Any = nothing)
+    opt = get(HTTP.queryparams(HTTP.uri(req)), key, nothing)
+    return isnothing(opt) ? get(bodyparams(req), key, default) : default
 end
 
 const _TEXT_HEAD = r"Content-Disposition: form-data; name=\"(.*)\""
