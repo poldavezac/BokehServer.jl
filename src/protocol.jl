@@ -5,37 +5,46 @@ using JSON
 const ID      = bokehidmaker()
 const Buffers = Vector{Pair{String, String}}
 
-function header(
-        val   :: Symbol,
-        msgid :: Int = ID();
-        reqid :: Union{Int, Nothing} = nothing,
-        num_buffers :: Union{Int, Nothing} = nothing,
-        kwa...
-)
-    msg = "{\"msgid\":\"$msgid\",\"msgtype\":\"$(typeof(val).parameters[1])\""
-    isnothing(reqid)       || (msg*= ",\"reqid\":\"$reqid\"")
-    isnothing(num_buffers) || (msg*= ",\"num_buffers\":$num_buffers")
-    return msg * "}"
+struct ProtocolIterator
+    hdr         :: Symbol
+    hdrkeywords :: Dict{Symbol, Any}
+    cnt         :: Union{String, NamedTuple}
+    meta        :: Dict{Symbol, Any}
+    buffers     :: Union{Buffers, Nothing}
+
+    ProtocolIterator(hdr::Symbol, content, meta; kwa...) = begin
+        dmeta = Dict{Symbol, Any}(meta...)
+        dhdr  = Dict{Symbol, Any}(kwa...)
+
+        if :msgid ∈ keys(dmeta)
+            dhdr[:msgid] = pop!(dmeta, :msgid)
+        elseif isnothing(get(dhdr, :msgid, nothing))
+            dhdr[:msgid] = ID()
+        end
+
+        buffers = if :buffers ∈ keys(dmeta)
+            pop!(dmeta, :buffers)
+        elseif :buffers ∈ keys(dhdr)
+            pop!(dhdr, :buffers)
+        else
+            nothing
+        end
+
+        return new(hdr, dhdr, content, dmeta, buffers)
+    end
 end
 
-struct ProtocolIterator
-    hdr         :: String
-    hdrkeywords :: Base.Pairs
-    cnt         :: Union{String, NamedTuple}
-    meta        :: Base.Pairs
-    buffers     :: Union{Buffers, Nothing}
-end
+ProtocolIterator(hdr::Symbol, meta; kwa...) = ProtocolIterator(hdr, (;), meta; kwa...)
 
 Base.eltype(::Type{ProtocolIterator}) = String
 Base.length(itr::ProtocolIterator) = isnothing(itr.buffers) ? 3 : 3 + 2length(itr.buffers)
 
 function Base.iterate(itr::ProtocolIterator, state = 1)
     if state ≡ 1
-        outp = header(
-            itr.hdr;
-            num_buffers = isnothing(itr.buffers) ? 0 : length(itr.buffers),
-            itr.kwa...
-        )
+        outp = "{\"msgid\":\"$(itr.hdrkeywords[:msgid])\",\"msgtype\":\"$(itr.hdr)\""
+        (:reqid ∈ keys(itr.hdrkeywords)) && (outp*= ",\"reqid\":\"$(itr.hdrkeywords[:reqid])\"")
+        isnothing(itr.buffers) || (outp*= ",\"num_buffers\":$(length(itr.buffers))")
+        outp *= "}"
     elseif state ≡ 2
         outp  = JSON.json(itr.meta)
     elseif state ≡ 3
@@ -43,23 +52,15 @@ function Base.iterate(itr::ProtocolIterator, state = 1)
     elseif isnothing(itr.buffers) || state > 3 + 2length(itr.buffers)
         return nothing
     else
-        ind  = state - 3
-        outp = itr.buffers[ind ÷ 2][ind % 2]
+        ind  = state - 4
+        outp = (iszero(ind%2) ? first : last)(itr.buffers[(ind ÷ 2) + 1])
     end
     return outp, state+1
 end
 
-function ProtocolIterator(hdr::Symbol, meta::Base.Pairs; kwa...)
-    return ProtocolIterator(hrd, kwa, "{}", meta, nothing)
-end
-
-function ProtocolIterator(hdr::Symbol, content::NamedTuple, meta::Base.Pairs; kwa...)
-    return ProtocolIterator(hrd, kwa, content, meta, nothing)
-end
-
-message(::Val{:ACK}, meta...)            = ProtocolIterator(:ACK, "{}", meta)
-message(::Val{:OK}, reqid::Int, meta...) = ProtocolIterator(:OK, "{}", meta; requid)
-message(::Val{:ERROR}, reqid::Int, text::String; meta...) = ProtocolIterator(
+message(::Val{:ACK}; meta...)                             = ProtocolIterator(:ACK, meta)
+message(::Val{:OK}, reqid::String; meta...)               = ProtocolIterator(:OK, meta; reqid)
+message(::Val{:ERROR}, reqid::String, text::String; meta...) = ProtocolIterator(
     :ERROR,
     (; 
         text,
@@ -68,7 +69,7 @@ message(::Val{:ERROR}, reqid::Int, text::String; meta...) = ProtocolIterator(
                showerror(io, exc, bt)
                println(io)
            end
-           string(take!(io))
+           String(take!(io))
        end
     ),
     meta;
@@ -86,18 +87,17 @@ function send(ws, tpe::Val, args...; kwa...)
     end
 end
 
-
-function receive(chan::AbstractChannel)
-    hdr     = JSON.parse(take!(chan))
-    cnt     = JSON.parse(take!(chan))
-    meta    = JSON.parse(take!(chan))
+function receive(ws)
+    hdr     = JSON.parse(readavailable(ws))
+    cnt     = JSON.parse(readavailable(ws))
+    meta    = JSON.parse(readavailable(ws))
 
     nbuff   = get(hdr, "num_buffers", nothing)
     isnothing(nbuff) && return (; header = hdr, metadata = meta, content = cnt)
 
     buffers = Pair{Any, Any}[
-        let bhdr = JSON.parse(take!(chan))
-            data = JSON.parse(take!(chan))
+        let bhdr = JSON.parse(readavailable(ws))
+            data = JSON.parse(readavailable(ws))
             bhdr => data
         end
         for _ ∈ 1:nbuff
