@@ -37,11 +37,46 @@ end
     @test val[2:end] == ["{}", "AAA", "A", "B"]
 end
 
+@testset "serialize" begin
+    doc  = Bokeh.Document()
+    mdl  = EventsX(; id = 1)
+    E    = Bokeh.Events
+    ser  = Bokeh.Protocol.Serialize.serialize
+
+    val   = ser(E.ModelChangedEvent(mdl, :a, 10, 20))
+    truth = (; attr = :a, hint = nothing, kind = :ModelChanged,  model = (; id = "1"), new = 20)
+    @test val == truth
+
+    val   = ser(E.RootAddedEvent(doc, mdl))
+    truth = (kind = :RootAdded, model = (; id = "1"))
+    @test val == truth
+
+
+    val   = ser(E.RootRemovedEvent(doc, mdl))
+    truth = (kind = :RootRemoved, model = (; id = "1"))
+    @test val == truth
+
+    E.eventlist() do
+        lst = E.task_eventlist()
+        push!(doc, mdl)
+        mdl.a = 100
+        val   = Bokeh.Protocol.patchdoc(E.task_eventlist(), doc, Set{Int64}())
+        truth = (;
+            events = [
+                (; kind = :RootAdded, model = (; id = "1")),
+                (; attr = :a, hint = nothing, kind = :ModelChanged, model = (; id = "1"), new = 100),
+            ],
+            references = [(; attributes = (; a = 100), id = "1", type = :EventsX)]
+        )
+        @test val == truth
+    end
+end
+
 @testset "tojson" begin
     doc  = Bokeh.Document()
     mdl  = EventsX(; id = 1)
     E    = Bokeh.Events
-    json = Bokeh.Protocol.ToJSON.sprintjson
+    json(x) = Bokeh.Protocol.Messages.JSON.json(Bokeh.Protocol.serialize(x))
 
     val   = json(E.ModelChangedEvent(mdl, :a, 10, 20))
     truth = """{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"new":20}"""
@@ -51,7 +86,6 @@ end
     truth = """{"kind":"RootAdded","model":{"id":"1"}}"""
     @test val == truth
 
-
     val   = json(E.RootRemovedEvent(doc, mdl))
     truth = """{"kind":"RootRemoved","model":{"id":"1"}}"""
     @test val == truth
@@ -60,7 +94,7 @@ end
         lst = E.task_eventlist()
         push!(doc, mdl)
         mdl.a = 100
-        val   = Bokeh.Protocol.tojson(E.task_eventlist(), doc, Set{Int64}())
+        val   = Bokeh.Protocol.Messages.JSON.json(Bokeh.Protocol.patchdoc(E.task_eventlist(), doc, Set{Int64}()))
         truth = (
             """{"events":[{"kind":"RootAdded","model":{"id":"1"}}"""*
             """,{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"""*
@@ -76,11 +110,11 @@ end
     mdl  = EventsX(; id = 100,a  = 10)
     E    = Bokeh.Events
     buf  = Bokeh.Protocol.Buffers(undef, 0)
-    JSON = Bokeh.Protocol.JSON
-    ToJSON = Bokeh.Protocol.ToJSON
-
-    jsref(x) = JSON.parse(ToJSON.sprintjson(ToJSON.jsreference(x)))
-    js(x)    = JSON.parse(ToJSON.sprintjson(x))
+    JSON = Bokeh.Protocol.Messages.JSON
+    json1(x) = JSON.json(Bokeh.Protocol.serialize(x))
+    json2(x) = JSON.json(Bokeh.Protocol.Serialize.serialref(x, Bokeh.Protocol.Serialize.Rules()))
+    jsref(x) = JSON.parse(json1(x))
+    js(x)    = JSON.parse(json2(x))
     @testset "add first root" begin
         E.eventlist() do
             cnt = Dict(
