@@ -51,7 +51,10 @@ function apply(::Val{:ModelChanged}, doc::iDocument, models::ModelDict, info :: 
     setpropertyfromjson!(models[getid(info["model"])], Symbol(info["attr"]), info["new"], models)
 end
 
-function patchdoc!(doc::iDocument, contents::Dict{String}, buffers::Vector{<:Pair})
+
+parsereferences(contents::Dict{String}) = parsereferences!(ModelDict(), contents)
+
+function parsereferences!(models::ModelDict, contents::Dict{String})
     if length(Models.MODEL_TYPES) ≢ length(_MODEL_TYPES)
         𝑅 = Serialize.Rules()
         lock(_LOCK) do
@@ -61,9 +64,7 @@ function patchdoc!(doc::iDocument, contents::Dict{String}, buffers::Vector{<:Pai
         end
     end
 
-    models = allmodels(doc)
-
-    for new ∈ contents["references"]
+    for new ∈ contents
         (getid(new) ∈ keys(models)) && continue
 
         key = tuple((Symbol(new[i]) for i ∈ ("type", "subtype") if i ∈ keys(new))...)
@@ -71,15 +72,20 @@ function patchdoc!(doc::iDocument, contents::Dict{String}, buffers::Vector{<:Pai
         isnothing(mdl) || (models[bokehid(mdl)] = mdl)
     end
 
-    for new ∈ contents["references"]
+    for new ∈ contents
         setreferencefromjson!(models[getid(new)], models, new)
     end
+    models
+end
+
+function patchdoc!(doc::iDocument, contents::Dict{String}, buffers::Vector{<:Pair})
+    models = parsereferences!(allmodels(doc))
 
     for msg ∈ contents["events"]
         apply(Val(Symbol(msg["kind"])), doc, models, msg)
     end
 end
 
-export patchdoc!
+export patchdoc!, parsereferences, parsereferences!
 end
 using .PatchDocReceive

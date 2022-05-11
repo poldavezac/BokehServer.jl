@@ -59,6 +59,7 @@ function Base.iterate(itr::ProtocolIterator, state = 1)
 end
 
 message(::Val{:ACK}; meta...)                             = ProtocolIterator(:ACK, meta)
+message(::Val{:PULLDOCREQ}; meta...)                      = ProtocolIterator(Symbol("PULL-DOC-REQ"), meta)
 message(::Val{:OK}, reqid::String; meta...)               = ProtocolIterator(:OK, meta; reqid)
 message(::Val{:ERROR}, reqid::String, text::String; meta...) = ProtocolIterator(
     :ERROR,
