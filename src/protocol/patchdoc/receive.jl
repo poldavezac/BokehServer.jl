@@ -1,7 +1,7 @@
-module Receive
-using ...AbstractTypes
-using ...Models
-using ..Send
+module PatchDocReceive
+using ..Protocol
+using ..AbstractTypes
+using ..ToJSON
 
 const ModelDict    = Dict{Int64, iHasProps}
 const _MODEL_TYPES = Dict{NTuple{N, Symbol} where {N}, DataType}()
@@ -51,11 +51,11 @@ function apply(::Val{:ModelChanged}, doc::iDocument, models::ModelDict, info :: 
     setpropertyfromjson!(models[getid(info["model"])], Symbol(info["attr"]), info["new"], models)
 end
 
-function patchdoc!(doc::iDocument, contents::Dict{String}, buffers::Vector{<:Pair})
+function Protocol.patchdoc!(doc::iDocument, contents::Dict{String}, buffers::Vector{<:Pair})
     if length(Models.MODEL_TYPES) ≢ length(_MODEL_TYPES)
         lock(_LOCK) do
             for cls ∈ Models.MODEL_TYPES
-                _MODEL_TYPES[tuple(values(Send.jsontype(cls))...)] = cls
+                _MODEL_TYPES[tuple(values(ToJSON.jsontype(cls))...)] = cls
             end
         end
     end
@@ -78,8 +78,5 @@ function patchdoc!(doc::iDocument, contents::Dict{String}, buffers::Vector{<:Pai
         apply(Val(Symbol(msg["kind"])), doc, models, msg)
     end
 end
-
-export patchdoc!
 end
-using .Receive
-
+using .PatchDocReceive
