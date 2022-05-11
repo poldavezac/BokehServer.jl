@@ -6,7 +6,7 @@ using ..Themes
 
 const ID = bokehidmaker()
 
-@Base.kwdef struct Document <: iDocument
+@Base.kwdef mutable struct Document <: iDocument
     "private field for document id"
     id        :: String           = string(ID())
 
@@ -33,7 +33,7 @@ function Base.setproperty!(doc::Document, attr::Symbol, value; dotrigger :: Bool
             push!(doc, value...)
         end
     elseif attr ≡ :title
-        setfield(doc, :title, string(value))
+        setfield!(doc, :title, string(value))
         dotrigger && Events.trigger(TitleChangedEvent(doc, getfield(doc, :title)))
     elseif attr ≡ :theme
         Themes.changetheme!(doc, value)

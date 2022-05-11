@@ -173,6 +173,18 @@ function _model_funcs(bkcls::Symbol, datacls::Symbol, fields::Vector{<:NamedTupl
             end)
         end
 
+        @inline function Bokeh.Models.hasbokehproperty(T::Type{$bkcls}, attr::Symbol)
+            return $(if all(i.js for i in fields)
+                :(hasfield(fieldtype(T, :original), attr))
+            else
+                elseifblock((i for i ∈ fields if i.js), false) do field
+                    :(if attr ≡ $(Meta.quot(field.name))
+                          true
+                    end)
+                end
+            end)
+        end
+
         function Bokeh.Models.defaultvalue(::Type{$bkcls}, attr::Symbol) :: Union{Some, Nothing}
             $(elseifblock(fields, :(@error "No default value" class = $bkcls attr)) do field
                 if isnothing(field.default)
@@ -273,6 +285,7 @@ function modeltype end
 function defaultvalue end
 function modelsource end
 function bokehproperties end
+function hasbokehproperty end
 
 const ID = bokehidmaker()
 

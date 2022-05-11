@@ -157,6 +157,19 @@ end
         end
     end
 
+    @testset "change title" begin
+        E.eventlist() do
+            cnt = Dict(
+                "references" => [],
+                "events" =>  [js(E.TitleChangedEvent(doc, "A"))],
+            )
+
+            setfield!(doc, :title, "----")
+            Bokeh.Protocol.patchdoc!(doc, cnt, buf)
+            @test doc.title == "A"
+        end
+    end
+
     ymdl  = EventsY()
     @testset "add y root" begin
         E.eventlist() do

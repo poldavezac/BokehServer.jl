@@ -65,6 +65,12 @@ end
         @test first(lst.events) isa Bokeh.Events.RootRemovedEvent
         @test first(lst.events).doc.id == doc.id
         @test first(lst.events).root.id == ini.id
+
+        doc.title = "A"
+        @test length(lst.events) == 2
+        @test last(lst.events) isa Bokeh.Events.TitleChangedEvent
+        @test last(lst.events).doc.id == doc.id
+        @test last(lst.events).title == "A"
     end
 end
 
@@ -117,5 +123,13 @@ end
     end
 
     @test length(calls1) == 2
+    @test length(calls2) == 1
+
+    Bokeh.Events.eventlist() do
+        doc.title = "A"
+        Bokeh.Events.flushevents!(Bokeh.Events.task_eventlist())
+    end
+
+    @test length(calls1) == 3
     @test length(calls2) == 1
 end

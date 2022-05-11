@@ -28,6 +28,6 @@ struct TitleChangedEvent <: iDocumentEvent
     title :: String
 end
 
-Base.hash(key::TitleChangedEvent) = hash(bokehid(doc))
+Base.hash(key::TitleChangedEvent) = hash(bokehid(key.doc))
 
 export ModelChangedEvent, ModelChangedEvent, RootAddedEvent, RootRemovedEvent, TitleChangedEvent

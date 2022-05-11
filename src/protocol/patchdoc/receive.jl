@@ -47,6 +47,10 @@ for (name, action) ∈ (:RootAdded => :push!, :RootRemoved => :delete!)
     end
 end
 
+function apply(::Val{:TitleChanged}, doc::iDocument, ::ModelDict, info :: Dict{String})
+    doc.title = info["title"]
+end
+
 function apply(::Val{:ModelChanged}, doc::iDocument, models::ModelDict, info :: Dict{String})
     setpropertyfromjson!(models[getid(info["model"])], Symbol(info["attr"]), info["new"], models)
 end

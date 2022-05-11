@@ -23,7 +23,7 @@ function Base.setproperty!(
     else
         old = getproperty(μ, α)
         new = setfield!(getfield(μ, :original), α, υ)
-        if dotrigger && (α ∈ bokehproperties(T))
+        if dotrigger && hasbokehproperty(T, α)
             Bokeh.Events.trigger(Bokeh.ModelChangedEvent(μ, α, old, new))
         end
     end
