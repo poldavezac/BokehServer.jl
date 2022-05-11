@@ -14,12 +14,20 @@ Base.hash(key::ModelChangedEvent) = hash((bokehid(key.model), key.attr))
 for (ind, cls) ∈ enumerate((:RootAddedEvent, :RootRemovedEvent))
     @eval begin
         struct $cls <: iDocumentEvent
-            doc  :: iDocument
-            root :: iModel
+            doc   :: iDocument
+            root  :: iModel
+            index :: Int64
         end
 
-        Base.hash(key::$cls) = hash(($ind, bokehid(key.doc), bokehid(key.root)))
+        Base.hash(key::$cls) = hash(($ind, bokehid(key.doc), bokehid(key.root), key.root))
     end
 end
 
-export ModelChangedEvent, ModelChangedEvent, RootAddedEvent, RootRemovedEvent
+struct TitleChangedEvent <: iDocumentEvent
+    doc   :: iDocument
+    title :: String
+end
+
+Base.hash(key::TitleChangedEvent) = hash(bokehid(doc))
+
+export ModelChangedEvent, ModelChangedEvent, RootAddedEvent, RootRemovedEvent, TitleChangedEvent

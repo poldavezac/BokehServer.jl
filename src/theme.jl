@@ -5,7 +5,7 @@ using ..AbstractTypes
 using ..Models
 
 struct Theme <: iTheme
-    items :: Dict{Symbol, Dict{Symbol, Any}}
+    items :: Dict{Symbol, Dict{Symbol, Function}}
     Theme() = new(Dict{Symbol, Dict{Symbol, Function}}())
 end
 
@@ -25,6 +25,16 @@ function theme(dic::Theme, T::Type)
     obj = T()
     for attr ∈ Models.bokehproperties(bkT)
         fcn = getvalue(dic, bkT, attr)
+        isnothing(fcn) || setproperty!(obj, attr, fcn())
+    end
+    return obj
+end
+
+function changetheme!(obj::iHasProps, dic::Theme)
+    isempty(dic.items) && return obj
+
+    for attr ∈ Models.bokehproperties(typeof(obj))
+        fcn = getvalue(dic, typeof(obj), attr)
         isnothing(fcn) || setproperty!(obj, attr, fcn())
     end
     return obj

@@ -52,9 +52,9 @@ function apply(::Val{:ModelChanged}, doc::iDocument, models::ModelDict, info :: 
 end
 
 
-parsereferences(contents::Dict{String}) = parsereferences!(ModelDict(), contents)
+parsereferences(contents) = parsereferences!(ModelDict(), contents)
 
-function parsereferences!(models::ModelDict, contents::Dict{String})
+function parsereferences!(models::ModelDict, contents)
     if length(Models.MODEL_TYPES) ≢ length(_MODEL_TYPES)
         𝑅 = Serialize.Rules()
         lock(_LOCK) do
@@ -79,8 +79,7 @@ function parsereferences!(models::ModelDict, contents::Dict{String})
 end
 
 function patchdoc!(doc::iDocument, contents::Dict{String}, buffers::Vector{<:Pair})
-    models = parsereferences!(allmodels(doc))
-
+    models = parsereferences!(allmodels(doc), contents["references"])
     for msg ∈ contents["events"]
         apply(Val(Symbol(msg["kind"])), doc, models, msg)
     end

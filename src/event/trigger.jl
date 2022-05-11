@@ -7,11 +7,15 @@ function trigger!(λ :: EventList, ε::ModelChangedEvent)
     end
 end
 
-for cls ∈ (:RootAddedEvent, :RootRemovedEvent)
+for (cls, other) ∈ (x = (RootAddedEvent, RootRemovedEvent); (x, x[2:-1:1]))
     @eval function trigger!(λ::EventList, ε::$cls)
-        other = $(cls ≡ :RootAddedEvent ? RootRemovedEvent : RootAddedEvent)(ε.doc, ε.root)
-        isnothing(pop!(λ, other)) && push!(λ, ε)
+        isnothing(pop!(λ, $other(ε.doc, ε.root, ε.index))) && push!(λ, ε)
     end
+end
+
+function trigger!(λ::EventList, ε::TitleChangedEvent)
+    pop!(λ, ε)
+    push!(λ, ε)
 end
 
 function trigger(args...)

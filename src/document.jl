@@ -24,28 +24,69 @@ function Base.propertynames(doc::Document, private :: Bool = false)
     private ? fieldnames(doc) : (:theme, :title)
 end
 
+function Base.setproperty!(doc::Document, attr::Symbol, value; dotrigger :: Bool = true)
+    return if attr ≡ :roots
+        empty!(doc)
+        if value isa iModel
+            push!(doc, value)
+        else
+            push!(doc, value...)
+        end
+    elseif attr ≡ :title
+        setfield(doc, :title, string(value))
+        dotrigger && Events.trigger(TitleChangedEvent(doc, getfield(doc, :title)))
+    elseif attr ≡ :theme
+        Themes.changetheme!(doc, value)
+    else
+        @assert false "Writing to Document.$attr not yet implemented"
+    end
+end
+
+function Themes.changetheme!(doc::Document, theme::Themes.Theme)
+    for mdl ∈ allmodels(doc)
+        Themes.changetheme!(mdl, value)
+        setfield(doc, :theme, value)
+    end
+end
+
 Models.allmodels(doc::Document) = allmodels(doc.roots...)
+
+Base.length(doc::Document) = length(doc.roots)
+Base.eltype(::Type{Document}) = iModel
+function Base.iterate(doc::Document, state :: Int64 = 1)
+    return state > length(doc.roots) ? nothing : (doc.roots[state], state+1)
+end
 
 function Base.push!(doc::Document, roots::Vararg{iModel}; dotrigger :: Bool = true)
     if !isempty(roots)
+        let common = bokehid.(roots) ∩ bokehid.(doc)
+            isempty(common) || throw(ErrorException("Roots already added: $common"))
+        end
+        size = length(doc.roots)
         push!(doc.roots, roots...)
-        dotrigger && for root ∈ roots
-            Events.trigger(RootAddedEvent(doc, root))
+        dotrigger && for (i, root) ∈ enumerate(roots)
+            Events.trigger(RootAddedEvent(doc, root, i+size))
         end
     end
     return doc
 end
 
+function Base.empty!(doc::Document; dotrigger :: Bool = true)
+    roots = collect(getfield(doc, :roots))
+    empty!(getfield(doc, :roots))
+    dotrigger && for (i, root) ∈ enumerate(roots)
+        Events.trigger(RootRemovedEvent(doc, root, i))
+    end
+end
+
 function Base.delete!(doc::Document, roots::Vararg{iModel}; dotrigger :: Bool = true)
     if !isempty(roots)
-        let rootids = Set([bokehid(i) for i ∈ roots])
-            filter!(doc.roots) do root
-                bokehid(root) ∉ rootids
-            end
-        end
+        inds = indexin(bokehid.(roots), bokehid.(doc))
 
-        dotrigger && for root ∈ roots
-            Events.trigger(RootRemovedEvent(doc, root))
+        deleteat!(doc.roots, sort!(filter!(!isnothing, inds)))
+
+        dotrigger && for (i, root) ∈ zip(inds, roots)
+            isnothing(i) || Events.trigger(RootRemovedEvent(doc, root, i))
         end
     end
     return doc
@@ -84,22 +125,3 @@ export Document, iDocument, curdoc, check_hasdoc, flushcurdoc!, curdoc!, iterroo
 end
 
 using .Documents
-
-function removecallback!(doc::iDocument, func::Function)
-    filter!(getfield(doc, :callbacks)) do opt
-        func ≢ opt
-    end
-end
-
-function addcallback!(doc::iDocument, func::Function)
-    cb = getfield(model, :callbacks)
-    if (func ∈ cb)
-       return nothing
-    elseif any(length(m.sig.parameters) ≥ 4 for m ∈ methods(func))
-        push!(cb, func)
-    else
-        sig = "$(nameof(func))(::<:iDocument, ::<:Symbol, ::<:iModel)"
-        throw(KeyError("No correct signature: should be $sig"))
-    end
-    return func
-end

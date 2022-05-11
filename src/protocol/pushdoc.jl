@@ -4,7 +4,7 @@ function pushdoc(self::Events.Document)
         version = Bokeh.PYTHON_VERSION,
         defs    = [],
         roots   = (;
-            root_ids   = bokehid.(getroots(self)),
+            root_ids   = bokehid.(self),
             references = [serialize(i) for i ∈ values(allmodels(self))],
         ),
     ))
@@ -17,7 +17,7 @@ function pushdoc!(self::Events.Document, μ::Dict{String})
     end
 
     self.title = docmsg["title"]
-    foreach((x)-> delete!(self, x), collect(getroots(self)))
-    foreach((x)-> push!(self, x), newroots)
+    empty!(doc)
+    push!(doc, newroots...)
     return doc
 end

@@ -47,12 +47,12 @@ end
     truth = (; attr = :a, hint = nothing, kind = :ModelChanged,  model = (; id = "1"), new = 20)
     @test val == truth
 
-    val   = ser(E.RootAddedEvent(doc, mdl))
+    val   = ser(E.RootAddedEvent(doc, mdl, 1))
     truth = (kind = :RootAdded, model = (; id = "1"))
     @test val == truth
 
 
-    val   = ser(E.RootRemovedEvent(doc, mdl))
+    val   = ser(E.RootRemovedEvent(doc, mdl, 1))
     truth = (kind = :RootRemoved, model = (; id = "1"))
     @test val == truth
 
@@ -82,11 +82,11 @@ end
     truth = """{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"new":20}"""
     @test val == truth
 
-    val   = json(E.RootAddedEvent(doc, mdl))
+    val   = json(E.RootAddedEvent(doc, mdl, 1))
     truth = """{"kind":"RootAdded","model":{"id":"1"}}"""
     @test val == truth
 
-    val   = json(E.RootRemovedEvent(doc, mdl))
+    val   = json(E.RootRemovedEvent(doc, mdl, 1))
     truth = """{"kind":"RootRemoved","model":{"id":"1"}}"""
     @test val == truth
 
@@ -119,7 +119,7 @@ end
         E.eventlist() do
             cnt = Dict(
                 "references" => [jsref(mdl)],
-                "events" =>  [js(E.RootAddedEvent(doc, mdl))],
+                "events" =>  [js(E.RootAddedEvent(doc, mdl, 1))],
             )
 
             @test isempty(doc.roots)
@@ -135,13 +135,12 @@ end
         E.eventlist() do
             cnt = Dict(
                 "references" => [],
-                "events" =>  [js(E.RootAddedEvent(doc, mdl))],
+                "events" =>  [js(E.RootAddedEvent(doc, mdl, 1))],
             )
 
             @test length(doc.roots) == 1
-            Bokeh.Protocol.patchdoc!(doc, cnt, buf)
-            @test length(doc.roots) == 2
-            @test doc.roots[2] ≡ doc.roots[1]
+            @test_throws ErrorException Bokeh.Protocol.patchdoc!(doc, cnt, buf)
+            @test length(doc.roots) == 1
         end
     end
 
@@ -149,10 +148,10 @@ end
         E.eventlist() do
             cnt = Dict(
                 "references" => [],
-                "events" =>  [js(E.RootRemovedEvent(doc, mdl))],
+                "events" =>  [js(E.RootRemovedEvent(doc, mdl, 1))],
             )
 
-            @test length(doc.roots) == 2
+            @test length(doc.roots) == 1
             Bokeh.Protocol.patchdoc!(doc, cnt, buf)
             @test length(doc.roots) == 0
         end
@@ -164,8 +163,8 @@ end
             cnt = Dict(
                 "references" => [jsref(ymdl), jsref(ymdl.a), jsref(mdl)],
                 "events" =>  [
-                    js(E.RootAddedEvent(doc, mdl)),
-                    js(E.RootAddedEvent(doc, ymdl))
+                    js(E.RootAddedEvent(doc, mdl, 1)),
+                    js(E.RootAddedEvent(doc, ymdl, 1))
                 ],
             )
 

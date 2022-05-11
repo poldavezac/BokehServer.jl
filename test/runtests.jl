@@ -1,5 +1,5 @@
 #!/usr/bin/env -S "julia --project=./test"
-using Test: @test, @testset
+using Test: @test, @testset, @test_throws
 using ArgParse
 
 SETTINGS = let s = ArgParseSettings()
@@ -30,25 +30,43 @@ end
 
 using Bokeh
 
+function hasacceptedchild(expr::Expr)
+    todos = [expr]
+    while !isempty(todos)
+        cur = pop!(todos)
+        if (
+            cur isa Expr &&
+            cur.head ≡ :macrocall &&
+            cur.args[1] ≡ Symbol("@testset")
+        )
+            accepttestset(cur.args[3]) && return true
+            append!(todos, cur.args[4].args)
+        elseif cur isa Expr &&
+            append!(todos, cur.args)
+        end
+    end
+end
+
+function applycmdargs(expr)
+    if expr isa Expr && expr.head ≡ :module
+        foreach(applycmdargs, expr.args)
+    elseif (
+        expr isa Expr &&
+        expr.head ≡ :macrocall &&
+        expr.args[1] ≡ Symbol("@testset") &&
+        !hasacceptedchild(expr)
+    )
+        expr.args[4] = Expr(:block)
+    end
+    return expr
+end
+
 for path ∈ readdir(@__DIR__; join = true)
     isfile(path) || continue
     (path != @__FILE__) || continue
     endswith(path, ".jl") || continue
 
-    @testset "$(basename(path))" begin
-        include(path) do expr
-            if (
-                expr isa Expr &&
-                expr.head ≡ :macrocall &&
-                expr.args[1] ≡ Symbol("@testset") &&
-                (
-                    !acceptfile(path) ||
-                    !accepttestset(expr.args[3])
-                )
-            )
-                expr.args[4] = Expr(:block)
-            end
-            expr
-        end
+    acceptfile(path) && @testset "$(basename(path))" begin
+        include(applycmdargs, path)
     end
 end
