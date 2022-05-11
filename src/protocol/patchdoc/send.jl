@@ -1,4 +1,4 @@
-function patchdoc(λ::Events.EventList, doc::Events.iDocument, oldids::Set{Int64})
+function patchdoc(λ::Events.EventList, doc::iDocument, oldids::Set{Int64})
     all = allmodels(doc)
     filt(k::Events.ModelChangedEvent) = bokehid(k.model) ∈ keys(all)
     filt(k::Events.iDocumentEvent)    = k.doc ≡ doc
