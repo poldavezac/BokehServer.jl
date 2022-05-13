@@ -32,7 +32,7 @@ div(::Server.iApplication, roots::Dict{String, String}) = Templates.embed(roots)
 function body(app::Server.iApplication, session::Server.SessionContext)
     bundle = Server.staticbundle(app)
     roots  = Dict{String, String}((
-        bokehid(r) => "$(makeid(app))" for r ∈ Bokeh.iterroots(session.doc)
+        bokehid(r) => "$(makeid(app))" for r ∈ session.doc
     )...)
     return filetemplate(
         script(app, session.token, roots),

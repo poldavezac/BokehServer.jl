@@ -3,18 +3,61 @@ using JSON
 using ..AbstractTypes
 using ..Protocol: Buffers
 
-const ID = bokehidmaker()
+const ID      = bokehidmaker()
 
-macro msg_str(val)
-    if occursin(",", val)
-        Union{(Val{Symbol(strip(i))} for i ∈ split(val, ','))...}
+abstract type iMessage end
+
+struct RawMessage <: iMessage
+    header   :: String
+    contents :: String
+    meta     :: String
+    buffers  :: Vector{Pair{String, String}}
+end
+
+struct Message{T} <: iMessage
+    header   :: Dict{String}
+    contents :: Dict{String}
+    meta     :: Dict{String}
+    buffers  :: Vector{Pair{Dict{String}, Dict{String}}}
+end
+
+"All possible messages"
+const _HEADERS = Set{Symbol}([
+    :ACK, :OK, :ERROR,
+    Symbol("PATCH-DOC"),
+    Symbol("PUSH-DOC"),
+    Symbol("PULL-DOC-REQ"),
+    Symbol("PULL-DOC-REPLY"),
+    Symbol("SERVER-INFO-REQ"),
+    Symbol("SERVER-INFO-REPLY"),
+])
+
+const MESSAGES = Union{(Message{i} for i ∈ _HEADERS)...}
+
+macro _h_str(val)
+    symbols = Symbol.(strip.(split(val, ',')))
+    @assert symbols ⊆ _HEADERS  "$symbols ⊈ $_HEADERS"
+    return if length(symbols) ≡ 1
+        Type{Message{symbols[1]}}
     else
-        Val{Symbol(strip(val))}
+        Union{(Type{Message{s}} for s ∈ symbols)...}
     end
 end
 
+macro msg_str(val)
+    symbols = Symbol.(strip.(split(val, ',')))
+    @assert symbols ⊆ _HEADERS
+    return if length(symbols) ≡ 1
+        Message{symbols[1]}
+    else
+        Union{(Message{s} for s ∈ symbols)...}
+    end
+end
+
+name(::Type{Message{T}}) where {T} = T
+
 struct ProtocolIterator
-    hdr         :: Val
+    hdr         :: Type{<:iMessage}
     hdrkeywords :: Dict{Symbol, Any}
     cnt         :: Union{String, NamedTuple}
     meta        :: Dict{Symbol, Any}
@@ -49,7 +92,7 @@ Base.length(itr::ProtocolIterator) = isnothing(itr.buffers) ? 3 : 3 + 2length(it
 
 function Base.iterate(itr::ProtocolIterator, state = 1)
     if state ≡ 1
-        outp = "{\"msgid\":\"$(itr.hdrkeywords[:msgid])\",\"msgtype\":\"$(typeof(itr.hdr).parameters[1])\""
+        outp = "{\"msgid\":\"$(itr.hdrkeywords[:msgid])\",\"msgtype\":\"$(name(itr.hdr))\""
         (:reqid ∈ keys(itr.hdrkeywords)) && (outp*= ",\"reqid\":\"$(itr.hdrkeywords[:reqid])\"")
         isnothing(itr.buffers) || (outp*= ",\"num_buffers\":$(length(itr.buffers))")
         outp *= "}"
@@ -66,10 +109,10 @@ function Base.iterate(itr::ProtocolIterator, state = 1)
     return outp, state+1
 end
 
-message(hdr::msg"PUSH-DOC", doc::NamedTuple; meta...)          = ProtocolIterator(hdr, doc, meta)
-message(hdr::msg"ACK,PULL-DOC-REQ,SERVER-INFO-REQ"; meta...)   = ProtocolIterator(hdr, (;), meta)
-message(hdr::msg"OK",    reqid::String; meta...)               = ProtocolIterator(hdr, (;), meta; reqid)
-message(hdr::msg"ERROR", reqid::String, text::String; meta...) = ProtocolIterator(
+message(hdr::_h"PUSH-DOC", doc::NamedTuple; meta...)          = ProtocolIterator(hdr, doc, meta)
+message(hdr::_h"ACK,PULL-DOC-REQ,SERVER-INFO-REQ"; meta...)   = ProtocolIterator(hdr, (;), meta)
+message(hdr::_h"OK",    reqid::String; meta...)               = ProtocolIterator(hdr, (;), meta; reqid)
+message(hdr::_h"ERROR", reqid::String, text::String; meta...) = ProtocolIterator(
     hdr,
     (; 
         text,
@@ -85,40 +128,59 @@ message(hdr::msg"ERROR", reqid::String, text::String; meta...) = ProtocolIterato
     reqid
 )
 
-message(hdr::msg"PATCH-DOC", evts::NamedTuple, buffers::Buffers; meta...)  = ProtocolIterator(hdr, evts, meta; buffers)
-message(hdr::msg"PULL-DOC-REPLY", reqid::String, doc::NamedTuple; meta...) = ProtocolIterator(hdr, doc, meta; reqid)
-message(hdr::msg"SERVER-INFO-REPLY", reqid::String; meta...)               = ProtocolIterator(
+message(hdr::_h"PATCH-DOC", evts::NamedTuple, buffers::Buffers; meta...)  = ProtocolIterator(hdr, evts, meta; buffers)
+message(hdr::_h"PULL-DOC-REPLY", reqid::String, doc::NamedTuple; meta...) = ProtocolIterator(hdr, doc, meta; reqid)
+message(hdr::_h"SERVER-INFO-REPLY", reqid::String; meta...)               = ProtocolIterator(
     hdr,
     (; version_info = (; bokeh = Bokeh.PYTHON_VERSION, server = Bokeh.PYTHON_VERSION)),
     meta;
     reqid
 )
 
-send(ws, tpe::Symbol, args...; kwa...) = send(ws, Val(tpe), args...; kwa...)
-function send(ws, tpe::Val, args...; kwa...)
-    for line ∈ message(tpe, args...; kwa...)
-        write(ws, line)
+function send(ws, T::Type{<:iMessage}, args...; kwa...) :: Bool
+    for line ∈ collect(message(T, args...; kwa...))
+        write(io, line)
     end
+    return true
 end
 
-function receive(ws)
-    hdr     = JSON.parse(readavailable(ws))
-    cnt     = JSON.parse(readavailable(ws))
-    meta    = JSON.parse(readavailable(ws))
+const _PATT = r"\"num_buffers\"\s*:\s*(\d*)"
 
-    nbuff   = get(hdr, "num_buffers", nothing)
-    isnothing(nbuff) && return (; header = hdr, metadata = meta, content = cnt)
-
-    buffers = Pair{Any, Any}[
-        let bhdr = JSON.parse(readavailable(ws))
-            data = JSON.parse(readavailable(ws))
-            bhdr => data
+function RawMessage(ws)
+    header   = readavailable(ws)
+    contents = readavailable(ws)
+    meta     = readavailable(ws)
+    buffers  = let m = match(_PATT, hrd)
+        if isnothing(m)
+            ()
+        else 
+            Pair{String, String}[
+                let bhdr = readavailable(ws)
+                    data = readavailable(ws)
+                    bhdr => data
+                end
+                for _ ∈ 1:parse(Int64, m[1])
+            ]
         end
-        for _ ∈ 1:nbuff
-    ]
-    return (; header = hdr, metadata = meta, content = cnt, buffers = buffers)
+    end
+    return RawMessage(header, contents, meta, buffers)
 end
 
-export message, send, receive
+function Message(raw::RawMessage)
+    hdr = JSON.parse(raw.header)
+    return Message{Header{Symbol(hdr["msgtype"])}}(
+        hdr,
+        JSON.parse(raw.meta),
+        JSON.parse(raw.contents),
+        buffers  = Pair{Dict{String}, Dict{String}}[
+            JSON.parse(i) => JSON.parse(j) for (i,j) ∈ raw.buffers
+        ]
+    )
 end
+
+const receive = Message ∘ RawMessage
+
+export send, receive, Message, @msg_str
+end
+
 using .Messages

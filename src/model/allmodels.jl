@@ -1,17 +1,22 @@
-function allmodels(μ::Vararg{iHasProps}) :: Dict{Int64, iHasProps}
-    found = Dict{Int64, iHasProps}()
-    todos = collect(iHasProps, μ)
-    while !isempty(todos)
-        cur = pop!(todos)
-        key = bokehid(cur)
-        (key ∈ keys(found)) && continue
-        found[bokehid(cur)] = cur
+for (name, tpe, checkkey, pushkey) ∈ (
+    (:allmodels, Dict{Int64, iHasProps}, (x)->:(haskey(found, $x)), :(push!(found, bokehid(cur) => cur))),
+    (:allids, Set{Int64}, (x) -> :($x ∈ found), :(push!(found, bokehid(cur))))
+)
+    @eval function $name(μ::Vararg{iHasProps}) :: $tpe
+        found = $tpe()
+        todos = collect(iHasProps, μ)
+        while !isempty(todos)
+            cur = pop!(todos)
+            key = bokehid(cur)
+            $(checkkey(:key)) && continue
+            $pushkey
 
-        for child ∈ allbokehchildren(cur)
-            bokehid(child) ∈ keys(found) || push!(todos, child) 
+            for child ∈ allbokehchildren(cur)
+                $(checkkey(:(bokehid(child)))) || push!(todos, child) 
+            end
         end
+        found
     end
-    found
 end
 
 function allbokehchildren(μ::T) where {T <: iHasProps}

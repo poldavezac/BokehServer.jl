@@ -43,7 +43,7 @@ function Base.setproperty!(doc::Document, attr::Symbol, value; dotrigger :: Bool
 end
 
 function Themes.changetheme!(doc::Document, theme::Themes.Theme)
-    for mdl ∈ allmodels(doc)
+    for mdl ∈ values(allmodels(doc))
         Themes.changetheme!(mdl, value)
         setfield(doc, :theme, value)
     end
@@ -92,36 +92,11 @@ function Base.delete!(doc::Document, roots::Vararg{iModel}; dotrigger :: Bool = 
     return doc
 end
 
-function updatedocs!(func::Function, doc::iDocument, docs::Vararg{iDocument})
-    docs = (doc, docs...)
-    @assert !Events.task_hasevents()
-    Events.eventlist() do events :: Events.EventList
-        updatedoc!(func, events, doc...)
-    end
-end
-
-function updatedocs!(func::Function, events::Events.EventList, doc::iDocument, docs::Vararg{iDocument})
-    docs = (doc, docs...)
-    try
-        roots  = [doc => Set{Int64}(keys(allmodels(doc)))  for doc ∈ docs]
-        func()
-    finally
-        flushdoc!(events, roots...)
-    end
-end
-
-function flushdoc!(events::Events.EventList, docs::Vararg{Pair{<:iDocument, Set{Int64}}})
-    Events.flushevents!(events)
-    toclient((doc => Events.json(events, doc, oldids) for (doc, oldids) ∈ docs))
-end
-
 curdoc!(func::Function, doc::iDocument) = task_local_storage(func, :BOKEH_DOC, doc)
 @inline curdoc() :: Union{iDocument, Nothing} = get(task_local_storage(), :BOKEH_DOC, nothing)
 @inline check_hasdoc() :: Bool = !isnothing(curdoc())
-flushcurdoc!() = flushdoc!(Events.task_eventlist(), curdoc())
-iterroots(doc::iDocument) = doc.roots
 
-export Document, iDocument, curdoc, check_hasdoc, flushcurdoc!, curdoc!, iterroots
+export Document, iDocument, curdoc, check_hasdoc, curdoc!
 end
 
 using .Documents

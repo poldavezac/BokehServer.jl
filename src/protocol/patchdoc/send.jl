@@ -1,6 +1,6 @@
 function patchdoc(λ::Events.EventList, doc::iDocument, oldids::Set{Int64})
     all = allmodels(doc)
-    filt(k::Events.ModelChangedEvent) = bokehid(k.model) ∈ keys(all)
+    filt(k::Events.ModelChangedEvent) = haskey(all, bokehid(k.model))
     filt(k::Events.iDocumentEvent)    = k.doc ≡ doc
 
     return (;
