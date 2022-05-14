@@ -7,32 +7,47 @@ struct SessionList
     SessionList() = new(Dict{String, SessionContext()})
 end
 
-Base.get!(app::SessionList,  sess::SessionContext) = get!(app.sessions, sess.id, sess)
-Base.get!(app::iApplication, sess::SessionContext) = get!(session(app), sess)
-Base.pop!(app::SessionList,  sess::SessionContext) = pop!(app.sessions, sess.id, nothing)
-Base.pop!(app::iApplication, sess::SessionContext) = pop!(session(app), sess)
-Base.in(app::SessionList,    sess::SessionContext) = session.id ∈ keys(app.session)
-Base.in(app::iApplication,   sess::SessionContext) = session ∈ app.session
+Base.get!(list::SessionList, σ::SessionContext) = get!(list.sessions, σ.id, σ)
+Base.pop!(list::SessionList, σ::SessionContext) = pop!(list.sessions, σ.id, nothing)
+Base.in(list::SessionList,   σ::SessionContext) = session.id ∈ keys(list.sessions)
 
 struct Application <: iApplication
     initializer :: Function
     sessions    :: SessionList
-    Application(func::Function) = new(func, Dict{String, SessionContext()})
+    Application(func::Function) = new(func, SessionList())
 end
 
+sessions(app::iApplication) = app.sessions
+
+for fcn ∈ (:get, :pop!)
+    @eval Base.$fcn(app::iApplication, σ::SessionContext) = $fcn(sessions(app), σ)
+end
+Base.in(σ::SessionContext, app::iApplication) = σ ∈ sessions(app)
+function Base.get!(app::iApplication, session::SessionContext)
+    lst = sessions(app)
+    if session ∉ lst
+        events = Events.eventlist(app)
+        Events.eventlist(events) do
+            initialize!(session.document, app)
+            flushevents!(events)
+        end
+        push!(lst, session)
+    end
+    return get!lst(, session)
+end
+
+Events.eventlist(::iApplication)    = Events.EventList()
 urlprefix(::iApplication)           = ""
 applicationurl(::iApplication)      = ""
 applicationmetadata(::iApplication) = "{}"
 checktokensignature(::iApplication, ::String) = true
 
 """
-    initialize(app::iApplication, doc::iDocument)
+    initialize!(::Document, ::iApplication)
 
 Populates a brand new document
 """
-function initialize(app::iApplication, doc::iDocument)
-    throw(ErrorException("Missing `Bokeh.Server.initialize(::$(typeof(app)), ::Document)`"))
-end
+function initialize end
 
 """
     newsession(::iApplication, req::HTTP.Request) = SessionContext(request)
@@ -42,12 +57,3 @@ Create a new session, leaving the document empty.
 newsession(::iApplication, req::HTTP.Request) = SessionContext(request)
 
 makeid(::iApplication) = "$(UUIDs.uuid4())"
-
-function getsession!(app::iApplication, request::HTTP.Request)
-    session = newsession(request)
-    (session ∈ app) || Events.eventlist() do
-        initialize(app, session.document)
-        flushevents!()
-    end
-    return get!(app, session)
-end

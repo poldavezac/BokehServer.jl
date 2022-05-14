@@ -8,10 +8,10 @@ const ID      = bokehidmaker()
 abstract type iMessage end
 
 struct RawMessage <: iMessage
-    header   :: String
-    contents :: String
-    meta     :: String
-    buffers  :: Vector{Pair{String, String}}
+    header   :: Vector{UInt8}
+    contents :: Vector{UInt8}
+    meta     :: Vector{UInt8}
+    buffers  :: Vector{Pair{Vector{UInt8}, Vector{UInt8}}}
 end
 
 struct Message{T} <: iMessage
@@ -167,14 +167,15 @@ function RawMessage(ws)
 end
 
 function Message(raw::RawMessage)
-    hdr = JSON.parse(raw.header)
+    parse(v::Vector)   = JSON.parse(read(IOBuffer(v), String))
+    parse((i,j)::Pair) = parse(i) => parse(j)
+
+    hdr = parse(raw.header)
     return Message{Header{Symbol(hdr["msgtype"])}}(
         hdr,
-        JSON.parse(raw.meta),
-        JSON.parse(raw.contents),
-        buffers  = Pair{Dict{String}, Dict{String}}[
-            JSON.parse(i) => JSON.parse(j) for (i,j) ∈ raw.buffers
-        ]
+        parse(raw.meta),
+        parse(raw.contents),
+        parse.(raw.buffers)
     )
 end
 

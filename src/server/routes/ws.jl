@@ -65,7 +65,7 @@ function onmessage(ws::WebSocket, app::iApplication, session::SessionContext)
     msg = @safely(Protocol.receive(ws))
     @async begin
         answers = try
-            Server.handle(msg, session.doc)
+            Server.handle(msg, session.doc, Server.eventlist(app, session))
         catch exc
             ((msg"ERROR", msg.header["msgid"], sprint(showerror, exc)),)
         end
