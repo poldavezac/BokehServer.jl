@@ -1,10 +1,10 @@
 using UUIDs
+using ..Events
 abstract type iApplication end
-sessions(app::iApplication) = app.sessions
 
 struct SessionList
     sessions :: Dict{String, SessionContext}
-    SessionList() = new(Dict{String, SessionContext()})
+    SessionList() = new(fieldtype(SessionList, :session)())
 end
 
 Base.get!(list::SessionList, σ::SessionContext) = get!(list.sessions, σ.id, σ)
@@ -14,15 +14,18 @@ Base.in(list::SessionList,   σ::SessionContext) = session.id ∈ keys(list.sess
 struct Application <: iApplication
     initializer :: Function
     sessions    :: SessionList
-    Application(func::Function) = new(func, SessionList())
+    Application(func::Function) = new(fieldtype(Application, :sessions)())
 end
-
-sessions(app::iApplication) = app.sessions
 
 for fcn ∈ (:get, :pop!)
     @eval Base.$fcn(app::iApplication, σ::SessionContext) = $fcn(sessions(app), σ)
 end
+
 Base.in(σ::SessionContext, app::iApplication) = σ ∈ sessions(app)
+
+Base.get!(app::iApplication, http::HTTP.Stream) = get!(app, HTTP.request(http))
+Base.get!(app::iApplication, req::HTTP.Request) = get!(app, newsession(app, req))
+
 function Base.get!(app::iApplication, session::SessionContext)
     lst = sessions(app)
     if session ∉ lst
@@ -33,7 +36,7 @@ function Base.get!(app::iApplication, session::SessionContext)
         end
         push!(lst, session)
     end
-    return get!lst(, session)
+    return get!(lst, session)
 end
 
 Events.eventlist(::iApplication)    = Events.EventList()
@@ -47,7 +50,9 @@ checktokensignature(::iApplication, ::String) = true
 
 Populates a brand new document
 """
-function initialize end
+function initialize! end
+
+initialize!(doc::iDocument, app::Application) = app.func(doc)
 
 """
     newsession(::iApplication, req::HTTP.Request) = SessionContext(request)
@@ -55,5 +60,7 @@ function initialize end
 Create a new session, leaving the document empty.
 """
 newsession(::iApplication, req::HTTP.Request) = SessionContext(request)
+
+sessions(app::iApplication) = app.sessions
 
 makeid(::iApplication) = "$(UUIDs.uuid4())"

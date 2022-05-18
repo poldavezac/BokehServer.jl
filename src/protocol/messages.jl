@@ -18,7 +18,7 @@ struct Message{T} <: iMessage
     header   :: Dict{String}
     contents :: Dict{String}
     meta     :: Dict{String}
-    buffers  :: Vector{Pair{Dict{String}, Dict{String}}}
+    buffers  :: Vector{Pair{Dict{String}, Vector}}
 end
 
 "All possible messages"
@@ -87,7 +87,7 @@ end
 
 ProtocolIterator(hdr, meta; kwa...) = ProtocolIterator(hdr, (;), meta; kwa...)
 
-Base.eltype(::Type{ProtocolIterator}) = String
+Base.eltype(::Type{ProtocolIterator}) = Union{String, Vector{UInt8}}
 Base.length(itr::ProtocolIterator) = isnothing(itr.buffers) ? 3 : 3 + 2length(itr.buffers)
 
 function Base.iterate(itr::ProtocolIterator, state = 1)
@@ -154,7 +154,7 @@ function RawMessage(ws)
         if isnothing(m)
             ()
         else 
-            Pair{String, String}[
+            eltype(fieldtype(RawMessage, :buffers))[
                 let bhdr = readavailable(ws)
                     data = readavailable(ws)
                     bhdr => data

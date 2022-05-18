@@ -5,20 +5,17 @@ using ...AbstractTypes
 using ..Server
 using ..Templates
 
-autoloadroute(::Val{:OPTIONS}, ::Server.iApplication, ::Server.SessionContext) = HTTP.Response(200, [])
-
-function autoloadroute(::Val{:GET}, app::Server.iApplication, session::Server.SessionContext)
-    HTTP.Response(
-        200,
-        [
-            "Content-Type"                  => "text/html",
-            "Access-Control-Allow-Headers"  => "*",
-            "Access-Control-Allow-Methods"  => "PUT, GET, OPTIONS",
-            "Access-Control-Allow-Origin"   => "*",
-        ];
-        body    = body(app, session, Server.getparams(session)),
-        request = session.request
+function route(http::HTTP.Stream, app::Server.iApplication)
+    HTTP.setstatus(http, 200)
+    HTTP.setheader(
+        http,
+        "Content-Type"                  => "text/html",
+        "Access-Control-Allow-Headers"  => "*",
+        "Access-Control-Allow-Methods"  => "PUT, GET, OPTIONS",
+        "Access-Control-Allow-Origin"   => "*"
     )
+    HTTP.startwrite(http)
+    write(http, body(app, get!(app, http), Server.getparams(http)))
 end
 
 function body(app::Server.iApplication, session::Server.SessionContext, params::Dict{String, String})
@@ -168,4 +165,7 @@ function template(
     }(window));"""
 end
 end
-using .AutoloadRoute: autoloadroute
+using .AutoloadRoute
+
+@route OPTIONS "autoload.js" HTTP.setstatus(200)
+@route GET     "autoload.js" AutoloadRoute

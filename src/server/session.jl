@@ -5,27 +5,15 @@ struct SessionContext
     token   :: String
     request :: HTTP.Request
     doc     :: iDocument
-    io      :: Ref{Union{IO, Nothing}}
+    clients :: Set{IO}
 
     # force the non-initialization of the `doc` field
-    SessionContext(args...) = new(args..., Document(), Ref{Union{IO, Nothing}}())
+    SessionContext(args...) = new(args..., Document(), Set{IO}())
 end
 
-function Base.propertynames(::SessionContext, private :: Bool = false)
-    return if private
-        (:socket, fieldnames(SessionContext)...)
-    else
-        (:socket, :id, :token, :request, :doc)
-    end
-end
-
-function Base.getproperty(σ::SessionContext, attr:Symbol)
-    return attr ≡ :socket ? getfield(σ, :socket)[] : getfield(σ, attr)
-end
-
-function Base.setproperty!(σ::SessionContext, attr:Symbol, val)
-    return attr ≡ :socket ? (getfield(σ, :socket)[] = val) : setfield!(σ, attr, val)
-end
+Base.push!(σ::SessionContext, ws::IO) = push!(σ.clients, ws)
+Base.pop!(σ::SessionContext, ws::IO) = pop!(σ.clients, ws, nothing)
+Base.in(ws::IO, σ::SessionContext) = ws ∈ σ.clients
 
 """
     SessionContext(request::HTTP.Request)

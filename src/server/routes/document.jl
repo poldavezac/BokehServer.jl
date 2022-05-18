@@ -6,13 +6,11 @@ using ...AbstractTypes
 using ..Server
 using ..Server.Templates
 
-function docroute(::Val{:GET}, app::Server.iApplication, session::Server.SessionContext)
-    HTTP.Response(
-        200,
-        ["Content-Type" => "text/html"];
-        body    = body(app, session),
-        request = session.request
-    )
+function route(req::HTTP.Stream{HTTP.Request}, app::Server.iApplication)
+    HTTP.setstatus(http, 200)
+    HTTP.setheader(http, "Content-Type" => "text/html")
+    HTTP.startwrite(http)
+    write(http, body(app, get!(app, http)))
 end
 
 Server.staticbundle(app::Server.iApplication) = Server.staticbundle(Val(:server))
@@ -84,4 +82,7 @@ function filetemplate(
 end
 
 end
-using .DocRoute: docroute
+
+using .DocRoute
+
+defaultroute(s, ::Val{:GET}, app::iApplication, ::Val{:?}) = DocRoute.route(s, app)

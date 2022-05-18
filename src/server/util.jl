@@ -8,9 +8,8 @@ end
 
 httperror(reason, status = 403) = throw(HTTPError(status, reason))
 
-function getparams(req::HTTP.Request)
-    merge(HTTP.queryparams(HTTP.uri(req)), bodyparams(req))
-end
+getparams(http::HTTP.Stream) = getparams(http.message)
+getparams(req::HTTP.Request) = merge(HTTP.queryparams(HTTP.uri(req)), bodyparams(req))
 
 function getparam(req::HTTP.Request, key::String, default::Any = nothing)
     opt = get(HTTP.queryparams(HTTP.uri(req)), key, nothing)
