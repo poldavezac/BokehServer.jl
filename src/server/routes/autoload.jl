@@ -5,20 +5,26 @@ using ...AbstractTypes
 using ..Server
 using ..Templates
 
-function route(http::HTTP.Stream, app::Server.iApplication)
+function options(http::HTTP.Stream)
     HTTP.setstatus(http, 200)
-    HTTP.setheader(
-        http,
-        "Content-Type"                  => "text/html",
-        "Access-Control-Allow-Headers"  => "*",
-        "Access-Control-Allow-Methods"  => "PUT, GET, OPTIONS",
-        "Access-Control-Allow-Origin"   => "*"
-    )
+    HTTP.setheader(http, "Content-Type"                  => "text/html")
+    HTTP.setheader(http, "Access-Control-Allow-Headers"  => "*")
+    HTTP.setheader(http, "Access-Control-Allow-Methods"  => "PUT, GET, OPTIONS")
+    HTTP.setheader(http, "Access-Control-Allow-Origin"   => "*")
     HTTP.startwrite(http)
-    write(http, body(app, get!(app, http), Server.getparams(http)))
 end
 
-function body(app::Server.iApplication, session::Server.SessionContext, params::Dict{String, String})
+function route(http::HTTP.Stream, app::Server.iApplication)
+    HTTP.setstatus(http, 200)
+    HTTP.setheader(http, "Content-Type"                  => "application/javascript")
+    HTTP.setheader(http, "Access-Control-Allow-Headers"  => "*")
+    HTTP.setheader(http, "Access-Control-Allow-Methods"  => "PUT, GET, OPTIONS")
+    HTTP.setheader(http, "Access-Control-Allow-Origin"   => "*")
+    HTTP.startwrite(http)
+    write(http, body(app, get!(app, http).token, Server.getparams(http)))
+end
+
+function body(app::Server.iApplication, token::String, params::Dict{String, String})
     elementid = get(params, "bokeh-autoload-element", nothing)
     if isnothing(elementid)
         Server.httperror(400, "No bokeh-autoload-element query parameter")
@@ -39,7 +45,7 @@ function body(app::Server.iApplication, session::Server.SessionContext, params::
     end
 
     script = Templates.onload(Templates.safely(Templates.docjs(
-           "{}", (; session.token, elementid, use_for_title = false);
+           "{}", (; token, elementid, use_for_title = false);
             app_path, absolute_url
     )))
     return template(elementid, bundle.js_files, bundle.css_files, [script])
@@ -167,5 +173,5 @@ end
 end
 using .AutoloadRoute
 
-@route OPTIONS "autoload.js" HTTP.setstatus(200)
+@route OPTIONS "autoload.js" AutoloadRoute.options(http)
 @route GET     "autoload.js" AutoloadRoute

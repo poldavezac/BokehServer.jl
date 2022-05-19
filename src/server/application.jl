@@ -1,21 +1,23 @@
 using UUIDs
 using ..Events
 abstract type iApplication end
+abstract type iGenericApplication <: iApplication end
 
 struct SessionList
     sessions :: Dict{String, SessionContext}
-    SessionList() = new(fieldtype(SessionList, :session)())
+    SessionList() = new(fieldtype(SessionList, :sessions)())
 end
 
 Base.get!(list::SessionList, σ::SessionContext) = get!(list.sessions, σ.id, σ)
 Base.pop!(list::SessionList, σ::SessionContext) = pop!(list.sessions, σ.id, nothing)
 Base.in(list::SessionList,   σ::SessionContext) = session.id ∈ keys(list.sessions)
 
-struct Application <: iApplication
-    initializer :: Function
-    sessions    :: SessionList
-    Application(func::Function) = new(fieldtype(Application, :sessions)())
+struct Application{T} <: iGenericApplication
+    sessions :: SessionList
+    Application{T}() where {T} = new(fieldtype(Application, :sessions)())
 end
+
+Application(func::Function) = Application{func}()
 
 for fcn ∈ (:get, :pop!)
     @eval Base.$fcn(app::iApplication, σ::SessionContext) = $fcn(sessions(app), σ)
@@ -39,10 +41,11 @@ function Base.get!(app::iApplication, session::SessionContext)
     return get!(lst, session)
 end
 
-Events.eventlist(::iApplication)    = Events.EventList()
-urlprefix(::iApplication)           = ""
-applicationurl(::iApplication)      = ""
-applicationmetadata(::iApplication) = "{}"
+initializer(::Application{T}) where {T}       = T
+url(x::iApplication)                          = "$(nameof(initializer(x)))"
+Events.eventlist(::iApplication)              = Events.EventList()
+urlprefix(::iApplication)                     = ""
+metadata(::iApplication)                      = "{}"
 checktokensignature(::iApplication, ::String) = true
 
 """
@@ -52,7 +55,7 @@ Populates a brand new document
 """
 function initialize! end
 
-initialize!(doc::iDocument, app::Application) = app.func(doc)
+initialize!(doc::iDocument, app::Application) = initializer(app)(doc)
 
 """
     newsession(::iApplication, req::HTTP.Request) = SessionContext(request)
