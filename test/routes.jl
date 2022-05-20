@@ -39,7 +39,6 @@ push!(app.sessions.sessions,  "1"=>Bokeh.Server.SessionContext("1", "2", Bokeh.S
 
 @testset "autoload.js" begin
     let stream = Bokeh.Server.HTTP.Stream(Bokeh.Server.HTTP.Request(), IOBuffer())
-        push!(stream.message.headers, "bokeh-autoload-element" => "1")
         Bokeh.Server.route(stream, Val(:OPTIONS), missing, Val(Symbol("autoload.js")))
         resp = stream.message.response
         @test resp.status ≡ Int16(200)
@@ -48,11 +47,14 @@ push!(app.sessions.sessions,  "1"=>Bokeh.Server.SessionContext("1", "2", Bokeh.S
     end
 
     let stream = Bokeh.Server.HTTP.Stream(Bokeh.Server.HTTP.Request(), IOBuffer())
+        push!(stream.message.headers, "Content-Type" => "application/x-www-form-urlencoded")
+        stream.message.body = collect(UInt8, "bokeh-autoload-element=1")
         Bokeh.Server.route(stream, Val(:GET), app, Val(Symbol("autoload.js")))
+
         resp = stream.message.response
         @test resp.status ≡ Int16(200)
         @test string.(resp.headers[1]) == string.("Content-Type" => "application/javascript")
-        @test !isempty(read(stream.stream, String))
+        @test !iszero(stream.stream.size)
     end
 end
 
@@ -61,7 +63,7 @@ end
     resp = Bokeh.Server.route(stream, Val(:GET), app, Val(:?))
     @test resp.status ≡ Int16(200)
     @test string.(resp.headers[1]) == string.("Content-Type" => "text/html")
-    @test !isempty(read(stream.stream, String))
+    @test !iszero(stream.stream.size)
 end
 
 @testset "metadata" begin
@@ -69,5 +71,5 @@ end
     resp = Bokeh.Server.route(stream, Val(:GET), app, Val(:metadata))
     @test resp.status ≡ Int16(200)
     @test string.(resp.headers[1]) == string.("Content-Type" => "application/javascript")
-    @test !isempty(resp.body)
+    @test !iszero(stream.stream.size)
 end

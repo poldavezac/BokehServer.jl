@@ -6,7 +6,7 @@ struct HTTPError <: Exception
     reason :: String
 end
 
-httperror(reason, status = 403) = throw(HTTPError(status, reason))
+httperror(reason :: String, status ::Int = 403) = throw(HTTPError(status, reason))
 
 getparams(http::HTTP.Stream) = getparams(http.message)
 getparams(req::HTTP.Request) = merge(HTTP.queryparams(HTTP.uri(req)), bodyparams(req))

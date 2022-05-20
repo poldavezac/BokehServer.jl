@@ -15,19 +15,23 @@ function options(http::HTTP.Stream)
 end
 
 function route(http::HTTP.Stream, app::Server.iApplication)
+    params = Server.getparams(http)
+    token  = get!(app, http).token
+    bdy    = body(app, token, params)
+
     HTTP.setstatus(http, 200)
     HTTP.setheader(http, "Content-Type"                  => "application/javascript")
     HTTP.setheader(http, "Access-Control-Allow-Headers"  => "*")
     HTTP.setheader(http, "Access-Control-Allow-Methods"  => "PUT, GET, OPTIONS")
     HTTP.setheader(http, "Access-Control-Allow-Origin"   => "*")
     HTTP.startwrite(http)
-    write(http, body(app, get!(app, http).token, Server.getparams(http)))
+    write(http, bdy)
 end
 
 function body(app::Server.iApplication, token::String, params::Dict{String, String})
     elementid = get(params, "bokeh-autoload-element", nothing)
     if isnothing(elementid)
-        Server.httperror(400, "No bokeh-autoload-element query parameter")
+        Server.httperror("No bokeh-autoload-element query parameter", 400)
     end
 
     app_path     = get(params, "bokeh-app-path", "/")

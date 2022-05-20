@@ -96,7 +96,7 @@ function serve(
     end
 
     HTTP.listen(host, port; kwa...) do http::HTTP.Stream
-        http.request.body = read(http)
+        http.message.body = read(http)
         closeread(http)
         route(http, allapps)
     end
