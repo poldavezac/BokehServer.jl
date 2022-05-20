@@ -43,7 +43,7 @@ push!(app.sessions.sessions,  "1"=>Bokeh.Server.SessionContext("1", "2", Bokeh.S
         resp = stream.message.response
         @test resp.status ≡ Int16(200)
         @test string.(resp.headers[1]) == string.("Content-Type" => "text/html")
-        @test isempty(read(stream.stream, String))
+        @test !isempty(String(take!(stream.stream)))
     end
 
     let stream = Bokeh.Server.HTTP.Stream(Bokeh.Server.HTTP.Request(), IOBuffer())
@@ -54,22 +54,24 @@ push!(app.sessions.sessions,  "1"=>Bokeh.Server.SessionContext("1", "2", Bokeh.S
         resp = stream.message.response
         @test resp.status ≡ Int16(200)
         @test string.(resp.headers[1]) == string.("Content-Type" => "application/javascript")
-        @test !iszero(stream.stream.size)
+        @test !isempty(String(take!(stream.stream)))
     end
 end
 
 @testset "document" begin
     stream = Bokeh.Server.HTTP.Stream(Bokeh.Server.HTTP.Request(), IOBuffer())
-    resp = Bokeh.Server.route(stream, Val(:GET), app, Val(:?))
+    Bokeh.Server.route(stream, Val(:GET), app, Val(:?))
+    resp = stream.message.response
     @test resp.status ≡ Int16(200)
     @test string.(resp.headers[1]) == string.("Content-Type" => "text/html")
-    @test !iszero(stream.stream.size)
+    @test !isempty(String(take!(stream.stream)))
 end
 
 @testset "metadata" begin
     stream = Bokeh.Server.HTTP.Stream(Bokeh.Server.HTTP.Request(), IOBuffer())
-    resp = Bokeh.Server.route(stream, Val(:GET), app, Val(:metadata))
+    Bokeh.Server.route(stream, Val(:GET), app, Val(:metadata))
+    resp = stream.message.response
     @test resp.status ≡ Int16(200)
-    @test string.(resp.headers[1]) == string.("Content-Type" => "application/javascript")
-    @test !iszero(stream.stream.size)
+    @test string.(resp.headers[1]) == string.("Content-Type" => "application/json")
+    @test !isempty(String(take!(stream.stream)))
 end

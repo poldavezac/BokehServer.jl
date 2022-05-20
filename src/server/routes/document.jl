@@ -6,7 +6,7 @@ using ...AbstractTypes
 using ..Server
 using ..Server.Templates
 
-function route(req::HTTP.Stream{HTTP.Request}, app::Server.iApplication)
+function route(http::HTTP.Stream{HTTP.Request}, app::Server.iApplication)
     HTTP.setstatus(http, 200)
     HTTP.setheader(http, "Content-Type" => "text/html")
     HTTP.startwrite(http)
@@ -85,4 +85,4 @@ end
 
 using .DocRoute
 
-defaultroute(s, ::Val{:GET}, app::iApplication, ::Val{:?}) = DocRoute.route(s, app)
+@route GET "?" DocRoute

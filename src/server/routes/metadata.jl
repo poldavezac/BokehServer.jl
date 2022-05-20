@@ -3,7 +3,7 @@ using HTTP
 using JSON
 using ..Server
 
-function route(req::HTTP.Request, app::Server.iApplication)
+function route(http::HTTP.Stream{HTTP.Request}, app::Server.iApplication)
     HTTP.setstatus(http, 200)
     HTTP.setheader(http, "Content-Type" => "application/json")
     HTTP.startwrite(http)
