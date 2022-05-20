@@ -9,12 +9,12 @@ using ...Server: iApplication, SessionContext
 
 function route(req::HTTP.Stream, app::Server.iApplication)
     WebSockets.upgrade(req) do ws::WebSocket
-        session = get(app, req)
+        session = get!(app, req)
         onopen(req, ws, app, session)
         while isopen(ws)
             onmessage(ws, app, session)
         end
-        onclose(ws, session)
+        onclose(ws, app, session)
     end
 end
 
@@ -30,7 +30,7 @@ end
 macro safely(code)
     esc(quote
         if !isopen(ws)
-            return onclose(ws, session)
+            return onclose(ws, app, session)
         end
         try
             $code
@@ -81,7 +81,7 @@ function onmessage(ws::WebSocket, app::iApplication, session::SessionContext)
     end
 end
 
-function onclose(ws::WebSocket, session::SessionContext)
+function onclose(ws::WebSocket, ::iApplication, session::SessionContext)
     pop!(session.clients, ws, nothing)
     nothing
 end

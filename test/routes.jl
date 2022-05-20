@@ -27,6 +27,8 @@
     end
 end
 
+struct TestApp <: Bokeh.Server.iApplication end
+Bokeh.Server.makeid(::TestApp) = "a"
 
 _dummy_test(doc) = nothing
 Base.get!(
@@ -37,7 +39,17 @@ Base.get!(
 app = Bokeh.Server.Application(_dummy_test)
 push!(app.sessions.sessions,  "1"=>Bokeh.Server.SessionContext("1", "2", Bokeh.Server.HTTP.Request()))
 
-@testset "autoload.js" begin
+@testset "autoload body" begin
+    value   = Bokeh.Server.AutoloadRoute.body(
+        TestApp(), "b", Dict("bokeh-autoload-element" => "aaa")
+    )
+    truth   = read(joinpath(@__DIR__, "autoload.html"), String)
+    @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(value)))
+        @test i == j
+    end
+end
+
+@testset "autoload" begin
     let stream = Bokeh.Server.HTTP.Stream(Bokeh.Server.HTTP.Request(), IOBuffer())
         Bokeh.Server.route(stream, Val(:OPTIONS), missing, Val(Symbol("autoload.js")))
         resp = stream.message.response
@@ -55,6 +67,15 @@ push!(app.sessions.sessions,  "1"=>Bokeh.Server.SessionContext("1", "2", Bokeh.S
         @test resp.status ≡ Int16(200)
         @test string.(resp.headers[1]) == string.("Content-Type" => "application/javascript")
         @test !isempty(String(take!(stream.stream)))
+    end
+end
+
+@testset "document body" begin
+    session = Bokeh.Server.SessionContext("a", "b", Bokeh.Server.HTTP.Request())
+    value   = Bokeh.Server.DocRoute.body(TestApp(), session)
+    truth   = read(joinpath(@__DIR__, "document.html"), String)
+    @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(value)))
+        @test i == j
     end
 end
 

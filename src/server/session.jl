@@ -1,14 +1,29 @@
 using ..Documents
+abstract type iSessionContext end
 
-struct SessionContext
+"""
+A temporary `SessionContext`, without doc or clients.
+It allows querying an `iApplication` for an existing `SessionContext`
+without creating undue `iDocument`. An `iApplication` must not
+store anything but a complete SessionContext
+"""
+struct BasicSessionContext <: iSessionContext
+    id      :: String
+    token   :: String
+    request :: HTTP.Request
+end
+
+struct SessionContext <: iSessionContext
     id      :: String
     token   :: String
     request :: HTTP.Request
     doc     :: iDocument
     clients :: Set{IO}
 
-    # force the non-initialization of the `doc` field
-    SessionContext(args...) = new(args..., Document(), Set{IO}())
+    SessionContext(b::BasicSessionContext) = new(
+        b.id, b.token, b.request, Document(), Set{IO}()
+    )
+    SessionContext(a...) = new(a..., Document(), Set{IO}())
 end
 
 Base.push!(σ::SessionContext, ws::IO) = push!(σ.clients, ws)
@@ -16,13 +31,13 @@ Base.pop!(σ::SessionContext, ws::IO) = pop!(σ.clients, ws, nothing)
 Base.in(ws::IO, σ::SessionContext) = ws ∈ σ.clients
 
 """
-    SessionContext(request::HTTP.Request)
+    BasicSessionContext(request::HTTP.Request)
 
 Create a new SessionContext from the request. This
 leaves the `doc` field empty. We will call on `initialize(::iApplication, ::iDocument)`
 *if* we need to do so.
 """
-function SessionContext(request::HTTP.Request)
+function BasicSessionContext(request::HTTP.Request)
     arguments = getparams(request)
     id        = get(arguments, "bokeh-session-id", nothing)
     if HTTP.hasheader(request, "Bokeh-Session-Id")
@@ -45,11 +60,11 @@ function SessionContext(request::HTTP.Request)
             pop!(headers, "Cookie")
         end
 
-        tokens  = Tokens.token(id; headers, cookies)
+        token = Tokens.token(id; headers, cookies)
     end
 
     Tokens.check(token) || httperror("Invalid token or session ID")
-    return SessionContext(id, token, request)
+    return BasicSessionContext(id, token, request)
 end
 
-getparams(s::SessionContext) = getparams(s.request)
+getparams(s::iSessionContext) = getparams(s.request)

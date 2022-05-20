@@ -4,13 +4,13 @@ abstract type iApplication end
 abstract type iGenericApplication <: iApplication end
 
 struct SessionList
-    sessions :: Dict{String, SessionContext}
+    sessions :: Dict{String, iSessionContext}
     SessionList() = new(fieldtype(SessionList, :sessions)())
 end
 
-Base.get!(list::SessionList, σ::SessionContext) = get!(list.sessions, σ.id, σ)
-Base.pop!(list::SessionList, σ::SessionContext) = pop!(list.sessions, σ.id, nothing)
-Base.in(list::SessionList,   σ::SessionContext) = session.id ∈ keys(list.sessions)
+Base.get!(list::SessionList, σ::SessionContext)  = get!(list.sessions, σ.id, σ)
+Base.pop!(list::SessionList, σ::iSessionContext) = pop!(list.sessions, σ.id, nothing)
+Base.in(list::SessionList,   σ::iSessionContext) = haskey(list.sessions, σ.id)
 
 struct Application{T} <: iGenericApplication
     sessions :: SessionList
@@ -20,18 +20,18 @@ end
 Application(func::Function) = Application{func}()
 
 for fcn ∈ (:get, :pop!)
-    @eval Base.$fcn(app::iApplication, σ::SessionContext) = $fcn(sessions(app), σ)
+    @eval Base.$fcn(app::iApplication, σ::iSessionContext) = $fcn(sessions(app), σ)
 end
 
-Base.in(σ::SessionContext, app::iApplication) = σ ∈ sessions(app)
-
+Base.in(σ::iSessionContext, app::iApplication) = σ ∈ sessions(app)
 Base.get!(app::iApplication, http::HTTP.Stream) = get!(app, HTTP.request(http))
 Base.get!(app::iApplication, req::HTTP.Request) = get!(app, newsession(app, req))
 
-function Base.get!(app::iApplication, session::SessionContext)
+function Base.get!(app::iApplication, session::iSessionContext)
     lst = sessions(app)
     if session ∉ lst
-        events = Events.eventlist(app)
+        session = SessionContext(session)
+        events  = Events.eventlist(app)
         Events.eventlist(events) do
             initialize!(session.document, app)
             flushevents!(events)
@@ -62,7 +62,7 @@ initialize!(doc::iDocument, app::Application) = initializer(app)(doc)
 
 Create a new session, leaving the document empty.
 """
-newsession(::iApplication, req::HTTP.Request) = SessionContext(request)
+newsession(::iApplication, req::HTTP.Request) = BasicSessionContext(request)
 
 sessions(app::iApplication) = app.sessions
 
