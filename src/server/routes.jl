@@ -1,10 +1,11 @@
 macro route(method, basename, code)
+    cnv(x) = (x ≡ :Any ? Any : x ≡ :missing ? Missing : Val{x})
     (basename isa String) && (basename = Symbol(basename))
     params = (
         :(http::HTTP.Stream),
-        :(::$(Val{method})),
-        :(app::Union{Missing, iApplication}),
-        :(::$(Val{basename}))
+        :(::$(cnv(method))),
+        :(app::iApplication),
+        :(key::$(cnv(basename)))
     )
     return if code isa Symbol
         :(route($(params...)) = $code.route(http, app))
@@ -17,34 +18,42 @@ include("routes/autoload.jl")
 include("routes/document.jl")
 include("routes/metadata.jl")
 include("routes/ws.jl")
+include("routes/404.jl")
+include("routes/redirect.jl")
+include("routes/error.jl")
 include("routes/static.jl")
 
 function routeargs(apps::Dict{<:Val, <:Union{Missing,iApplication}}, http)
-    method = Val(Symbol(HTTP.method(http.request)))
+    method = Val(Symbol(HTTP.method(http.message)))
+    name   = missing
     app    = missing
-    key    = Val(:404)
+    key    = missing
 
-    path   = Val.(Symbol.(HTTP.URIs.splitpath(HTTP.URI(http.request.target))))
+    path   = Val.(Symbol.(HTTP.URIs.splitpath(HTTP.URI(http.message.target))))
     if isempty(path)
-        for (i, j) ∈ apps
-            if i ≡ Val(:static)
-                continue
-            elseif "$(typeof(i).parameters[1])"[1] ≡ '#'
-                app = j
-            elseif ismissing(app)
-                app = j
-            end
-        end
-        ismissing(app) || (key = Val(:?))
+        name = :redirect
+        app  = apps
+        key  = Val(:?)
     elseif haskey(apps, path[1])
-        app = get(apps, path[1])
-        key = length(path) ≡ 2 ? path[2] : Val(:?)
+        name = typeof(path[1]).parameters[1]
+        app  = apps[path[1]]
+        key  = length(path) ≡ 2 ? path[2] : Val(:?)
+    elseif length(path) ≡ 1
+        name = :redirect
+        app  = apps
+        key  = path[1]
     end
 
     return if applicable(route, http, method, app, key)
+        @debug(
+            "found route",
+            target = http.message.target,
+            app    = name,
+        )
         (http, method, app, key)
     else
-        (http, method, missing, Val(:404))
+        @debug "no route found" target = http.message.target
+        (http, method, missing, missing)
     end
 end
 

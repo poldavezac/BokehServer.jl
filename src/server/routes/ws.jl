@@ -104,8 +104,6 @@ for (tpe, func) ∈ (msg"PULL-DOC-REPLY" => :pushdoc!, msg"PATCH-DOC" => :patchd
         events = eventlist(app, session)
         Events.eventlist(events) do _
             $func(doc, μ.contents)
-
-            Events.flushevents!(events)
         end
 
         outp  = patchdoc(events, doc, oldids)

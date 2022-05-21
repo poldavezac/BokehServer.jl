@@ -1,10 +1,11 @@
 module Tokens
     using JSON
     using Base64
+    using CodecZlib
     const _TOKEN_ZLIB_KEY = "__bk__zlib_"
 
     function encode(vals::Union{String, Vector{UInt8}})
-        return rstrip('=', replace(replace(Base64.base64encode(vals), '-' => '+'), '/' => '_'))
+        return rstrip(replace(replace(Base64.base64encode(vals), '-' => '+'), '/' => '_'), '=')
     end
 
     function decode(vals::String)
@@ -36,15 +37,14 @@ module Tokens
     end
 
     function token(sessionid; expiration = 300, extra...)
-        @assert false
-        now = time()
+        now     = time()
         payload = (; session_id = sessionid, session_expiry= now + expiration)
         if !isempty(extra)
-            msg        = Zcollect(UInt8, JSON.dumps(extra))
-            compressed = read(ZLib.ZlibDeflateInputStream(msg; level = 9))
+            msg        = IOBuffer(collect(UInt8, JSON.json(extra)))
+            compressed = read(CodecZlib.ZlibCompressorStream(msg; level = 9))
             payload    = merge(payload, (; _TOKEN_ZLIB_KEY = encode(compressed)))
         end
-        return encode(json.dumps(payload))
+        return encode(JSON.json(payload))
     end
 
     function check(::String)

@@ -9,10 +9,11 @@ end
 httperror(reason :: String, status ::Int = 403) = throw(HTTPError(status, reason))
 
 getparams(http::HTTP.Stream) = getparams(http.message)
-getparams(req::HTTP.Request) = merge(HTTP.queryparams(HTTP.uri(req)), bodyparams(req))
+function getparams(req::HTTP.Request)
+    merge(HTTP.queryparams(HTTP.URI(HTTP.uri(req))), bodyparams(req))
+end
 
 function getparam(req::HTTP.Request, key::String, default::Any = nothing)
-    opt = get(HTTP.queryparams(HTTP.uri(req)), key, nothing)
     return isnothing(opt) ? get(bodyparams(req), key, default) : default
 end
 

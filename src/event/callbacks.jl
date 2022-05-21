@@ -47,7 +47,6 @@ julia > begin
         Bokeh.Events.eventlist() do
             push!(doc, Model1())
             delete!(doc, Model2())
-            Bokeh.Events.flushevents!(Bokeh.Events.task_eventlist())
         end
     end;
 
@@ -106,7 +105,6 @@ julia > begin
         Bokeh.Events.eventlist() do
             obj.a = 1
             obj.a = 10.
-            Bokeh.Events.flushevents!(Bokeh.Events.task_eventlist())
         end
     end;
 

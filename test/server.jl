@@ -1,22 +1,28 @@
-struct TestApp <: Bokeh.Server.iApplication end
-Bokeh.Server.makeid(::TestApp) = "a"
+HTTP = Bokeh.Server.HTTP
 
-@testset "document route" begin
-    session = Bokeh.Server.SessionContext("a", "b", Bokeh.Server.HTTP.Request())
-    value   = Bokeh.Server.DocRoute.body(TestApp(), session)
-    truth   = read(joinpath(@__DIR__, "document.html"), String)
-    @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(value)))
-        @test i == j
-    end
-end
+@testset "http routes" begin
+    @test Threads.nthreads() > 1
+    server = HTTP.Sockets.listen(HTTP.Sockets.InetAddr(HTTP.Sockets.ip"127.0.0.1", 5006))
+    try
+        task = @async Bokeh.Server.serve(:app => (doc) -> nothing; server)
+        yield()
+        @test istaskstarted(task)
+        @test !istaskdone(task)
+        req = @async HTTP.get(
+            "http://127.0.0.1:5006/app/autoload.js?bokeh-autoload-element=1",
+            retry = false
+        )
+        wait(req)
+        @test !isempty(String(req.result.body))
 
-@testset "autoload route" begin
-    session = Bokeh.Server.SessionContext("a", "b", Bokeh.Server.HTTP.Request())
-    value   = Bokeh.Server.AutoloadRoute.body(
-        TestApp(), session, Dict("bokeh-autoload-element" => "aaa")
-    )
-    truth   = read(joinpath(@__DIR__, "autoload.html"), String)
-    @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(value)))
-        @test i == j
+        req = @async HTTP.get("http://127.0.0.1:5006/app/?", retry = false)
+        wait(req)
+        @test !isempty(String(req.result.body))
+
+        req = @async HTTP.get("http://127.0.0.1:5006/app/metadata", retry = false)
+        wait(req)
+        @test !isempty(String(req.result.body))
+    finally
+        close(server)
     end
 end

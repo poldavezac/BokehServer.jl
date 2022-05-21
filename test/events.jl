@@ -92,8 +92,6 @@ end
         obj1.a = 10
         obj1.b = 10
         obj2.a = 10
-
-        Bokeh.Events.flushevents!(Bokeh.Events.task_eventlist())
     end
 
     @test length(calls1) == 2
@@ -119,7 +117,6 @@ end
     Bokeh.Events.eventlist() do
         push!(doc, obj1)
         delete!(doc, obj2)
-        Bokeh.Events.flushevents!(Bokeh.Events.task_eventlist())
     end
 
     @test length(calls1) == 2
@@ -127,7 +124,6 @@ end
 
     Bokeh.Events.eventlist() do
         doc.title = "A"
-        Bokeh.Events.flushevents!(Bokeh.Events.task_eventlist())
     end
 
     @test length(calls1) == 3

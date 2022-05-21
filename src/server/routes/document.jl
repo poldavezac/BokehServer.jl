@@ -49,7 +49,7 @@ function filetemplate(
         js_files    :: AbstractVector{<:AbstractString},
         js_raw      :: AbstractVector{<:AbstractString},
         css_files   :: AbstractVector{<:AbstractString},
-        langage     :: String = "en"
+        langage     :: Symbol = Server.CONFIG.language
 )
     css = [
         """<link rel="stylesheet" href="$file" type="text/css" />"""

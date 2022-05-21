@@ -62,9 +62,5 @@ function BasicSessionContext(request::HTTP.Request)
 
         token = Tokens.token(id; headers, cookies)
     end
-
-    Tokens.check(token) || httperror("Invalid token or session ID")
     return BasicSessionContext(id, token, request)
 end
-
-getparams(s::iSessionContext) = getparams(s.request)

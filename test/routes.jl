@@ -1,11 +1,11 @@
 @testset "staticbundle" begin
     truth = (;
         js_files = [
-            "http://localhost:5006/static/js/bokeh.min.js",
-            "http://localhost:5006/static/js/bokeh-gl.min.js",
-            "http://localhost:5006/static/js/bokeh-widgets.min.js",
-            "http://localhost:5006/static/js/bokeh-tables.min.js",
-            "http://localhost:5006/static/js/bokeh-mathjax.min.js"
+            "http://127.0.0.1:5006/static/js/bokeh.min.js",
+            "http://127.0.0.1:5006/static/js/bokeh-gl.min.js",
+            "http://127.0.0.1:5006/static/js/bokeh-widgets.min.js",
+            "http://127.0.0.1:5006/static/js/bokeh-tables.min.js",
+            "http://127.0.0.1:5006/static/js/bokeh-mathjax.min.js"
         ],
         js_raw = ["Bokeh.set_log_level(\"info\");"],
         css_files = String[],
@@ -18,7 +18,7 @@
     end
 
     truth.js_files[:] .= [
-        replace(i, "http://localhost:5006" => "x")
+        replace(i, "http://127.0.0.1:5006" => "x")
         for i ∈ truth.js_files
     ]
     val = Bokeh.Server.staticbundle(Val(:server); address = "x")
@@ -51,7 +51,7 @@ end
 
 @testset "autoload" begin
     let stream = Bokeh.Server.HTTP.Stream(Bokeh.Server.HTTP.Request(), IOBuffer())
-        Bokeh.Server.route(stream, Val(:OPTIONS), missing, Val(Symbol("autoload.js")))
+        Bokeh.Server.route(stream, Val(:OPTIONS), app, Val(Symbol("autoload.js")))
         resp = stream.message.response
         @test resp.status ≡ Int16(200)
         @test string.(resp.headers[1]) == string.("Content-Type" => "text/html")

@@ -83,25 +83,37 @@ function serve(
         kwa...
 )
     allapps = let cls = typeof(APPS)
-        _topair(f::Function)                     = Val(nameof(func)) => Application(f)
-        _topair(f::Pair{Val,    Function})       = f[1]              => Application(f[2])
-        _topair(f::Pair{Symbol, Function})       = Val(f[1])         => Application(f[2])
-        _topair(f::Pair{Symbol, <:iApplication}) = Val(f[1])         => f[2]
-        _topair(f::Pair{Val,    <:iApplication}) = f[1]              => f[2]
-
         cls(
             Val(:static) => missing,
             (isempty(apps) ? APPS : _topair.(apps))...
         )
     end
 
+    @info(
+        "serving applications",
+        names = tuple((
+            typeof(i).parameters[1] for i ∈ keys(allapps) if i ≢ Val(:static)
+        )...)
+    )
     HTTP.listen(host, port; kwa...) do http::HTTP.Stream
-        http.message.body = read(http)
-        closeread(http)
-        route(http, allapps)
+        @debug "Opened new stream" target = http.message.target
+        try
+            http.message.body = read(http)
+            closeread(http)
+            route(allapps, http)
+        catch exc
+            route(http, exc)
+        end
     end
 end
 
 serve(host::AbstractString, apps::Vararg{<:_AppTypes}; kwa...) = serve(host, CONFIG.port, apps...; kwa...)
 serve(port::Int, apps::Vararg{<:_AppTypes}; kwa...)            = serve(CONFIG.host, port, apps...; kwa...)
 serve(apps::Vararg{<:_AppTypes}; kwa...)                       = serve(CONFIG.host, CONFIG.port, apps...; kwa...)
+
+_topair(@nospecialize(f::Function))                     = Val(nameof(func)) => Application(f)
+_topair(@nospecialize(f::Pair{<:Val,  <:Function}))     = f[1]              => Application(f[2])
+_topair(@nospecialize(f::Pair{Symbol, <:Function}))     = Val(f[1])         => Application(f[2])
+_topair(@nospecialize(f::Pair{Symbol, <:iApplication})) = Val(f[1])         => f[2]
+_topair(@nospecialize(f::Pair{<:Val,  <:iApplication})) = f[1]              => f[2]
+

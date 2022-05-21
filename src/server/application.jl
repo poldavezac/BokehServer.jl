@@ -8,9 +8,11 @@ struct SessionList
     SessionList() = new(fieldtype(SessionList, :sessions)())
 end
 
-Base.get!(list::SessionList, σ::SessionContext)  = get!(list.sessions, σ.id, σ)
-Base.pop!(list::SessionList, σ::iSessionContext) = pop!(list.sessions, σ.id, nothing)
-Base.in(list::SessionList,   σ::iSessionContext) = haskey(list.sessions, σ.id)
+Base.get(λ::SessionList, σ::iSessionContext)  = get(λ.sessions, σ.id, missing)
+Base.get!(λ::SessionList, σ::SessionContext)  = get!(λ.sessions, σ.id, σ)
+Base.push!(λ::SessionList, σ::SessionContext) = push!(λ.sessions, σ.id => σ)
+Base.pop!(λ::SessionList, σ::iSessionContext) = pop!(λ.sessions, σ.id, nothing)
+Base.in(σ::iSessionContext, λ::SessionList)   = haskey(λ.sessions, σ.id)
 
 struct Application{T} <: iGenericApplication
     sessions :: SessionList
@@ -20,50 +22,55 @@ end
 Application(func::Function) = Application{func}()
 
 for fcn ∈ (:get, :pop!)
-    @eval Base.$fcn(app::iApplication, σ::iSessionContext) = $fcn(sessions(app), σ)
+    @eval Base.$fcn(𝐴::iApplication, σ::iSessionContext) = $fcn(sessions(𝐴), σ)
 end
 
-Base.in(σ::iSessionContext, app::iApplication) = σ ∈ sessions(app)
-Base.get!(app::iApplication, http::HTTP.Stream) = get!(app, HTTP.request(http))
-Base.get!(app::iApplication, req::HTTP.Request) = get!(app, newsession(app, req))
+Base.in(σ::iSessionContext, 𝐴::iApplication) = σ ∈ sessions(𝐴)
+Base.get!(𝐴::iApplication, http::HTTP.Stream) = get!(𝐴, http.message)
+Base.get!(𝐴::iApplication, req::HTTP.Request) = get!(𝐴, sessionkey(𝐴, req))
 
-function Base.get!(app::iApplication, session::iSessionContext)
-    lst = sessions(app)
-    if session ∉ lst
-        session = SessionContext(session)
-        events  = Events.eventlist(app)
-        Events.eventlist(events) do
-            initialize!(session.document, app)
-            flushevents!(events)
+function Base.get!(𝐴::iApplication, 𝑘::iSessionContext)
+    lst     = sessions(𝐴)
+    session = get(lst, 𝑘)
+    if ismissing(session)
+        session = SessionContext(𝑘)
+        Events.eventlist(𝐴) do
+            initialize!(session, 𝐴)
         end
         push!(lst, session)
     end
-    return get!(lst, session)
+    return session
 end
 
-initializer(::Application{T}) where {T}       = T
-url(x::iApplication)                          = "$(nameof(initializer(x)))"
-Events.eventlist(::iApplication)              = Events.EventList()
-urlprefix(::iApplication)                     = ""
-metadata(::iApplication)                      = "{}"
-checktokensignature(::iApplication, ::String) = true
+initializer(::Application{T}) where {T}        = T
+url(𝐴::iApplication)                           = "$(nameof(initializer(𝐴)))"
+Events.eventlist(::iApplication)               = Events.EventList()
+Events.eventlist(𝐹::Function, 𝐴::iApplication) = Events.eventlist(𝐹, Events.eventlist(𝐴))
+urlprefix(::iApplication)                      = ""
+metadata(::iApplication)                       = "{}"
+checktokensignature(::iApplication, ::String)  = true
 
 """
-    initialize!(::Document, ::iApplication)
+    initialize!(::Union{iDocument, SessionContext}, ::iApplication)
 
 Populates a brand new document
 """
 function initialize! end
 
-initialize!(doc::iDocument, app::Application) = initializer(app)(doc)
+initialize!(σ::SessionContext, 𝐴::Application) = initialize!(σ.doc, 𝐴)
+initialize!(𝑑::iDocument, 𝐴::Application)      = initializer(𝐴)(𝑑)
 
 """
-    newsession(::iApplication, req::HTTP.Request) = SessionContext(request)
+    sessionkey(::iApplication, req::HTTP.Request) = SessionContext(request)
 
 Create a new session, leaving the document empty.
 """
-newsession(::iApplication, req::HTTP.Request) = BasicSessionContext(request)
+function sessionkey(::iApplication, req::HTTP.Request)
+    σ = BasicSessionContext(req)
+    Tokens.check(σ.token) || httperror("Invalid token or session ID")
+    σ
+end
 
-sessions(app::iApplication) = app.sessions
+sessions(𝐴::iApplication) = 𝐴.sessions
 
 makeid(::iApplication) = "$(UUIDs.uuid4())"
