@@ -102,7 +102,7 @@ function serve(
             closeread(http)
             route(allapps, http)
         catch exc
-            route(http, exc)
+            route(http, Base.current_exceptions())
             CONFIG.throwonerror && rethrow()
         end
     end
@@ -117,4 +117,3 @@ _topair(@nospecialize(f::Pair{<:Val,  <:Function}))     = f[1]              => A
 _topair(@nospecialize(f::Pair{Symbol, <:Function}))     = Val(f[1])         => Application(f[2])
 _topair(@nospecialize(f::Pair{Symbol, <:iApplication})) = Val(f[1])         => f[2]
 _topair(@nospecialize(f::Pair{<:Val,  <:iApplication})) = f[1]              => f[2]
-

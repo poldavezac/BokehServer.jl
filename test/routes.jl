@@ -1,3 +1,23 @@
+@testset "exception body" begin
+    value = try
+        baa*1
+    catch
+        try
+            baa*1
+        catch
+            open(joinpath(@__DIR__, "error.html"), "w") do io
+                println(io, Bokeh.Server.ExceptionRoute.body(Base.current_exceptions()))
+            end
+            Bokeh.Server.ExceptionRoute.body(Base.current_exceptions())
+        end
+    end
+
+    truth   = read(joinpath(@__DIR__, "error.html"), String)
+    @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(value)))
+        @test i == j
+    end
+end
+
 @testset "staticbundle" begin
     truth = (;
         js_files = [
