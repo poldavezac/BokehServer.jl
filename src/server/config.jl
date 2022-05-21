@@ -4,6 +4,7 @@
     clientloglevel :: Symbol = :info
     language       :: Symbol = :en
     staticpath     :: String = joinpath(pwd(), "static")
+    throwonerror   :: Bool   = false
 end
 
-CONFIG = Configuration()
+const CONFIG = Configuration(; eval(Meta.parse(get(ENV, "BOKEH_CONFIG", "()")))...)

@@ -1,4 +1,5 @@
 #!/usr/bin/env -S "julia --project=./test"
+using Logging
 using Test: @test, @testset, @test_throws
 using ArgParse
 
@@ -28,6 +29,7 @@ function accepttestset(name::String)
     return !all(isnothing(match(i, name)) for i ∈ TESTS)
 end
 
+ENV["BOKEH_CONFIG"] = string((; throwonerror = true))
 using Bokeh
 
 function hasacceptedchild(expr::Expr)

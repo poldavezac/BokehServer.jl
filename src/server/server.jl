@@ -103,6 +103,7 @@ function serve(
             route(allapps, http)
         catch exc
             route(http, exc)
+            CONFIG.throwonerror && rethrow()
         end
     end
 end
