@@ -1,5 +1,5 @@
 using UUIDs
-using ..Events
+
 abstract type iApplication end
 abstract type iGenericApplication <: iApplication end
 
@@ -29,12 +29,12 @@ Base.in(σ::iSessionContext, 𝐴::iApplication) = σ ∈ sessions(𝐴)
 Base.get!(𝐴::iApplication, http::HTTP.Stream) = get!(𝐴, http.message)
 Base.get!(𝐴::iApplication, req::HTTP.Request) = get!(𝐴, sessionkey(𝐴, req))
 
-function Base.get!(𝐴::iApplication, 𝑘::iSessionContext)
+function Base.get!(𝐴::iApplication, 𝑘::iSessionContext; doinit :: Bool = true)
     lst     = sessions(𝐴)
     session = get(lst, 𝑘)
     if ismissing(session)
         session = SessionContext(𝑘)
-        Events.eventlist(𝐴) do
+        doinit && Events.eventlist(𝐴) do
             initialize!(session, 𝐴)
         end
         push!(lst, session)
@@ -66,7 +66,7 @@ initialize!(𝑑::iDocument, 𝐴::Application)      = initializer(𝐴)(𝑑)
 Create a new session, leaving the document empty.
 """
 function sessionkey(::iApplication, req::HTTP.Request)
-    σ = BasicSessionContext(req)
+    σ = SessionKey(req)
     Tokens.check(σ.token) || httperror("Invalid token or session ID")
     σ
 end

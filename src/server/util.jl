@@ -1,6 +1,3 @@
-using HTTP
-using UUIDs
-
 struct HTTPError <: Exception
     status :: Int
     reason :: String

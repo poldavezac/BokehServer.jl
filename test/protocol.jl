@@ -69,10 +69,9 @@ end
     @test val == truth
 
     E.eventlist() do
-        lst = E.task_eventlist()
         push!(doc, mdl)
         mdl.a = 100
-        val   = Bokeh.Protocol.patchdoc(E.task_eventlist(), doc, Set{Int64}())
+        val   = Bokeh.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}())
         truth = (;
             events = [
                 (; kind = :RootAdded, model = (; id = "1")),
@@ -104,10 +103,9 @@ end
         @test val == truth
 
         E.eventlist() do
-            lst = E.task_eventlist()
             push!(doc, mdl)
             mdl.a = 100
-            val   = Bokeh.Protocol.Messages.JSON.json(Bokeh.Protocol.patchdoc(E.task_eventlist(), doc, Set{Int64}()))
+            val   = Bokeh.Protocol.Messages.JSON.json(Bokeh.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}()))
             truth = (
                 """{"events":[{"kind":"RootAdded","model":{"id":"1"}}"""*
                 """,{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"""*

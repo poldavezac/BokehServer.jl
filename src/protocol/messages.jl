@@ -1,5 +1,6 @@
 module Messages
 using JSON
+using HTTP.WebSockets: WebSocket, WS_BINARY, WS_TEXT
 using ..AbstractTypes
 using ..Protocol: Buffers
 
@@ -70,7 +71,7 @@ struct ProtocolIterator
         if :msgid ∈ keys(dmeta)
             dhdr[:msgid] = pop!(dmeta, :msgid)
         elseif isnothing(get(dhdr, :msgid, nothing))
-            dhdr[:msgid] = ID()
+            dhdr[:msgid] = string(ID())
         end
 
         buffers = if :buffers ∈ keys(dmeta)
@@ -85,6 +86,10 @@ struct ProtocolIterator
     end
 end
 
+messageid(itr::ProtocolIterator) = itr.hdrkeywords[:msgid]
+messageid(msg::Message)          = msg.headers[:msgid]
+requestid(msg::Message)          = msg.headers[:reqid]
+
 ProtocolIterator(hdr, meta; kwa...) = ProtocolIterator(hdr, (;), meta; kwa...)
 
 Base.eltype(::Type{ProtocolIterator}) = Union{String, Vector{UInt8}}
@@ -92,7 +97,7 @@ Base.length(itr::ProtocolIterator) = isnothing(itr.buffers) ? 3 : 3 + 2length(it
 
 function Base.iterate(itr::ProtocolIterator, state = 1)
     if state ≡ 1
-        outp = "{\"msgid\":\"$(itr.hdrkeywords[:msgid])\",\"msgtype\":\"$(name(itr.hdr))\""
+        outp = "{\"msgid\":\"$(messageid(itr))\",\"msgtype\":\"$(name(itr.hdr))\""
         (:reqid ∈ keys(itr.hdrkeywords)) && (outp*= ",\"reqid\":\"$(itr.hdrkeywords[:reqid])\"")
         isnothing(itr.buffers) || (outp*= ",\"num_buffers\":$(length(itr.buffers))")
         outp *= "}"
@@ -137,11 +142,26 @@ message(hdr::_h"SERVER-INFO-REPLY", reqid::String; meta...)               = Prot
     reqid
 )
 
-function send(ws, T::Type{<:iMessage}, args...; kwa...) :: Bool
-    for line ∈ collect(message(T, args...; kwa...))
+function send(@nospecialize(ios::Union{AbstractVector, AbstractSet, Tuple}), 𝑇::msg"PATCH-DOC", args...; kwa...) :: String
+    @assert !isempty(io)
+    msgid = string(ID())
+    for io ∈ ios
+        send(io, 𝑇, args...; msgid, kwa...)
+    end
+    return get(kwa, :msgid, msgid)
+end
+
+frametype!(io::WebSocket, ::Vector{UInt8}) = (io.frame_type = WS_BINARY)
+frametype!(io::WebSocket, ::String)        = (io.frame_type = WS_TEXT)
+frametype!(_...) = nothing
+
+function send(io::IO, T::Type{<:iMessage}, args...; kwa...) :: String
+    itr = message(T, args...; kwa...)
+    for line ∈ collect(itr)
+        frametype!(io, line)
         write(io, line)
     end
-    return true
+    return messageid(itr)
 end
 
 const _PATT = r"\"num_buffers\"\s*:\s*(\d*)"

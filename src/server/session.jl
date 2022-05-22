@@ -1,4 +1,3 @@
-using ..Documents
 abstract type iSessionContext end
 
 """
@@ -7,7 +6,7 @@ It allows querying an `iApplication` for an existing `SessionContext`
 without creating undue `iDocument`. An `iApplication` must not
 store anything but a complete SessionContext
 """
-struct BasicSessionContext <: iSessionContext
+struct SessionKey <: iSessionContext
     id      :: String
     token   :: String
     request :: HTTP.Request
@@ -20,7 +19,7 @@ struct SessionContext <: iSessionContext
     doc     :: iDocument
     clients :: Set{IO}
 
-    SessionContext(b::BasicSessionContext) = new(
+    SessionContext(b::SessionKey) = new(
         b.id, b.token, b.request, Document(), Set{IO}()
     )
     SessionContext(a...) = new(a..., Document(), Set{IO}())
@@ -31,13 +30,13 @@ Base.pop!(σ::SessionContext, ws::IO) = pop!(σ.clients, ws, nothing)
 Base.in(ws::IO, σ::SessionContext) = ws ∈ σ.clients
 
 """
-    BasicSessionContext(request::HTTP.Request)
+    SessionKey(request::HTTP.Request)
 
 Create a new SessionContext from the request. This
 leaves the `doc` field empty. We will call on `initialize(::iApplication, ::iDocument)`
 *if* we need to do so.
 """
-function BasicSessionContext(request::HTTP.Request)
+function SessionKey(request::HTTP.Request)
     arguments = getparams(request)
     id        = get(arguments, "bokeh-session-id", nothing)
     if HTTP.hasheader(request, "Bokeh-Session-Id")
@@ -62,5 +61,5 @@ function BasicSessionContext(request::HTTP.Request)
 
         token = Tokens.token(id; headers, cookies)
     end
-    return BasicSessionContext(id, token, request)
+    return SessionKey(id, token, request)
 end

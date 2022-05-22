@@ -3,18 +3,17 @@ using HTTP
 using HTTP.WebSockets
 using HTTP.WebSockets: WebSocket, WebSocketError
 using ...Protocol
-using ...Protocol.Messages: @msg_str
+using ...Protocol.Messages: @msg_str, messageid, requestid
 using ...Server
 using ...Server: iApplication, SessionContext
 
-function route(req::HTTP.Stream, app::Server.iApplication)
-    WebSockets.upgrade(req) do ws::WebSocket
-        session = get!(app, req)
-        onopen(req, ws, app, session)
+function route(io::HTTP.Stream, 𝐴::Server.iApplication)
+    WebSockets.upgrade(io) do ω::WebSocket
+        session = onopen(io, ws, 𝐴)
         while isopen(ws)
-            onmessage(ws, app, session)
+            onmessage(ws, 𝐴, session)
         end
-        onclose(ws, app, session)
+        onclose(ws, 𝐴, session)
     end
 end
 
@@ -29,8 +28,8 @@ end
 
 macro safely(code)
     esc(quote
-        if !isopen(ws)
-            return onclose(ws, app, session)
+        if !isopen(ω)
+            return onclose(ω, 𝐴)
         end
         try
             $code
@@ -45,18 +44,8 @@ macro safely(code)
     end)
 end
 
-function onopen(req::HTTP.Stream, ws::WebSocket, app::iApplication, session::SessionContext)
-    (subprotocol, token) = let args = Server.getparams(req)
-        header = get(args, "Sec-WebSocket-Protocol", nothing)
-        outp   = (; subprotocol = nothing, token = nothing)
-        if !isnothing(header)
-            opts = split(header, ',')
-            if length(opts) ≡ 2
-                outp = (; subprotocol = strip(opts[1]), token = strip(opts[2]))
-            end
-        end
-        outp
-    end
+function onopen(io::HTTP.Stream, ω::WebSocket, 𝐴::iApplication)
+    (subprotocol, token) = Tokens.subprotocol(Server.getparams(io))
 
     @wsassert subprotocol ≡ "bokeh" "Subprotocol header is not 'bokeh'"
     @wsassert !isnothing(token) "No token received in subprotocol header"
@@ -64,67 +53,47 @@ function onopen(req::HTTP.Stream, ws::WebSocket, app::iApplication, session::Ses
     payload = Server.Tokens.payload(token)
     @wsassert ("session_expiry" ∈ keys(payload)) "Session expiry has not been provided"
     @wsassert (time() < payload["session_expiry"]) "Token is expired"
-    @wsassert checktokensignature(app, token) "Invalid token signature"
+    @wsassert checktokensignature(𝐴, token) "Invalid token signature"
 
-    push!(session.clients, ws)
-    @safely Protocol.send(ws, msg"ACK")
+    session = get!(
+        𝐴,
+        Server.SessionKey(payload["session_id"], token, io.message);
+        doinit = false
+    )
+    push!(session.clients, ω)
+    @safely Protocol.send(ω, msg"ACK")
 end
 
-function onmessage(ws::WebSocket, app::iApplication, session::SessionContext)
-    msg = @safely Protocol.receive(ws)
+function onmessage(ω::WebSocket, 𝐴::iApplication, σ::SessionContext)
+    msg = @safely Protocol.receive(ω)
     @async try
-        answer = Server.handle(msg, session.doc, Server.eventlist(app, session))
-        @safely Protocol.send(ws, anwser...)
+        answer = Server.handle(msg, σ.doc, Server.eventlist(𝐴, σ))
+        @safely Protocol.send(ω, answer...)
     catch exc
         txt = sprint(showerror, exc)
-        @safely Protocol.send(ws, msg"ERROR", msg.header["reqid"], txt)
+        @safely Protocol.send(ω, msg"ERROR", requestid(msg), txt)
     end
 end
 
-function onclose(ws::WebSocket, ::iApplication, session::SessionContext)
-    pop!(session.clients, ws, nothing)
+function onclose(ω::WebSocket, ::iApplication, σ::SessionContext)
+    pop!(σ.clients, ω, nothing)
     nothing
 end
 
 function handle(msg::msg"SERVER-INFO-REQ", ::iApplication, ::SessionContext)
-    return (msg"SERVER-INFO-REPLY", msg.header["msgid"])
+    return (msg"SERVER-INFO-REPLY", messageid(msg))
 end
 
-function handle(msg::msg"PULL-DOC-REQ", ::iApplication, session::SessionContext)
-    return (msg"SERVER-INFO-REPLY", msg.header["msgid"], pushdoc(session.doc))
+function handle(msg::msg"PULL-DOC-REQ", ::iApplication, σ::SessionContext)
+    return (msg"SERVER-INFO-REPLY", messageid(msg), pushdoc(σ.doc))
 end
 
-struct MessageOrBufferIO{T}
-    io::T
+function handle(μ::msg"PULL-DOC-REPLY,PATCH-DOC", 𝐴::iApplication, σ::SessionContext)
+    onreceive!(μ, σ.doc, eventlist(𝐴, σ), σ.clients...)
+    return (msg"OK", messageid(μ))
 end
 
-for (tpe, func) ∈ (msg"PULL-DOC-REPLY" => :pushdoc!, msg"PATCH-DOC" => :patchdoc!)
-    @eval function $func(μ::$tpe, app::iApplication, session::SessionContext)
-        oldids = allids(doc)
-        events = eventlist(app, session)
-        Events.eventlist(events) do _
-            $func(doc, μ.contents)
-        end
-
-        outp  = patchdoc(events, doc, oldids)
-        buff  = Pair{Vector{UInt8}, String}[]
-        for io ∈ session.clients
-            send(MessageOrBufferIO{typeof(io)}(io), msg"PATCH-DOC", outp, buff)
-        end
-        return (msg"OK",)
-    end
-end
-
-Base.write(io::MessageOrBufferIO, v) = write(io.io, v)
-
-for (i, j) ∈ ((Vector{UInt8} => WebSockets.WS_BINARY), String => WebSockets.WS_TEXT)
-    @eval function Base.write(io::MessageOrBufferIO{WebSocket}, msg::$i)
-        io.io.frame_type = $j
-        write(io.io, msg)
-    end
-end
-
-wsclose(ws::WebSockets.WebSocket, ::iApplication, ::SessionContext) = close(ws)
+wsclose(ω::WebSockets.WebSocket, ::iApplication) = close(ω)
 
 function wserror(::iApplication, ::SessionContext, exc::Exception)
     @info "Websocket error" exception = exc

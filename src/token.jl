@@ -50,5 +50,17 @@ module Tokens
     function check(::String)
         return true  # secrets not implemented yet
     end
+
+    function subprotocol(params::Dict{String})
+        header = get(params, Tokens.WEBSOCKET_PROTOCOL)
+        outp   = (; subprotocol = nothing, token = nothing)
+        if !isnothing(header)
+            opts = split(header, ',')
+            if length(opts) ≡ 2
+                outp = (; subprotocol = strip(opts[1]), token = strip(opts[2]))
+            end
+        end
+        outp
+    end
 end
 using .Tokens

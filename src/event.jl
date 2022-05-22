@@ -18,7 +18,7 @@ function eventlist(func::Function, λ = EventList(); flush :: Bool = true)
         try
             out = func()
         finally
-            flush && flushevents!(λ)
+            flush && (out = flushevents!(λ))
         end
         out
     end
