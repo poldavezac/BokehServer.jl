@@ -49,10 +49,10 @@ function route(http, exc::Base.ExceptionStack)
     isempty(exc) || @error(
         "Error occured",
         target = http.message.target,
-        exception = exc[1]
+        exception = (exc[1].exception, exc[1].backtrace)
     )
-    HTTP.set_status(exc isa HTTPError ? exc.status : 403)
-    HTTP.set_header("Content-Type" => "text/html")
+    HTTP.setstatus(http, exc isa HTTPError ? exc.status : 403)
+    HTTP.setheader(http, "Content-Type" => "text/html")
     HTTP.startwrite(http)
     HTTP.write(http, ExceptionRoute.body(exc))
 end

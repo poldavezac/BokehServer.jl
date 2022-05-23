@@ -170,11 +170,12 @@ function RawMessage(ws)
     header   = readavailable(ws)
     contents = readavailable(ws)
     meta     = readavailable(ws)
-    buffers  = let m = match(_PATT, hrd)
+    buffers  = let m = match(_PATT, String(header))
+        T = eltype(fieldtype(RawMessage, :buffers))
         if isnothing(m)
-            ()
+            T[]
         else 
-            eltype(fieldtype(RawMessage, :buffers))[
+            T[
                 let bhdr = readavailable(ws)
                     data = readavailable(ws)
                     bhdr => data
@@ -187,7 +188,7 @@ function RawMessage(ws)
 end
 
 function Message(raw::RawMessage)
-    parse(v::Vector)   = JSON.parse(read(IOBuffer(v), String))
+    parse(v::Vector)   = JSON.parse(String(v))
     parse((i,j)::Pair) = parse(i) => parse(j)
 
     hdr = parse(raw.header)

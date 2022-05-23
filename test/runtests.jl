@@ -42,11 +42,12 @@ function hasacceptedchild(expr::Expr)
             cur.args[1] ≡ Symbol("@testset")
         )
             accepttestset(cur.args[3]) && return true
-            append!(todos, cur.args[4].args)
-        elseif cur isa Expr &&
-            append!(todos, cur.args)
+            append!(todos, filter(((x)->x isa Expr), cur.args[4].args))
+        elseif cur isa Expr
+            append!(todos, filter(((x)->x isa Expr), cur.args))
         end
     end
+    return false
 end
 
 function applycmdargs(expr)

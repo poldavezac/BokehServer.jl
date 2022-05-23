@@ -6,66 +6,69 @@ using ...Protocol
 using ...Protocol.Messages: @msg_str, messageid, requestid
 using ...Server
 using ...Server: iApplication, SessionContext
+using ...Tokens
 
 function route(io::HTTP.Stream, 𝐴::Server.iApplication)
-    WebSockets.upgrade(io) do ω::WebSocket
-        session = onopen(io, ws, 𝐴)
-        while isopen(ws)
-            onmessage(ws, 𝐴, session)
+    WebSockets.upgrade(io) do ws::WebSocket
+        try
+            session = onopen(ws, 𝐴)
+            if !isnothing(session)
+                while isopen(ws)
+                    onmessage(ws, 𝐴, session)
+                end
+                onclose(ws, 𝐴, session)
+            end
+        catch exc
+            @error "Server ws error" exception = (exc, Base.catch_backtrace())
+            if exc isa WebSocketError || exc isa Base.IOError
+                wserror(exc)
+            else
+                rethrow()
+            end
+        finally
+            close(ws)
         end
-        onclose(ws, 𝐴, session)
     end
 end
 
 macro wsassert(test, msg::String)
     esc(quote
-        if $test
-            wsclose(ws, app, session)
-            Server.htterror(1000, $msg)
+        if !($test)
+            wsclose(ω, 𝐴)
+            Server.httperror($msg, 1000)
         end
     end)
 end
 
 macro safely(code)
-    esc(quote
-        if !isopen(ω)
-            return onclose(ω, 𝐴)
-        end
-        try
-            $code
-        catch exc
-            if exc isa WebSocketError || exc isa Base.IOError
-                wserror(exc)
-                return nothing
-            else
-                rethrow()
-            end
-        end
-    end)
+    esc(:(if isopen(ω)
+        $code
+    else
+        onclose(ω, 𝐴)
+        return nothing
+    end))
 end
 
-function onopen(io::HTTP.Stream, ω::WebSocket, 𝐴::iApplication)
-    (subprotocol, token) = Tokens.subprotocol(Server.getparams(io))
+function onopen(ω::WebSocket, 𝐴::iApplication)
+    req                  = ω.request
+    (subprotocol, token) = Tokens.subprotocol(HTTP.headers(req))
 
-    @wsassert subprotocol ≡ "bokeh" "Subprotocol header is not 'bokeh'"
+    @wsassert subprotocol == "bokeh" "Subprotocol header is not 'bokeh'"
     @wsassert !isnothing(token) "No token received in subprotocol header"
 
     payload = Server.Tokens.payload(token)
     @wsassert ("session_expiry" ∈ keys(payload)) "Session expiry has not been provided"
     @wsassert (time() < payload["session_expiry"]) "Token is expired"
-    @wsassert checktokensignature(𝐴, token) "Invalid token signature"
+    @wsassert Server.checktokensignature(𝐴, token) "Invalid token signature"
 
-    session = get!(
-        𝐴,
-        Server.SessionKey(payload["session_id"], token, io.message);
-        doinit = false
-    )
+    session = get!(𝐴, Server.SessionKey(Tokens.sessionid(token), token, req))
     push!(session.clients, ω)
     @safely Protocol.send(ω, msg"ACK")
+    session
 end
 
 function onmessage(ω::WebSocket, 𝐴::iApplication, σ::SessionContext)
-    msg = @safely Protocol.receive(ω)
+    @safely msg = Protocol.receive(ω)
     @async try
         answer = Server.handle(msg, σ.doc, Server.eventlist(𝐴, σ))
         @safely Protocol.send(ω, answer...)

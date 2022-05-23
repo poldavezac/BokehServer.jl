@@ -48,7 +48,7 @@ Events.eventlist(::iApplication)               = Events.EventList()
 Events.eventlist(𝐹::Function, 𝐴::iApplication) = Events.eventlist(𝐹, Events.eventlist(𝐴))
 urlprefix(::iApplication)                      = ""
 metadata(::iApplication)                       = "{}"
-checktokensignature(::iApplication, ::String)  = true
+checktokensignature(::iApplication, token::AbstractString) = Tokens.check(token, CONFIG.secretkey)
 
 """
     initialize!(::Union{iDocument, SessionContext}, ::iApplication)
@@ -67,7 +67,7 @@ Create a new session, leaving the document empty.
 """
 function sessionkey(::iApplication, req::HTTP.Request)
     σ = SessionKey(req)
-    Tokens.check(σ.token) || httperror("Invalid token or session ID")
+    Tokens.check(σ.token, CONFIG.secretkey) || httperror("Invalid token or session ID")
     σ
 end
 

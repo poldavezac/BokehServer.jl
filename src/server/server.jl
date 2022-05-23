@@ -96,7 +96,7 @@ function serve(
         )...)
     )
     HTTP.listen(host, port; kwa...) do http::HTTP.Stream
-        @debug "Opened new stream" target = http.message.target
+        @info "Opened new stream" target = http.message.target
         try
             http.message.body = read(http)
             closeread(http)
@@ -112,8 +112,8 @@ serve(host::AbstractString, apps::Vararg{<:_AppTypes}; kwa...) = serve(host, CON
 serve(port::Int, apps::Vararg{<:_AppTypes}; kwa...)            = serve(CONFIG.host, port, apps...; kwa...)
 serve(apps::Vararg{<:_AppTypes}; kwa...)                       = serve(CONFIG.host, CONFIG.port, apps...; kwa...)
 
-_topair(@nospecialize(f::Function))                     = Val(nameof(func)) => Application(f)
-_topair(@nospecialize(f::Pair{<:Val,  <:Function}))     = f[1]              => Application(f[2])
-_topair(@nospecialize(f::Pair{Symbol, <:Function}))     = Val(f[1])         => Application(f[2])
-_topair(@nospecialize(f::Pair{Symbol, <:iApplication})) = Val(f[1])         => f[2]
-_topair(@nospecialize(f::Pair{<:Val,  <:iApplication})) = f[1]              => f[2]
+_topair(@nospecialize(f::Function))                     = Val(nameof(f)) => Application(f)
+_topair(@nospecialize(f::Pair{<:Val,  <:Function}))     = f[1]           => Application(f[2])
+_topair(@nospecialize(f::Pair{Symbol, <:Function}))     = Val(f[1])      => Application(f[2])
+_topair(@nospecialize(f::Pair{Symbol, <:iApplication})) = Val(f[1])      => f[2]
+_topair(@nospecialize(f::Pair{<:Val,  <:iApplication})) = f[1]           => f[2]
