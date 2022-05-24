@@ -9,9 +9,9 @@ const ID      = bokehidmaker()
 abstract type iMessage end
 
 struct RawMessage <: iMessage
-    header   :: Vector{UInt8}
-    contents :: Vector{UInt8}
-    meta     :: Vector{UInt8}
+    header   :: String
+    contents :: String
+    meta     :: String
     buffers  :: Vector{Pair{Vector{UInt8}, Vector{UInt8}}}
 end
 
@@ -24,7 +24,7 @@ end
 
 "All possible messages"
 const _HEADERS = Set{Symbol}([
-    :ACK, :OK, :ERROR,
+    :ACK, :OK, :ERROR, :EMPTY,
     Symbol("PATCH-DOC"),
     Symbol("PUSH-DOC"),
     Symbol("PULL-DOC-REQ"),
@@ -87,8 +87,8 @@ struct ProtocolIterator
 end
 
 messageid(itr::ProtocolIterator) = itr.hdrkeywords[:msgid]
-messageid(msg::Message)          = msg.headers[:msgid]
-requestid(msg::Message)          = msg.headers[:reqid]
+messageid(msg::Message)          = msg.header["msgid"]
+requestid(msg::Message)          = msg.header["reqid"]
 
 ProtocolIterator(hdr, meta; kwa...) = ProtocolIterator(hdr, (;), meta; kwa...)
 
@@ -155,29 +155,47 @@ frametype!(io::WebSocket, ::Vector{UInt8}) = (io.frame_type = WS_BINARY)
 frametype!(io::WebSocket, ::String)        = (io.frame_type = WS_TEXT)
 frametype!(_...) = nothing
 
-function send(io::IO, T::Type{<:iMessage}, args...; kwa...) :: String
+function send(io::IO, T::Type{<:iMessage}, args...; kwa...) :: Union{Missing, String}
     itr = message(T, args...; kwa...)
     for line ∈ collect(itr)
-        frametype!(io, line)
-        write(io, line)
+        if isopen(io)
+            frametype!(io, line)
+            write(io, line)
+        else
+            return missing
+        end
     end
     return messageid(itr)
 end
 
 const _PATT = r"\"num_buffers\"\s*:\s*(\d*)"
 
-function RawMessage(ws)
-    header   = readavailable(ws)
-    contents = readavailable(ws)
-    meta     = readavailable(ws)
-    buffers  = let m = match(_PATT, String(header))
+function _read(ws, (timeout, sleepperiod))
+    timedout = timeout + time()
+    while isopen(ws) && iszero(Base.bytesavailable(ws.io)) && time() < timedout
+         (sleepperiod ≤ 0.) || sleep(sleepperiod)
+         yield()
+    end
+    
+    readavailable(ws)
+end
+
+_read(::Type{Char},  ws, t) = isopen(ws) ? String(_read(ws, t))  : ""
+_read(::Type{UInt8}, ws, t) = isopen(ws) ? collect(_read(ws, t)) : UInt8[]
+        
+function RawMessage(ws, timeout :: Pair{<:Real, <:Real})
+    # @assert !iszero(Base.bytesavailable(ws.io))
+    header   = _read(Char, ws, timeout)
+    contents = _read(Char, ws, timeout)
+    meta     = _read(Char, ws, timeout)
+    buffers  = let m = match(_PATT, header)
         T = eltype(fieldtype(RawMessage, :buffers))
         if isnothing(m)
             T[]
         else 
             T[
-                let bhdr = readavailable(ws)
-                    data = readavailable(ws)
+                let bhdr = _read(UInt8, ws, timeout)
+                    data = _read(UInt8, ws, timeout)
                     bhdr => data
                 end
                 for _ ∈ 1:parse(Int64, m[1])
@@ -188,19 +206,27 @@ function RawMessage(ws)
 end
 
 function Message(raw::RawMessage)
-    parse(v::Vector)   = JSON.parse(String(v))
-    parse((i,j)::Pair) = parse(i) => parse(j)
-
-    hdr = parse(raw.header)
-    return Message{Header{Symbol(hdr["msgtype"])}}(
+    if isempty(raw.header)
+        return Message{:EMPTY}(
+            Dict{String, Any}(),
+            Dict{String, Any}(),
+            Dict{String, Any}(),
+            Pair{Dict{String, Any}, Vector}[]
+        )
+    end
+    parse((i,j)::Pair) = parse(i) => j
+    hdr = JSON.parse(raw.header)
+    return Message{Symbol(hdr["msgtype"])}(
         hdr,
-        parse(raw.meta),
-        parse(raw.contents),
+        JSON.parse(raw.meta),
+        JSON.parse(raw.contents),
         parse.(raw.buffers)
     )
 end
 
-const receive = Message ∘ RawMessage
+function receive(ws, timeout :: Real, sleepperiod::Real)
+    return Message(RawMessage(ws, timeout => sleepperiod))
+end
 
 export send, receive, Message, @msg_str
 end

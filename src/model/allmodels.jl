@@ -32,4 +32,4 @@ bokehchildren(::Union{Set{<:NoGood}, AbstractArray{<:NoGood}, Dict{<:NoGood, <:N
 bokehchildren(mdl::Union{AbstractSet, AbstractArray}) = (i for i ∈ mdl if i isa iHasProps)
 bokehchildren(mdl::Dict) = (i for j ∈ mdl for i ∈ j if i isa iHasProps)
 
-export allmodels, bokehchildren
+export allids, allmodels, bokehchildren

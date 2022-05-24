@@ -6,6 +6,8 @@
     staticpath     :: String        = joinpath(pwd(), "static")
     throwonerror   :: Bool          = false
     secretkey      :: Vector{UInt8} = collect(UInt8, get(ENV, "BOKEH_SECRETKEY", ""))
+    wstimeout      :: Float64       = 0.1
+    wssleepperiod  :: Float64       = 0.01
 end
 
 const CONFIG = Configuration(; eval(Meta.parse(get(ENV, "BOKEH_CONFIG", "()")))...)

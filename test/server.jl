@@ -13,7 +13,6 @@ const TEST_PORT = rand(1:9999)
 end
 
 function testserve(𝐹::Function, args...; kwa...)
-    @test Threads.nthreads() > 1
     val    = Ref{Bool}(false)
     server = HTTP.Sockets.listen(HTTP.Sockets.InetAddr(HTTP.Sockets.ip"127.0.0.1", TEST_PORT))
     task   = @async nothing
@@ -57,17 +56,17 @@ end
 end
 
 @testset "ws routes" begin
-    #with_logger(Logging.NullLogger()) do
+    with_logger(Logging.NullLogger()) do
         val = Ref{Bool}(false)
         testserve(:app => (doc) -> push!(doc, ServerTestObj(; a = 1), ServerTestObj(; a = 2))) do
-            Bokeh.Client.open("http://127.0.0.1:$TEST_PORT/app/ws") do _, doc
+            Bokeh.Client.open("ws://localhost:$TEST_PORT/app/ws") do _, doc
                 val[] = true
                 @test length(doc.roots) == 2
                 @test all(i isa ServerTestObj for i ∈ doc.roots)
-                @test getproperty.(doc.roots, :a) ≡ [1, 2]
+                @test getproperty.(doc.roots, :a) == [1, 2]
             end
             yield()
         end
         @test val[]
-    #end
+    end
 end

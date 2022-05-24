@@ -1,4 +1,4 @@
-function trigger!(λ :: EventList, ε::ModelChangedEvent)
+function trigger!(λ::iEventList, ε::ModelChangedEvent)
     old = pop!(λ, ε)
     if isnothing(old)
         push!(λ, ε)
@@ -8,12 +8,12 @@ function trigger!(λ :: EventList, ε::ModelChangedEvent)
 end
 
 for (cls, other) ∈ (x = (RootAddedEvent, RootRemovedEvent); (x, x[2:-1:1]))
-    @eval function trigger!(λ::EventList, ε::$cls)
+    @eval function trigger!(λ::iEventList, ε::$cls)
         isnothing(pop!(λ, $other(ε.doc, ε.root, ε.index))) && push!(λ, ε)
     end
 end
 
-function trigger!(λ::EventList, ε::TitleChangedEvent)
+function trigger!(λ::iEventList, ε::TitleChangedEvent)
     pop!(λ, ε)
     push!(λ, ε)
 end

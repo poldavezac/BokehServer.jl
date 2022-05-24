@@ -91,12 +91,13 @@ function serve(
 
     @info(
         "serving applications",
-        names = tuple((
-            typeof(i).parameters[1] for i ∈ keys(allapps) if i ≢ Val(:static)
-        )...)
+        (let root = "http://$host:$port"
+            itr = (typeof(k).parameters[1] for k ∈ keys(allapps) if k ≢ Val(:static))
+            (i => joinpath(root, "$i") for i ∈ itr)
+         end)...
     )
     HTTP.listen(host, port; kwa...) do http::HTTP.Stream
-        @info "Opened new stream" target = http.message.target
+        @debug "Opened new stream" target = http.message.target
         try
             http.message.body = read(http)
             closeread(http)

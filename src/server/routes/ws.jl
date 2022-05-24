@@ -2,30 +2,40 @@ module WSRoute
 using HTTP
 using HTTP.WebSockets
 using HTTP.WebSockets: WebSocket, WebSocketError
+using ...Events
 using ...Protocol
-using ...Protocol.Messages: @msg_str, messageid, requestid
+using ...Protocol.Messages: @msg_str, messageid
 using ...Server
 using ...Server: iApplication, SessionContext
 using ...Tokens
 
 function route(io::HTTP.Stream, 𝐴::Server.iApplication)
     WebSockets.upgrade(io) do ws::WebSocket
+        waittime = Server.CONFIG.wssleepperiod
+        session  = nothing
         try
             session = onopen(ws, 𝐴)
             if !isnothing(session)
                 while isopen(ws)
-                    onmessage(ws, 𝐴, session)
+                    if iszero(Base.bytesavailable(ws.io))
+                        (waittime ≤ 0) || sleep(waittime)
+                    else
+                        onmessage(ws, 𝐴, session)
+                    end
+                    yield()
                 end
-                onclose(ws, 𝐴, session)
             end
         catch exc
-            @error "Server ws error" exception = (exc, Base.catch_backtrace())
-            if exc isa WebSocketError || exc isa Base.IOError
-                wserror(exc)
-            else
-                rethrow()
+            if !(exc isa EmptyMessageError)
+                @error "Server ws error" exception = (exc, Base.catch_backtrace())
+                if exc isa WebSocketError || exc isa Base.IOError
+                    wserror(exc)
+                else
+                    rethrow()
+                end
             end
         finally
+            onclose(ws, 𝐴, session)
             close(ws)
         end
     end
@@ -44,7 +54,7 @@ macro safely(code)
     esc(:(if isopen(ω)
         $code
     else
-        onclose(ω, 𝐴)
+        onclose(ω, 𝐴, σ)
         return nothing
     end))
 end
@@ -61,38 +71,43 @@ function onopen(ω::WebSocket, 𝐴::iApplication)
     @wsassert (time() < payload["session_expiry"]) "Token is expired"
     @wsassert Server.checktokensignature(𝐴, token) "Invalid token signature"
 
-    session = get!(𝐴, Server.SessionKey(Tokens.sessionid(token), token, req))
-    push!(session.clients, ω)
+    σ = get!(𝐴, Server.SessionKey(Tokens.sessionid(token), token, req))
+    push!(σ.clients, ω)
     @safely Protocol.send(ω, msg"ACK")
-    session
+    σ
 end
 
 function onmessage(ω::WebSocket, 𝐴::iApplication, σ::SessionContext)
-    @safely msg = Protocol.receive(ω)
-    @async try
-        answer = Server.handle(msg, σ.doc, Server.eventlist(𝐴, σ))
+    @safely msg = Protocol.receive(ω, Server.CONFIG.wstimeout, Server.CONFIG.wssleepperiod)
+    yield()
+    try
+        answer = handle(msg, 𝐴, σ)
         @safely Protocol.send(ω, answer...)
     catch exc
-        txt = sprint(showerror, exc)
-        @safely Protocol.send(ω, msg"ERROR", requestid(msg), txt)
+        @safely Protocol.send(ω, msg"ERROR", messageid(msg), sprint(showerror, exc))
+        rethrow(exc)
     end
 end
 
+onclose(ω::WebSocket, ::iApplication, ::Nothing) = nothing
 function onclose(ω::WebSocket, ::iApplication, σ::SessionContext)
     pop!(σ.clients, ω, nothing)
     nothing
 end
+
+struct EmptyMessageError <: Exception end
+handle(msg::msg"EMPTY", _...) = throw(EmptyMessageError())
 
 function handle(msg::msg"SERVER-INFO-REQ", ::iApplication, ::SessionContext)
     return (msg"SERVER-INFO-REPLY", messageid(msg))
 end
 
 function handle(msg::msg"PULL-DOC-REQ", ::iApplication, σ::SessionContext)
-    return (msg"SERVER-INFO-REPLY", messageid(msg), pushdoc(σ.doc))
+    return (msg"PULL-DOC-REPLY", messageid(msg), Protocol.pushdoc(σ.doc))
 end
 
-function handle(μ::msg"PULL-DOC-REPLY,PATCH-DOC", 𝐴::iApplication, σ::SessionContext)
-    onreceive!(μ, σ.doc, eventlist(𝐴, σ), σ.clients...)
+function handle(μ::msg"PUSH-DOC,PATCH-DOC", 𝐴::iApplication, σ::SessionContext)
+    Protocol.onreceive!(μ, σ.doc, Events.eventlist(𝐴, σ), σ.clients...)
     return (msg"OK", messageid(μ))
 end
 

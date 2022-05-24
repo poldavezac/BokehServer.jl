@@ -49,7 +49,9 @@ function Themes.changetheme!(doc::Document, theme::Themes.Theme)
     end
 end
 
-Models.allmodels(doc::Document) = allmodels(doc.roots...)
+for 𝐹 ∈ (:allmodels, :allids)
+    @eval Models.$𝐹(doc::Document) = $𝐹(doc.roots...)
+end
 
 Base.length(doc::Document) = length(doc.roots)
 Base.eltype(::Type{Document}) = iModel
