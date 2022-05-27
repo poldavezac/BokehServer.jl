@@ -6,10 +6,10 @@
 @inline bokehread(@nospecialize(T::Type), @nospecialize(ν)) = ν
 @inline changeevent(@nospecialize(::Type), @nospecialize(a...)) = Bokeh.ModelChangedEvent(a...)
 
+include("properties/other.jl")
 include("properties/numeric.jl")
 include("properties/enum.jl")
 include("properties/image.jl")
 include("properties/color.jl")
 include("properties/dataspec.jl")
 include("properties/container.jl")
-include("properties/other.jl")

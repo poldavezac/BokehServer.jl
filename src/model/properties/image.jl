@@ -4,9 +4,9 @@ bokehfieldtype(::Type{Image}) = String
 
 const IMAGE_PATTERN = r"^data:image/(PNG|JPG);base64,[a-zA-Z0-9+_/=]*$"
 
-bokehwrite(::Type{FontStyle}, ν) = throw(ErrorException("Use base64 encoded string: \"data:image/PNG;base64,...\""))
+bokehwrite(::Type{Image}, ν) = throw(ErrorException("Use base64 encoded string: \"data:image/PNG;base64,...\""))
 
-function bokehwrite(::Type{FontStyle}, ν::AbstractString)
+function bokehwrite(::Type{Image}, ν::AbstractString)
     if isfile(ν)
         if any(endswith(ν,i) for i ∈ (".png", ".PNG"))
             return "data:image/PNG;base64:$(base64encode(read(ν)))"

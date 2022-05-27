@@ -11,7 +11,7 @@ bokehrawtype(ν::Container) = ν.values
 for (fcn, tpe) ∈ (
         :push!      => Container,
         :pop!       => Container,
-        :setindex!  => Container
+        :setindex!  => Container,
         :append!    => Container{<:AbstractArray},
         :deleteat!  => Container{<:AbstractArray},
         :popat!     => Container{<:AbstractArray},

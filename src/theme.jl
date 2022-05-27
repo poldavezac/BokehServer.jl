@@ -9,29 +9,16 @@ struct Theme <: iTheme
     Theme() = new(Dict{Symbol, Dict{Symbol, Function}}())
 end
 
-function theme(T::Type, _...)
+const THEME = Theme()
+
+function theme(T::Type, a...)
     doc = Bokeh.curdoc()
-    return isnothing(doc) ? T() : theme(doc.theme, T, _...)
+    return theme((isnothing(doc) ? THEME : doc.theme), T, a...)
 end
 
 function theme(dic::Theme, T::Type{<:iModel}, attr::Symbol)
-    if !isempty(dic.items)
-        fcn = getvalue(dic, T, attr)
-        isnothing(fcn) || return Some(fcn())
-    end
-    return nothing
-end
-
-function theme(dic::Theme, T::Type{<:iModel}, props::Dict{Symbol, Any})
-    isempty(dic.items) && return props
-
-    for attr ∈ Models.bokehproperties(T)
-        if !haskey(props, attr)
-            fcn = getvalue(dic, T, attr)
-            isnothing(fcn) || props[attr] = fcn()
-        end
-    end
-    return props
+    fcn = getvalue(dic, T, attr)
+    return isnothing(fcn) ? nothing : Some(fcn())
 end
 
 function theme(dic::Theme, T::Type)

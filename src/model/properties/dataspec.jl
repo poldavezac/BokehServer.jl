@@ -41,6 +41,7 @@ end
     $(_spec_constructor(:(EnumSpec{T})))
 end
 
+Base.eltype(::Type{<:iSpec{T}}) where {T} = T
 longform(::Type{<:EnumSpec}, ν::String)         = longform(Symbol(ν))
 longform(::Type{<:EnumSpec}, ν::Symbol)         = ν
 Base.values(::Type{<:EnumSpec{T}}) where {T}    = T
@@ -53,9 +54,9 @@ function bokehwrite(
         µ::iHasProps,
         α::Symbol,
         ν::Union{Dict{Symbol}, NamedTuple},
-) where {T}
+)
     value = get(ν, :value, missing)
-    ismissing(value) || (value = bokehwrite(T.parameters[1], µ, α, value))
+    ismissing(value) || (value = bokehwrite(eltype(T), µ, α, value))
     T(; (i => j for (i, j) ∈ zip(keys(ν), values(ν)))..., value)
 end
 
@@ -64,15 +65,15 @@ function bokehwrite(
         µ::iHasProps,
         α::Symbol,
         ν::Union{Dict{Symbol}, NamedTuple},
-) where {T}
+)
     value = get(ν, :value, missing)
-    ismissing(value) || (value = bokehwrite(T.parameters[1], µ, α, value))
+    ismissing(value) || (value = bokehwrite(eltype(T), µ, α, value))
     un    = get(ν, :units, units(T)[1])
     @assert un ∈ units(T)
     T(; (i => j for (i, j) ∈ zip(keys(ν), values(ν)))..., value, units)
 end
 
-function bokehwrite(T::Type{<:iSpec}, µ::iHasProps, α::Symbol, ν::Dict{String}) where {T}
+function bokehwrite(T::Type{<:iSpec}, µ::iHasProps, α::Symbol, ν::Dict{String})
     bokehwrite(T, µ, α, Dict{Symbol, Any}((Symbol(i) => j for (i, j) ∈ ν)))
 end
 

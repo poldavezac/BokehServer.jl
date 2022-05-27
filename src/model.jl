@@ -4,7 +4,6 @@ using ..AbstractTypes
 
 include("model/properties.jl")
 include("model/modelmacro.jl")
-include("model/propertymethods.jl")
 include("model/allmodels.jl")
 end
 using .Models

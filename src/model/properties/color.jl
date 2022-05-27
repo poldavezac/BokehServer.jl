@@ -1,4 +1,6 @@
+using Printf
 using Colors
+
 struct Color
     r::UInt8
     g::UInt8

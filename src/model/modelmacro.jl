@@ -155,7 +155,7 @@ function _𝑚bkcls(
             function $bkcls(; id = Bokeh.Models.ID(), kwa...)
                 new(
                     id isa Int64 ? id : parse(Int64, string(id)),
-                    $((initcode(i) for i ∈ fields if !(i.type isa Alias))...)
+                    $((initcode(i) for i ∈ fields if !(i.type isa Alias))...),
                     Function[],
                 )
             end
@@ -250,20 +250,16 @@ function _𝑚funcs(bkcls::Symbol, fields::Vector{<:NamedTuple})
         end
 
         @inline function Bokeh.Models.hasbokehproperty(T::Type{$bkcls}, attr::Symbol)
-            return $(if all(i.js && for i in fields)
-                :(hasfield(fieldtype(T, :original), attr))
-            else
-                _𝑚elseif((i for i ∈ fields if i.js), false) do field
-                    :(if attr ≡ $(Meta.quot(field.name))
-                          true
-                    end)
-                end
-            end)
+            _𝑚elseif((i for i ∈ fields if i.js), false) do field
+                :(if attr ≡ $(Meta.quot(field.name))
+                      true
+                end)
+            end
         end
 
         function Bokeh.Models.defaultvalue(::Type{$bkcls}, attr::Symbol) :: Union{Some, Nothing}
             $(_𝑚elseif(fields, :(@error "No default value" class = $bkcls attr)) do field
-                if isnothing(field.default) || i.type <: Alias
+                if isnothing(field.default) || field.type <: Alias
                     nothing
                 else
                     :(if attr ≡ $(Meta.quot(field.name))
