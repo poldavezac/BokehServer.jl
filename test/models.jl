@@ -43,54 +43,74 @@
     end
 end
 
-@testset "data source structure" begin
-    eval(Bokeh.Models._model_srccls(
-        :__A,
-        [(; js = true, name = :a), (; js = false, name = :b)],
-        true
-    ))
-    @test fieldnames(Src__A) == (:source, :a,)
-    @test fieldtypes(Src__A) == (Union{Bokeh.iDataSource, Nothing}, Union{Symbol, Nothing},)
-    @test Src__A() isa Src__A
-    @test isnothing(Bokeh.Models._model_srccls(
-        :__A,
-        [(; js = true, name = :a), (; js = false, name = :b)],
-        false
-    ))
-end
-
 @testset "bokeh structure" begin
-    @Bokeh.model mutable struct X <: Bokeh.iSourcedModel
+    @Bokeh.model mutable struct X <: Bokeh.iModel
         a::Int32   = Int32(1)
         b::Float32 = 10f0
     end
-    @test fieldnames(X) == (:id, :original, :callbacks, :source)
-    @test propertynames(X()) == (:a, :b, :data_source)
-    @test X <: Bokeh.iSourcedModel
+    @test fieldnames(X) == (:id, :a, :b, :callbacks)
+    @test propertynames(X()) == (:a, :b)
+    @test X <: Bokeh.iModel
     @test X().a ≡ one(Int32)
     @test X().b ≡ 10f0
 
-    @Bokeh.model mutable struct Y <: Bokeh.iModel
-        a::Int32   = Int32(1)
-        b::Float32 = 10f0
-    end
-    @test Y <: Bokeh.iModel
-    @test !(Y <: Bokeh.iSourcedModel)
-    @test fieldnames(Y) == (:id, :original, :callbacks)
-    @test propertynames(Y()) == (:a, :b)
-    @test Bokeh.Models.bokehproperties(Y) == (:a, :b)
-    @test Y().a ≡ one(Int32)
-    @test Y().b ≡ 10f0
-
-    @Bokeh.model internal = [a] mutable struct Z <: Bokeh.iHasProps
-        a::Int32   = Int32(1)
+    @Bokeh.model  mutable struct Z <: Bokeh.iHasProps
+        a::Bokeh.Models.Internal{Int32} = Int32(1)
         b::Float32 = 10f0
     end
     @test Z <: Bokeh.iHasProps
     @test !(Z <: Bokeh.iModel)
-    @test fieldnames(Z) == (:id, :original, :callbacks)
+    @test fieldnames(Z) == (:id, :a, :b)
     @test propertynames(Z()) == (:a, :b)
     @test Bokeh.Models.bokehproperties(Z) == (:b,)
+    @test fieldtype(Z, :a) ≡ Int32
+end
+
+@testset "bokeh dataspec/container" begin
+    @Bokeh.model mutable struct X <: Bokeh.iModel
+        a::Bokeh.Models.Spec{Int32}  = Int32(1)
+        b::Bokeh.Models.DistanceSpec = 10f0
+        c::Vector{Int64}             = Int64[1, 2]
+    end
+    @test fieldnames(X) == (:id, :a, :b, :c :callbacks)
+    @test propertynames(X()) == (:a, :b, :c)
+    @test X <: Bokeh.iModel
+    @test X().a ≡ one(Int32)
+    @test X().b ≡ 10f0
+    @test X().c isa Bokeh.Models.Container{Vector{Int64}}
+    @test X().c.values == [1, 2]
+    @test fieldtype(X, :c) ≡ Vector{Int64}
+
+    x = X()
+    push!(x.c, 10)
+    @test x.c.values == Int64[1, 2, 10]
+    empty!(x.c)
+    @test isempty(x.c.values)
+end
+
+@testset "bokeh color" begin
+    @Bokeh.model mutable struct X <: Bokeh.iModel
+        a::Bokeh.Models.Color =  :gray
+    end
+    @test X().a.r == X().a.g == X().a.b == X().a.a == 0xff
+
+    x = X(; a = "rgb(1,2,3)")
+    @test x.r ≡ UInt8(1)
+    @test x.g ≡ UInt8(2)
+    @test x.b ≡ UInt8(3)
+
+    x = X(; a= (1,2,3))
+    @test x.r ≡ UInt8(1)
+    @test x.g ≡ UInt8(2)
+    @test x.b ≡ UInt8(3)
+end
+
+@testset "bokeh marker" begin
+    @Bokeh.model mutable struct X <: Bokeh.iModel
+        a::Bokeh.Models.MarkerSpec = "x"
+    end
+    @test X().a == (; value = :x)
+    @test X(;a = "fff").a == (; field = "fff")
 end
 
 @testset "bokeh children" begin

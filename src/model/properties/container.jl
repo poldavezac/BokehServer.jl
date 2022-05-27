@@ -12,6 +12,7 @@ for (𝐹, 𝑇) ∈ (
         :push!      => Container,
         :pop!       => Container,
         :setindex!  => Container,
+        :empty!     => Container,
         :append!    => Container{<:AbstractArray},
         :deleteat!  => Container{<:AbstractArray},
         :popat!     => Container{<:AbstractArray},

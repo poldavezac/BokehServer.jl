@@ -42,7 +42,7 @@ end
 
 Color(r, g, b)                                              = Color(r, g, b, 0xff)
 Color(ν::Union{NTuple{<:Integer, 4}, NTuple{<:Integer, 3}}) = Color(ν...)
-Color(ν::Symbol)                                            = getfield(Colors, ν)
+Color(ν::Symbol)                                            = Color(Colors.color_names["$ν"]...)
 Color(ν::Int32)                                             = Color(reinterpret(UIn8, Int32[ν])...)
 
 function Color(ν::AbstractString)
