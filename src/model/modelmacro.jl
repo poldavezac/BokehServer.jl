@@ -1,55 +1,43 @@
 """
     macro model(args::Vararg{Union{Expr, String, Symbol}})
 
-Allows creating Bokeh-aware model.
+Allows creating Bokeh-aware model:
 
-Classes are created and aggregated into the final class `XXX`:
-
-* `DataXXX`: a class as provided in the macro arguments. It stores the fields
-with the exact types provided in the macro.
-* Optionally `SrcXXX`: a class with the same fields as `XXX` but with types
-`Symbol`, used for overloading the `XXX` fields with a data source column.
-
-The final class has properties to simulate the behavior of a *normal* struct.
-These properties also inform the current event list of any change.
+* the model can be transfered to the javascript client
+* changes to the fields will trigger events which one can subscribe to
+ 
+** Note ** Dicts and Vectors are wrapped in a `Container` class
+which allows triggering an event when using `push!` methods and
+others of the same type.
 
 ** Note ** The same behaviour as when using `Base.@kwdef` is provided. It's good
-practice to always provide default values. If not
+practice to always provide default values.
 
-** Note ** Internal fields, not passed to `bokehjs` can be specified using
-`internal = ["a regex", "another regex"]`. Any field matching one of the
-regular expressions is *internal*. Internal fields are not added to the 
-`SrcXXX` class.
+** Note ** Wrapping a type in `Internal` will remove the field 
+from the Bokeh behavior: the client remains unaware of it and
+changes trigger no event.
 
 ## Examples
 
 ```julia
-"X is a structure with a `data_source` property"
-@Bokeh.model struct X <: Bokeh.iSourcedModel
+@Bokeh.model mutable struct X <: Bokeh.iModel
     field1::Int     = 0
     field2::Float64 = 0.0
 end
-@assert propertynames(X) ≡ (:field1, :field2, :data_source)
+@assert propertynames(X) ≡ (:field1, :field2)
+@assert propertynames(X; private = true) ≡ (:field1, :field2, :id, :callbacks)
 @assert X().field1 ≡ 0
 @assert X().field2 ≡ 0.0
 
-"Y is a structure *without* a `data_source` property"
-@Bokeh.model struct Y <: Bokeh.iModel
-    field1::Int     = 0
-    field2::Float64 = 0.0
-end
-@assert propertynames(Y) ≡ (:field1, :field2)
-@assert Y().field1 ≡ 0
-@assert Y().field2 ≡ 0.0
-```
-
 "Z is a structure where fields `nojs1` and `nojs2` are *not* passed to bokehjs"
-@Bokeh.model internal = ["nojs.*"] struct Z <: Bokeh.iModel
-    nojs1 :: Any  = []
-    nojs2 :: Any  = Set([])
-    field1::Int     = 0
-    field2::Float64 = 0.0
+@Bokeh.model mutable struct Z <: Bokeh.iModel
+    nojs1 ::Internal{Any} = []
+    nojs2 ::Internal{Any} = Set([])
+    field1::Int           = 0
+    field2::Float64       = 0.0
 end
+@assert Z().nojs1 isa Vector{Any}
+@assert Z().nojs2 isa Set{Any}
 """
 :(@model)
 
