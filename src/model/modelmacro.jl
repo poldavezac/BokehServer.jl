@@ -70,17 +70,7 @@ function _𝑚elseif(func::Function, itr, elsecode = :(@assert false "unknown co
     expr
 end
 
-function _𝑚fields(mod, code, opts::Vector{Regex} = Regex[])
-    isjs = if isempty(opts)
-        # all fields are bokeh fields
-        (_)->true
-    else
-        # select fields mentioned in `args` as bokeh fields
-        (x)-> let val = "$x"
-            all(isnothing(match(r, val)) for r ∈ opts)
-        end
-    end
-
+function _𝑚fields(mod, code)
     # filter expressions :(x::X) and :(x::X = y)
     isfield(x) = if !(x isa Expr)
         false
@@ -95,17 +85,22 @@ function _𝑚fields(mod, code, opts::Vector{Regex} = Regex[])
     [
         begin
             (name, type) = (line.head ≡ :(::) ? line : line.args[1]).args
-
-            realtype = mod.eval(type)
+            realtype     = mod.eval(type)
+            if realtype <: Union{AbstractDict, AbstractArray}
+                realtype = Container{realtype}
+            end
             (;
                 index, name,
                 type     = realtype,
                 default  = line.head ≡ :(::) ? nothing : Some(line.args[2]),
-                js       = isjs(name),
-                child    = realtype <: iModel,
-                children = let els = eltype(realtype)
+                js       = realtype <: Internal,
+                child    = realtype <: Union{iModel, Nullable{<:iModel}},
+                children = if realtype <: Container
+                    els = eltype(eltype(realtype))
                     # Pair comes out for Dict, for example
                     any(i <: iModel for i ∈ (els <: Pair ? els.parameters : (els,)))
+                else
+                    false
                 end
             )
         end
@@ -271,25 +266,17 @@ function _𝑚funcs(bkcls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function _𝑚code(mod::Module, code::Expr, opts::Vector{Regex})
+function _𝑚code(mod::Module, code::Expr)
     @assert code.head ≡ :struct
     if !code.args[1]
         @warn """Bokeh structure $mod.$(code.args[2]) is set to mutable.
         Add `mutable` to disable this warning"""
     end
-    @assert code.args[2] isa Expr "Bokeh class must have a parent (iHasProps, iModel, iSourcedModel?)"
+    @assert code.args[2] isa Expr "Bokeh class must have a parent (iHasProps, iModel?)"
     @assert code.args[2].head ≡ :(<:) "Bokeh class cannot be templated"
 
     code.args[1] = true
-    fields = _𝑚fields(mod, code, opts)
-
-    # remove default part from the field lines
-    for field ∈ fields
-        if !isnothing(field.default)
-            code.args[end].args[field.index] = code.args[end].args[field.index].args[1]
-        end
-    end
-
+    fields  = _𝑚fields(mod, code)
     parents = code.args[2].args[2]
     bkcls   = code.args[2].args[1]
     esc(quote

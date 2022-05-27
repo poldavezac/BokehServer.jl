@@ -8,7 +8,7 @@ const CONTAINERS = Union{AbstractArray, AbstractDict}
 bokehread(::Type{T}, µ::iHasProps, α::Symbol, ν) where {T<:CONTAINERS}= Container{T}(WeakRef(µ), α, ν)
 bokehrawtype(ν::Container) = ν.values
 
-for (fcn, tpe) ∈ (
+for (𝐹, tpe) ∈ (
         :push!      => Container,
         :pop!       => Container,
         :setindex!  => Container,
@@ -21,20 +21,23 @@ for (fcn, tpe) ∈ (
         :pop!       => Container{<:AbstractDict},
         :get!       => Container{<:AbstractDict},
 )
-    @eval function Base.$fcn(v::T, x...; y...) where {T <: $tpe}
+    @eval function Base.$𝐹(v::T, x...; y...) where {T <: $tpe}
         parent = v.parent.value
         if isnothing(parent) || getfield(parent, v.attr) ≢ v
-            $fcn(v.values, x...; y...)
+            $𝐹(v.values, x...; y...)
         else
             old = copy(v.values)
-            out = $fcn(v.values, x...; y...)
+            out = $𝐹(v.values, x...; y...)
             Events.trigger(Bokeh.ModelChangedEvent(parent, v.attr, old, new))
             out ≡ v.values ? v : out
         end
     end
 end
 
-Base.getindex(v::Container, x...) = getindex(v.values, x...)
+Base.eltype(::Type{Container{T}}) where {T}  = eltype(T)
+for 𝐹 ∈ (:length, :iterate, :getindex)
+    @eval Base.$𝐹(v::Container, x...)  = $𝐹(v.values, x...)
+end
 Base.get(v::Container{<:AbstractDict}, x...) = get(v.values, x...)
 
 const FactorSeq = Container{Union{Vector{String}, Vector{Tuple{String, String}}, Vector{Tuple{String, String, String}}}}

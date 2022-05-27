@@ -12,6 +12,9 @@ end
 """
 struct Alias{T} end
 
+struct Internal{T} end
+@inline bokehfieldtype(::Type{Internal{T}}) where {T} = T
+
 struct ReadOnly{T} end
 @inline bokehfieldtype(::Type{ReadOnly{T}}) where {T} = bokehfieldtype(T)
 @inline bokehwrite(::Type{<:ReadOnly}, @nospecialize(ν)) = throw(ErrorException("Readonly attribute"))
