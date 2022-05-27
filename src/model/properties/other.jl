@@ -28,7 +28,9 @@ struct Nullable{T} end
 struct FontSize end
 
 const FONTSTYLE_PATTERN = r"^[0-9]+(.[0-9]+)?(%|em|ex|ch|ic|rem|vw|vh|vi|vb|vmin|vmax|cm|mm|q|in|pc|pt|px)$"i
+
 @inline bokehfieldtype(::Type{FontSize}) = String
+
 function bokehwrite(::Type{FontSize}, ν::AbstractString)
     @assert !isnothing(match(FONTSTYLE_PATTERN, ν))
     return ν

@@ -44,7 +44,7 @@ end
 "Stores every class created by the @model macro"
 const MODEL_TYPES = Set{DataType}()
 
-function _𝑚elseif(func::Function, itr, elsecode = :(@assert false "unknown condition"))
+function 👻elseif(func::Function, itr, elsecode = :(@assert false "unknown condition"))
     last = expr = Expr(:if)
     for args ∈ itr
         val = func(args)
@@ -58,7 +58,7 @@ function _𝑚elseif(func::Function, itr, elsecode = :(@assert false "unknown co
     expr
 end
 
-function _𝑚fields(mod, code)
+function 👻fields(mod, code)
     # filter expressions :(x::X) and :(x::X = y)
     isfield(x) = if !(x isa Expr)
         false
@@ -74,7 +74,7 @@ function _𝑚fields(mod, code)
         begin
             (name, type) = (line.head ≡ :(::) ? line : line.args[1]).args
             realtype     = mod.eval(type)
-            if realtype <: Union{AbstractDict, AbstractArray}
+            if realtype <: Union{AbstractDict, AbstractArray, AbstractSet}
                 realtype = Container{realtype}
             end
             (;
@@ -97,7 +97,7 @@ function _𝑚fields(mod, code)
     ]
 end
 
-function _𝑚bkcls(
+function 👻bkcls(
         name      :: Symbol,
         cls       :: Symbol,
         parents   :: Union{Symbol, Expr},
@@ -121,7 +121,7 @@ function _𝑚bkcls(
             end
         end
             
-        val  = _𝑚elseif((field.name, opts...), val) do key
+        val  = 👻elseif((field.name, opts...), val) do key
             :(if haskey(kwa, $(Meta.quot(key)))
                 kwa[$(Meta.quot(key))]
             end)
@@ -148,7 +148,7 @@ function _𝑚bkcls(
     end
 end
 
-function _𝑚setter(bkcls::Symbol, fields::Vector{<:NamedTuple})
+function 👻setter(bkcls::Symbol, fields::Vector{<:NamedTuple})
     function setter(field)
         if field.js
             quote
@@ -166,7 +166,7 @@ function _𝑚setter(bkcls::Symbol, fields::Vector{<:NamedTuple})
 
     quote
         function Base.setproperty!(μ::$bkcs, α::Symbol, ν; dotrigger :: Bool = true)
-            $(_𝑚elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
+            $(👻elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
                 name = Meta.quot(i.name)
                 if i.type <: Alias
                     i = only(j for j ∈ fields if j.name ≡ i.type.parameters[1])
@@ -181,10 +181,10 @@ function _𝑚setter(bkcls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function _𝑚getter(bkcls::Symbol, fields::Vector{<:NamedTuple})
+function 👻getter(bkcls::Symbol, fields::Vector{<:NamedTuple})
     quote
         function Base.getproperty(μ::$bkcs, α::Symbol)
-            $(_𝑚elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
+            $(👻elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
                 old = Meta.quot(i.name)
                 if i.type <: Alias
                     i = only(j for j ∈ fields if j.name ≡ i.type.parameters[1])
@@ -198,7 +198,7 @@ function _𝑚getter(bkcls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function _𝑚propnames(bkcls::Symbol, fields::Vector{<:NamedTuple})
+function 👻propnames(bkcls::Symbol, fields::Vector{<:NamedTuple})
     quote
         function Base.propertynames(μ::$bkcls; private::Bool = false)
             return if private
@@ -210,7 +210,7 @@ function _𝑚propnames(bkcls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function _𝑚funcs(bkcls::Symbol, fields::Vector{<:NamedTuple})
+function 👻funcs(bkcls::Symbol, fields::Vector{<:NamedTuple})
     function items(select::Symbol, sort::Bool)
         vals = if select ≡ :children
             [i.name for i ∈ fields if i.js && i.children]
@@ -225,7 +225,7 @@ function _𝑚funcs(bkcls::Symbol, fields::Vector{<:NamedTuple})
 
     quote
         @inline function Bokeh.Models.bokehproperties(::Type{$bkcls}; select::Symbol = :all, sorted::Bool = false)
-            $(_𝑚elseif(Iterators.product((false, true), (:all, :children, :child))) do (sort, select)
+            $(👻elseif(Iterators.product((false, true), (:all, :children, :child))) do (sort, select)
                 :(if sorted ≡ $sort && select ≡ $(Meta.quot(select))
                     tuple($(items(select, sort)...))
                 end)
@@ -233,7 +233,7 @@ function _𝑚funcs(bkcls::Symbol, fields::Vector{<:NamedTuple})
         end
 
         @inline function Bokeh.Models.hasbokehproperty(T::Type{$bkcls}, attr::Symbol)
-            _𝑚elseif((i for i ∈ fields if i.js), false) do field
+            👻elseif((i for i ∈ fields if i.js), false) do field
                 :(if attr ≡ $(Meta.quot(field.name))
                       true
                 end)
@@ -241,7 +241,7 @@ function _𝑚funcs(bkcls::Symbol, fields::Vector{<:NamedTuple})
         end
 
         function Bokeh.Models.defaultvalue(::Type{$bkcls}, attr::Symbol) :: Union{Some, Nothing}
-            $(_𝑚elseif(fields, :(@error "No default value" class = $bkcls attr)) do field
+            $(👻elseif(fields, :(@error "No default value" class = $bkcls attr)) do field
                 if isnothing(field.default) || field.type <: Alias
                     nothing
                 else
@@ -254,7 +254,7 @@ function _𝑚funcs(bkcls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function _𝑚code(mod::Module, code::Expr)
+function 👻code(mod::Module, code::Expr)
     @assert code.head ≡ :struct
     if !code.args[1]
         @warn """Bokeh structure $mod.$(code.args[2]) is set to mutable.
@@ -264,16 +264,16 @@ function _𝑚code(mod::Module, code::Expr)
     @assert code.args[2].head ≡ :(<:) "Bokeh class cannot be templated"
 
     code.args[1] = true
-    fields  = _𝑚fields(mod, code)
+    fields  = 👻fields(mod, code)
     parents = code.args[2].args[2]
     bkcls   = code.args[2].args[1]
     esc(quote
-        @Base.__doc__ $(_𝑚bkcls(bkcls, parents, fields))
+        @Base.__doc__ $(👻bkcls(bkcls, parents, fields))
 
-        $(_𝑚getter(bkcls, fields))
-        $(_𝑚setter(bkcls, fields))
-        $(_𝑚propnames(bkcls, fields))
-        $(_𝑚funcs(bkcls, fields))
+        $(👻getter(bkcls, fields))
+        $(👻setter(bkcls, fields))
+        $(👻propnames(bkcls, fields))
+        $(👻funcs(bkcls, fields))
     end)
 end
 
@@ -293,7 +293,7 @@ macro model(args::Vararg{Union{Expr, String, Symbol}})
             for i ∈ getkw(:internal)
         )...
     )
-    _𝑚code(__module__, expr[1], internal)
+    👻code(__module__, expr[1], internal)
 end
 
 function defaultvalue end

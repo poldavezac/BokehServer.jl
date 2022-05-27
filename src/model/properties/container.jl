@@ -4,11 +4,11 @@ struct Container{T}
     values::T
 end
 
-const CONTAINERS = Union{AbstractArray, AbstractDict}
+const CONTAINERS = Union{AbstractArray, AbstractDict, AbstractSet}
 bokehread(::Type{T}, µ::iHasProps, α::Symbol, ν) where {T<:CONTAINERS}= Container{T}(WeakRef(µ), α, ν)
 bokehrawtype(ν::Container) = ν.values
 
-for (𝐹, tpe) ∈ (
+for (𝐹, 𝑇) ∈ (
         :push!      => Container,
         :pop!       => Container,
         :setindex!  => Container,
@@ -17,27 +17,33 @@ for (𝐹, tpe) ∈ (
         :popat!     => Container{<:AbstractArray},
         :popfirst!  => Container{<:AbstractArray},
         :insert!    => Container{<:AbstractArray},
-        :delete!    => Container{<:AbstractDict},
-        :pop!       => Container{<:AbstractDict},
+        :delete!    => Container{<:Union{AbstractDict, AbstractSet}},
         :get!       => Container{<:AbstractDict},
 )
-    @eval function Base.$𝐹(v::T, x...; y...) where {T <: $tpe}
-        parent = v.parent.value
-        if isnothing(parent) || getfield(parent, v.attr) ≢ v
-            $𝐹(v.values, x...; y...)
+    @eval function Base.$𝐹(γ::T, x...; y...) where {T <: $𝑇}
+        parent = γ.parent.value
+        if isnothing(parent) || getfield(parent, γ.attr) ≢ γ
+            $𝐹(γ.values, x...; y...)
         else
-            old = copy(v.values)
-            out = $𝐹(v.values, x...; y...)
-            Events.trigger(Bokeh.ModelChangedEvent(parent, v.attr, old, new))
-            out ≡ v.values ? v : out
+            old = copy(γ.values)
+            out = $𝐹(γ.values, x...; y...)
+            Events.trigger(Bokeh.ModelChangedEvent(parent, γ.attr, old, new))
+            out ≡ γ.values ? γ : out
         end
     end
 end
 
-Base.eltype(::Type{Container{T}}) where {T}  = eltype(T)
-for 𝐹 ∈ (:length, :iterate, :getindex)
-    @eval Base.$𝐹(v::Container, x...)  = $𝐹(v.values, x...)
+for (𝐹, 𝑇) ∈ (
+        :length     => Container,
+        :iterate    => Container,
+        :getindex   => Container,
+        :get        => Container{<:AbstractDict},
+        :haskey     => Container{<:AbstractDict},
+)
+    @eval Base.$𝐹(γ::$𝑇, x...)  = $𝐹(γ.values, x...)
 end
-Base.get(v::Container{<:AbstractDict}, x...) = get(v.values, x...)
+
+Base.in(ν, γ::Container) = in(ν, γ.values)
+Base.eltype(::Type{<:Container{T}}) where {T}  = eltype(T)
 
 const FactorSeq = Container{Union{Vector{String}, Vector{Tuple{String, String}}, Vector{Tuple{String, String, String}}}}
