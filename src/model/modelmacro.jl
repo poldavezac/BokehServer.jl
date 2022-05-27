@@ -56,7 +56,21 @@ end
 "Stores every class created by the @model macro"
 const MODEL_TYPES = Set{DataType}()
 
-function _model_fields(mod, code, opts::Vector{Regex} = Regex[])
+function _𝑚elseif(func::Function, itr, elsecode = :(@assert false "unknown condition"))
+    last = expr = Expr(:if)
+    for args ∈ itr
+        val = func(args)
+        isnothing(val) && continue
+
+        push!(last.args, val.args..., Expr(:elseif))
+        last = last.args[end]
+    end
+    last.head = :block
+    push!(last.args, elsecode)
+    expr
+end
+
+function _𝑚fields(mod, code, opts::Vector{Regex} = Regex[])
     isjs = if isempty(opts)
         # all fields are bokeh fields
         (_)->true
@@ -84,7 +98,8 @@ function _model_fields(mod, code, opts::Vector{Regex} = Regex[])
 
             realtype = mod.eval(type)
             (;
-                index, name, type,
+                index, name,
+                type     = realtype,
                 default  = line.head ≡ :(::) ? nothing : Some(line.args[2]),
                 js       = isjs(name),
                 child    = realtype <: iModel,
@@ -99,43 +114,120 @@ function _model_fields(mod, code, opts::Vector{Regex} = Regex[])
     ]
 end
 
-_model_srccls(cls::Symbol, hassource :: Bool) =  hassource ? (Symbol("Src$cls"),) : ()
-
-function _model_srccls(cls::Symbol, fields::Vector{<:NamedTuple}, hassource :: Bool)
-    if hassource
-        src = Symbol("Src$cls")
-        :(@Base.kwdef mutable struct $src
-            source :: Union{Bokeh.iDataSource, Nothing} = nothing
-            $((
-                :($(i.name) :: Union{Symbol, Nothing} = nothing)
-                for i ∈ fields if i.js
-            )...)
-        end)
-    else
-        nothing
-    end
-end
-
-function _model_bkcls(
+function _𝑚bkcls(
         name      :: Symbol,
         cls       :: Symbol,
         parents   :: Union{Symbol, Expr},
         fields    :: Vector{<:NamedTuple},
-        hassource :: Bool
 )
+    aliases = [i.name => i.parameters[1] for i ∈ fields if i.type <: Alias]
+
+    function initcode(field)
+        opts = [first(j) for j ∈ aliases if last(j) ≡ field.name]
+        val  = quote
+            val = Bokeh.Themes.theme($bkcls, α)
+            $(if isnothing(field.default)
+                nothing
+            else
+                :(isnothing(val) && (val = Bokeh.Models.defaultvalue($bkcls, α)))
+            end)
+            if isnothing(val)
+                throw(ErrorException(($("$bkcls.$(i.name) is a mandatory argument"))))
+            else
+                some(val)
+            end
+        end
+            
+        val  = _𝑚elseif((field.name, opts...), val) do key
+            :(if haskey(kwa, $(Meta.quot(key)))
+                kwa[$(Meta.quot(key))]
+            end)
+        end
+        :(Bokeh.Models.bokehconvert($(i.type), $val))
+    end
+
     quote
         mutable struct $name <: $parents
             id        :: Int64
-            original  :: $cls
+            $((:($(i.name)::$(bokehfieldtype(i.type))) for i ∈ fields if !(i.type <: Alias))...)
             callbacks :: Vector{Function}
-            $(hassource ? :(source :: $(_model_srccls(name, hassource)[1])) : nothing)
+
+            function $bkcls(; id = Bokeh.Models.ID(), kwa...)
+                new(
+                    id isa Int64 ? id : parse(Int64, string(id)),
+                    $((initcode(i) for i ∈ fields if !(i.type isa Alias))...)
+                    Function[],
+                )
+            end
         end
 
         push!(Bokeh.Models.MODEL_TYPES, $name)
     end
 end
 
-function _model_funcs(bkcls::Symbol, datacls::Symbol, fields::Vector{<:NamedTuple}, hassource::Bool)
+function _𝑚setter(bkcls::Symbol, fields::Vector{<:NamedTuple})
+    function setter(field)
+        if field.js
+            quote
+                old = bokehrawtype(getproperty(μ, α))
+                new = setfield!(μ, α, υ)
+                dotrigger && Bokeh.Events.trigger(
+                    Bokeh.Models.changeevent($(field.type), μ, α, old, new)
+                )
+                new
+            end
+        else
+            :(setfield!(µ, $(Meta.quot(field.name)), α))
+        end
+    end
+
+    quote
+        function Base.setproperty!(μ::$bkcs, α::Symbol, ν; dotrigger :: Bool = true)
+            $(_𝑚elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
+                name = Meta.quot(i.name)
+                if i.type <: Alias
+                    i = only(j for j ∈ fields if j.name ≡ i.type.parameters[1])
+                end
+
+                :(if α ≡ $name
+                    ν = bokehwrite($(i.type), μ, $(Meta.quot(i.name)), bokehrawtype(ν))
+                    return $(setter(i))
+                end)
+            end)
+        end
+    end
+end
+
+function _𝑚getter(bkcls::Symbol, fields::Vector{<:NamedTuple})
+    quote
+        function Base.getproperty(μ::$bkcs, α::Symbol)
+            $(_𝑚elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
+                old = Meta.quot(i.name)
+                if i.type <: Alias
+                    i = only(j for j ∈ fields if j.name ≡ i.type.parameters[1])
+                end
+                new = Meta.quot(i.name)
+                :(if α ≡ $old
+                    return bokehread($(i.type), μ, $new, getfield(µ, $new))
+                end)
+            end)
+        end
+    end
+end
+
+function _𝑚propnames(bkcls::Symbol, fields::Vector{<:NamedTuple})
+    quote
+        function Base.propertynames(μ::$bkcls; private::Bool = false)
+            return if private
+                fieldnames(µ)
+            else
+                $(tuple((i.name for i ∈ fields)..., :id, :callbacks))
+            end
+        end
+    end
+end
+
+function _𝑚funcs(bkcls::Symbol, fields::Vector{<:NamedTuple})
     function items(select::Symbol, sort::Bool)
         vals = if select ≡ :children
             [i.name for i ∈ fields if i.js && i.children]
@@ -148,25 +240,9 @@ function _model_funcs(bkcls::Symbol, datacls::Symbol, fields::Vector{<:NamedTupl
         return Meta.quot.(vals)
     end
 
-    function elseifblock(func::Function, itr, elsecode = :(@assert false "unknown condition"))
-        last = expr = Expr(:if)
-        for args ∈ itr
-            val = func(args)
-            isnothing(val) && continue
-
-            push!(last.args, val.args..., Expr(:elseif))
-            last = last.args[end]
-        end
-        last.head = :block
-        push!(last.args, elsecode)
-        expr
-    end
-
     quote
-        Bokeh.Models.modeltype(::Type{$datacls}) = $bkcls
-        Bokeh.Models.modeltype(::Type{$bkcls}) = $datacls
         @inline function Bokeh.Models.bokehproperties(::Type{$bkcls}; select::Symbol = :all, sorted::Bool = false)
-            $(elseifblock(Iterators.product((false, true), (:all, :children, :child))) do (sort, select)
+            $(_𝑚elseif(Iterators.product((false, true), (:all, :children, :child))) do (sort, select)
                 :(if sorted ≡ $sort && select ≡ $(Meta.quot(select))
                     tuple($(items(select, sort)...))
                 end)
@@ -174,10 +250,10 @@ function _model_funcs(bkcls::Symbol, datacls::Symbol, fields::Vector{<:NamedTupl
         end
 
         @inline function Bokeh.Models.hasbokehproperty(T::Type{$bkcls}, attr::Symbol)
-            return $(if all(i.js for i in fields)
+            return $(if all(i.js && for i in fields)
                 :(hasfield(fieldtype(T, :original), attr))
             else
-                elseifblock((i for i ∈ fields if i.js), false) do field
+                _𝑚elseif((i for i ∈ fields if i.js), false) do field
                     :(if attr ≡ $(Meta.quot(field.name))
                           true
                     end)
@@ -186,8 +262,8 @@ function _model_funcs(bkcls::Symbol, datacls::Symbol, fields::Vector{<:NamedTupl
         end
 
         function Bokeh.Models.defaultvalue(::Type{$bkcls}, attr::Symbol) :: Union{Some, Nothing}
-            $(elseifblock(fields, :(@error "No default value" class = $bkcls attr)) do field
-                if isnothing(field.default)
+            $(_𝑚elseif(fields, :(@error "No default value" class = $bkcls attr)) do field
+                if isnothing(field.default) || i.type <: Alias
                     nothing
                 else
                     :(if attr ≡ $(Meta.quot(field.name))
@@ -199,7 +275,7 @@ function _model_funcs(bkcls::Symbol, datacls::Symbol, fields::Vector{<:NamedTupl
     end
 end
 
-function _model_code(mod::Module, code::Expr, opts::Vector{Regex})
+function _𝑚code(mod::Module, code::Expr, opts::Vector{Regex})
     @assert code.head ≡ :struct
     if !code.args[1]
         @warn """Bokeh structure $mod.$(code.args[2]) is set to mutable.
@@ -209,7 +285,7 @@ function _model_code(mod::Module, code::Expr, opts::Vector{Regex})
     @assert code.args[2].head ≡ :(<:) "Bokeh class cannot be templated"
 
     code.args[1] = true
-    fields = _model_fields(mod, code, opts)
+    fields = _𝑚fields(mod, code, opts)
 
     # remove default part from the field lines
     for field ∈ fields
@@ -218,47 +294,15 @@ function _model_code(mod::Module, code::Expr, opts::Vector{Regex})
         end
     end
 
-    parents   = code.args[2].args[2]
-    bkcls     = code.args[2].args[1]
-    datacls   = code.args[2] = Symbol("Data$bkcls")
-    hassource = mod.eval(parents) <: iSourcedModel
-
-    params = Expr(
-        :parameters,
-        (
-            isnothing(i.default) ? Expr(:kw, i.name) : Expr(:kw, i.name, something(i.default))
-            for i ∈ fields
-        )...
-    )
-
+    parents = code.args[2].args[2]
+    bkcls   = code.args[2].args[1]
     esc(quote
-        @Base.__doc__ $code
+        @Base.__doc__ $(_𝑚bkcls(bkcls, parents, fields))
 
-        $datacls($params) = $datacls($((i.name for i ∈ fields)...))
-
-        $(_model_srccls(bkcls, fields, hassource))
-        @Base.__doc__ $(_model_bkcls(bkcls, datacls, parents, fields, hassource))
-
-        function $bkcls(; id = Bokeh.Models.ID(), kwa...)
-            obj = $bkcls(
-                id isa Int64 ? id : parse(Int64, string(id)),
-
-                # hijack the object construction to apply theme defaults
-                Bokeh.Themes.theme($datacls),
-
-                # the callback instance
-                Function[],
-
-                # the optional data source instance
-                $((:($i()) for i ∈ _model_srccls(bkcls, hassource))...)
-            )
-            for (attr, val) ∈ kwa
-                setproperty!(obj, attr, val; dotrigger = false)
-            end
-            obj
-        end
-
-        $(_model_funcs(bkcls, datacls, fields, hassource))
+        $(_𝑚getter(bkcls, fields))
+        $(_𝑚setter(bkcls, fields))
+        $(_𝑚propnames(bkcls, fields))
+        $(_𝑚funcs(bkcls, fields))
     end)
 end
 
@@ -278,15 +322,15 @@ macro model(args::Vararg{Union{Expr, String, Symbol}})
             for i ∈ getkw(:internal)
         )...
     )
-    _model_code(__module__, expr[1], internal)
+    _𝑚code(__module__, expr[1], internal)
 end
 
-function modeltype end
 function defaultvalue end
-function modelsource end
 function bokehproperties end
 function hasbokehproperty end
 
 const ID = bokehidmaker()
+
+Base.repr(mdl::T) where {T <: iHasProps} = "$T(id = $(bokehid(mdl)))" 
 
 export @model

@@ -1,7 +1,8 @@
 module Serialize
-using  ..AbstractTypes
-using  ...Models
-using  ...Events
+using Dates
+using ..AbstractTypes
+using ...Models
+using ...Events
 
 abstract type iRules end
 
@@ -46,6 +47,7 @@ end
 
 serialref(η::TitleChangedEvent, 𝑅::iRules) = (; kind = :TitleChanged, title = η.title)
 
+serialref(η::Union{Date, DateTime, Models.Properties.Color}, ::iRules) = "$η"
 serialref(η::Union{AbstractString, Number, Symbol}, ::iRules) = η
 serialref(η::Union{AbstractVector, AbstractSet}, 𝑅::iRules) = [serialref(i, 𝑅) for i ∈ η]
 serialref(η::AbstractDict, 𝑅::iRules) = Dict((serialref(i, 𝑅) => serialref(j, 𝑅) for (i,j) ∈ η)...)
