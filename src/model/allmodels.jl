@@ -20,7 +20,10 @@ for (name, tpe, checkkey, pushkey) ∈ (
 end
 
 function allbokehchildren(μ::T) where {T <: iHasProps}
-    return Iterators.flatten(bokehchildren(getproperty(μ, field)) for field ∈ bokehproperties(T))
+    return Iterators.flatten(
+        bokehchildren(bokehrawtype(getproperty(μ, field)))
+        for field ∈ bokehproperties(T)
+    )
 end
 
 const NoGood = Union{AbstractString, Number, Symbol}

@@ -52,7 +52,12 @@ serialref(η::Union{AbstractString, Number, Symbol}, ::iRules) = η
 serialref(η::Union{AbstractVector, AbstractSet}, 𝑅::iRules) = [serialref(i, 𝑅) for i ∈ η]
 serialref(η::AbstractDict, 𝑅::iRules) = Dict((serialref(i, 𝑅) => serialref(j, 𝑅) for (i,j) ∈ η)...)
 serialref(η::NamedTuple, 𝑅::iRules) = (; (i => serialref(j, 𝑅) for (i,j) ∈ η)...)
-serialref(η::T, 𝑅::iRules) where {T} = (; (i => serialref(getproperty(η, i), 𝑅) for i ∈ propertynames(η))...)
+function serialref(η::T, 𝑅::iRules) where {T}
+    return (; (
+        i => serialref(Bokeh.bokehrawtype(getproperty(η, i)), 𝑅)
+        for i ∈ propertynames(η)
+    )...)
+end
 
 const SERIAL_ROOTS = Union{Events.iEvent, iHasProps}
 serialize(η::AbstractVector{<:SERIAL_ROOTS}, 𝑅 :: iRules = Rules()) = [serialroot(i, 𝑅) for i ∈ η]

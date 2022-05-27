@@ -81,10 +81,10 @@ function 👻fields(mod, code)
                 index, name,
                 type     = realtype,
                 default  = line.head ≡ :(::) ? nothing : Some(line.args[2]),
-                js       = realtype <: Internal,
+                js       = !(realtype <: Internal),
                 child    = realtype <: Union{iModel, Nullable{<:iModel}},
                 children = if realtype <: Container
-                    els = eltype(eltype(realtype))
+                    els = eltype(realtype)
                     # Pair comes out for Dict, for example
                     any(i <: iModel for i ∈ (els <: Pair ? els.parameters : (els,)))
                 else
@@ -97,45 +97,47 @@ function 👻fields(mod, code)
     ]
 end
 
-function 👻bkcls(
-        name      :: Symbol,
-        cls       :: Symbol,
-        parents   :: Union{Symbol, Expr},
-        fields    :: Vector{<:NamedTuple},
+function 👻structure(
+        cls     :: Symbol,
+        parents :: Union{Symbol, Expr},
+        fields  :: Vector{<:NamedTuple},
 )
     aliases = [i.name => i.parameters[1] for i ∈ fields if i.type <: Alias]
 
     function initcode(field)
         opts = [first(j) for j ∈ aliases if last(j) ≡ field.name]
+        κ    = Meta.quot(field.name)
         val  = quote
-            val = Bokeh.Themes.theme($bkcls, α)
-            $(if isnothing(field.default)
-                nothing
-            else
-                :(isnothing(val) && (val = Bokeh.Models.defaultvalue($bkcls, α)))
-            end)
-            if isnothing(val)
-                throw(ErrorException(($("$bkcls.$(i.name) is a mandatory argument"))))
-            else
-                some(val)
-            end
+            val = Bokeh.Themes.theme($cls, $κ)
+            $(isnothing(field.default) ? nothing : :(isnothing(val) && (val = $(something(field.default)))))
+
+            isnothing(val) && throw(ErrorException(($("$cls.$(field.name) is a mandatory argument"))))
+            something(val)
         end
             
-        val  = 👻elseif((field.name, opts...), val) do key
-            :(if haskey(kwa, $(Meta.quot(key)))
-                kwa[$(Meta.quot(key))]
+        val = 👻elseif((field.name, opts...), val) do key
+            κ = Meta.quot(key)
+            :(if haskey(kwa, $κ)
+                kwa[$κ]
             end)
         end
-        :(Bokeh.Models.bokehconvert($(i.type), $val))
+
+        return if field.type <: Internal
+            val
+        elseif field.type <: ReadOnly
+            :($(@__MODULE__).bokehwrite($(field.type.parameters[1]), $val))
+        else
+            :($(@__MODULE__).bokehwrite($(field.type), $val))
+        end
     end
 
     quote
-        mutable struct $name <: $parents
+        mutable struct $cls <: $parents
             id        :: Int64
             $((:($(i.name)::$(bokehfieldtype(i.type))) for i ∈ fields if !(i.type <: Alias))...)
             callbacks :: Vector{Function}
 
-            function $bkcls(; id = Bokeh.Models.ID(), kwa...)
+            function $cls(; id = $(@__MODULE__).ID(), kwa...)
                 new(
                     id isa Int64 ? id : parse(Int64, string(id)),
                     $((initcode(i) for i ∈ fields if !(i.type isa Alias))...),
@@ -143,29 +145,27 @@ function 👻bkcls(
                 )
             end
         end
-
-        push!(Bokeh.Models.MODEL_TYPES, $name)
     end
 end
 
-function 👻setter(bkcls::Symbol, fields::Vector{<:NamedTuple})
+function 👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
     function setter(field)
+        name = Meta.quot(field.name)
         if field.js
             quote
-                old = bokehrawtype(getproperty(μ, α))
-                new = setfield!(μ, α, υ)
+                old = $(@__MODULE__).bokehrawtype(getproperty(μ, $name))
+                new = setfield!(μ, $name, υ)
                 dotrigger && Bokeh.Events.trigger(
-                    Bokeh.Models.changeevent($(field.type), μ, α, old, new)
+                    $(@__MODULE__).changeevent($(field.type), μ, $name, old, new)
                 )
-                new
             end
         else
-            :(setfield!(µ, $(Meta.quot(field.name)), α))
+            :(setfield!(µ, $name, ν))
         end
     end
 
     quote
-        function Base.setproperty!(μ::$bkcs, α::Symbol, ν; dotrigger :: Bool = true)
+        function Base.setproperty!(μ::$cls, α::Symbol, ν; dotrigger :: Bool = true)
             $(👻elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
                 name = Meta.quot(i.name)
                 if i.type <: Alias
@@ -173,17 +173,18 @@ function 👻setter(bkcls::Symbol, fields::Vector{<:NamedTuple})
                 end
 
                 :(if α ≡ $name
-                    ν = bokehwrite($(i.type), μ, $(Meta.quot(i.name)), bokehrawtype(ν))
-                    return $(setter(i))
+                    ν = $(@__MODULE__).bokehwrite($(i.type), $(@__MODULE__).bokehrawtype(ν))
+                    $(setter(i))
+                    return getproperty(µ, $(Meta.quot(i.name)))
                 end)
             end)
         end
     end
 end
 
-function 👻getter(bkcls::Symbol, fields::Vector{<:NamedTuple})
+function 👻getter(cls::Symbol, fields::Vector{<:NamedTuple})
     quote
-        function Base.getproperty(μ::$bkcs, α::Symbol)
+        function Base.getproperty(μ::$cls, α::Symbol)
             $(👻elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
                 old = Meta.quot(i.name)
                 if i.type <: Alias
@@ -191,26 +192,26 @@ function 👻getter(bkcls::Symbol, fields::Vector{<:NamedTuple})
                 end
                 new = Meta.quot(i.name)
                 :(if α ≡ $old
-                    return bokehread($(i.type), μ, $new, getfield(µ, $new))
+                      return $(@__MODULE__).bokehread($(i.type), μ, $new, getfield(µ, $new))
                 end)
             end)
         end
     end
 end
 
-function 👻propnames(bkcls::Symbol, fields::Vector{<:NamedTuple})
+function 👻propnames(cls::Symbol, fields::Vector{<:NamedTuple})
     quote
-        function Base.propertynames(μ::$bkcls; private::Bool = false)
+        function Base.propertynames(μ::$cls; private::Bool = false)
             return if private
-                fieldnames(µ)
+                $(tuple(:id, (i.name for i ∈ fields)..., :callbacks))
             else
-                $(tuple((i.name for i ∈ fields)..., :id, :callbacks))
+                $(tuple((i.name for i ∈ fields)...))
             end
         end
     end
 end
 
-function 👻funcs(bkcls::Symbol, fields::Vector{<:NamedTuple})
+function 👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
     function items(select::Symbol, sort::Bool)
         vals = if select ≡ :children
             [i.name for i ∈ fields if i.js && i.children]
@@ -224,7 +225,7 @@ function 👻funcs(bkcls::Symbol, fields::Vector{<:NamedTuple})
     end
 
     quote
-        @inline function Bokeh.Models.bokehproperties(::Type{$bkcls}; select::Symbol = :all, sorted::Bool = false)
+        @inline function $(@__MODULE__).bokehproperties(::Type{$cls}; select::Symbol = :all, sorted::Bool = false)
             $(👻elseif(Iterators.product((false, true), (:all, :children, :child))) do (sort, select)
                 :(if sorted ≡ $sort && select ≡ $(Meta.quot(select))
                     tuple($(items(select, sort)...))
@@ -232,7 +233,7 @@ function 👻funcs(bkcls::Symbol, fields::Vector{<:NamedTuple})
             end)
         end
 
-        @inline function Bokeh.Models.hasbokehproperty(T::Type{$bkcls}, attr::Symbol)
+        @inline function $(@__MODULE__).hasbokehproperty(T::Type{$cls}, attr::Symbol)
             👻elseif((i for i ∈ fields if i.js), false) do field
                 :(if attr ≡ $(Meta.quot(field.name))
                       true
@@ -240,8 +241,8 @@ function 👻funcs(bkcls::Symbol, fields::Vector{<:NamedTuple})
             end
         end
 
-        function Bokeh.Models.defaultvalue(::Type{$bkcls}, attr::Symbol) :: Union{Some, Nothing}
-            $(👻elseif(fields, :(@error "No default value" class = $bkcls attr)) do field
+        function $(@__MODULE__).defaultvalue(::Type{$cls}, attr::Symbol) :: Union{Some, Nothing}
+            $(👻elseif(fields, :(@error "No default value" class = $cls attr)) do field
                 if isnothing(field.default) || field.type <: Alias
                     nothing
                 else
@@ -266,34 +267,24 @@ function 👻code(mod::Module, code::Expr)
     code.args[1] = true
     fields  = 👻fields(mod, code)
     parents = code.args[2].args[2]
-    bkcls   = code.args[2].args[1]
+    cls     = code.args[2].args[1]
+    if cls isa Expr
+        cls = mod.eval(cls.head ≡ :($) ? cls.args[1] : cls) 
+    end
     esc(quote
-        @Base.__doc__ $(👻bkcls(bkcls, parents, fields))
+        @Base.__doc__ $(👻structure(cls, parents, fields))
 
-        $(👻getter(bkcls, fields))
-        $(👻setter(bkcls, fields))
-        $(👻propnames(bkcls, fields))
-        $(👻funcs(bkcls, fields))
+        $(👻getter(cls, fields))
+        $(👻setter(cls, fields))
+        $(👻propnames(cls, fields))
+        $(👻funcs(cls, fields))
+        push!($(@__MODULE__).MODEL_TYPES, $cls)
+        $cls
     end)
 end
 
-macro model(args::Vararg{Union{Expr, String, Symbol}})
-    expr = [x for x ∈ args if x isa Expr && x.head ≡ :struct]
-    if isempty(expr)
-        expr = [x for x ∈ expr if x isa Symbol && x ∉ (:source,)]
-    end
-    @assert length(expr) ≡ 1 "Unrecognized expression: missing struct"
-
-    getkw(key) = [i.args[2] for i ∈ args if i isa Expr && i.head ≡ :(=)  && i.args[1] ≡ key]
-
-    internal   = append!(
-        Regex[],
-        (
-            Regex.(string.(i isa Union{String, Symbol} ? [i] : i.args))
-            for i ∈ getkw(:internal)
-        )...
-    )
-    👻code(__module__, expr[1], internal)
+macro model(expr::Expr)
+    👻code(__module__, expr)
 end
 
 function defaultvalue end

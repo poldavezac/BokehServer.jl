@@ -16,7 +16,7 @@ function theme(T::Type, a...)
     return theme((isnothing(doc) ? THEME : doc.theme), T, a...)
 end
 
-function theme(dic::Theme, T::Type{<:iModel}, attr::Symbol)
+function theme(dic::Theme, T::Type{<:iHasProps}, attr::Symbol)
     fcn = getvalue(dic, T, attr)
     return isnothing(fcn) ? nothing : Some(fcn())
 end
@@ -61,7 +61,7 @@ function getvalue(dic::Theme, cls::Type, attr::Symbol) :: Union{Function, Nothin
     attrtheme = get(dic.items, attr, nothing)
     isnothing(attrtheme) && return nothing
 
-    while cls ∉ (iModel, iSourcedModel, iDataSource, Any)
+    while cls ∉ (iHasProps, iDataSource, Any)
         key = nameof(cls)
         if key ∈ keys(attrtheme)
             return attrtheme[key]

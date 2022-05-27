@@ -1,105 +1,105 @@
 abstract type iSpec{T} end
+abstract type iUnitSpec{T, K} <: iSpec{T} end
 
-function _spec_fields(T, others...)
-    quote
-        value     :: Union{$T,      Missing}
-        field     :: Union{String, Missing}
-        expr      :: Union{iModel, Missing}
-        transform :: Union{iModel, Missing}
-        $(others...)
-    end
-end
+macro dataspec(code::Expr)
+    cls       = code.args[2].args[1]
+    isunits   = code.args[2].args[2].args[1] ≡ :iUnitSpec
+    valuetype = only(filter(code.args[end].args) do i
+        i isa Expr && i.head ≡ :(::) && i.args[1] ≡ :value
+    end).args[2]
 
-function _spec_constructor(cls, others...)
-    quote
-        function $cls(kwa...) where {$(cls.args[2:end]...)}
-            out = new($((
+    construction = :(let out = new(
+            $((
                 :(get(kwa, $(Meta.quot(i)), missing))
-                for i ∈ (:value, :field, :expr, :transform, others...)
-            )...))
-            @assert(
-                xor(ismissing(out.value), ismissing(out.field)),
-                "One of value or field must be provided"
-            )
-            out
-        end
+                for i ∈ (:value, :field, :expr, :transform)
+            )...),
+            $((isunits ? (:units,) : ())...)
+        )
+        @assert(
+            xor(ismissing(out.value), ismissing(out.field)),
+            "One of value or field must be provided"
+        )
+        out
+    end)
+
+    constructor = if isunits
+        :($cls(; units = Bokeh.Models.units($cls)[1], kwa...) = $construction)
+    else
+        :($cls(; kwa...) = $construction)
     end
+    (cls isa Symbol) || (constructor.args[1] = :($(constructor.args[1]) where {$(cls.args[2:end]...)}))
+
+    esc(quote
+        struct $(code.args[2])
+            value     :: Union{$valuetype, Missing}
+            field     :: Union{String, Missing}
+            expr      :: Union{iModel, Missing}
+            transform :: Union{iModel, Missing}
+            $((isunits ? (:(units :: Symbol),) : ())...)
+
+            $constructor
+        end
+    end)
 end
 
-@eval struct Spec{T} <: iSpec{T}
-    $(_spec_fields(:T))
-    $(_spec_constructor(:(Spec{T})))
+@dataspec struct Spec{T} <: iSpec{T}
+    value::T
 end
 
-@eval struct UnitSpec{T, K} <: iSpec{T}
-    $(_spec_fields(:T, :(unit::Symbol)))
-    $(_spec_constructor(:(UnitSpec{T, K}), :unit))
+@dataspec struct UnitSpec{T, K} <: iUnitSpec{T, K}
+    value::T
 end
 
-@eval struct EnumSpec{T} <: iSpec{Symbol}
-    $(_spec_fields(Symbol))
-    $(_spec_constructor(:(EnumSpec{T})))
+@dataspec struct EnumSpec{T} <: iSpec{Symbol}
+    value::Symbol
 end
 
-Base.eltype(::Type{<:iSpec{T}}) where {T} = T
-longform(::Type{<:EnumSpec}, ν::String)         = longform(Symbol(ν))
+@dataspec struct DistanceSpec <: iUnitSpec{Distance, (:data, :screen)}
+    value::Float64
+end
+
+speceltype(::Type{<:iSpec{T}}) where {T}        = T
+longform(𝑇::Type{<:EnumSpec}, ν::String)        = longform(𝑇, Symbol(ν))
 longform(::Type{<:EnumSpec}, ν::Symbol)         = ν
 Base.values(::Type{<:EnumSpec{T}}) where {T}    = T
-Base.in(ν::Symbol, T::Type{<:EnumSpec})         = longform(ν) ∈ values(T)
-Base.in(ν::AbstractString, T::Type{<:EnumSpec}) = Symbol(ν) ∈ T
-units(::Type{UnitSpec{T, K}}) where {T, K} = K
+Base.in(ν::Symbol, 𝑇::Type{<:EnumSpec})         = longform(𝑇, ν) ∈ values(𝑇)
+Base.in(ν::AbstractString, 𝑇::Type{<:EnumSpec}) = Symbol(ν) ∈ 𝑇
+units(::Type{<:iUnitSpec{T, K}}) where {T, K}   = K
 
-function bokehwrite(
-        T::Type{<:iSpec},
-        µ::iHasProps,
-        α::Symbol,
-        ν::Union{Dict{Symbol}, NamedTuple},
-)
+function bokehwrite(𝑇::Type{<:iSpec}, ν::Union{Dict{Symbol}, NamedTuple})
     value = get(ν, :value, missing)
-    ismissing(value) || (value = bokehwrite(eltype(T), µ, α, value))
-    T(; (i => j for (i, j) ∈ zip(keys(ν), values(ν)))..., value)
+    ismissing(value) || (value = bokehwrite(speceltype(𝑇), value))
+    𝑇(; (i => j for (i, j) ∈ zip(keys(ν), values(ν)))..., value)
 end
 
-function bokehwrite(
-        T::Type{<:UnitSpec},
-        µ::iHasProps,
-        α::Symbol,
-        ν::Union{Dict{Symbol}, NamedTuple},
-)
+function bokehwrite(𝑇::Type{<:iUnitSpec}, ν::Union{Dict{Symbol}, NamedTuple})
     value = get(ν, :value, missing)
-    ismissing(value) || (value = bokehwrite(eltype(T), µ, α, value))
-    un    = get(ν, :units, units(T)[1])
-    @assert un ∈ units(T)
-    T(; (i => j for (i, j) ∈ zip(keys(ν), values(ν)))..., value, units)
+    ismissing(value) || (value = bokehwrite(speceltype(𝑇), value))
+    @assert un ∈ units(𝑇)
+    𝑇(; (i => j for (i, j) ∈ zip(keys(ν), values(ν)))..., value)
 end
 
-function bokehwrite(T::Type{<:iSpec}, µ::iHasProps, α::Symbol, ν::Dict{String})
-    bokehwrite(T, µ, α, Dict{Symbol, Any}((Symbol(i) => j for (i, j) ∈ ν)))
-end
-
-function bokehwrite(T::Type{<:iSpec}, µ::iHasProps, α::Symbol, ν::Union{Symbol, Number})
-    T(; value = bokehwrite(T.parameters[1], µ, α, ν))
-end
-
+bokehwrite(𝑇::Type{<:iSpec}, ν::Dict{String}) = bokehwrite(𝑇, Dict{Symbol, Any}((Symbol(i) => j for (i, j) ∈ ν)))
+bokehwrite(𝑇::Type{<:iSpec}, ν::Union{Symbol, Number}) = 𝑇(; value = bokehwrite(speceltype(𝑇), ν))
 bokehwrite(𝑇::Type{<:iSpec{<:Number}}, ν::AbstractString) = 𝑇(; field = string(ν))
 
-function bokehread(T::Type{<:Spec}, ν)
-    @assert typeof(ν) ≡ T
+function bokehread(𝑇::Type{<:iSpec}, ν)
+    @assert typeof(ν) ≡ 𝑇
     @assert xor(ismissing(ν.value), ismissing(ν.field))
-    return (; (i=>getfield(ν, i) for i ∈ fiednames(T) if !ismissing(getfield(ν, i)))...)
+    return (; (i=>getfield(ν, i) for i ∈ fieldnames(𝑇) if !ismissing(getfield(ν, i)))...)
 end
 
-function bokehread(T::Type{<:UnitSpec}, ν)
-    @assert typeof(ν) ≡ T
+function bokehread(𝑇::Type{<:iUnitSpec}, ν)
+    @assert typeof(ν) ≡ 𝑇
     @assert xor(ismissing(ν.value), ismissing(ν.field))
-    @assert ν.units ∈ units(T)
-    fields = fieldnames(ν.units ≡ units(T)[1] ? Spec : UnitSpec)
+    @assert ν.units ∈ units(𝑇)
+    fields = fieldnames(ν.units ≡ units(𝑇)[1] ? Spec : UnitSpec)
     return (; (i=>getfield(ν, i) for i ∈ fields if !ismissing(getfield(ν, i)))...)
 end
 
-function bokewrite(T::Type{<:EnumSpec}, ν)
-    value = longform(ν)
-    return value ∈ T ? (; value) : (; field = String(ν))
+function bokehwrite(𝑇::Type{<:EnumSpec}, ν)
+    value = longform(𝑇, ν)
+    return value ∈ 𝑇 ? 𝑇(; value) : 𝑇(; field = String(ν))
 end
 
 const LineCapSpec      = EnumSpec{(:butt, :round, :square)}
@@ -110,20 +110,19 @@ const TextAlignSpec    = EnumSpec{(:left, :right, :center)}
 const TextBaselineSpec = EnumSpec{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)}
 const HatchPatternSpec = EnumSpec{values(HatchPatternType)}
 const FontStyleSpec    = EnumSpec{(:normal, :italic, :bold, Symbol("bold italic"))}
-const DistanceSpec     = UnitSpec{Distance, (:data, :screen)}
-const ColorSpec        = Spec{Color}
 const NullDistanceSpec = Nullable{DistanceSpec}
 const NullStringSpec   = Nullable{Spec{String}}
+const ColorSpec        = Spec{Color}
 
-function bokehwrite(::Type{ColorSpec}, ::iHasProps, ::Symbol, ν::Union{Dict{Symbol}, NamedTuple})
+function bokehwrite(::Type{ColorSpec}, ν::Union{Dict{Symbol}, NamedTuple})
     value = get(ν, :value, missing)
     ismissing(value) || (value = Color(value))
     ColorSpec(; (i => j for (i, j) ∈ zip(keys(ν), values(ν)))..., value)
 end
 
-function bokehwrite(::Type{ColorSpec}, ::iHasProps, ::Symbol, ν::AbstractString)
+function bokehwrite(::Type{ColorSpec}, ν::AbstractString)
     value = color(v)
     return ismissing(value) : ColorSpec(; field = string(ν)) : ColorSpec(; value)
 end
 
-bokehwrite(::Type{ColorSpec}, ::iHasProps, ::Symbol, ν) = ColorSpec(; value = Color(v))
+bokehwrite(::Type{ColorSpec}, ν) = ColorSpec(; value = Color(v))

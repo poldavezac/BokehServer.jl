@@ -5,8 +5,9 @@ struct Container{T}
 end
 
 const CONTAINERS = Union{AbstractArray, AbstractDict, AbstractSet}
-bokehread(::Type{T}, µ::iHasProps, α::Symbol, ν) where {T<:CONTAINERS}= Container{T}(WeakRef(µ), α, ν)
+bokehread(𝑇::Type{<:Container}, µ::iHasProps, α::Symbol, ν) = 𝑇(WeakRef(µ), α, ν)
 bokehrawtype(ν::Container) = ν.values
+bokehfieldtype(::Type{<:Container{T}}) where {T} = T
 
 for (𝐹, 𝑇) ∈ (
         :push!      => Container,
@@ -35,11 +36,15 @@ for (𝐹, 𝑇) ∈ (
 end
 
 for (𝐹, 𝑇) ∈ (
-        :length     => Container,
-        :iterate    => Container,
-        :getindex   => Container,
-        :get        => Container{<:AbstractDict},
-        :haskey     => Container{<:AbstractDict},
+        :length    => Container,
+        :iterate   => Container,
+        :getindex  => Container,
+        :size      => Container{<:AbstractArray},
+        :eachindex => Container{<:AbstractArray},
+        :get       => Container{<:AbstractDict},
+        :haskey    => Container{<:AbstractDict},
+        :keys      => Container{<:AbstractDict},
+        :values    => Container{<:AbstractDict},
 )
     @eval Base.$𝐹(γ::$𝑇, x...)  = $𝐹(γ.values, x...)
 end

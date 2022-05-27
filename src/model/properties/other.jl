@@ -23,7 +23,7 @@ struct ReadOnly{T} end
 struct Nullable{T} end
 @inline bokehfieldtype(::Type{Nullable{T}}) where {T} = Union{Nothing, bokehfieldtype(T)}
 @inline bokehwrite(::Type{<:Nullable}, @nospecialize(µ::iHasProps), α::Symbol, ::Nothing) = nothing
-@inline bokehwrite(::Type{Nullable{T}}, µ::iHasProps, α::Symbol, ν) where{T} = bokehwrite(T, µ, α, ν)
+@inline bokehwrite(::Type{Nullable{T}}, ν) where{T} = bokehwrite(T, ν)
 
 struct FontSize end
 

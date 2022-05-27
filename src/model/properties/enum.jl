@@ -3,15 +3,15 @@ end
 
 bokehfieldtype(::Type{<:EnumType}) = Symbol
 
-longform(::Type{<:EnumType}, ν::String)         = longform(Symbol(ν))
+longform(𝑇::Type{<:EnumType}, ν::String)         = longform(𝑇, Symbol(ν))
 longform(::Type{<:EnumType}, ν::Symbol)         = ν
-Base.values(::Type{<:EnumType{T}}) where {T}    = T
-Base.in(ν::Symbol, T::Type{<:EnumType})         = longform(ν) ∈ values(T)
-Base.in(ν::AbstractString, T::Type{<:EnumType}) = Symbol(ν) ∈ T
+Base.values(::Type{<:EnumType{𝑇}}) where {𝑇}    = 𝑇
+Base.in(ν::Symbol, 𝑇::Type{<:EnumType})         = longform(𝑇, ν) ∈ values(𝑇)
+Base.in(ν::AbstractString, 𝑇::Type{<:EnumType}) = Symbol(ν) ∈ 𝑇
 
-function bokewrite(T::Type{<:EnumType}, ν::Union{AbstractString, Symbol})
-    val = longform(ν)
-    @assert val ∈ T
+function bokehwrite(𝑇::Type{<:EnumType}, ν::Union{AbstractString, Symbol})
+    val = longform(𝑇, ν)
+    @assert val ∈ 𝑇
     return val
 end
 

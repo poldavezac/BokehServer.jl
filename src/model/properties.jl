@@ -1,8 +1,7 @@
-@inline bokehfieldtype(T::Type) = T
-@inline bokehrawtype(ν)         = ν
-@inline bokehwrite(@nospecialize(T::Type), @nospecialize(::iHasProps), ::Symbol, @nospecialize(ν)) = bokehwrite(T, ν)
-@inline bokehwrite(@nospecialize(T::Type), @nospecialize(ν)) = convert(T, ν)
-@inline bokehread(@nospecialize(T::Type), @nospecialize(::iHasProps), ::Symbol, @nospecialize(ν)) = bokeread(T, ν)
+@inline bokehfieldtype(@nospecialize(T::Type)) = T
+@inline bokehrawtype(@nospecialize(ν))         = ν
+@inline bokehwrite(@nospecialize(T::Type), @nospecialize(ν)) = convert(bokehfieldtype(T), ν)
+@inline bokehread(@nospecialize(T::Type), @nospecialize(::iHasProps), ::Symbol, @nospecialize(ν)) = bokehread(T, ν)
 @inline bokehread(@nospecialize(T::Type), @nospecialize(ν)) = ν
 @inline changeevent(@nospecialize(::Type), @nospecialize(a...)) = Bokeh.ModelChangedEvent(a...)
 
