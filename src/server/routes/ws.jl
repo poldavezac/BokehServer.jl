@@ -107,7 +107,7 @@ function handle(msg::msg"PULL-DOC-REQ", ::iApplication, σ::SessionContext)
 end
 
 function handle(μ::msg"PUSH-DOC,PATCH-DOC", 𝐴::iApplication, σ::SessionContext)
-    Protocol.onreceive!(μ, σ.doc, Events.eventlist(𝐴, σ), σ.clients...)
+    Protocol.onreceive!(μ, σ.doc, Server.eventlist(𝐴), σ.clients...)
     return (msg"OK", messageid(μ))
 end
 

@@ -34,7 +34,7 @@ function Base.get!(𝐴::iApplication, 𝑘::iSessionContext; doinit :: Bool = t
     session = get(lst, 𝑘)
     if ismissing(session)
         session = SessionContext(𝑘)
-        doinit && Events.eventlist(𝐴) do
+        doinit && Events.eventlist!(𝐴) do
             initialize!(session, 𝐴)
         end
         push!(lst, session)
@@ -42,12 +42,12 @@ function Base.get!(𝐴::iApplication, 𝑘::iSessionContext; doinit :: Bool = t
     return session
 end
 
-initializer(::Application{T}) where {T}        = T
-url(𝐴::iApplication)                           = "$(nameof(initializer(𝐴)))"
-Events.eventlist(::iApplication)               = Events.EventList()
-Events.eventlist(𝐹::Function, 𝐴::iApplication) = Events.eventlist(𝐹, Events.eventlist(𝐴))
-urlprefix(::iApplication)                      = ""
-metadata(::iApplication)                       = "{}"
+initializer(::Application{T}) where {T}         = T
+url(𝐴::iApplication)                            = "$(nameof(initializer(𝐴)))"
+eventlist(::iApplication)                       = Events.EventList()
+Events.eventlist!(𝐹::Function, 𝐴::iApplication) = Events.eventlist!(𝐹, eventlist(𝐴))
+urlprefix(::iApplication)                       = ""
+metadata(::iApplication)                        = "{}"
 checktokensignature(::iApplication, token::AbstractString) = Tokens.check(token, CONFIG.secretkey)
 
 """

@@ -11,7 +11,7 @@ end
 @testset "create model events" begin
     obj = EventsX()
 
-    Bokeh.Events.eventlist() do
+    Bokeh.Events.eventlist!() do
         lst = Bokeh.Events.task_eventlist()
         @test isempty(lst)
 
@@ -47,7 +47,7 @@ end
 
     obj = EventsX()
 
-    Bokeh.Events.eventlist() do
+    Bokeh.Events.eventlist!() do
         lst = Bokeh.Events.task_eventlist()
         @test isempty(lst)
 
@@ -88,7 +88,7 @@ end
         push!(calls2, evt)
     end
 
-    Bokeh.Events.eventlist() do
+    Bokeh.Events.eventlist!() do
         obj1.a = 10
         obj1.b = 10
         obj2.a = 10
@@ -114,7 +114,7 @@ end
         push!(calls2, (evt))
     end
 
-    Bokeh.Events.eventlist() do
+    Bokeh.Events.eventlist!() do
         push!(doc, obj1)
         delete!(doc, obj2)
     end
@@ -122,7 +122,7 @@ end
     @test length(calls1) == 2
     @test length(calls2) == 1
 
-    Bokeh.Events.eventlist() do
+    Bokeh.Events.eventlist!() do
         doc.title = "A"
     end
 

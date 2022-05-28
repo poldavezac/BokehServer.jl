@@ -44,7 +44,7 @@ julia > begin
             println("callback 2: only RootAddedEvent")
         end
 
-        Bokeh.Events.eventlist() do
+        Bokeh.Events.eventlist!() do
             push!(doc, Model1())
             delete!(doc, Model2())
         end
@@ -102,7 +102,7 @@ julia > begin
             println("callback 3: a specific type for `new`")
         end
 
-        Bokeh.Events.eventlist() do
+        Bokeh.Events.eventlist!() do
             obj.a = 1
             obj.a = 10.
         end

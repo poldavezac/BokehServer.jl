@@ -68,7 +68,7 @@ end
     truth = (kind = :RootRemoved, model = (; id = "1"))
     @test val == truth
 
-    E.eventlist() do
+    E.eventlist!() do
         push!(doc, mdl)
         mdl.a = 100
         val   = Bokeh.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}())
@@ -102,7 +102,7 @@ end
         truth = """{"kind":"RootRemoved","model":{"id":"1"}}"""
         @test val == truth
 
-        E.eventlist() do
+        E.eventlist!() do
             push!(doc, mdl)
             mdl.a = 100
             val   = Bokeh.Protocol.Messages.JSON.json(Bokeh.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}()))
@@ -127,7 +127,7 @@ end
         jsref(x) = JSON.parse(json1(x))
         js(x)    = JSON.parse(json2(x))
         @testset "add first root" begin
-            E.eventlist() do
+            E.eventlist!() do
                 cnt = Dict(
                     "references" => [jsref(mdl)],
                     "events" =>  [js(E.RootAddedEvent(doc, mdl, 1))],
@@ -143,7 +143,7 @@ end
         end
 
         @testset "add root again" begin
-            E.eventlist() do
+            E.eventlist!() do
                 cnt = Dict(
                     "references" => [],
                     "events" =>  [js(E.RootAddedEvent(doc, mdl, 1))],
@@ -156,7 +156,7 @@ end
         end
 
         @testset "remove root" begin
-            E.eventlist() do
+            E.eventlist!() do
                 cnt = Dict(
                     "references" => [],
                     "events" =>  [js(E.RootRemovedEvent(doc, mdl, 1))],
@@ -169,7 +169,7 @@ end
         end
 
         @testset "change title" begin
-            E.eventlist() do
+            E.eventlist!() do
                 cnt = Dict(
                     "references" => [],
                     "events" =>  [js(E.TitleChangedEvent(doc, "A"))],
@@ -183,7 +183,7 @@ end
 
         ymdl  = ProtocolY()
         @testset "add y root" begin
-            E.eventlist() do
+            E.eventlist!() do
                 cnt = Dict(
                     "references" => [jsref(ymdl), jsref(ymdl.a), jsref(mdl)],
                     "events" =>  [
@@ -202,7 +202,7 @@ end
         end
 
         @testset "change attribute" begin
-            E.eventlist() do
+            E.eventlist!() do
                 other = ProtocolX()
                 cnt = Dict(
                     "references" => [jsref(other)],
@@ -251,7 +251,7 @@ end
 
     @test doc.title == "A"
     @test Bokeh.bokehid.(doc) == [1]
-    Bokeh.Events.eventlist() do
+    Bokeh.Events.eventlist!() do
         Bokeh.Protocol.pushdoc!(doc, JSON.parse(JSON.json(truth)))
     end
     @test doc.title == "B"

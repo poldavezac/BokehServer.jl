@@ -13,7 +13,7 @@ end
 
 function patchdoc(𝐹::Function, 𝐷::iDocument, λ::Events.iEventList)
     oldids = allids(𝐷)
-    lst    = Events.eventlist(λ) do
+    lst    = Events.eventlist!(λ) do
         𝐹()
     end
 

@@ -41,18 +41,20 @@ end
 
     doc   = Bokeh.Document()
     theme = doc.theme
-    Bokeh.curdoc!(doc) do
-        @testset "no theme" for (i, j) ∈ (:a => -1 , :b => -1, :c => -1)
-            @test getproperty(Bokeh.Themes.theme(theme, _TestTheme2), i) == j
-            @test getproperty(_TestTheme2(), i) == j
-        end
+    Bokeh.eventlist!() do
+        Bokeh.curdoc!(doc) do
+            @testset "no theme" for (i, j) ∈ (:a => -1 , :b => -1, :c => -1)
+                @test getproperty(Bokeh.Themes.theme(theme, _TestTheme2), i) == j
+                @test getproperty(_TestTheme2(), i) == j
+            end
 
-        Bokeh.Themes.setvalue!(theme, :_TestTheme1, :a, ()->10)
-        Bokeh.Themes.setvalue!(theme, :_TestTheme1, :b, ()->10)
-        Bokeh.Themes.setvalue!(theme, :_TestTheme2, :b, ()->20)
-        @testset "with theme" for (i, j) ∈ (:a => 10 , :b => 20, :c => -1)
-            @test getproperty(Bokeh.Themes.theme(theme, _TestTheme2), i) == j
-            @test getproperty(_TestTheme2(), i) == j
+            Bokeh.Themes.setvalue!(theme, :_TestTheme1, :a, ()->10)
+            Bokeh.Themes.setvalue!(theme, :_TestTheme1, :b, ()->10)
+            Bokeh.Themes.setvalue!(theme, :_TestTheme2, :b, ()->20)
+            @testset "with theme" for (i, j) ∈ (:a => 10 , :b => 20, :c => -1)
+                @test getproperty(Bokeh.Themes.theme(theme, _TestTheme2), i) == j
+                @test getproperty(_TestTheme2(), i) == j
+            end
         end
     end
 end
