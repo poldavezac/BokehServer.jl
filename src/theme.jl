@@ -2,7 +2,7 @@ module Themes
 using JSON
 using ..Bokeh
 using ..AbstractTypes
-using ..Models
+using ..Model
 
 struct Theme <: iTheme
     items :: Dict{Symbol, Dict{Symbol, Function}}
@@ -25,7 +25,7 @@ function theme(dic::Theme, T::Type)
     isempty(dic.items) && return T()
 
     obj = T()
-    for attr ∈ Models.bokehproperties(T)
+    for attr ∈ Model.bokehproperties(T)
         fcn = getvalue(dic, T, attr)
         isnothing(fcn) || setproperty!(obj, attr, fcn())
     end
@@ -35,7 +35,7 @@ end
 function changetheme!(obj::iHasProps, dic::Theme)
     isempty(dic.items) && return obj
 
-    for attr ∈ Models.bokehproperties(typeof(obj))
+    for attr ∈ Model.bokehproperties(typeof(obj))
         fcn = getvalue(dic, typeof(obj), attr)
         isnothing(fcn) || setproperty!(obj, attr, fcn())
     end

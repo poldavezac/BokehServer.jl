@@ -1,6 +1,6 @@
 module Documents
 using ..AbstractTypes
-using ..Models
+using ..Model
 using ..Events
 using ..Themes
 
@@ -50,7 +50,7 @@ function Themes.changetheme!(doc::Document, theme::Themes.Theme)
 end
 
 for 𝐹 ∈ (:allmodels, :allids)
-    @eval Models.$𝐹(doc::Document) = $𝐹(doc.roots...)
+    @eval Model.$𝐹(doc::Document) = $𝐹(doc.roots...)
 end
 
 Base.length(doc::Document) = length(doc.roots)

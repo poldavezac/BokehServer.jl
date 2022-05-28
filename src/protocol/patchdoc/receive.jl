@@ -1,5 +1,5 @@
 module PatchDocReceive
-using ...Models
+using ...Model
 using ..AbstractTypes
 using ..Serialize
 
@@ -59,10 +59,10 @@ end
 parsereferences(contents) = parsereferences!(ModelDict(), contents)
 
 function parsereferences!(models::ModelDict, contents)
-    if length(Models.MODEL_TYPES) ≢ length(_MODEL_TYPES)
+    if length(Model.MODEL_TYPES) ≢ length(_MODEL_TYPES)
         𝑅 = Serialize.Rules()
         lock(_LOCK) do
-            for cls ∈ Models.MODEL_TYPES
+            for cls ∈ Model.MODEL_TYPES
                 _MODEL_TYPES[tuple(values(Serialize.serialtype(cls, 𝑅))...)] = cls
             end
         end

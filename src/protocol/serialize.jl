@@ -1,7 +1,7 @@
 module Serialize
 using Dates
 using ..AbstractTypes
-using ...Models
+using ...Model
 using ...Events
 
 abstract type iRules end
@@ -15,8 +15,8 @@ serialtype(::Type{T}, ::iRules) where {T <: iHasProps} = (; type = nameof(T))
 function serialattributes(η::T, 𝑅::iRules) where {T <: iHasProps}
     return (;(
         i => serialref(getproperty(η, i), 𝑅)
-        for i ∈ Models.bokehproperties(T; sorted = true)
-        if let dflt = Models.defaultvalue(T, i)
+        for i ∈ Model.bokehproperties(T; sorted = true)
+        if let dflt = Model.defaultvalue(T, i)
             isnothing(dflt) || getproperty(η, i) ≢ something(dflt)
         end
     )...)
@@ -47,7 +47,7 @@ end
 
 serialref(η::TitleChangedEvent, 𝑅::iRules) = (; kind = :TitleChanged, title = η.title)
 
-serialref(η::Union{Date, DateTime, Models.Color}, ::iRules) = "$η"
+serialref(η::Union{Date, DateTime, Model.Color}, ::iRules) = "$η"
 serialref(η::Union{AbstractString, Number, Symbol}, ::iRules) = η
 serialref(η::Union{AbstractVector, AbstractSet}, 𝑅::iRules) = [serialref(i, 𝑅) for i ∈ η]
 serialref(η::AbstractDict, 𝑅::iRules) = Dict((serialref(i, 𝑅) => serialref(j, 𝑅) for (i,j) ∈ η)...)

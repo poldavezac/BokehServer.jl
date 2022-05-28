@@ -1,5 +1,5 @@
 @testset "extract fields" begin
-    out = Bokeh.Models.👻fields(@__MODULE__, :(mutable struct X <: iModel
+    out = Bokeh.Model._👻fields(@__MODULE__, :(mutable struct X <: iModel
         a:: Int32
         # a line
         b:: Float32 = 1f0
@@ -15,7 +15,7 @@
     struct Dummy <: Bokeh.iModel
     end
 
-    out = Bokeh.Models.👻fields(@__MODULE__, :(mutable struct X <: iModel
+    out = Bokeh.Model._👻fields(@__MODULE__, :(mutable struct X <: iModel
         b:: Dummy
     end))
     truth = [
@@ -25,7 +25,7 @@
         @test i == j
     end
 
-    out = Bokeh.Models.👻fields(@__MODULE__, :(mutable struct X <: iModel
+    out = Bokeh.Model._👻fields(@__MODULE__, :(mutable struct X <: iModel
         b:: Vector{Dummy}
         c:: Dict{Int32, Dummy}
         d:: Dict{Dummy, Int32}
@@ -33,10 +33,10 @@
     end))
     dflt  = (; default = nothing, js = true, child = false, children = true)
     truth = [
-        (; index = 2, name = :b, type = Bokeh.Models.Container{Vector{Dummy}}, dflt...),
-        (; index = 4, name = :c, type = Bokeh.Models.Container{Dict{Int32, Dummy}}, dflt...),
-        (; index = 6, name = :d, type = Bokeh.Models.Container{Dict{Dummy, Int32}}, dflt...),
-        (; index = 8, name = :e, type = Bokeh.Models.Container{Set{Dummy}}, dflt...)
+        (; index = 2, name = :b, type = Bokeh.Model.Container{Vector{Dummy}}, dflt...),
+        (; index = 4, name = :c, type = Bokeh.Model.Container{Dict{Int32, Dummy}}, dflt...),
+        (; index = 6, name = :d, type = Bokeh.Model.Container{Dict{Dummy, Int32}}, dflt...),
+        (; index = 8, name = :e, type = Bokeh.Model.Container{Set{Dummy}}, dflt...)
     ]
     @testset for (i, j) ∈ zip(out, truth)
         @test i == j
@@ -55,21 +55,21 @@ end
     @test X().b ≡ 10f0
 
     Z = @Bokeh.model  mutable struct gensym() <: Bokeh.iHasProps
-        a::Bokeh.Models.Internal{Int32} = Int32(1)
+        a::Bokeh.Model.Internal{Int32} = Int32(1)
         b::Float32 = 10f0
     end
     @test Z <: Bokeh.iHasProps
     @test !(Z <: Bokeh.iModel)
     @test fieldnames(Z) == (:id, :a, :b, :callbacks)
     @test propertynames(Z()) == (:a, :b)
-    @test Bokeh.Models.bokehproperties(Z) == (:b,)
+    @test Bokeh.Model.bokehproperties(Z) == (:b,)
     @test fieldtype(Z, :a) ≡ Int32
 end
 
 @testset "bokeh dataspec/container" begin
     X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
-        a::Bokeh.Models.Spec{Int32}  = Int32(1)
-        b::Bokeh.Models.DistanceSpec = 10f0
+        a::Bokeh.Model.Spec{Int32}  = Int32(1)
+        b::Bokeh.Model.DistanceSpec = 10f0
         c::Vector{Int64}             = Int64[1, 2]
     end
     @test fieldnames(X) == (:id, :a, :b, :c, :callbacks)
@@ -78,7 +78,7 @@ end
     @test X().a ≡ (; value = one(Int32))
     @test X().b ≡ (; value = 10.0)
     @test fieldtype(X, :c) ≡ Vector{Int64}
-    @test X().c isa Bokeh.Models.Container{Vector{Int64}}
+    @test X().c isa Bokeh.Model.Container{Vector{Int64}}
     @test X().c.values == [1, 2]
 
     x = X()
@@ -90,13 +90,13 @@ end
 
 @testset "bokeh color" begin
     X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
-        a::Bokeh.Models.Color =  :gray
+        a::Bokeh.Model.Color =  :gray
     end
     @test X().a.r ≡ X().a.g ≡ X().a.b ≡ 0x80
     @test X().a.a ≡ 0xff
 
-    @test !ismissing(Bokeh.Models.color("rgb(1, 2, 3)"))
-    @test !ismissing(Bokeh.Models.color("#010101"))
+    @test !ismissing(Bokeh.Model.color("rgb(1, 2, 3)"))
+    @test !ismissing(Bokeh.Model.color("#010101"))
     x = X(; a = "rgb(1,2,3)")
     @test x.a.r ≡ UInt8(1)
     @test x.a.g ≡ UInt8(2)
@@ -110,7 +110,7 @@ end
 
 @testset "bokeh marker" begin
     X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
-        a::Bokeh.Models.MarkerSpec = "x"
+        a::Bokeh.Model.MarkerSpec = "x"
     end
     @test X().a == (; value = :x)
     @test X(;a = "fff").a == (; field = "fff")
@@ -132,9 +132,9 @@ end
     end))
 
     @test propertynames(Y1()) == (:a, :b, :c, :d, :e)
-    @test Bokeh.Models.bokehproperties(Y1) == propertynames(Y1())
-    @test Bokeh.Models.bokehproperties(Y1; select = :child) == (:e,)
-    @test Bokeh.Models.bokehproperties(Y1; select = :children) == (:a, :b, :c, :d)
+    @test Bokeh.Model.bokehproperties(Y1) == propertynames(Y1())
+    @test Bokeh.Model.bokehproperties(Y1; select = :child) == (:e,)
+    @test Bokeh.Model.bokehproperties(Y1; select = :children) == (:a, :b, :c, :d)
 
     y1  = Y1()
     all = Bokeh.allmodels(y1)

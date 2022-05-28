@@ -23,7 +23,7 @@ macro dataspec(code::Expr)
     end)
 
     constructor = if isunits
-        :($cls(; units = Bokeh.Models.units($cls)[1], kwa...) = $construction)
+        :($cls(; units = Bokeh.Model.units($cls)[1], kwa...) = $construction)
     else
         :($cls(; kwa...) = $construction)
     end

@@ -44,7 +44,7 @@ end
 "Stores every class created by the @model macro"
 const MODEL_TYPES = Set{DataType}()
 
-function 👻elseif(func::Function, itr, elsecode = :(@assert false "unknown condition"))
+function _👻elseif(func::Function, itr, elsecode = :(@assert false "unknown condition"))
     last = expr = Expr(:if)
     for args ∈ itr
         val = func(args)
@@ -58,7 +58,7 @@ function 👻elseif(func::Function, itr, elsecode = :(@assert false "unknown con
     expr
 end
 
-function 👻fields(mod, code)
+function _👻fields(mod, code)
     # filter expressions :(x::X) and :(x::X = y)
     isfield(x) = if !(x isa Expr)
         false
@@ -97,7 +97,7 @@ function 👻fields(mod, code)
     ]
 end
 
-function 👻structure(
+function _👻structure(
         cls     :: Symbol,
         parents :: Union{Symbol, Expr},
         fields  :: Vector{<:NamedTuple},
@@ -115,7 +115,7 @@ function 👻structure(
             something(val)
         end
             
-        val = 👻elseif((field.name, opts...), val) do key
+        val = _👻elseif((field.name, opts...), val) do key
             κ = Meta.quot(key)
             :(if haskey(kwa, $κ)
                 kwa[$κ]
@@ -148,7 +148,7 @@ function 👻structure(
     end
 end
 
-function 👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
+function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
     function setter(field)
         name = Meta.quot(field.name)
         if field.js
@@ -166,7 +166,7 @@ function 👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
 
     quote
         function Base.setproperty!(μ::$cls, α::Symbol, ν; dotrigger :: Bool = true)
-            $(👻elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
+            $(_👻elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
                 name = Meta.quot(i.name)
                 if i.type <: Alias
                     i = only(j for j ∈ fields if j.name ≡ i.type.parameters[1])
@@ -182,10 +182,10 @@ function 👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function 👻getter(cls::Symbol, fields::Vector{<:NamedTuple})
+function _👻getter(cls::Symbol, fields::Vector{<:NamedTuple})
     quote
         function Base.getproperty(μ::$cls, α::Symbol)
-            $(👻elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
+            $(_👻elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
                 old = Meta.quot(i.name)
                 if i.type <: Alias
                     i = only(j for j ∈ fields if j.name ≡ i.type.parameters[1])
@@ -199,7 +199,7 @@ function 👻getter(cls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function 👻propnames(cls::Symbol, fields::Vector{<:NamedTuple})
+function _👻propnames(cls::Symbol, fields::Vector{<:NamedTuple})
     quote
         function Base.propertynames(μ::$cls; private::Bool = false)
             return if private
@@ -211,7 +211,7 @@ function 👻propnames(cls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function 👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
+function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
     function items(select::Symbol, sort::Bool)
         vals = if select ≡ :children
             [i.name for i ∈ fields if i.js && i.children]
@@ -226,7 +226,7 @@ function 👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
 
     quote
         @inline function $(@__MODULE__).bokehproperties(::Type{$cls}; select::Symbol = :all, sorted::Bool = false)
-            $(👻elseif(Iterators.product((false, true), (:all, :children, :child))) do (sort, select)
+            $(_👻elseif(Iterators.product((false, true), (:all, :children, :child))) do (sort, select)
                 :(if sorted ≡ $sort && select ≡ $(Meta.quot(select))
                     tuple($(items(select, sort)...))
                 end)
@@ -234,7 +234,7 @@ function 👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
         end
 
         @inline function $(@__MODULE__).hasbokehproperty(T::Type{$cls}, attr::Symbol)
-            👻elseif((i for i ∈ fields if i.js), false) do field
+            _👻elseif((i for i ∈ fields if i.js), false) do field
                 :(if attr ≡ $(Meta.quot(field.name))
                       true
                 end)
@@ -242,7 +242,7 @@ function 👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
         end
 
         function $(@__MODULE__).defaultvalue(::Type{$cls}, attr::Symbol) :: Union{Some, Nothing}
-            $(👻elseif(fields, :(@error "No default value" class = $cls attr)) do field
+            $(_👻elseif(fields, :(@error "No default value" class = $cls attr)) do field
                 if isnothing(field.default) || field.type <: Alias
                     nothing
                 else
@@ -255,7 +255,7 @@ function 👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function 👻code(mod::Module, code::Expr)
+function _👻code(mod::Module, code::Expr)
     @assert code.head ≡ :struct
     if !code.args[1]
         @warn """Bokeh structure $mod.$(code.args[2]) is set to mutable.
@@ -265,26 +265,26 @@ function 👻code(mod::Module, code::Expr)
     @assert code.args[2].head ≡ :(<:) "Bokeh class cannot be templated"
 
     code.args[1] = true
-    fields  = 👻fields(mod, code)
+    fields  = _👻fields(mod, code)
     parents = code.args[2].args[2]
     cls     = code.args[2].args[1]
     if cls isa Expr
         cls = mod.eval(cls.head ≡ :($) ? cls.args[1] : cls) 
     end
     esc(quote
-        @Base.__doc__ $(👻structure(cls, parents, fields))
+        @Base.__doc__ $(_👻structure(cls, parents, fields))
 
-        $(👻getter(cls, fields))
-        $(👻setter(cls, fields))
-        $(👻propnames(cls, fields))
-        $(👻funcs(cls, fields))
+        $(_👻getter(cls, fields))
+        $(_👻setter(cls, fields))
+        $(_👻propnames(cls, fields))
+        $(_👻funcs(cls, fields))
         push!($(@__MODULE__).MODEL_TYPES, $cls)
         $cls
     end)
 end
 
 macro model(expr::Expr)
-    👻code(__module__, expr)
+    _👻code(__module__, expr)
 end
 
 function defaultvalue end

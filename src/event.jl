@@ -1,6 +1,6 @@
 module Events
 using ..AbstractTypes
-using ..Models
+using ..Model
 using DataStructures: OrderedDict
 
 include("event/types.jl")

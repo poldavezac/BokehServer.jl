@@ -2,7 +2,7 @@ module Protocol
 using ..Bokeh
 using ..AbstractTypes
 using ..Events
-using ..Models
+using ..Model
 using ..Documents
 using JSON
 
