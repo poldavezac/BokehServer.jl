@@ -5,9 +5,6 @@
         try
             baa*1
         catch
-            open(joinpath(@__DIR__, "error.html"), "w") do io
-                println(io, Bokeh.Server.ExceptionRoute.body(Base.current_exceptions()))
-            end
             Bokeh.Server.ExceptionRoute.body(Base.current_exceptions())
         end
     end

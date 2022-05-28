@@ -154,7 +154,7 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
         if field.js
             quote
                 old = $(@__MODULE__).bokehrawtype(getproperty(μ, $name))
-                new = setfield!(μ, $name, υ)
+                new = setfield!(μ, $name, ν)
                 dotrigger && Bokeh.Events.trigger(
                     $(@__MODULE__).changeevent($(field.type), μ, $name, old, new)
                 )
@@ -166,35 +166,46 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
 
     quote
         function Base.setproperty!(μ::$cls, α::Symbol, ν; dotrigger :: Bool = true)
-            $(_👻elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
+            $(_👻elseif(fields, :(throw(ErrorException("unknown or read-only property $α")))) do i
                 name = Meta.quot(i.name)
                 if i.type <: Alias
                     i = only(j for j ∈ fields if j.name ≡ i.type.parameters[1])
                 end
-
-                :(if α ≡ $name
-                    ν = $(@__MODULE__).bokehwrite($(i.type), $(@__MODULE__).bokehrawtype(ν))
-                    $(setter(i))
-                    return getproperty(µ, $(Meta.quot(i.name)))
-                end)
+                if i.type <: Union{ReadOnly, Internal{<:ReadOnly}, iSpec{<:ReadOnly}, Container{<:ReadOnly}}
+                    nothing
+                else
+                    :(if α ≡ $name
+                        ν = $(@__MODULE__).bokehwrite($(i.type), $(@__MODULE__).bokehrawtype(ν))
+                        $(setter(i))
+                        return getproperty(µ, $(Meta.quot(i.name)))
+                    end)
+                end
             end)
         end
     end
 end
 
 function _👻getter(cls::Symbol, fields::Vector{<:NamedTuple})
+    internals = (:id, :callbacks, (i.name for i ∈ fields if i.type <: Internal)...)
+    expr      = _👻elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
+        old = Meta.quot(i.name)
+        if i.type <: Alias
+            i = only(j for j ∈ fields if j.name ≡ i.type.parameters[1])
+        end
+        new = Meta.quot(i.name)
+        :(if α ≡ $old
+              return $(@__MODULE__).bokehread($(i.type), μ, $new, getfield(µ, $new))
+        end)
+    end
+
+    code = :(if α ∈ $internals
+        return getfield(µ, α)
+    end)
+    push!(code.args, Expr(:elseif, expr.args...))
+
     quote
         function Base.getproperty(μ::$cls, α::Symbol)
-            $(_👻elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
-                old = Meta.quot(i.name)
-                if i.type <: Alias
-                    i = only(j for j ∈ fields if j.name ≡ i.type.parameters[1])
-                end
-                new = Meta.quot(i.name)
-                :(if α ≡ $old
-                      return $(@__MODULE__).bokehread($(i.type), μ, $new, getfield(µ, $new))
-                end)
-            end)
+            $code
         end
     end
 end

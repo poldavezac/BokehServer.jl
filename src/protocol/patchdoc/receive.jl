@@ -11,7 +11,7 @@ getid(info::Dict{String}) :: Int64 = parse(Int64, info["id"])
 
 createreference(::Type{T}, info::Dict{String}) where {T<:iHasProps} = T(; id = getid(info))
 
-fromjson(T::Type, val, _) = convert(T, val)
+fromjson(::Type, val, _) = val
 
 fromjson(::Type{<:iHasProps}, val::Dict, models::ModelDict) = models[getid(val)]
 
@@ -31,8 +31,7 @@ function fromjson(
 end
 
 function setpropertyfromjson!(mdl::T, attr:: Symbol, val, models::ModelDict) where {T <: iHasProps}
-    ftype = fieldtype(fieldtype(T, :original), attr)
-    setproperty!(mdl, attr, fromjson(ftype, val, models))
+    setproperty!(mdl, attr, fromjson(fieldtype(T, attr), val, models))
 end
 
 function setreferencefromjson!(mdl::iHasProps, models::ModelDict, info :: Dict{String})
