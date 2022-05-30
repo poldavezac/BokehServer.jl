@@ -155,9 +155,7 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
             quote
                 old = $(@__MODULE__).bokehrawtype(getproperty(μ, $name))
                 new = setfield!(μ, $name, ν)
-                dotrigger && Bokeh.Events.trigger(
-                    $(@__MODULE__).changeevent($(field.type), μ, $name, old, new)
-                )
+                dotrigger && Bokeh.Events.trigger(Bokeh.ModelChangedEvent(μ, $name, old, new))
             end
         else
             :(setfield!(µ, $name, ν))

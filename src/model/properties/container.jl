@@ -30,7 +30,7 @@ for (𝐹, 𝑇) ∈ (
         else
             old = copy(γ.values)
             out = $𝐹(γ.values, x...; y...)
-            Events.trigger(changeevent(parent, γ.attr, old, new))
+            Events.trigger(ModelChangedEvent(parent, γ.attr, old, new))
             out ≡ γ.values ? γ : out
         end
     end
