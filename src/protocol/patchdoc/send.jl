@@ -1,13 +1,13 @@
-function patchdoc(λ::AbstractVector{<:Events.iEvent}, doc::iDocument, oldids::Set{Int64})
+function patchdoc(λ::AbstractVector{<:Events.iEvent}, doc::iDocument, oldids::Set{Int64}, 𝑅::Serialize.iRules = Serialize.Rules())
     isempty(λ) && return nothing
 
     all = allmodels(doc)
-    filt(k::Events.ModelChangedEvent) = haskey(all, bokehid(k.model))
-    filt(k::Events.iDocumentEvent)    = k.doc ≡ doc
+    filt(k::Events.iModelEvent)    = haskey(all, bokehid(k.model))
+    filt(k::Events.iDocumentEvent) = k.doc ≡ doc
 
     return (;
-        events     = serialize([i for i ∈ λ if filt(i)]),
-        references = serialize([j for (i, j) ∈ all if i ∉ oldids])
+        events     = serialize([i for i ∈ λ if filt(i)], 𝑅),
+        references = serialize([j for (i, j) ∈ all if i ∉ oldids], 𝑅)
     )
 end
 

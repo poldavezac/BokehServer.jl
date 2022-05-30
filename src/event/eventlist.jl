@@ -28,7 +28,7 @@ Base.push!(evts::iEventList, ε::iEvent) = push!(getevents(evts), ε)
 function Base.pop!(lst::iEventList, ε::iEvent)
     h    = hash(ε)
     evts = getevents(lst)
-    for i ∈ eachindex(evts)
+    for i ∈ reverse(eachindex(evts))
         if hash(evts[i]) ≡ h
             return popat!(evts, i)
         end

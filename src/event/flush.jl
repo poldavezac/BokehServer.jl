@@ -1,5 +1,5 @@
-eventcallbacks(key::iDocumentEvent)    = key.doc.callbacks
-eventcallbacks(key::ModelChangedEvent) = getfield(key.model, :callbacks)
+eventcallbacks(key::iDocumentEvent) = key.doc.callbacks
+eventcallbacks(key::iEvent)         = key.model.callbacks
 
 flushevents!()                = flushevents!(task_eventlist())
 flushevents!(::NullEventList) = iEvent[]
@@ -9,7 +9,7 @@ function flushevents!(λ::iEventList)
     while !isempty(λ)
         evt = popfirst!(λ)
         for cb ∈ eventcallbacks(evt)
-            cb(evt)
+            applicable(cb, evt) && cb(evt)
         end
         push!(lst, evt)
     end

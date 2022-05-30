@@ -1,11 +1,11 @@
-function pushdoc(self::iDocument)
+function pushdoc(self::iDocument, 𝑅::Serialize.iRules = Serialize.Rules())
     return (; doc = (;
         title   = self.title,
         version = Bokeh.PYTHON_VERSION,
         defs    = [],
         roots   = (;
             root_ids   = string.(bokehid.(self)),
-            references = NamedTuple[serialize(i) for i ∈ values(allmodels(self))],
+            references = NamedTuple[serialize(i, 𝑅) for i ∈ values(allmodels(self))],
         ),
     ))
 end

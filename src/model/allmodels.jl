@@ -35,4 +35,9 @@ bokehchildren(::Union{Set{<:NoGood}, AbstractArray{<:NoGood}, Dict{<:NoGood, <:N
 bokehchildren(mdl::Union{AbstractSet, AbstractArray}) = (i for i ∈ mdl if i isa iHasProps)
 bokehchildren(mdl::Dict) = (i for j ∈ mdl for i ∈ j if i isa iHasProps)
 
+function isdefaultvalue(η::iHasProps, α::Symbol)
+    dflt = Model.defaultvalue(typeof(η), i)
+    return isnothing(dflt) || getproperty(η, i) != something(dflt)
+end
+
 export allids, allmodels, bokehchildren

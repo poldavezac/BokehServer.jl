@@ -120,7 +120,7 @@ end
         doc  = Bokeh.Document()
         mdl  = ProtocolX(; id = 100,a  = 10)
         E    = Bokeh.Events
-        buf  = Bokeh.Protocol.Buffers(undef, 0)
+        buf  = Bokeh.Protocol.Buffers()
         JSON = Bokeh.Protocol.Messages.JSON
         json1(x) = JSON.json(Bokeh.Protocol.serialize(x))
         json2(x) = JSON.json(Bokeh.Protocol.Serialize.serialref(x, Bokeh.Protocol.Serialize.Rules()))

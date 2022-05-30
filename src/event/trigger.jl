@@ -7,6 +7,8 @@ function trigger!(λ::iEventList, ε::ModelChangedEvent)
     end
 end
 
+trigger!(λ::iEventList, ε::iColumnDataEvent) = push!(λ, ε)
+
 for (cls, other) ∈ (x = (RootAddedEvent, RootRemovedEvent); (x, x[2:-1:1]))
     @eval function trigger!(λ::iEventList, ε::$cls)
         isnothing(pop!(λ, $other(ε.doc, ε.root, ε.index))) && push!(λ, ε)

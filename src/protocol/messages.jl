@@ -105,7 +105,7 @@ function Base.iterate(itr::ProtocolIterator, state = 1)
         outp  = JSON.json(itr.meta)
     elseif state ≡ 3
         outp  = itr.cnt isa String ? itr.cnt : JSON.json(itr.cnt)
-    elseif isnothing(itr.buffers) || state > 3 + 2length(itr.buffers)
+    elseif state > length(itr)
         return nothing
     else
         ind  = state - 4

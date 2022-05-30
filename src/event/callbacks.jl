@@ -11,17 +11,12 @@ function invokable(func::Function, args...)
     )
 end
 
-function getargtype(params, index::Int, types::Vararg{Type})
-    types = (Any, types...)
-    sel   = Set([p[index+1] for p ∈ params])
-
-    return if any(i ∈ sel for i ∈ types)
-        Any
-    elseif length(sel) == 1
-        first(sel)
-    else
-        Union{sel...}
-    end
+function _𝑒_onchange(func::Function, model::iModel, T::Type)
+    cb = model.callbacks
+    (func ∈ cb) && return func
+    isempty(invokable(func, T)) && return missing
+    push!(cb, func)
+    return wrap
 end
 
 """
@@ -55,30 +50,15 @@ callback 2: only RootAddedEvent
 callback 1: any doc events
 """
 function onchange(func::Function, model::iDocument)
-    cb = getfield(model, :callbacks)
-    (func ∈ cb) && return nothing
-
-    params = collect(invokable(func, iDocumentEvent))
-    if isempty(params)
-        throw(KeyError("""
-            No correct signature. It should be:
-            * function (::<:iDocumentEvent)
-        """))
-    end
-
-    tpe = getargtype(params, 1, iEvent, iDocumentEvent)
-    return if tpe ≡ Any
-        push!(cb, func)
-        func
-    else
-        wrap = (e::iDocumentEvent) -> (e isa tpe) && func(e)
-        push!(cb, wrap)
-        wrap
-    end
+    wrap = _𝑒_onchange(func, model, iDocumentEvent)
+    ismissing(wrap) && throw(KeyError("""
+        No correct signature. It should be:
+        * function (::iDocumentEvent)
+    """))
 end
 
 """
-    onchange(func::Function, model::ModelChangedEvent)
+    onchange(func::Function, model::iModel)
 
 Adds a callback to the model.
 
@@ -87,7 +67,7 @@ Adds a callback to the model.
 julia > begin
         obj = Model()
         onchange(obj) do evt
-            @assert evt isa Bokeh.ModelChangedEvent
+            @assert evt isa Bokeh.Events.iModelEvent
             println("callback 1: receive events")
         end
 
@@ -115,29 +95,21 @@ callback 2: just sugar
 callback 3: a specific type for `new`
 """
 function onchange(func::Function, model::iModel)
-    cb = getfield(model, :callbacks)
-    return if func ∈ cb
-        nothing
-    elseif !isempty(invokable(func, ModelChangedEvent))
-        push!(cb, func)
-        func
-    else
-        params = collect(invokable(func, iModel, Symbol, Any, Any))
-
-        isempty(params) && throw(KeyError("""
-            No correct signature. It should be:
-            * function (::ModelChangedEvent)
-            * function (obj::iModel, attr::Symbol, old::Any, new::Any)
-        """))
-
-        oldtpe = getargtype(params, 3)
-        newtpe = getargtype(params, 4)
+    if !isempty(invokable(func, iModel, Symbol, Any, Any))
         wrap = function (e::ModelChangedEvent) 
-            if e.old isa oldtpe && e.new isa newtpe
+            if applicable(func, e.model, e.attr, e.old, e.new)
                 func(e.model, e.attr, e.old, e.new)
             end
         end
         push!(cb, wrap)
+        wrap
+    else
+        wrap = _𝑒_onchange(func, model, iModelEvent)
+        ismissing(wrap) && throw(KeyError("""
+            No correct signature. It should be:
+            * function (::<:iModelEvent)
+            * function (obj::iModel, attr::Symbol, old::Any, new::Any)
+        """))
         wrap
     end
 end

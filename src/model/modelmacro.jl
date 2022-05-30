@@ -263,6 +263,14 @@ function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
                 end
             end)
         end
+
+        function bokehfields(::Type{$cls})
+            return tuple($((
+                :($(Meta.quot(i.name)) => i.type)
+                for i ∈ sort(fields; by = string∘first)
+                if !(i <: Union{Alia, Internal}) && i.js
+            )...))
+        end
     end
 end
 
