@@ -41,12 +41,12 @@ end
 
 @testset "send PATCHDOC" begin
     val   = collect(Bokeh.Protocol.Messages.message(
-        Bokeh.Protocol.Messages.msg"PATCH-DOC", (; a = "AAA"), ["A"=>"B"])
+        Bokeh.Protocol.Messages.msg"PATCH-DOC", (; a = "AAA"), ["A"=>UInt8['B']])
     )
     @test Bokeh.Protocol.JSON.parse(val[1]) == Dict{String, Any}(
         "msgid"=>"1001", "msgtype" => "PATCH-DOC", "num_buffers" => 1
     )
-    @test val[2:end] == ["{}", """{"a":"AAA"}""", "A", "B"]
+    @test val[2:end] == ["{}", """{"a":"AAA"}""", "A", UInt8['B']]
 end
 
 @testset "serialize" begin

@@ -4,9 +4,15 @@
         # a line
         b:: Float32 = 1f0
     end))
-    truth = [
-        (; index = 2, name = :a, type = Int32, default = nothing, js = true, child = false, children = false),
-        (; index = 4, name = :b, type = Float32, default = Some(1f0), js = true, child = false, children = false),
+    truth        = [
+        (;
+            index = 2, name = :a, type = Int32, default = nothing, js = true,
+            alias = false, readonly = false, child = false, children = false
+        ),
+        (; 
+            index = 4, name = :b, type = Float32, default = Some(1f0), js = true,
+            alias = false, readonly = false, child = false, children = false
+        ),
     ]
     @testset for (i, j) ∈ zip(out, truth)
         @test i == j
@@ -19,7 +25,10 @@
         b:: Dummy
     end))
     truth = [
-        (; index = 2, name = :b, type = Dummy, default = nothing, js = true, child = true, children = false),
+        (; 
+            index = 2, name = :b, type = Dummy, default = nothing, js = true,
+            alias = false, readonly = false, child = true, children = false
+        ),
     ]
     @testset for (i, j) ∈ zip(out, truth)
         @test i == j
@@ -31,7 +40,7 @@
         d:: Dict{Dummy, Int32}
         e:: Set{Dummy}
     end))
-    dflt  = (; default = nothing, js = true, child = false, children = true)
+    dflt  = (; default = nothing, js = true, alias = false, readonly = false, child = false, children = true)
     truth = [
         (; index = 2, name = :b, type = Bokeh.Model.Container{Vector{Dummy}}, dflt...),
         (; index = 4, name = :c, type = Bokeh.Model.Container{Dict{Int32, Dummy}}, dflt...),
@@ -41,6 +50,26 @@
     @testset for (i, j) ∈ zip(out, truth)
         @test i == j
     end
+end
+
+@testset "defaultvalue" begin
+    ProtocolX = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+        a::Int = 1
+        b::Float64 = 2.
+        c::Vector{String} = ["3"]
+        d::String
+    end
+    @test Bokeh.Model.defaultvalue(ProtocolX, :a) ≡ Some(1)
+    @test Bokeh.Model.defaultvalue(ProtocolX, :b) ≡ Some(2.)
+    @test Bokeh.Model.defaultvalue(ProtocolX, :c) isa Some
+    @test something(Bokeh.Model.defaultvalue(ProtocolX, :c)) == ["3"]
+    @test Bokeh.Model.defaultvalue(ProtocolX, :d) ≡ nothing
+
+    a = ProtocolX(; a = 10, d = "x")
+    @test !Bokeh.Model.isdefaultvalue(a, :a)
+    @test Bokeh.Model.isdefaultvalue(a, :b)
+    @test Bokeh.Model.isdefaultvalue(a, :c)
+    @test !Bokeh.Model.isdefaultvalue(a, :d)
 end
 
 @testset "bokeh structure" begin

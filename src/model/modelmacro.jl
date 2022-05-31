@@ -102,7 +102,30 @@ function _👻fields(mod, code)
 end
 
 _👻filter(fields, attr = :alias)  = (i for i ∈ fields if !getfield(i, attr))
-_👻alias(f, fields) = f.alias ? only(j for j ∈ fields if j.name ≡ f.type.parameters[1]) : f
+
+function _👻aliases(f, fields)
+    return (f.name, (i.name for i ∈ fields if i.alias && f.name ≡ i.type.parameters[1])...)
+end
+
+function _👻elseif_alias(𝐹::Function, fields::Vector{<:NamedTuple}, elsecode)
+    return _👻elseif(fields, elsecode) do cur
+        if cur.alias
+            nothing
+        else
+            code  = 𝐹(cur)
+            if isnothing(code)
+                nothing
+            else
+                names = _👻aliases(cur, fields)
+                cond  = length(names) > 2 ? :(α ∈ $names) :
+                    length(names) ≡ 1 ? :(α ≡ $(Meta.quot(names[1]))) :
+                    :(α ≡ $(Meta.quot(names[1])) || α ≡ $(Meta.quot(names[2])))
+                Expr(:if, cond, code)
+            end
+        end
+    end
+end
+        
 
 function _👻structure(
         cls     :: Symbol,
@@ -156,46 +179,39 @@ function _👻structure(
 end
 
 function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
-    function setter(field)
-        name = Meta.quot(field.name)
-        if field.js
-            quote
-                old = $(@__MODULE__).bokehrawtype(getproperty(μ, $name))
-                new = setfield!(μ, $name, ν)
-                dotrigger && Bokeh.Events.trigger(Bokeh.ModelChangedEvent(μ, $name, old, new))
-            end
+    code = _👻elseif_alias(fields, :(throw(ErrorException("unknown or read-only property $α")))) do i
+        if i.readonly
+            nothing
         else
-            :(setfield!(µ, $name, ν))
+            name = Meta.quot(i.name)
+            set  = if i.js
+                quote
+                    old = $(@__MODULE__).bokehrawtype(getproperty(μ, $name))
+                    new = setfield!(μ, $name, ν)
+                    dotrigger && Bokeh.Events.trigger(Bokeh.ModelChangedEvent(μ, $name, old, new))
+                end
+            else
+                :(setfield!(µ, $name, ν))
+            end
+            quote
+                ν = $(@__MODULE__).bokehwrite($(i.type), $(@__MODULE__).bokehrawtype(ν))
+                $set
+                getproperty(µ, $name)
+            end
         end
     end
 
     quote
         function Base.setproperty!(μ::$cls, α::Symbol, ν; dotrigger :: Bool = true)
-            $(_👻elseif(fields, :(throw(ErrorException("unknown or read-only property $α")))) do i
-                name = Meta.quot(i.name)
-                i    = _👻alias(i, fields)
-                if i.readonly
-                    nothing
-                else
-                    :(if α ≡ $name
-                        ν = $(@__MODULE__).bokehwrite($(i.type), $(@__MODULE__).bokehrawtype(ν))
-                        $(setter(i))
-                        return getproperty(µ, $(Meta.quot(i.name)))
-                    end)
-                end
-            end)
+            $code
         end
     end
 end
 
 function _👻getter(cls::Symbol, fields::Vector{<:NamedTuple})
-    expr      = _👻elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
-        old = Meta.quot(i.name)
-        i   = _👻alias(i, fields)
-        new = Meta.quot(i.name)
-        :(if α ≡ $old
-              return $(@__MODULE__).bokehread($(i.type), μ, $new, getfield(µ, $new))
-        end)
+    expr = _👻elseif_alias(fields, :(throw(ErrorException("unknown property $α")))) do field
+        name = Meta.quot(field.name)
+        :($(@__MODULE__).bokehread($(field.type), μ, $name, getfield(µ, $name)))
     end
 
     code = :(if α ∈ $((:id, :callbacks, (i.name for i ∈ fields if !i.js)...))
@@ -247,26 +263,20 @@ function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
         @inline function $(@__MODULE__).hasbokehproperty(T::Type{$cls}, attr::Symbol)
             _👻elseif((i for i ∈ fields if i.js), false) do field
                 :(if attr ≡ $(Meta.quot(field.name))
-                      true
+                    true
                 end)
             end
         end
 
-        function $(@__MODULE__).defaultvalue(::Type{$cls}, attr::Symbol) :: Union{Some, Nothing}
-            $(_👻elseif(fields, :(@error "No default value" class = $cls attr)) do field
-                if isnothing(field.default) || field.alias
-                    nothing
-                else
-                    :(if attr ≡ $(Meta.quot(field.name))
-                        Some($(something(field.default)))
-                    end)
-                end
+        function $(@__MODULE__).defaultvalue(::Type{$cls}, α::Symbol) :: Union{Some, Nothing}
+            $(_👻elseif_alias(fields, nothing) do field
+                isnothing(field.default) ? nothing : :(Some($(something(field.default))))
             end)
         end
 
-        function bokehfields(::Type{$cls})
+        function $(@__MODULE__).bokehfields(::Type{$cls})
             return tuple($((
-                :($(Meta.quot(i.name)) => i.type)
+                Expr(:call, :(=>), Meta.quot(i.name), i.type)
                 for i ∈ sort(fields; by = string∘first)
                 if i.js && !i.alias
             )...))
@@ -306,9 +316,10 @@ macro model(expr::Expr)
     _👻code(__module__, expr)
 end
 
-function defaultvalue end
 function bokehproperties end
 function hasbokehproperty end
+function bokehfields end
+function defaultvalue end
 
 const ID = bokehidmaker()
 

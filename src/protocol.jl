@@ -6,7 +6,7 @@ using ..Model
 using ..Documents
 using JSON
 
-const Buffers = Dict{String, Vector{Int8}}
+const Buffers = Vector{Pair{String, Vector{UInt8}}}
 
 include("protocol/messages.jl")
 include("protocol/serialize.jl")

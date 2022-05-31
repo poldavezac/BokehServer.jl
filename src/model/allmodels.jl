@@ -35,9 +35,31 @@ bokehchildren(::Union{Set{<:NoGood}, AbstractArray{<:NoGood}, Dict{<:NoGood, <:N
 bokehchildren(mdl::Union{AbstractSet, AbstractArray}) = (i for i ∈ mdl if i isa iHasProps)
 bokehchildren(mdl::Dict) = (i for j ∈ mdl for i ∈ j if i isa iHasProps)
 
+const _𝑐𝑚𝑝_BIN = Union{Number, Symbol, Missing, Nothing, Function}
+
+compare(::Any, ::Any)               = false
+compare(x::iHasProps, y::iHasProps) = x.id ≡ y.id
+compare(x::_𝑐𝑚𝑝_BIN,  y::_𝑐𝑚𝑝_BIN)  = x ≡ y
+compare(x::Pair, y::Pair)           = compare(first(x), first(y)) && compare(last(x), last(y))
+compare(x::AbstractString, y::AbstractString) = x == y
+compare(x::T, y::T) where {T} = all(compare(getproperty(x, i), getproperty(y, i)) for i ∈ fieldnames(T))
+compare(x::AbstractSet, y::AbstractSet) = (length(x) ≡ length(y) && all(i ∈ y for i ∈ x))
+
+for (cls, 𝐹) ∈ (AbstractArray => size, Tuple => length)
+    @eval compare(x::$cls, y::$cls) = $𝐹(x) ≡ $𝐹(y) && all(compare(x[i], y[i]) for i ∈ eachindex(x))
+end
+
+for cls ∈ (AbstractDict, NamedTuple)
+    @eval function compare(x::$cls, y::$cls)
+        isempty(x) && isempty(y) && return true
+        return length(x) ≡ length(y) && all(haskey(y, i) && compare(j, y[i]) for (i, j) ∈ x)
+    end
+end
+
 function isdefaultvalue(η::iHasProps, α::Symbol)
-    dflt = Model.defaultvalue(typeof(η), i)
-    return isnothing(dflt) || getproperty(η, i) != something(dflt)
+    dflt = Model.defaultvalue(typeof(η), α)
+    isnothing(dflt) && return false
+    return compare(bokehrawtype(getproperty(η, α)), something(dflt))
 end
 
 export allids, allmodels, bokehchildren

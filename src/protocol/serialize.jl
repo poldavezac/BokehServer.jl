@@ -13,7 +13,7 @@ struct Rules <: iRules end
 "Specifies module specific rules for json serialization with buffers"
 struct BufferedRules <: iRules
     buffers :: Buffers
-    BufferedRules() = new(Buffers()) 
+    BufferedRules() = new(Buffers(undef, 0)) 
 end
 
 serialtype(η::T, ::iRules) where {T <: iHasProps} = (; type = nameof(T))
