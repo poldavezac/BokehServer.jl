@@ -82,6 +82,10 @@ function _👻fields(mod, code)
                 type     = realtype,
                 default  = line.head ≡ :(::) ? nothing : Some(line.args[2]),
                 js       = !(realtype <: Internal),
+                alias    = realtype <: Alias,
+                readonly = realtype <: Union{
+                    ReadOnly, Internal{<:ReadOnly}, iSpec{<:ReadOnly}, Container{<:ReadOnly}
+                },
                 child    = realtype <: Union{iModel, Nullable{<:iModel}},
                 children = if realtype <: Container
                     els = eltype(realtype)
@@ -97,12 +101,15 @@ function _👻fields(mod, code)
     ]
 end
 
+_👻filter(fields, attr = :alias)  = (i for i ∈ fields if !getfield(i, attr))
+_👻alias(f, fields) = f.alias ? only(j for j ∈ fields if j.name ≡ f.type.parameters[1]) : f
+
 function _👻structure(
         cls     :: Symbol,
         parents :: Union{Symbol, Expr},
         fields  :: Vector{<:NamedTuple},
 )
-    aliases = [i.name => i.parameters[1] for i ∈ fields if i.type <: Alias]
+    aliases = [i.name => i.type.parameters[1] for i ∈ fields if i.alias]
 
     function initcode(field)
         opts = [first(j) for j ∈ aliases if last(j) ≡ field.name]
@@ -134,13 +141,13 @@ function _👻structure(
     quote
         mutable struct $cls <: $parents
             id        :: Int64
-            $((:($(i.name)::$(bokehfieldtype(i.type))) for i ∈ fields if !(i.type <: Alias))...)
+            $((:($(i.name)::$(bokehfieldtype(i.type))) for i ∈ _👻filter(fields))...)
             callbacks :: Vector{Function}
 
             function $cls(; id = $(@__MODULE__).ID(), kwa...)
                 new(
                     id isa Int64 ? id : parse(Int64, string(id)),
-                    $((initcode(i) for i ∈ fields if !(i.type isa Alias))...),
+                    $(Iterators.map(initcode, _👻filter(fields))...),
                     Function[],
                 )
             end
@@ -166,10 +173,8 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
         function Base.setproperty!(μ::$cls, α::Symbol, ν; dotrigger :: Bool = true)
             $(_👻elseif(fields, :(throw(ErrorException("unknown or read-only property $α")))) do i
                 name = Meta.quot(i.name)
-                if i.type <: Alias
-                    i = only(j for j ∈ fields if j.name ≡ i.type.parameters[1])
-                end
-                if i.type <: Union{ReadOnly, Internal{<:ReadOnly}, iSpec{<:ReadOnly}, Container{<:ReadOnly}}
+                i    = _👻alias(i, fields)
+                if i.readonly
                     nothing
                 else
                     :(if α ≡ $name
@@ -184,19 +189,16 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
 end
 
 function _👻getter(cls::Symbol, fields::Vector{<:NamedTuple})
-    internals = (:id, :callbacks, (i.name for i ∈ fields if i.type <: Internal)...)
     expr      = _👻elseif(fields, :(throw(ErrorException("unknown property $α")))) do i
         old = Meta.quot(i.name)
-        if i.type <: Alias
-            i = only(j for j ∈ fields if j.name ≡ i.type.parameters[1])
-        end
+        i   = _👻alias(i, fields)
         new = Meta.quot(i.name)
         :(if α ≡ $old
               return $(@__MODULE__).bokehread($(i.type), μ, $new, getfield(µ, $new))
         end)
     end
 
-    code = :(if α ∈ $internals
+    code = :(if α ∈ $((:id, :callbacks, (i.name for i ∈ fields if !i.js)...))
         return getfield(µ, α)
     end)
     push!(code.args, Expr(:elseif, expr.args...))
@@ -252,7 +254,7 @@ function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
 
         function $(@__MODULE__).defaultvalue(::Type{$cls}, attr::Symbol) :: Union{Some, Nothing}
             $(_👻elseif(fields, :(@error "No default value" class = $cls attr)) do field
-                if isnothing(field.default) || field.type <: Alias
+                if isnothing(field.default) || field.alias
                     nothing
                 else
                     :(if attr ≡ $(Meta.quot(field.name))
@@ -266,7 +268,7 @@ function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
             return tuple($((
                 :($(Meta.quot(i.name)) => i.type)
                 for i ∈ sort(fields; by = string∘first)
-                if !(i <: Union{Alia, Internal}) && i.js
+                if i.js && !i.alias
             )...))
         end
     end

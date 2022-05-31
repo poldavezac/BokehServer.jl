@@ -11,12 +11,12 @@ function invokable(func::Function, args...)
     )
 end
 
-function _𝑒_onchange(func::Function, model::iModel, T::Type)
+function _𝑒_onchange(func::Function, model, T::Type)
     cb = model.callbacks
     (func ∈ cb) && return func
     isempty(invokable(func, T)) && return missing
     push!(cb, func)
-    return wrap
+    return func
 end
 
 """
@@ -95,6 +95,8 @@ callback 2: just sugar
 callback 3: a specific type for `new`
 """
 function onchange(func::Function, model::iModel)
+    cb = model.callbacks
+    (func ∈ cb) && return func
     if !isempty(invokable(func, iModel, Symbol, Any, Any))
         wrap = function (e::ModelChangedEvent) 
             if applicable(func, e.model, e.attr, e.old, e.new)
