@@ -100,6 +100,9 @@ end
 
 const _𝑑𝑠_RANGES = Union{OrdinalRange, StepRangeLen}
 
+_𝑑𝑠_patch(𝑎, 𝑥::Pair)       = _𝑑𝑠_patch(𝑎, 𝑥[1], 𝑥[2])
+_𝑑𝑠_patch_check(𝑎, 𝑥::Pair) = _𝑑𝑠_patch_check(𝑎, 𝑥[1], 𝑥[2])
+
 @_𝑑𝑠_patch AbstractVector Int   Any            (𝑎[𝑥] = 𝑦)  (1 ≤ 𝑥 ≤ length(𝑎))
 @_𝑑𝑠_patch AbstractVector Colon AbstractVector (𝑎[𝑥] .= 𝑦) (length(𝑎) ≡ length(𝑦))
 @_𝑑𝑠_patch(
@@ -132,13 +135,13 @@ function patch!(
         dotrigger :: Bool = true
 )
     isempty(patches) && return
-    for (key, (inds, vals)) ∈ patches
+    for (key, patch) ∈ patches
         arr = get(γ.values, key, nothing)
         if isnothing(arr)
             throw(ErrorException("Can only patch existing columns"))
-        elseif !applicable(_𝑑𝑠_patch_check, arr, inds, vals)
+        elseif !applicable(_𝑑𝑠_patch_check, arr, patch...)
             throw(ErrorException("Unknown patch format $key => $patch"))
-        elseif !_𝑑𝑠_patch_check(γ.values[key], inds, vals)
+        elseif !_𝑑𝑠_patch_check(γ.values[key], patch...)
             throw(ErrorException("Unable to apply path $key => $patch"))
         end
     end

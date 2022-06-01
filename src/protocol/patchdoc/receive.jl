@@ -54,6 +54,28 @@ function apply(::Val{:ModelChanged}, doc::iDocument, models::ModelDict, info :: 
     setpropertyfromjson!(models[getid(info["model"])], Symbol(info["attr"]), info["new"], models)
 end
 
+function apply(::Val{:ColumnDataChangedEvent}, doc::iDocument, models::ModelDict, info :: Dict{String})
+    Model.merge!(models[getid(info["model"])].data, info["new"])
+end
+
+function apply(::Val{:ColumnsStreamedEvent}, doc::iDocument, models::ModelDict, info :: Dict{String})
+    Model.stream!(models[getid(info["model"])].data, info["column_source"])
+end
+
+_𝑎_patch(x::Int)   = x
+_𝑎_patch(x::Dict)  = x["step"] ≡ 1 ? (x["start"] : x["stop"]) : (x["start"] : x["step"] : x["stop"])
+_𝑎_patch(x::Tuple) = (x[1], _𝑎_patch(x[2]), _𝑎_patch(x[3]))
+
+function apply(::Val{:ColumnsPatchedEvent}, doc::iDocument, models::ModelDict, info :: Dict{String})
+    Model.patch!(
+        models[getid(info["model"])].data,
+        (
+            col => _𝑎_patch(x) => y
+            for (col, lst) ∈ info["patches"]
+            for (x, y) ∈ lst
+        )...
+    )
+end
 
 parsereferences(contents) = parsereferences!(ModelDict(), contents)
 
