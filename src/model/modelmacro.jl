@@ -80,7 +80,7 @@ function _👻fields(mod, code)
             (;
                 index, name,
                 type     = realtype,
-                default  = line.head ≡ :(::) ? nothing : Some(line.args[2]),
+                default  = _👻defaultvalue(realtype, line),
                 js       = !(realtype <: Internal),
                 alias    = realtype <: Alias,
                 readonly = realtype <: Union{
@@ -320,6 +320,34 @@ function bokehproperties end
 function hasbokehproperty end
 function bokehfields end
 function defaultvalue end
+
+function _👻defaultvalue(T::Type, line::Expr)
+    return if line.head ≡ :(::)
+        _👻defaultvalue(T)
+    elseif line.args[2] ≡ :nodefaults
+        nothing
+    elseif line.args[2] ≡ :zero
+        out = _👻defaultvalue(T)
+        if isnothing(out)
+            R = bokehfieldtype(T)
+            throw(ErrorException("Unknown defaults for $R (calls `zero($R)` or `$R()` are unavailable)"))
+        end
+        out
+    else
+        Some(line.args[2])
+    end
+end
+
+function _👻defaultvalue(T::Type)
+    R = bokehfieldtype(T)
+    if hasmethod(zero, Tuple{R})
+        Some(:(zero($R)))
+    elseif hasmethod(R, Tuple{})
+        Some(:($R()))
+    else
+        nothing
+    end
+end
 
 const ID = bokehidmaker()
 

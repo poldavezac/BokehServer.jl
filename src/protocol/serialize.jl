@@ -63,9 +63,8 @@ _𝑐𝑝_cnv(x::StepRangeLen) = (; start = first(x), step = step(x), stop = las
 
 function serialref(η::Events.ColumnsPatchedEvent, 𝑅::iRules)
     patches = let out = Dict{String, Vector{Tuple{Any, Any}}}()
-        dflt() = Tuple{Any, Any}[]
-        for (k, (i, j)) ∈ η.patches
-            push!(get!(dflt, out, k), (_𝑐𝑝_cnv(i), j))
+        for (k, v) ∈ η.patches
+            out[k] = Tuple{Any, Any}[(_𝑐𝑝_cnv(i), j) for (i, j) ∈ v]
         end
         out
     end

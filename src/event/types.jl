@@ -3,19 +3,34 @@ abstract type iEvent end
 abstract type iDocumentEvent <: iEvent end
 abstract type iDocumentRootEvent <: iDocumentEvent end
 abstract type iModelEvent <: iEvent end
-abstract type iColumnDataEvent <: iModelEvent end
+abstract type iDataSourceEvent <: iModelEvent end
 
-for (cls, fields) ∈ (
-        :ModelChangedEvent      => (:(old::Any), :(new::Any)),
-        :ColumnDataChangedEvent => (:(data::Dict{String, AbstractVector}),),
-        :ColumnsStreamedEvent   => (:(data::Dict{String, AbstractVector}), :(rollover::Union{Nothing, Int})),
-        :ColumnsPatchedEvent    => (:(patches::Vector{<:Pair{<:AbstractString, <:Pair}}),)
-)
-    @eval struct $cls <: iModelEvent
-        model :: iModel
-        attr  :: Symbol
-        $(fields...)
+macro _𝑚_event(code)
+    quote
+        struct $(code.args[2])
+            model :: iModel
+            attr  :: Symbol
+            $(code.args[3].args...)
+        end
     end
+end
+
+@_𝑚_event struct ModelChangedEvent <: iModelEvent
+    old :: Any
+    new :: Any
+end
+
+@_𝑚_event struct ColumnDataChangedEvent <: iDataSourceEvent
+    data :: DataDict
+end
+
+@_𝑚_event struct ColumnsStreamedEvent <: iDataSourceEvent
+    data     :: DataDict
+    rollover :: Union{Nothing, Int}
+end
+
+@_𝑚_event struct ColumnsPatchedEvent <: iDataSourceEvent
+    patches :: Dict{String, Vector{Pair}}
 end
 
 for cls ∈ (:RootAddedEvent, :RootRemovedEvent)

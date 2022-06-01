@@ -4,6 +4,7 @@ module AbstractTypes
     abstract type iDataSource   <: iModel end
     abstract type iDocument end
     abstract type iTheme end
+    const DataDict = Dict{String, AbstractVector}
 
     bokehid(μ::Union{iModel, iDocument}) = getfield(μ, :id)
 
@@ -27,6 +28,6 @@ module AbstractTypes
 
     bokehidmaker(T::Type = Int64) = T ≡ Symbol ? BokehSymbolIdMaker() : BokehIdMaker()
 
-    export iHasProps, iModel, iDataSource, iDocument, iTheme, bokehid, bokehidmaker
+    export iHasProps, iModel, iDataSource, iDocument, iTheme, bokehid, bokehidmaker, DataDict
 end
 using .AbstractTypes

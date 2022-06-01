@@ -6,7 +6,7 @@
     end))
     truth        = [
         (;
-            index = 2, name = :a, type = Int32, default = nothing, js = true,
+            index = 2, name = :a, type = Int32, default = Some(:(zero(Int32))), js = true,
             alias = false, readonly = false, child = false, children = false
         ),
         (; 
@@ -15,7 +15,13 @@
         ),
     ]
     @testset for (i, j) ∈ zip(out, truth)
-        @test i == j
+        for x ∈ propertynames(i)
+            if x ≡ :default
+                @test string(getfield(i, x)) == string(getfield(j, x))
+            else
+                @test getfield(i, x) == getfield(j, x)
+            end
+        end
     end
 
     struct Dummy <: Bokeh.iModel
@@ -26,29 +32,41 @@
     end))
     truth = [
         (; 
-            index = 2, name = :b, type = Dummy, default = nothing, js = true,
+            index = 2, name = :b, type = Dummy, default = "Some(:((Dummy)()))", js = true,
             alias = false, readonly = false, child = true, children = false
         ),
     ]
     @testset for (i, j) ∈ zip(out, truth)
-        @test i == j
+        for x ∈ propertynames(i)
+            if x ≡ :default
+                @test string(getfield(i, x)) == string(getfield(j, x))
+            else
+                @test getfield(i, x) == getfield(j, x)
+            end
+        end
     end
 
     out = Bokeh.Model._👻fields(@__MODULE__, :(mutable struct X <: iModel
-        b:: Vector{Dummy}
-        c:: Dict{Int32, Dummy}
-        d:: Dict{Dummy, Int32}
+        b:: Vector{Dummy}       = zero
+        c:: Dict{Int32, Dummy}  = nodefaults
+        d:: Dict{Dummy, Int32}  = Dict(Dummy() => 1)
         e:: Set{Dummy}
     end))
-    dflt  = (; default = nothing, js = true, alias = false, readonly = false, child = false, children = true)
+    dflt(x)  = (; default = x, js = true, alias = false, readonly = false, child = false, children = true)
     truth = [
-        (; index = 2, name = :b, type = Bokeh.Model.Container{Vector{Dummy}}, dflt...),
-        (; index = 4, name = :c, type = Bokeh.Model.Container{Dict{Int32, Dummy}}, dflt...),
-        (; index = 6, name = :d, type = Bokeh.Model.Container{Dict{Dummy, Int32}}, dflt...),
-        (; index = 8, name = :e, type = Bokeh.Model.Container{Set{Dummy}}, dflt...)
+        (; index = 2, name = :b, type = Bokeh.Model.Container{Vector{Dummy}}, dflt(Some(:(zero(Vector{Dummy}))))...),
+        (; index = 4, name = :c, type = Bokeh.Model.Container{Dict{Int32, Dummy}}, dflt(nothing)...),
+        (; index = 6, name = :d, type = Bokeh.Model.Container{Dict{Dummy, Int32}}, dflt(Some(:(Dict(Dummy()=>1))))...),
+        (; index = 8, name = :e, type = Bokeh.Model.Container{Set{Dummy}}, dflt("Some(:((Set{Dummy})()))")...)
     ]
     @testset for (i, j) ∈ zip(out, truth)
-        @test i == j
+        for x ∈ propertynames(i)
+            if x ≡ :default
+                @test string(getfield(i, x)) == string(getfield(j, x))
+            else
+                @test getfield(i, x) == getfield(j, x)
+            end
+        end
     end
 end
 
