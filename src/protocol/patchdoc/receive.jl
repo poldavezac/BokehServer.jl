@@ -55,22 +55,27 @@ function apply(::Val{:ModelChanged}, doc::iDocument, models::ModelDict, info :: 
 end
 
 function apply(::Val{:ColumnDataChangedEvent}, doc::iDocument, models::ModelDict, info :: Dict{String})
-    Model.merge!(models[getid(info["model"])].data, info["new"])
+    Model.merge!(models[getid(info["column_source"])].data, info["new"])
 end
 
 function apply(::Val{:ColumnsStreamedEvent}, doc::iDocument, models::ModelDict, info :: Dict{String})
-    Model.stream!(models[getid(info["model"])].data, info["column_source"])
+    Model.stream!(models[getid(info["column_source"])].data, info["data"]; rollover = info["rollover"])
 end
 
-_𝑎_patch(x::Int)   = x
-_𝑎_patch(x::Dict)  = x["step"] ≡ 1 ? (x["start"] : x["stop"]) : (x["start"] : x["step"] : x["stop"])
-_𝑎_patch(x::Tuple) = (x[1], _𝑎_patch(x[2]), _𝑎_patch(x[3]))
+const _𝑐𝑝_SLICE  = AbstractDict{<:AbstractString, <:Union{Nothing, Integer}}
+const _𝑐𝑝_RANGES = Union{Integer, _𝑐𝑝_SLICE}
+
+_𝑐𝑝_fro(𝑥::Union{Integer, Tuple{<:Integer, <:Integer, <:Integer}}) = 𝑥
+_𝑐𝑝_fro(𝑥::Tuple{<:Integer, <:_𝑐𝑝_SLICE, <:_𝑐𝑝_SLICE}) = (𝑥[1], _𝑐𝑝_fro(𝑥[2]), _𝑐𝑝_fro(𝑥[3]))
+_𝑐𝑝_fro(𝑥::_𝑐𝑝_RANGES) =  (;
+    start = get(𝑥, "start", 0) + 1, stop = get(𝑥, "stop", nothing), step = get(𝑥, "step", 1)
+)
 
 function apply(::Val{:ColumnsPatchedEvent}, doc::iDocument, models::ModelDict, info :: Dict{String})
     Model.patch!(
-        models[getid(info["model"])].data,
+        models[getid(info["column_source"])].data,
         (
-            col => _𝑎_patch(x) => y
+            col => _𝑐𝑝_fro(x) => y
             for (col, lst) ∈ info["patches"]
             for (x, y) ∈ lst
         )...

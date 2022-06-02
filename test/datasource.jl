@@ -26,7 +26,7 @@ end
     end
 end
 
-@testset "patch!" for i ∈ ("a" => 2 => 4,  "a" => 2:2 => [4])
+@testset "patch!" for i ∈ ("a" => 2 => 4, "a" => 2:2 => [4])
     x = X(; source = Dict("a" => [1, 2]))
     Bokeh.Events.eventlist!() do
         Bokeh.Model.patch!(x.source, i)

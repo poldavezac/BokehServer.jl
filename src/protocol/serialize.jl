@@ -57,14 +57,15 @@ function serialref(η::Events.ModelChangedEvent, 𝑅::iRules)
     )
 end
 
-_𝑐𝑝_cnv(x::Integer)      = x
-_𝑐𝑝_cnv(x::OrdinalRange) = (; start = first(x), step = 1,       stop = last(x)+1)
-_𝑐𝑝_cnv(x::StepRangeLen) = (; start = first(x), step = step(x), stop = last(x)+1)
+# warning : we're going to javascript, thus the ranges start at 0...
+_𝑐𝑝_to(x::Integer)      = x
+_𝑐𝑝_to(x::OrdinalRange) = (; start = first(x)-1, step = 1,       stop = last(x))
+_𝑐𝑝_to(x::StepRangeLen) = (; start = first(x)-1, step = step(x), stop = last(x))
 
 function serialref(η::Events.ColumnsPatchedEvent, 𝑅::iRules)
     patches = let out = Dict{String, Vector{Tuple{Any, Any}}}()
         for (k, v) ∈ η.patches
-            out[k] = Tuple{Any, Any}[(_𝑐𝑝_cnv(i), j) for (i, j) ∈ v]
+            out[k] = Tuple{Any, Any}[(_𝑐𝑝_to(i), j) for (i, j) ∈ v]
         end
         out
     end
@@ -107,7 +108,7 @@ for (R, code) ∈ (
             id
         end)
 )
-    @eval function _𝑑𝑠_cnv(𝑑::_𝑑𝑠_BIN, 𝑅::$R)
+    @eval function _𝑑𝑠_to(𝑑::_𝑑𝑠_BIN, 𝑅::$R)
         return (;
             $(Expr(:kw, code.args...)),
             dtype = lowercase("$(nameof(eltype(𝑑)))"),
@@ -122,11 +123,11 @@ for (T, code) ∈ (
         DateTime   => :(Int64.(round.(1e3 .* Dates.datetime2unix.(𝑑)))),
         Date       => :(Dates.toms.(Day.(Dates.date2epochdays.(𝑑))))
 )
-    @eval _𝑑𝑠_cnv(𝑑::AbstractVector{$T}, 𝑅::iRules) = _𝑑𝑠_cnv($code, 𝑅)
+    @eval _𝑑𝑠_to(𝑑::AbstractVector{$T}, 𝑅::iRules) = _𝑑𝑠_to($code, 𝑅)
 end
 
 function serialref(::Type{Model.DataSource}, 𝑑::Dict{String, AbstractVector}, 𝑅::iRules)
-    return Dict{String, Union{Vector, NamedTuple}}(k => _𝑑𝑠_cnv(v) for (k, v) ∈ 𝑑)
+    return Dict{String, Union{Vector, NamedTuple}}(k => _𝑑𝑠_to(v) for (k, v) ∈ 𝑑)
 end
 
 serialref(η::TitleChangedEvent, 𝑅::iRules) = (; kind = :TitleChanged, title = η.title)
