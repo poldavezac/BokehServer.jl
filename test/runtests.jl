@@ -19,7 +19,10 @@ const FILES = [Regex(i) for i ∈ SETTINGS["file"]]
 const TESTS = [Regex(i) for i ∈ SETTINGS["test"]]
 
 function acceptfile(path::String)
-    isempty(FILES) && return true
+    endswith(path, ".jl")             || return false
+    (basename(path) == "__init__.jl") && return false
+    (path == @__FILE__)               && return false
+    isempty(FILES)                    && return true
     name = path[length(@__DIR__)+2:end]
     return !all(isnothing(match(i, name)) for i ∈ FILES)
 end
@@ -64,12 +67,30 @@ function applycmdargs(expr)
     return expr
 end
 
-for path ∈ readdir(@__DIR__; join = true)
-    isfile(path) || continue
-    (path != @__FILE__) || continue
-    endswith(path, ".jl") || continue
+function hasacceptedfile(dir::String)
+    any(
+        isfile(path) ? acceptfile(path) : hasacceptedfile(path)
+        for path ∈ readdir(dir; join = true)
+    )
+end
 
-    acceptfile(path) && @testset "$(basename(path))" begin
-        include(applycmdargs, path)
+function visitfiles(dir::String; force :: Bool = false)
+    if isfile(joinpath(dir, "__init__.jl"))
+        include(joinpath(dir, "__init__.jl"))
+    end
+    hasacceptedfile(dir) || return
+
+    for path ∈ readdir(dir; join = true)
+        if isdir(path)
+            @testset "$(basename(path))" begin
+                visitfiles(path; force = acceptfile(path))
+            end
+        else
+            acceptfile(path) && @testset "$(basename(path))" begin
+                include(applycmdargs, path)
+            end
+        end
     end
 end
+
+visitfiles(@__DIR__)

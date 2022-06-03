@@ -58,22 +58,17 @@ function serialref(η::Events.ModelChangedEvent, 𝑅::iRules)
 end
 
 # warning : we're going to javascript, thus the ranges start at 0...
-_𝑐𝑝_to(x::Integer)      = x
-_𝑐𝑝_to(x::OrdinalRange) = (; start = first(x)-1, step = 1,       stop = last(x))
-_𝑐𝑝_to(x::StepRangeLen) = (; start = first(x)-1, step = step(x), stop = last(x))
+serialref(x::OrdinalRange, ::iRules) = (; start = first(x)-1, step = 1,       stop = last(x))
+serialref(x::StepRangeLen, ::iRules) = (; start = first(x)-1, step = step(x), stop = last(x))
 
 function serialref(η::Events.ColumnsPatchedEvent, 𝑅::iRules)
-    patches = let out = Dict{String, Vector{Tuple{Any, Any}}}()
-        for (k, v) ∈ η.patches
-            out[k] = Tuple{Any, Any}[(_𝑐𝑝_to(i), j) for (i, j) ∈ v]
-        end
-        out
-    end
-
     return (;
         column_source = serialref(η.model, 𝑅),
         kind          = :ColumnsPatched,
-        patches       = serialref(patches, 𝑅),
+        patches       = Dict{String, Vector}(
+            k => [(serialref(i, 𝑅), j) for (i, j) ∈ v]
+            for (k, v) ∈ η.patches
+        )
     )
 end
 
