@@ -42,16 +42,17 @@ compare(x::iHasProps, y::iHasProps) = x.id ≡ y.id
 compare(x::_𝑐𝑚𝑝_BIN,  y::_𝑐𝑚𝑝_BIN)  = x ≡ y
 compare(x::Pair, y::Pair)           = compare(first(x), first(y)) && compare(last(x), last(y))
 compare(x::AbstractString, y::AbstractString) = x == y
-compare(x::T, y::T) where {T} = all(compare(getproperty(x, i), getproperty(y, i)) for i ∈ fieldnames(T))
-compare(x::AbstractSet, y::AbstractSet) = (length(x) ≡ length(y) && all(i ∈ y for i ∈ x))
+compare(x::T, y::T) where {T} = (x ≡ y) ||  all(compare(getproperty(x, i), getproperty(y, i)) for i ∈ fieldnames(T))
+compare(x::AbstractSet, y::AbstractSet) = (x ≡ y) || (length(x) ≡ length(y) && all(i ∈ y for i ∈ x))
 
 for (cls, 𝐹) ∈ (AbstractArray => size, Tuple => length)
-    @eval compare(x::$cls, y::$cls) = $𝐹(x) ≡ $𝐹(y) && all(compare(x[i], y[i]) for i ∈ eachindex(x))
+    @eval compare(x::$cls, y::$cls) = (x ≡ y) || ($𝐹(x) ≡ $𝐹(y) && all(compare(x[i], y[i]) for i ∈ eachindex(x)))
 end
 
 for cls ∈ (AbstractDict, NamedTuple)
     @eval function compare(x::$cls, y::$cls)
         isempty(x) && isempty(y) && return true
+        x ≡ y && return true
         return length(x) ≡ length(y) && all(haskey(y, i) && compare(j, y[i]) for (i, j) ∈ x)
     end
 end

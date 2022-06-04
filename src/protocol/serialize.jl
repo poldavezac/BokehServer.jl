@@ -83,10 +83,10 @@ end
 
 function serialref(η::Events.ColumnDataChangedEvent, 𝑅::iRules)
     return (;
-        cols          = serialref(η.columns, 𝑅),
+        cols          = serialref(collect(keys(η.data)), 𝑅),
         column_source = serialref(η.model, 𝑅),
         kind          = :ColumnDataChanged,
-        new           = serialref(Model.DataSource, new, 𝑅)
+        new           = serialref(Model.DataSource, η.data, 𝑅)
     )
 end
 

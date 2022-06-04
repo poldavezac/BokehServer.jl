@@ -14,10 +14,10 @@ end
     end
 end
 
-@testset "stream!" begin
+@testset "push!" begin
     x = X(; source = Dict("a" => [1, 2]))
     Bokeh.Events.eventlist!() do
-        Bokeh.Model.stream!(x.source, Dict("a" => [3, 4, 5], "b" => ["1", "2", "3", "4", "5"]))
+        push!(x.source, Dict("a" => [3, 4, 5], "b" => ["1", "2", "3", "4", "5"]))
         evt = Bokeh.Events.task_eventlist().events[1]
         @test evt isa Bokeh.Events.ColumnsStreamedEvent
         @test Set(keys(x.source)) == Set(["a", "b"]) 
@@ -26,10 +26,10 @@ end
     end
 end
 
-@testset "patch!" for i ∈ ("a" => 2 => 4, "a" => 2:2 => [4])
+@testset "merge with patch!" for i ∈ ("a" => 2 => 4, "a" => 2:2 => [4])
     x = X(; source = Dict("a" => [1, 2]))
     Bokeh.Events.eventlist!() do
-        Bokeh.Model.patch!(x.source, i)
+        merge!(x.source, i)
         evt = Bokeh.Events.task_eventlist().events[1]
         @test evt isa Bokeh.Events.ColumnsPatchedEvent
         @test Set(keys(x.source)) == Set(["a"]) 
@@ -42,7 +42,7 @@ end
     truth = [reshape(collect(1:4), (2, 2)) for _ ∈ 1:2]
     truth[1][2, 1] = 10
     Bokeh.Events.eventlist!() do
-        Bokeh.Model.patch!(x.source, i)
+        merge!(x.source, i)
         evt = Bokeh.Events.task_eventlist().events[1]
         @test evt isa Bokeh.Events.ColumnsPatchedEvent
         @test Set(keys(x.source)) == Set(["a"]) 

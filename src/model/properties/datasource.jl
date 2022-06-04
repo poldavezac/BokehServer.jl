@@ -1,17 +1,3 @@
-struct DataSource <: iContainer{DataDict}
-    parent :: WeakRef
-    attr   :: Symbol
-    values :: DataDict
-end
-
-function _𝑑𝑠_check(data::Dict{String, AbstractVector}, others::Vararg{<:AbstractVector})
-    isempty(data) && isempty(others) && return
-    sz = isempty(data) ? length(first(others)) : length(first(values(data)))
-    if any(sz ≢ length(i) for i ∈ values(data)) || any(sz ≢ length(i) for i ∈ others)
-        throw(ErrorException("The data source columns must have equal length"))
-    end
-end
-
 macro _𝑑𝑠_trigger(T, args...)
     esc(quote
         let parent = γ.parent.value
@@ -21,13 +7,6 @@ macro _𝑑𝑠_trigger(T, args...)
         end
     end)
 end
-
-const DataDictArg = Union{
-    Pair{<:AbstractString, <:AbstractVector},
-    AbstractDict{<:AbstractString, <:AbstractVector},
-    AbstractVector{<:Pair{<:AbstractString, <:AbstractVector}},
-    DataSource
-}
 
 macro _𝑑𝑠_merge_args(code)
     esc(quote
@@ -46,20 +25,28 @@ macro _𝑑𝑠_merge_args(code)
     end)
 end
 
-function Base.merge!(γ::DataSource, 𝑑s::Vararg{DataDictArg}; dotrigger::Bool = true)
-    @_𝑑𝑠_merge_args copy(j)
-    data = merge(γ.values, 𝑑)
-    _𝑑𝑠_check(data)
-    merge!(γ.values, data)
-    @_𝑑𝑠_trigger ColumnDataChangedEvent 𝑑
-    return γ
+macro _𝑑𝑠_applicable(code)
+    esc(:(if !applicable($(code.args...))
+        throw(ErrorException("Unknown patch format $key => $patch"))
+    else
+        $code
+    end))
 end
 
-Base.setindex!(γ::DataSource, 𝑘, 𝑣) = (merge!(γ, 𝑘 => 𝑣); 𝑣)
-Base.size(γ::DataSource) = isempty(γ.values) ? (0, 0) : (length(first(values(γ.values))), length(γ.values))
-Base.size(γ::DataSource, i :: Int) = isempty(γ.values) ? 0 : i ≡ 1 ? length(first(values(γ.values))) : length(γ.values)
+struct DataSource <: iContainer{DataDict}
+    parent :: WeakRef
+    attr   :: Symbol
+    values :: DataDict
+end
 
-function stream!(
+const DataDictArg = Union{
+    Pair{<:AbstractString, <:AbstractVector},
+    AbstractDict{<:AbstractString, <:AbstractVector},
+    AbstractVector{<:Pair{<:AbstractString, <:AbstractVector}},
+    DataSource
+}
+
+function Base.push!(
         γ         :: DataSource,
         𝑑s        :: Vararg{DataDictArg};
         rollover  :: Union{Int, Nothing} = nothing,
@@ -89,6 +76,96 @@ function stream!(
     merge!(γ.values, data)
     @_𝑑𝑠_trigger ColumnsStreamedEvent 𝑑 rollover
     return γ
+end
+
+"""
+    Base.merge!(γ::DataSource, 𝑑s::Vararg{Dict{String, Vector}}; dotrigger::Bool = true)
+
+Adds or replaces columns.
+"""
+function Base.merge!(γ::DataSource, 𝑑s::Vararg{DataDictArg}; dotrigger::Bool = true)
+    @_𝑑𝑠_merge_args j
+
+    filter!(𝑑) do (k, v)
+        !compare(v, get(γ, k, nothing))
+    end
+    isempty(𝑑) && return γ   
+
+    data = merge(γ.values, 𝑑)
+    _𝑑𝑠_check(data)
+    merge!(γ.values, data)
+    @_𝑑𝑠_trigger ColumnDataChangedEvent 𝑑
+    return γ
+end
+
+"""
+    Base.merge!(γ::DataSource, patches::Vararg{Pair{String, Pair}}; dotrigger :: Bool = true)
+    Base.merge!(γ::DataSource, patches::Vararg{Dict{String, Vector{Pair}}}; dotrigger :: Bool = true)
+
+Updates values within *existing* columns.
+
+```julia
+x = DataSource(Dict("a" => [1, 2, 3]))
+
+merge!(x, "a" => 2 => 10)
+@assert x["a"] == [1, 10, 3] 
+
+merge!(x, Dict("a" => [1 => 5, 2:3 => 10]))
+@assert x["a"] == [5, 10, 10] 
+```
+"""
+function Base.merge!(γ::DataSource, patches::Vararg{Pair{<:AbstractString, <:Pair}}; dotrigger :: Bool = true)
+    isempty(patches) && return
+
+    agg = Dict{String, Vector{Pair}}()
+    for (key, patch) ∈ patches
+        push!(get!(()-> Vector{Pair}, agg, key), patch)
+    end
+    return merge!(γ, agg; dotrigger)
+end
+
+function Base.merge!(
+        γ::DataSource,
+        patches::Vararg{AbstractDict{<:AbstractString, <:AbstractVector{<:Pair}}};
+        dotrigger :: Bool = true
+)
+    isempty(patches) && return
+
+    agg = Dict{String, Vector{Pair}}()
+    for dico ∈ patches, (key, vect) ∈ dico
+        arr = get(γ.values, key, nothing)
+        isnothing(arr) && throw(ErrorException("Can only patch existing columns"))
+
+        for patch ∈ vect
+            inds = @_𝑑𝑠_applicable _𝑑𝑠_slice(arr, patch[1])
+            if !(@_𝑑𝑠_applicable _𝑑𝑠_patch_check(γ.values[key], inds, patch[2]))
+                throw(ErrorException("Unable to apply path $key => $patch"))
+            end
+
+            if _𝑑𝑠_differs(arr, inds, patch[2])
+                push!(get!(()->Pair[], agg, key), inds => patch[2])
+            end
+        end
+    end
+
+    for (key, opts) ∈ agg, patch ∈ opts
+        _𝑑𝑠_patch(γ.values[key], patch...)
+    end
+
+    isempty(agg) || @_𝑑𝑠_trigger ColumnsPatchedEvent agg
+    return γ
+end
+
+Base.setindex!(γ::DataSource, 𝑘, 𝑣) = (merge!(γ, 𝑘 => 𝑣); 𝑣)
+Base.size(γ::DataSource) = isempty(γ.values) ? (0, 0) : (length(first(values(γ.values))), length(γ.values))
+Base.size(γ::DataSource, i :: Int) = isempty(γ.values) ? 0 : i ≡ 1 ? length(first(values(γ.values))) : length(γ.values)
+
+function _𝑑𝑠_check(data::Dict{String, AbstractVector}, others::Vararg{<:AbstractVector})
+    isempty(data) && isempty(others) && return
+    sz = isempty(data) ? length(first(others)) : length(first(values(data)))
+    if any(sz ≢ length(i) for i ∈ values(data)) || any(sz ≢ length(i) for i ∈ others)
+        throw(ErrorException("The data source columns must have equal length"))
+    end
 end
 
 const _𝑑𝑠_R    = Union{Integer, OrdinalRange, StepRangeLen}
@@ -146,42 +223,4 @@ function _𝑑𝑠_slice(𝑎::Integer, 𝑥::_𝑑𝑠_NAMED_SLICE)
     stop  = something(𝑥.stop,  𝑎)
     step  = something(𝑥.step,  1)
     return step ≡ 1 ? (start:stop) : (start:step:stop)
-end
-
-macro _𝑑𝑠_applicable(code)
-    esc(:(if !applicable($(code.args...))
-        throw(ErrorException("Unknown patch format $key => $patch"))
-    else
-        $code
-    end))
-end
-
-function patch!(
-        γ::DataSource,
-        patches::Vararg{Pair{<:AbstractString, <:Pair}};
-        dotrigger :: Bool = true
-)
-    isempty(patches) && return
-
-    agg = Dict{String, Vector{Pair}}()
-    for (key, patch) ∈ patches
-        arr = get(γ.values, key, nothing)
-        isnothing(arr) && throw(ErrorException("Can only patch existing columns"))
-
-        inds = @_𝑑𝑠_applicable _𝑑𝑠_slice(arr, patch[1])
-        if !(@_𝑑𝑠_applicable _𝑑𝑠_patch_check(γ.values[key], inds, patch[2]))
-            throw(ErrorException("Unable to apply path $key => $patch"))
-        end
-
-        if _𝑑𝑠_differs(arr, inds, patch[2])
-            push!(get!(()->Pair[], agg, key), inds => patch[2])
-        end
-    end
-
-    for (key, opts) ∈ agg, patch ∈ opts
-        _𝑑𝑠_patch(γ.values[key], patch...)
-    end
-
-    isempty(agg) || @_𝑑𝑠_trigger ColumnsPatchedEvent agg
-    return γ
 end

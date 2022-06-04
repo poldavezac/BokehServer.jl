@@ -28,6 +28,7 @@
         @test val == truth
     end
 end
+
 @testset "receive" begin
     doc  = Bokeh.Document()
     mdl  = ProtocolX(; id = 100,a  = 10)
