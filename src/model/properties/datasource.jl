@@ -119,7 +119,7 @@ function Base.merge!(γ::DataSource, patches::Vararg{Pair{<:AbstractString, <:Pa
 
     agg = Dict{String, Vector{Pair}}()
     for (key, patch) ∈ patches
-        push!(get!(()-> Vector{Pair}, agg, key), patch)
+        push!(get!(()-> Vector{Pair}(), agg, key), patch)
     end
     return merge!(γ, agg; dotrigger)
 end

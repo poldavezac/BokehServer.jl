@@ -37,6 +37,7 @@ end
 serialroot(η::Events.iEvent, 𝑅::iRules) = serialref(η, 𝑅)
 serialref(::Type, η, 𝑅::iRules)         = serialref(η, 𝑅)
 serialref(η::iHasProps, ::iRules)       = (; id = "$(bokehid(η))")
+serialref(::Nothing, ::iRules)          = nothing
 
 for cls ∈ (:RootAddedEvent, :RootRemovedEvent)
     @eval function serialref(η::$cls, 𝑅::iRules)
@@ -60,13 +61,16 @@ end
 # warning : we're going to javascript, thus the ranges start at 0...
 serialref(x::OrdinalRange, ::iRules) = (; start = first(x)-1, step = 1,       stop = last(x))
 serialref(x::StepRangeLen, ::iRules) = (; start = first(x)-1, step = step(x), stop = last(x))
+_𝑐𝑝_to(x::AbstractRange, 𝑅::iRules) = serialref(x, 𝑅)
+_𝑐𝑝_to(x::Integer,        ::iRules) = x-1
+_𝑐𝑝_to(x::Tuple{<:Integer, <:Any, <:Any}, 𝑅::iRules) = (x[1]-1, _𝑐𝑝_to(x[2], 𝑅), _𝑐𝑝_to(x[3], 𝑅))
 
 function serialref(η::Events.ColumnsPatchedEvent, 𝑅::iRules)
     return (;
         column_source = serialref(η.model, 𝑅),
         kind          = :ColumnsPatched,
         patches       = Dict{String, Vector}(
-            k => [(serialref(i, 𝑅), j) for (i, j) ∈ v]
+            k => [(_𝑐𝑝_to(i, 𝑅), j) for (i, j) ∈ v]
             for (k, v) ∈ η.patches
         )
     )
@@ -96,8 +100,10 @@ const _𝑑𝑠_BIN = Union{(
     for i ∈ (UInt8, Int8, UInt16, Int16, UInt32, Int32, Float32, Float64)
 )...}
 
+_𝑑𝑠_to(𝑑::AbstractVector{<:iHasProps}, 𝑅::iRules) = 𝑑
+
 for (R, code) ∈ (
-        iRules          => :(__ndarray__ = String(base64encode(arr))),
+        iRules          => :(__ndarray__ = String(base64encode(𝑑))),
         BufferedRules   => :(__buffer__  = let id = "$(_𝑑𝑠_ID())"
             push!(𝑅.buffers, id => reinterpret(Int8, 𝑑))
             id
@@ -108,21 +114,24 @@ for (R, code) ∈ (
             $(Expr(:kw, code.args...)),
             dtype = lowercase("$(nameof(eltype(𝑑)))"),
             order = Base.ENDIAN_BOM ≡ 0x04030201 ? :little : :big,
-            shape = size(array),
+            shape = size(𝑑),
         )
     end
 end
 
 for (T, code) ∈ (
-        TimePeriod => :(Dates.toms.(𝑑)),
-        DateTime   => :(Int64.(round.(1e3 .* Dates.datetime2unix.(𝑑)))),
-        Date       => :(Dates.toms.(Day.(Dates.date2epochdays.(𝑑))))
+        TimePeriod => :𝑑,
+        DateTime   => :(Second.(Dates.datetime2unix.(𝑑))),
+        Date       => :(Day.(Dates.date2epochdays.(𝑑))),
 )
-    @eval _𝑑𝑠_to(𝑑::AbstractVector{$T}, 𝑅::iRules) = _𝑑𝑠_to($code, 𝑅)
+    @eval _𝑑𝑠_to(𝑑::AbstractVector{$T}, 𝑅::iRules) = _𝑑𝑠_to(round.(Dates.toms.($code); digits = 3), 𝑅)
 end
 
+_𝑑𝑠_to(𝑑::AbstractVector, ::Rules) = 𝑑
+_𝑑𝑠_to(𝑑::AbstractVector, ::BufferedRules) = 𝑑
+
 function serialref(::Type{Model.DataSource}, 𝑑::Dict{String, AbstractVector}, 𝑅::iRules)
-    return Dict{String, Union{Vector, NamedTuple}}(k => _𝑑𝑠_to(v) for (k, v) ∈ 𝑑)
+    return Dict{String, Union{Vector, NamedTuple}}(k => _𝑑𝑠_to(v, 𝑅) for (k, v) ∈ 𝑑)
 end
 
 serialref(η::TitleChangedEvent, 𝑅::iRules) = (; kind = :TitleChanged, title = η.title)
@@ -131,9 +140,10 @@ serialref(η::Union{AbstractString, Number, Symbol}, ::iRules) = η
 serialref(η::Union{AbstractVector, AbstractSet}, 𝑅::iRules)   = [serialref(i, 𝑅) for i ∈ η]
 serialref(η::AbstractDict, 𝑅::iRules) = Dict((serialref(i, 𝑅) => serialref(j, 𝑅) for (i,j) ∈ η)...)
 serialref(η::NamedTuple, 𝑅::iRules) = (; (i => serialref(j, 𝑅) for (i,j) ∈ η)...)
+serialref(η::Tuple, 𝑅::iRules) = tuple((serialref(i, 𝑅) for i ∈ η)...)
 function serialref(η::T, 𝑅::iRules) where {T}
     return (; (
-        i => serialref(Bokeh.bokehrawtype(getproperty(η, i)), 𝑅)
+        i => serialref(Model.bokehrawtype(getproperty(η, i)), 𝑅)
         for i ∈ propertynames(η)
     )...)
 end

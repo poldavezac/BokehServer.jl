@@ -284,14 +284,14 @@ function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function _👻code(mod::Module, code::Expr)
+function _👻code(src, mod::Module, code::Expr)
     @assert code.head ≡ :struct
     if !code.args[1]
         @warn """Bokeh structure $mod.$(code.args[2]) is set to mutable.
-        Add `mutable` to disable this warning"""
+        Add `mutable` to disable this warning""" _module = mod _file = string(src.file) _line = src.line
     end
-    @assert code.args[2] isa Expr "Bokeh class must have a parent (iHasProps, iModel?)"
-    @assert code.args[2].head ≡ :(<:) "Bokeh class cannot be templated"
+    @assert code.args[2] isa Expr "$(code.args[2]): Bokeh structure must have a parent (iHasProps, iModel?)"
+    @assert code.args[2].head ≡ :(<:) "$(code.args[2]): Bokeh structure cannot be templated"
 
     code.args[1] = true
     fields  = _👻fields(mod, code)
@@ -313,7 +313,7 @@ function _👻code(mod::Module, code::Expr)
 end
 
 macro model(expr::Expr)
-    _👻code(__module__, expr)
+    _👻code(__source__, __module__, expr)
 end
 
 function bokehproperties end
