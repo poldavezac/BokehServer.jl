@@ -52,8 +52,8 @@ datatypeconvert(x::AbstractVector, y::Any) = datatypeconvert(eltype(x), y)
 datatypeconvert(::Type{T}, y::AbstractVector{T}) where {T} = y
 datatypeconvert(x::Type{<:Number}, y::AbstractVector{<:Number}) = convert.(eltype(x), y)
 function datatypeconvert(
-    x::Type{<:AbstractMatrix{<:Number}},
-    y::AbstractVector{<:AbstractMatrix{<:Number}}
+    x::Type{<:AbstractArray{<:Number}},
+    y::AbstractVector{<:AbstractArray{<:Number}}
 ) where {T<:Number}
     return eltype(x)[convert.(eltype(eltype(x)), i) for i ∈ y]
 end
@@ -65,17 +65,22 @@ for (T, code) ∈ (
 )
     @eval datatypeconvert(𝑑::$T) = round(Dates.toms($code); digits = 3)
     @eval datatypeconvert(𝑑::Type{$T}) = datatypeconvert.(𝑑)
-    @eval datatypeconvert(::Type{Float64}, 𝑑::AbstractVector{$T}) = datatypeconvert.(𝑑)
+    @eval datatypeconvert(::Type{Float64}, 𝑑::AbstractArray{$T}) = datatypeconvert.(𝑑)
 end
 
 datatypeconvert(y::iHasProps) = y
 datatypeconvert(y::AbstractVector{<:iHasProps}) = y
 for T ∈ AbstractTypes.NumberElTypeDataDict
     @eval datatypeconvert(y::$T) = y
-    @eval datatypeconvert(y::AbstractVector{$T}) = y
-    @eval datatypeconvert(y::AbstractMatrix{$T}) = y
-    @eval datatypeconvert(y::AbstractVector{<:AbstractMatrix{$T}}) = y
+    @eval datatypeconvert(y::AbstractArray{$T}) = y
+    @eval datatypeconvert(y::AbstractVector{<:AbstractArray{$T}}) = y
 end
 
 datatypeconvert(y::AbstractArray{Int64}) = Int32.(y)
+datatypeconvert(y::AbstractVector{<:AbstractArray{Int64}}) = Array{Int32}[Int32.(i) for i ∈ y]
 datatypeconvert(y::AbstractArray{Symbol}) = string.(y)
+
+bokehwrite(::Type{DataSource}, x::DataDict) = copy(x)
+function bokehwrite(::Type{DataSource}, x)
+    DataDict("$i" => datatypeconvert(j) for (i, j) ∈ x)
+end

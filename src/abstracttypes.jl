@@ -17,7 +17,7 @@ module AbstractTypes
         String, 
         Union{
             (AbstractVector{I} for I ∈ ElTypeDataDict)...,
-            (AbstractVector{<:AbstractMatrix{I}} for I ∈ ElTypeDataDict)...,
+            (AbstractVector{<:AbstractArray{I}} for I ∈ ElTypeDataDict)...,
             AbstractVector{<:iHasProps},
         }
     }

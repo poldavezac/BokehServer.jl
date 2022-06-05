@@ -31,7 +31,7 @@
     @test doc.title == "A"
     @test Bokeh.bokehid.(doc) == [1]
     Bokeh.Events.eventlist!() do
-        Bokeh.Protocol.pushdoc!(doc, JSON.parse(JSON.json(truth)))
+        Bokeh.Protocol.pushdoc!(doc, JSON.parse(JSON.json(truth)), Bokeh.Protocol.Buffers())
     end
     @test doc.title == "B"
     @test Bokeh.bokehid.(doc) == [10]

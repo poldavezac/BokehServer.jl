@@ -261,11 +261,17 @@ function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
         end
 
         @inline function $(@__MODULE__).hasbokehproperty(T::Type{$cls}, attr::Symbol)
-            _👻elseif((i for i ∈ fields if i.js), false) do field
+            $(_👻elseif((i for i ∈ fields if i.js), false) do field
                 :(if attr ≡ $(Meta.quot(field.name))
                     true
                 end)
-            end
+            end)
+        end
+
+        @inline function $(@__MODULE__).bokehpropertytype(T::Type{$cls}, α::Symbol)
+            $(_👻elseif_alias(fields, :(throw("$T.$attr does not exist"))) do field
+                field.js ? field.type : nothing
+            end)
         end
 
         function $(@__MODULE__).defaultvalue(::Type{$cls}, α::Symbol) :: Union{Some, Nothing}
@@ -318,6 +324,7 @@ end
 
 function bokehproperties end
 function hasbokehproperty end
+function bokehpropertytype end
 function bokehfields end
 function defaultvalue end
 

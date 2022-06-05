@@ -23,26 +23,33 @@ function fromjson(::Type{<:Pair}, val::Dict, 𝑀::ModelDict)
 end
 
 function fromjson(
-        T      :: Type{<:Union{AbstractDict, AbstractSet, AbstractVector}},
-        val    :: Union{Dict, Vector},
+        𝑇 :: Type{<:Union{AbstractDict, AbstractSet, AbstractVector}},
+        𝑣 :: Union{Dict, Vector},
         𝑀 :: ModelDict
 )
-    elT = eltype(T)
-    return T([fromjson(elT, i, 𝑀) for i ∈ val])
+    elT = eltype(𝑇)
+    return 𝑇([fromjson(elT, i, 𝑀) for i ∈ 𝑣])
 end
 
+function fromjson(𝑇::Type{<:Model.iContainer}, 𝑣::Union{Dict, Vector}, 𝑀 :: ModelDict)
+    elT = eltype(Model.bokehfieldtype(𝑇))
+    return 𝑇([fromjson(elT, i, 𝑀) for i ∈ 𝑣])
+end
+
+fromjson(::Type{DataDict}, 𝑣::Dict{String}, :: ModelDict) = DataDict(i => _𝑐𝑝_fro(j) for (i, j) ∈ 𝑣)
+
 function setpropertyfromjson!(mdl::T, attr:: Symbol, val, 𝑀::ModelDict) where {T <: iHasProps}
-    setproperty!(mdl, attr, fromjson(fieldtype(T, attr), val, 𝑀))
+    setproperty!(mdl, attr, fromjson(Model.bokehpropertytype(T, attr), val, 𝑀))
 end
 
 function setreferencefromjson!(mdl::iHasProps, 𝑀::ModelDict, 𝐼 :: Dict{String})
     for (key, val) ∈ 𝐼["attributes"]
-        setpropertyfromjson!(mdl, Symbol(key), val, 𝑀, 𝐵)
+        setpropertyfromjson!(mdl, Symbol(key), val, 𝑀)
     end
 end
 
 for (name, action) ∈ (:RootAdded => :push!, :RootRemoved => :delete!)
-    @eval function apply(::Val{$(Meta.quot(name))}, 𝐷::iDocument, 𝑀::ModelDict, 𝐼 :: Dict{String}, 𝐵)
+    @eval function apply(::Val{$(Meta.quot(name))}, 𝐷::iDocument, 𝑀::ModelDict, 𝐼::Dict{String})
         $action(𝐷, 𝑀[getid(𝐼["model"])])
     end
 end
@@ -51,15 +58,15 @@ function apply(::Val{:TitleChanged}, 𝐷::iDocument, ::ModelDict, 𝐼 :: Dict{
     𝐷.title = 𝐼["title"]
 end
 
-function apply(::Val{:ModelChanged}, 𝐷::iDocument, 𝑀::ModelDict, 𝐼 :: Dict{String})
+function apply(::Val{:ModelChanged}, 𝐷::iDocument, 𝑀::ModelDict, 𝐼::Dict{String})
     setpropertyfromjson!(𝑀[getid(𝐼["model"])], Symbol(𝐼["attr"]), 𝐼["new"], 𝑀)
 end
 
-function apply(::Val{:ColumnDataChanged}, 𝐷::iDocument, 𝑀::ModelDict, 𝐼 :: Dict{String})
-    merge!(𝑀[getid(𝐼["column_source"])].data, DataDict(i => _𝑏_fro(j, 𝐵) for (i, j) ∈ 𝐼["new"]))
+function apply(::Val{:ColumnDataChanged}, 𝐷::iDocument, 𝑀::ModelDict, 𝐼::Dict{String})
+    merge!(𝑀[getid(𝐼["column_source"])].data, fromjson(DataDict, 𝐼["new"], 𝑀))
 end
 
-function apply(::Val{:ColumnsStreamed}, 𝐷::iDocument, 𝑀::ModelDict, 𝐼 :: Dict{String})
+function apply(::Val{:ColumnsStreamed}, 𝐷::iDocument, 𝑀::ModelDict, 𝐼::Dict{String})
     push!(𝑀[getid(𝐼["column_source"])].data, 𝐼["data"]; rollover = 𝐼["rollover"])
 end
 
@@ -78,11 +85,20 @@ _𝑐𝑝_fro(𝑥::_𝑐𝑝_SLICE) =  (;
     stop = get(𝑥, "stop", nothing)
 )
 
+function _𝑐𝑝_from(x::Vector{Any})
+    elT = Union{eltype.(x)...}
+    return if elT <: Union{String, Number}
+        collect(elT <: String ? String : elT <: Int ? Int : Float64, x)
+    else
+        x
+    end
+end
+
 function apply(::Val{:ColumnsPatched}, 𝐷::iDocument, 𝑀::ModelDict, 𝐼::Dict{String})
     merge!(
         𝑀[getid(𝐼["column_source"])].data,
         Dict{String, Vector{Pair}}(
-            col => Pair[_𝑐𝑝_fro(x) => y for (x, y) ∈ lst]
+            col => Pair[_𝑐𝑝_fro(x) => _𝑐𝑝_fro(y) for (x, y) ∈ lst]
             for (col, lst) ∈ 𝐼["patches"]
         )
     )
@@ -109,10 +125,39 @@ function parsereferences!(𝑀::ModelDict, 𝐶)
     end
 
     for new ∈ 𝐶
-        setreferencefromjson!(𝑀[getid(new)], 𝑀, new, 𝐵)
+        setreferencefromjson!(𝑀[getid(new)], 𝑀, new)
     end
     𝑀
 end
+
+function _reshape(data::Union{Vector{Int8}, Vector{UInt8}}; dtype::String, order::String, shape::Tuple, _...)
+    arr = reinterpret(
+        let tpe = dtype
+            tpe == "uint8"   ? UInt8   : tpe == "uint16"  ? UInt16  : tpe == "uint32" ? UInt32 :
+            tpe == "int8"    ? Int8    : tpe == "int16"   ? Int16   : tpe == "int32"  ? Int32  :
+            tpe == "float32" ? Float32 : tpe == "float64" ? Float64 : throw(ErrorException("Unknown type $tpe"))
+        end,
+        data
+    )
+    if order ≡ "little" && Base.ENDIAN_BOM ≡ 0x01020304
+        arr = ltoh.(arr)
+    elseif order ≡ "big" && Base.ENDIAN_BOM ≡ 0x04030201
+        arr = htol.(arr)
+    end
+    return if length(shape) == 1
+        arr
+    else
+        sz  = shape[2:end]
+        len = prod(sz)
+        [
+            reshape(view(arr, i:i+len-1), sz)
+            for i ∈ 1:len:length(arr)
+        ]
+    end
+end
+
+const _𝐵𝐾 = "__buffer__"
+const _𝑁𝐾 = "__ndarray__"
 
 function insertbuffers!(𝐶::Union{Dict{String}, Vector}, 𝐵::Buffers)
     isempty(𝐵) && return
@@ -120,38 +165,27 @@ function insertbuffers!(𝐶::Union{Dict{String}, Vector}, 𝐵::Buffers)
     cnt   = 0
     while !isempty(todos)
         cur = pop!(𝐶)
-        @assert !(cur isa Dict && (haskey(cur, "__ndarray__") || haskey(cur, "__buffer__")))
-
         for (k, v) ∈ pairs(cur)
-            if v isa Dict{String} && (haskey(v, "__buffer__") || haskey(v, "__ndarray__"))
-                isbuff = haskey(v, "__buffer__")
-                buf    = let val = 𝐵[v[isbuff ? "__buffer__" : "__ndarray__"]]
-                    isbuff ? decodebase64(val) : val
+            if v isa Vector
+                types = Set([typeof(i) for i ∈ v])
+                if !(length(types) == 1 && first(types) <: Union{String, Number})
+                    push!(todos, v)
                 end
-
-                cur[k] = let arr = reinterpret(
-                        let tpe = v["dtype"]
-                            v == "uint8" ? UInt8 : v == "uint16" ? UInt16 : v == "uint32" ? UInt32 :
-                            v == "int8" ? Int8 : v == "int16" ? Int16 : v == "int32" ? Int32 :
-                            v == "float32" ? Float32 : v == "float64" ? Float64 : throw(ErrorException("Unknown type $tpe"))
-                        end,
-                        v["shape"]
-                    )
-                    if v["order"] ≡ :little && Base.ENDIAN_BOM ≡ 0x01020304
-                        ltoh.(arr)
-                    elseif v["order"] ≡ :big && Base.ENDIAN_BOM ≡ 0x04030201
-                        htol.(arr)
-                    else
-                        arr
-                    end
-                end
-                cnt += 1
-                (length(𝐵) == cnt) && return
-            elseif v isa Vector{<:Union{String, Number, Symbol}}
                 continue
-            elseif v isa Union{Dict{String}, Vector}
-                push!(todos, v)
+            elseif !(v isa Dict{String})
+                continue
             end
+
+            if haskey(v, _𝐵𝐾)
+                cur[k] = _reshape(𝐵[v[_𝐵𝐾]]; v...)
+            elseif haskey(v, _𝑁𝐾)
+                cur[k] = _reshape(decodebase64(𝐵[v[_𝑁𝐾]]); v...)
+            elseif v 
+                push!(todos, v)
+                continue
+            end
+
+            cnt   += 1
         end
     end
 end

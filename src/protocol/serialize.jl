@@ -1,5 +1,6 @@
 module Serialize
 using Dates
+using Base64
 using ..AbstractTypes
 using ...Model
 using ...Events
@@ -86,29 +87,31 @@ function serialref(η::Events.ColumnsStreamedEvent, 𝑅::iRules)
 end
 
 function serialref(η::Events.ColumnDataChangedEvent, 𝑅::iRules)
+    new           = serialref(Model.DataSource, η.data, 𝑅)
     return (;
         cols          = serialref(collect(keys(η.data)), 𝑅),
         column_source = serialref(η.model, 𝑅),
         kind          = :ColumnDataChanged,
-        new           = serialref(Model.DataSource, η.data, 𝑅)
+        new
     )
 end
 
 const _𝑑𝑠_ID    = bokehidmaker()
 const _𝑑𝑠_BIN   = Union{(AbstractVector{i} for i ∈ AbstractTypes.NumberElTypeDataDict)...}
-const _𝑑𝑠_2DBIN = Union{(AbstractMatrix{i} for i ∈ AbstractTypes.NumberElTypeDataDict)...} 
+const _𝑑𝑠_NDBIN = Union{(AbstractVector{<:AbstractArray{i}} for i ∈ AbstractTypes.NumberElTypeDataDict)...} 
 
-_𝑑𝑠_to(𝑑::AbstractVector, ::Rules)         = 𝑑
+_𝑑𝑠_to(𝑑::AbstractVector, ::iRules)        = 𝑑
 _𝑑𝑠_to(𝑑::AbstractVector, ::BufferedRules) = 𝑑
 
 for (R, code) ∈ (
-        iRules          => :(__ndarray__ = String(base64encode(𝑑))),
+        Rules           => :(__ndarray__ = String(base64encode(𝑑))),
         BufferedRules   => :(__buffer__  = let id = "$(_𝑑𝑠_ID())"
             push!(𝑅.buffers, id => reinterpret(Int8, 𝑑))
             id
         end)
 )
     @eval function _𝑑𝑠_to(𝑑::_𝑑𝑠_BIN, 𝑅::$R)
+        isempty(𝑑) && return 𝑑
         return (;
             $(Expr(:kw, code.args...)),
             dtype = lowercase("$(nameof(eltype(𝑑)))"),
@@ -118,7 +121,19 @@ for (R, code) ∈ (
     end
 end
 
-function serialref(::Type{Model.DataSource}, 𝑑::Dict{String, AbstractVector}, 𝑅::iRules)
+function _𝑑𝑠_to(𝑑::_𝑑𝑠_NDBIN, 𝑅::iRules)
+    isempty(𝑑) && return 𝑑
+    sz = size(first(𝑑))
+    if all(size(i) ≡ sz for i ∈ @view 𝑑[2:end])
+        x = copy(reshape(first(𝑑), :))
+        foreach(Base.Fix1(append!, x), @view 𝑑[2:end])
+        _𝑑𝑠_to(reshape(x, :, sz...), 𝑅)
+    else
+        𝑑
+    end
+end
+
+function serialref(::Type{Model.DataSource}, 𝑑::DataDict, 𝑅::iRules)
     return Dict{String, Union{Vector, NamedTuple}}(k => _𝑑𝑠_to(v, 𝑅) for (k, v) ∈ 𝑑)
 end
 
