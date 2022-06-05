@@ -10,8 +10,9 @@ function pushdoc(self::iDocument, 𝑅::Serialize.iRules = Serialize.Rules())
     ))
 end
 
-function pushdoc!(self::iDocument, μ::Dict{String})
+function pushdoc!(self::iDocument, μ::Dict{String}, 𝐵::Buffers)
     docmsg   = μ["doc"]
+    insertbuffers!(docmsg["roots"]["references"], 𝐵)
     newroots = let models = parsereferences(docmsg["roots"]["references"])
         [models[parse(Int64, i)] for i ∈ docmsg["roots"]["root_ids"]]
     end

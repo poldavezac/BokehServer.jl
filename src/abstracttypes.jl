@@ -4,7 +4,23 @@ module AbstractTypes
     abstract type iDataSource   <: iModel end
     abstract type iDocument end
     abstract type iTheme end
-    const DataDict = Dict{String, AbstractVector}
+
+    """
+    The Bokeh protocol only allows limited element types in a DataDict.
+    Other types such as dates are automatically converted.
+    """
+    const NumberElTypeDataDict = (
+        Int8, Int16, Int32, UInt8, UInt16, UInt32, Float32, Float64
+    )
+    const ElTypeDataDict = (NumberElTypeDataDict..., String)
+    const DataDict = Dict{
+        String, 
+        Union{
+            (AbstractVector{I} for I ∈ ElTypeDataDict)...,
+            (AbstractVector{<:AbstractMatrix{I}} for I ∈ ElTypeDataDict)...,
+            AbstractVector{<:iHasProps},
+        }
+    }
 
     bokehid(μ::Union{iModel, iDocument}) = getfield(μ, :id)
 

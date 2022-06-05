@@ -94,13 +94,12 @@ function serialref(η::Events.ColumnDataChangedEvent, 𝑅::iRules)
     )
 end
 
-const _𝑑𝑠_ID  = bokehidmaker()
-const _𝑑𝑠_BIN = Union{(
-    AbstractVector{i}
-    for i ∈ (UInt8, Int8, UInt16, Int16, UInt32, Int32, Float32, Float64)
-)...}
+const _𝑑𝑠_ID    = bokehidmaker()
+const _𝑑𝑠_BIN   = Union{(AbstractVector{i} for i ∈ AbstractTypes.NumberElTypeDataDict)...}
+const _𝑑𝑠_2DBIN = Union{(AbstractMatrix{i} for i ∈ AbstractTypes.NumberElTypeDataDict)...} 
 
-_𝑑𝑠_to(𝑑::AbstractVector{<:iHasProps}, 𝑅::iRules) = 𝑑
+_𝑑𝑠_to(𝑑::AbstractVector, ::Rules)         = 𝑑
+_𝑑𝑠_to(𝑑::AbstractVector, ::BufferedRules) = 𝑑
 
 for (R, code) ∈ (
         iRules          => :(__ndarray__ = String(base64encode(𝑑))),
@@ -118,17 +117,6 @@ for (R, code) ∈ (
         )
     end
 end
-
-for (T, code) ∈ (
-        TimePeriod => :𝑑,
-        DateTime   => :(Second.(Dates.datetime2unix.(𝑑))),
-        Date       => :(Day.(Dates.date2epochdays.(𝑑))),
-)
-    @eval _𝑑𝑠_to(𝑑::AbstractVector{$T}, 𝑅::iRules) = _𝑑𝑠_to(round.(Dates.toms.($code); digits = 3), 𝑅)
-end
-
-_𝑑𝑠_to(𝑑::AbstractVector, ::Rules) = 𝑑
-_𝑑𝑠_to(𝑑::AbstractVector, ::BufferedRules) = 𝑑
 
 function serialref(::Type{Model.DataSource}, 𝑑::Dict{String, AbstractVector}, 𝑅::iRules)
     return Dict{String, Union{Vector, NamedTuple}}(k => _𝑑𝑠_to(v, 𝑅) for (k, v) ∈ 𝑑)
