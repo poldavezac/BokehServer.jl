@@ -6,7 +6,6 @@ end
 @Bokeh.model mutable struct Cnt <: Bokeh.iModel
     a::Vector{X}
     b::Dict{String, X}
-    c::Dict{X, String}
 end
 
 @Bokeh.model mutable struct Cds <: Bokeh.iModel
@@ -41,8 +40,8 @@ end
 
 function _compare(x::Dict{T, K}, y::Dict{T, K}) where {T, K}
     @test length(x) == length(y)
-    @test all(i ∈ y for i ∈ keys(x))
-    @test all(i ∈ x for i ∈ keys(y))
+    @test all(i ∈ keys(y) for i ∈ keys(x))
+    @test all(i ∈ keys(x) for i ∈ keys(y))
     for (i, j) ∈ x
         _compare(j, y[i])
     end

@@ -19,7 +19,7 @@ fromjson(::Type{<:iHasProps}, val::Dict, 𝑀::ModelDict) = 𝑀[getid(val)]
 function fromjson(::Type{<:Pair}, val::Dict, 𝑀::ModelDict)
     @assert length(val) == 1
     (k, v) = first(val)
-    return fromjson(T.a, k, 𝑀) => fromjson(T.b, v, 𝑀)
+    return fromjson(T.parameters[1], k, 𝑀) => fromjson(T.parameters[2], v, 𝑀)
 end
 
 function fromjson(
@@ -31,9 +31,17 @@ function fromjson(
     return 𝑇([fromjson(elT, i, 𝑀) for i ∈ 𝑣])
 end
 
-function fromjson(𝑇::Type{<:Model.iContainer}, 𝑣::Union{Dict, Vector}, 𝑀 :: ModelDict)
-    elT = eltype(Model.bokehfieldtype(𝑇))
-    return 𝑇([fromjson(elT, i, 𝑀) for i ∈ 𝑣])
+function fromjson(𝑇::Type{<:Model.iContainer{<:AbstractVector}}, 𝑣::Vector, 𝑀 :: ModelDict)
+    fT  = Model.bokehfieldtype(𝑇)
+    elT = eltype(fT)
+    return elT[fromjson(elT, i, 𝑀) for i ∈ 𝑣]
+end
+
+function fromjson(𝑇::Type{<:Model.iContainer{<:AbstractDict}}, 𝑣::Dict, 𝑀 :: ModelDict)
+    fT  = Model.bokehfieldtype(𝑇)
+    elK = eltype(fT).parameters[1]
+    elV = eltype(fT).parameters[2]
+    return fT((fromjson(elK, i, 𝑀) => fromjson(elV, j, 𝑀) for (i, j) ∈ 𝑣)...)
 end
 
 fromjson(::Type{DataDict}, 𝑣::Dict{String}, :: ModelDict) = DataDict(i => _𝑐𝑝_fro(j) for (i, j) ∈ 𝑣)

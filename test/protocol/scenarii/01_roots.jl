@@ -12,8 +12,6 @@ end
 end
 
 @testset "add complex root" begin
-    (srv, _) = @runscenario push!(
-        doc, Cnt(; a = [X(;a =2)], b = Dict("a"=>X(;a = 3)), c = Dict(X(;a=4) => "a"))
-    )
+    (srv, _) = @runscenario push!(doc, Cnt(; a = [X(;a =2)], b = Dict("a"=>X(;a = 3))))
     @test length(srv.roots) == 1
 end
