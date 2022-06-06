@@ -75,14 +75,16 @@ function runscenario(𝐹::Function, srv = Bokeh.Document(), client = Bokeh.Docu
     _compare(srv.roots, client.roots)
 
     evts = Bokeh.Protocol.patchdoc(𝐹, srv)
+    @test !isnothing(evts)
+    if !isnothing(evts)
+        JSON = Bokeh.Protocol.Messages.JSON
+        cnv  = JSON.parse ∘ JSON.json
+        Bokeh.Events.eventlist!(Bokeh.Events.NullEventList()) do
+            Bokeh.Protocol.patchdoc!(client, cnv(evts), Bokeh.Protocol.Buffers())
+        end
 
-    JSON = Bokeh.Protocol.Messages.JSON
-    cnv  = JSON.parse ∘ JSON.json
-    Bokeh.Events.eventlist!(Bokeh.Events.NullEventList()) do
-        Bokeh.Protocol.patchdoc!(client, cnv(evts), Bokeh.Protocol.Buffers())
+        _compare(srv.roots, client.roots)
     end
-
-    _compare(srv.roots, client.roots)
     return (srv, client)
 end
 

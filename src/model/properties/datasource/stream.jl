@@ -5,7 +5,7 @@ const DataDictArg = Union{
     DataSource
 }
 
-function Base.push!(
+function stream!(
         γ         :: DataSource,
         𝑑s        :: Vararg{DataDictArg};
         rollover  :: Union{Int, Nothing} = nothing,
@@ -36,3 +36,14 @@ function Base.push!(
     @_𝑑𝑠_trigger ColumnsStreamedEvent 𝑑 rollover
     return γ
 end
+
+function Base.push!(
+        γ         :: DataSource,
+        𝑑s        :: Vararg{DataDictArg};
+        rollover  :: Union{Int, Nothing} = nothing,
+        dotrigger :: Bool                = true
+)
+    stream!(γ, 𝑑s; rollover, dotrigger)
+end
+
+export stream!

@@ -44,7 +44,7 @@ function fromjson(𝑇::Type{<:Model.iContainer{<:AbstractDict}}, 𝑣::Dict, �
     return fT((fromjson(elK, i, 𝑀) => fromjson(elV, j, 𝑀) for (i, j) ∈ 𝑣)...)
 end
 
-fromjson(::Type{DataDict}, 𝑣::Dict{String}, :: ModelDict) = DataDict(i => _𝑐𝑝_fro(j) for (i, j) ∈ 𝑣)
+fromjson(::Type{DataDict}, 𝑣::Dict{String}, 𝑀::ModelDict) = DataDict(i => _𝑐𝑝_value(j, 𝑀) for (i, j) ∈ 𝑣)
 
 function setpropertyfromjson!(mdl::T, attr:: Symbol, val, 𝑀::ModelDict; dotrigger ::Bool =true) where {T <: iHasProps}
     setproperty!(mdl, attr, fromjson(Model.bokehpropertytype(T, attr), val, 𝑀); dotrigger)
@@ -71,19 +71,19 @@ function apply(::Val{:ModelChanged}, 𝐷::iDocument, 𝑀::ModelDict, 𝐼::Dic
 end
 
 function apply(::Val{:ColumnDataChanged}, 𝐷::iDocument, 𝑀::ModelDict, 𝐼::Dict{String})
-    merge!(𝑀[getid(𝐼["column_source"])].data, fromjson(DataDict, 𝐼["new"], 𝑀))
+    Model.update!(𝑀[getid(𝐼["column_source"])].data, fromjson(DataDict, 𝐼["new"], 𝑀))
 end
 
 function apply(::Val{:ColumnsStreamed}, 𝐷::iDocument, 𝑀::ModelDict, 𝐼::Dict{String})
-    push!(𝑀[getid(𝐼["column_source"])].data, 𝐼["data"]; rollover = 𝐼["rollover"])
+    Model.stream!(𝑀[getid(𝐼["column_source"])].data, fromjson(DataDict, 𝐼["data"], 𝑀); rollover = 𝐼["rollover"])
 end
 
 const _𝑐𝑝_SLICE  = AbstractDict{<:AbstractString, <:Union{Nothing, Integer}}
 const _𝑐𝑝_RANGES = Union{Integer, _𝑐𝑝_SLICE}
 
-_𝑐𝑝_fro(𝑥::Integer) = 𝑥+1
-_𝑐𝑝_fro(𝑥::Tuple{<:Integer, <:_𝑐𝑝_RANGES, <:_𝑐𝑝_RANGES}) = (𝑥[1]+1, _𝑐𝑝_fro(𝑥[2]), _𝑐𝑝_fro(𝑥[3]))
-_𝑐𝑝_fro(𝑥::_𝑐𝑝_SLICE) =  (;
+_𝑐𝑝_key(𝑥::Integer)   = 𝑥+1
+_𝑐𝑝_key(𝑥::Vector)    = (𝑥[1]+1, _𝑐𝑝_fro(𝑥[2]), _𝑐𝑝_fro(𝑥[3]))
+_𝑐𝑝_key(𝑥::_𝑐𝑝_SLICE) =  (;
     start = let x = get(𝑥, "start", nothing)
         isnothing(x) ? 1 : x + 1
     end,
@@ -93,20 +93,32 @@ _𝑐𝑝_fro(𝑥::_𝑐𝑝_SLICE) =  (;
     stop = get(𝑥, "stop", nothing)
 )
 
-function _𝑐𝑝_from(x::Vector{Any})
+_𝑐𝑝_isamodel(x::Dict{String, String}) = length(x) == 1 && first(keys(x)) == "id"
+_𝑐𝑝_isamodel(x) = false
+
+_𝑐𝑝_value(x::Union{Number, String}, ::ModelDict) = x
+_𝑐𝑝_value(x::Dict{String}, 𝑀::ModelDict) = fromjson(iHasProps, x, 𝑀)
+
+function _𝑐𝑝_value(x::Vector{Any}, 𝑀::ModelDict)
     elT = Union{eltype.(x)...}
-    return if elT <: Union{String, Number}
-        collect(elT <: String ? String : elT <: Int ? Int : Float64, x)
+    return if elT <: String
+        collect(String, x)
+    elseif elT <: Int64
+        collect(Int64, x)
+    elseif elT <: Union{Float64, Nothing}
+        Float64[something(i, NaN64) for i ∈ x]
+    elseif Dict{String, String} <: elT
+        [_𝑐𝑝_isamodel(x) ? fromjson(iHasProps, x, 𝑀) : x for i ∈ x]
     else
         x
     end
 end
 
 function apply(::Val{:ColumnsPatched}, 𝐷::iDocument, 𝑀::ModelDict, 𝐼::Dict{String})
-    merge!(
+    Model.patch!(
         𝑀[getid(𝐼["column_source"])].data,
         Dict{String, Vector{Pair}}(
-            col => Pair[_𝑐𝑝_fro(x) => _𝑐𝑝_fro(y) for (x, y) ∈ lst]
+            col => Pair[_𝑐𝑝_key(x) => _𝑐𝑝_value(y, 𝑀) for (x, y) ∈ lst]
             for (col, lst) ∈ 𝐼["patches"]
         )
     )

@@ -10,7 +10,7 @@ end
     (srv, _ ) = @runscenario Cnt(; a = [X(;a =2)]) push!(doc.roots[1].a, X(;a = 3))
     @test length(srv.roots[1].a) == 2
 
-    (srv, _ ) = @runscenario Cnt(; a = [X(;a =2)]) depushleteat!(doc.roots[1].a, 1)
+    (srv, _ ) = @runscenario Cnt(; a = [X(;a =2)]) deleteat!(doc.roots[1].a, 1)
     @test length(srv.roots[1].a) == 0
 end
 
@@ -23,12 +23,12 @@ end
 end
 
 @testset "change datasource" begin
-    (srv, _ ) = @runscenario Cds("a" => [0., 1.]) push!(doc.roots[1].data, "a" => [2., 3.])
+    (srv, _ ) = @runscenario Cds(data = Dict("a" => [0., 1.])) Bokeh.stream!(doc.roots[1].data, "a" => [2., 3.])
     @test length(srv.roots[1].data["a"]) == 4
 
-    (srv, _ ) = @runscenario Cds("a" => [0., 1.]) merge!(doc.roots[1].data, "a" => [2.])
+    (srv, _ ) = @runscenario Cds(data = Dict("a" => [0., 1.])) Bokeh.update!(doc.roots[1].data, "a" => [2.])
     @test length(srv.roots[1].data["a"]) == 1
 
-    (srv, _ ) = @runscenario Cds("a" => [X(;a=1)]) push!(doc.roots[1].data, "a" => [X(;a = 2)])
+    (srv, _ ) = @runscenario Cds(data = Dict("a" => [X(;a=1)])) Bokeh.stream!(doc.roots[1].data, Dict("a" => [X(;a = 2)]))
     @test length(srv.roots[1].data["a"]) == 2
 end

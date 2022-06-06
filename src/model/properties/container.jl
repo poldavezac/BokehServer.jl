@@ -25,12 +25,12 @@ for (𝐹, 𝑇) ∈ (
 )
     @eval function Base.$𝐹(γ::T, x...; y...) where {T <: $𝑇}
         parent = γ.parent.value
-        if isnothing(parent) || getfield(parent, γ.attr) ≢ γ
+        if isnothing(parent) || getfield(parent, γ.attr) ≢ γ.values
             $𝐹(γ.values, x...; y...)
         else
             old = copy(γ.values)
             out = $𝐹(γ.values, x...; y...)
-            Bokeh.Events.trigger(Bokeh.Events.ModelChangedEvent(parent, γ.attr, old, new))
+            Bokeh.Events.trigger(Bokeh.Events.ModelChangedEvent(parent, γ.attr, old, out))
             out ≡ γ.values ? γ : out
         end
     end

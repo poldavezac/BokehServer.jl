@@ -7,32 +7,32 @@ macro _𝑑𝑠_applicable(code)
 end
 
 """
-    Base.merge!(γ::DataSource, patches::Vararg{Pair{String, Pair}}; dotrigger :: Bool = true)
-    Base.merge!(γ::DataSource, patches::Vararg{Dict{String, Vector{Pair}}}; dotrigger :: Bool = true)
+    patch!(γ::DataSource, patches::Vararg{Pair{String, Pair}}; dotrigger :: Bool = true)
+    patch!(γ::DataSource, patches::Vararg{Dict{String, Vector{Pair}}}; dotrigger :: Bool = true)
 
 Updates values within *existing* columns.
 
 ```julia
 x = DataSource(Dict("a" => [1, 2, 3]))
 
-merge!(x, "a" => 2 => 10)
+patch!(x, "a" => 2 => 10)
 @assert x["a"] == [1, 10, 3] 
 
-merge!(x, Dict("a" => [1 => 5, 2:3 => 10]))
+patch!(x, Dict("a" => [1 => 5, 2:3 => 10]))
 @assert x["a"] == [5, 10, 10] 
 ```
 """
-function Base.merge!(γ::DataSource, patches::Vararg{Pair{<:AbstractString, <:Pair}}; dotrigger :: Bool = true)
+function patch!(γ::DataSource, patches::Vararg{Pair{<:AbstractString, <:Pair}}; dotrigger :: Bool = true)
     isempty(patches) && return
 
     agg = Dict{String, Vector{Pair}}()
     for (key, patch) ∈ patches
         push!(get!(()-> Vector{Pair}(), agg, key), patch)
     end
-    return merge!(γ, agg; dotrigger)
+    return patch!(γ, agg; dotrigger)
 end
 
-function Base.merge!(
+function patch!(
         γ::DataSource,
         patches::Vararg{AbstractDict{<:AbstractString, <:AbstractVector{<:Pair}}};
         dotrigger :: Bool = true
@@ -132,3 +132,16 @@ end
         return compare(view(itm, key[2], key[3]), value) ? nothing : key => value
     end
 end
+
+function Base.merge!(γ::DataSource, patches::Vararg{Pair{<:AbstractString, <:Pair}}; dotrigger :: Bool = true)
+    patch!(γ, patches; dotrigger)
+end
+
+function Base.merge!(
+        γ::DataSource,
+        patches::Vararg{AbstractDict{<:AbstractString, <:AbstractVector{<:Pair}}};
+        dotrigger :: Bool = true
+)
+    patch!(γ, patches; dotrigger)
+end
+export patch!
