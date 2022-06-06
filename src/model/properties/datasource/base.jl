@@ -35,11 +35,16 @@ macro _𝑑𝑠_merge_args(code)
         end
         isempty(𝑑) && return γ
 
-        𝑑 = DataDict(i => datatypeconvert(get(γ.values, i, nothing), j))
+        𝑑 = DataDict(
+            i => let arr = get(γ.values, i, nothing)
+                isnothing(arr) ? datatypearray(j) : datatypearray(eltype(arr), j)
+            end
+            for (i,j) ∈ 𝑑
+        )
     end)
 end
 
-function _𝑑𝑠_check(data::Dict{String, AbstractVector}, others::Vararg{<:AbstractVector})
+function _𝑑𝑠_check(data::DataDict, others::Vararg{<:AbstractVector})
     isempty(data) && isempty(others) && return
     sz = isempty(data) ? length(first(others)) : length(first(values(data)))
     if any(sz ≢ length(i) for i ∈ values(data)) || any(sz ≢ length(i) for i ∈ others)
@@ -47,40 +52,27 @@ function _𝑑𝑠_check(data::Dict{String, AbstractVector}, others::Vararg{<:Ab
     end
 end
 
-datatypeconvert(::Nothing, y) = datatypeconvert(y)
-datatypeconvert(x::AbstractVector, y::Any) = datatypeconvert(eltype(x), y)
-datatypeconvert(::Type{T}, y::AbstractVector{T}) where {T} = y
-datatypeconvert(x::Type{<:Number}, y::AbstractVector{<:Number}) = convert.(eltype(x), y)
-function datatypeconvert(
-    x::Type{<:AbstractArray{<:Number}},
-    y::AbstractVector{<:AbstractArray{<:Number}}
-) where {T<:Number}
-    return eltype(x)[convert.(eltype(eltype(x)), i) for i ∈ y]
-end
-
 for (T, code) ∈ (
         TimePeriod => :𝑑,
         DateTime   => :(Second(Dates.datetime2unix(𝑑))),
         Date       => :(Day(Dates.date2epochdays(𝑑))),
 )
-    @eval datatypeconvert(𝑑::$T) = round(Dates.toms($code); digits = 3)
-    @eval datatypeconvert(𝑑::Type{$T}) = datatypeconvert.(𝑑)
-    @eval datatypeconvert(::Type{Float64}, 𝑑::AbstractArray{$T}) = datatypeconvert.(𝑑)
+    @eval @inline datatypeconvert(::Type{Float64}, 𝑑::$T) = datatypeconvert(𝑑)
 end
+@inline datatypeconvert(::Type{T}, y::Union{T, AbstractArray{T}}) where {T} = y
+@inline datatypeconvert(::Type{T}, y::Number) where {T} = convert(T, y)
+@inline datatypeconvert(::Type{T}, y::AbstractArray) where {T} = datatypeconvert.(T, y)
 
-datatypeconvert(y::iHasProps) = y
-datatypeconvert(y::AbstractVector{<:iHasProps}) = y
-for T ∈ AbstractTypes.NumberElTypeDataDict
-    @eval datatypeconvert(y::$T) = y
-    @eval datatypeconvert(y::AbstractArray{$T}) = y
-    @eval datatypeconvert(y::AbstractVector{<:AbstractArray{$T}}) = y
+@inline datatypearray(::Type{T}, y::AbstractVector) where {T} = datatypeconvert.(T, y)
+@inline datatypearray(::Type{T}, y::AbstractVector{<:AbstractArray}) where {T} = [datatypeconvert.(T, i) for i ∈ y]
+@inline datatypearray(::Type{T}, y::Union{AbstractVector{T}, AbstractVector{<:AbstractArray{T}}}) where {T} = y
+
+for (𝑇1, 𝑇2) ∈ (Union{DateTime, Date, TimePeriod} => Float64, Union{Int64} => Int32)
+    @eval @inline datatypearray(y::AbstractVector{<:Union{$𝑇1, AbstractArray{<:$𝑇1}}}) = datatypearray($𝑇2, y)
 end
-
-datatypeconvert(y::AbstractArray{Int64}) = Int32.(y)
-datatypeconvert(y::AbstractVector{<:AbstractArray{Int64}}) = Array{Int32}[Int32.(i) for i ∈ y]
-datatypeconvert(y::AbstractArray{Symbol}) = string.(y)
+@inline datatypearray(y::AbstractVector{<:Union{T, AbstractArray{<:T}}}) where {T <: Union{iHasProps, AbstractTypes.ElTypeDataDict...}} = y
 
 bokehwrite(::Type{DataSource}, x::DataDict) = copy(x)
 function bokehwrite(::Type{DataSource}, x)
-    DataDict("$i" => datatypeconvert(j) for (i, j) ∈ x)
+    DataDict("$i" => datatypearray(j) for (i, j) ∈ x)
 end
