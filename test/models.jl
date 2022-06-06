@@ -39,7 +39,7 @@
     @testset for (i, j) ∈ zip(out, truth)
         for x ∈ propertynames(i)
             if x ≡ :default
-                @test string(getfield(i, x)) == string(getfield(j, x))
+                @test replace(string(getfield(i, x)), "Main.anonymous."=> "") == string(getfield(j, x))
             else
                 @test getfield(i, x) == getfield(j, x)
             end
@@ -62,7 +62,7 @@
     @testset for (i, j) ∈ zip(out, truth)
         for x ∈ propertynames(i)
             if x ≡ :default
-                @test string(getfield(i, x)) == string(getfield(j, x))
+                @test replace(string(getfield(i, x)), "Main.anonymous."=> "") == string(getfield(j, x))
             else
                 @test getfield(i, x) == getfield(j, x)
             end

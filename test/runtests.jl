@@ -1,6 +1,4 @@
 #!/usr/bin/env -S "julia --project=./test"
-using Logging
-using Test: @test, @testset, @test_throws
 using ArgParse
 
 SETTINGS = let s = ArgParseSettings()
@@ -33,7 +31,6 @@ function accepttestset(name::String)
 end
 
 ENV["BOKEH_CONFIG"] = string((; throwonerror = true))
-using Bokeh
 
 function hasacceptedchild(expr::Expr)
     todos = [expr]
@@ -75,20 +72,30 @@ function hasacceptedfile(dir::String)
 end
 
 function visitfiles(dir::String; force :: Bool = false)
-    if isfile(joinpath(dir, "__init__.jl"))
-        include(joinpath(dir, "__init__.jl"))
-    end
+    mdl = Module()
+    mdleval = Base.Fix1(mdl.eval, mdl)
+    mdleval(quote
+        using Core
+        using Base
+        using Logging
+        using Bokeh
+        using Test: @test, @testset, @test_throws
+        Core.eval(x...) = Base.eval($mdl, x...)
+    end)
     hasacceptedfile(dir) || return
 
+    if isfile(joinpath(dir, "__init__.jl"))
+        Base.include(mdl, joinpath(dir, "__init__.jl"))
+    end
     for path ∈ readdir(dir; join = true)
         if isdir(path)
-            @testset "$(basename(path))" begin
-                visitfiles(path; force = acceptfile(path))
-            end
+            mdleval(:(@testset $("$(basename(path))") begin
+                $visitfiles($path; force = $(acceptfile(path)))
+            end))
         else
-            acceptfile(path) && @testset "$(basename(path))" begin
-                include(applycmdargs, path)
-            end
+            acceptfile(path) && mdleval(:(@testset $("$(basename(path))") begin
+                $(Base.include)($applycmdargs, $mdl, $path)
+            end))
         end
     end
 end

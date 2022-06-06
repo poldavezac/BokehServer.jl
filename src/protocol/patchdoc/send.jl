@@ -11,16 +11,14 @@ function patchdoc(λ::AbstractVector{<:Events.iEvent}, doc::iDocument, oldids::S
     )
 end
 
-function patchdoc(𝐹::Function, 𝐷::iDocument, λ::Events.iEventList)
+function patchdoc(𝐹::Function, 𝐷::iDocument, λ::Events.iEventList, 𝑅::Serialize.iRules = Serialize.Rules())
     oldids = allids(𝐷)
-    lst    = Events.eventlist!(λ) do
-        𝐹()
-    end
-
-    return patchdoc(lst, 𝐷, oldids)
+    lst    = Events.eventlist!(()->curdoc!(𝐹, 𝐷), λ)
+    return patchdoc(lst, 𝐷, oldids, 𝑅)
 end
 
 function patchdoc(𝐹::Function, 𝐷::iDocument, λ::Events.iEventList, ios::Vararg{IO})
-    outp = patchdoc(𝐹, 𝐷, λ)
-    return isnothing(outp) ? missing : send(ios, msg"PATCH-DOC", outp, Pair{Vector{UInt8}, String}[])
+    𝑅    = Serialize.BufferedRules()
+    outp = patchdoc(𝐹, 𝐷, λ, 𝑅)
+    return isnothing(outp) ? missing : send(ios, msg"PATCH-DOC", outp, 𝑅.buffers)
 end
