@@ -19,7 +19,7 @@ struct Message{T} <: iMessage
     header   :: Dict{String}
     contents :: Dict{String}
     meta     :: Dict{String}
-    buffers  :: Vector{Pair{Dict{String}, Vector}}
+    buffers  :: Buffers
 end
 
 "All possible messages"
@@ -214,13 +214,12 @@ function Message(raw::RawMessage)
             Pair{Dict{String, Any}, Vector}[]
         )
     end
-    parse((i,j)::Pair) = parse(i) => j
     hdr = JSON.parse(raw.header)
     return Message{Symbol(hdr["msgtype"])}(
         hdr,
         JSON.parse(raw.meta),
         JSON.parse(raw.contents),
-        parse.(raw.buffers)
+        collect(eltype(Buffers), (JSON.parse(i)["id"] => j for (i, j) ∈ raw.buffers))
     )
 end
 
