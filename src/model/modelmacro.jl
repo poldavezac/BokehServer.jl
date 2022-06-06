@@ -347,13 +347,7 @@ end
 
 function _👻defaultvalue(T::Type)
     R = bokehfieldtype(T)
-    if hasmethod(zero, Tuple{R})
-        Some(:(zero($R)))
-    elseif hasmethod(R, Tuple{})
-        Some(:($R()))
-    else
-        nothing
-    end
+    applicable(zero, R) ? Some(:(zero($R))) : applicable(R) ? Some(:($R())) : nothing
 end
 
 const ID = bokehidmaker()

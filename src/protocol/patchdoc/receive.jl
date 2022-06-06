@@ -38,13 +38,13 @@ end
 
 fromjson(::Type{DataDict}, 𝑣::Dict{String}, :: ModelDict) = DataDict(i => _𝑐𝑝_fro(j) for (i, j) ∈ 𝑣)
 
-function setpropertyfromjson!(mdl::T, attr:: Symbol, val, 𝑀::ModelDict) where {T <: iHasProps}
-    setproperty!(mdl, attr, fromjson(Model.bokehpropertytype(T, attr), val, 𝑀))
+function setpropertyfromjson!(mdl::T, attr:: Symbol, val, 𝑀::ModelDict; dotrigger ::Bool =true) where {T <: iHasProps}
+    setproperty!(mdl, attr, fromjson(Model.bokehpropertytype(T, attr), val, 𝑀); dotrigger)
 end
 
 function setreferencefromjson!(mdl::iHasProps, 𝑀::ModelDict, 𝐼 :: Dict{String})
     for (key, val) ∈ 𝐼["attributes"]
-        setpropertyfromjson!(mdl, Symbol(key), val, 𝑀)
+        setpropertyfromjson!(mdl, Symbol(key), val, 𝑀; dotrigger = false)
     end
 end
 

@@ -94,7 +94,10 @@ function Base.delete!(doc::Document, roots::Vararg{iModel}; dotrigger :: Bool = 
     return doc
 end
 
-curdoc!(func::Function, doc::iDocument) = task_local_storage(func, :BOKEH_DOC, doc)
+curdoc!(func::Function, doc::iDocument) = task_local_storage(:BOKEH_DOC, doc) do
+    applicable(func) ? func() : func(doc)
+end
+
 @inline curdoc() :: Union{iDocument, Nothing} = get(task_local_storage(), :BOKEH_DOC, nothing)
 @inline check_hasdoc() :: Bool = !isnothing(curdoc())
 

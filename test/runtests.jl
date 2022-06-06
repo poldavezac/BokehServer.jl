@@ -50,15 +50,18 @@ function hasacceptedchild(expr::Expr)
     return false
 end
 
+function istestsetexpr(expr)
+    return (
+        expr isa Expr &&
+        expr.head ≡ :macrocall &&
+        expr.args[1] ≡ Symbol("@testset")
+    )
+end
+
 function applycmdargs(expr)
     if expr isa Expr && expr.head ≡ :module
         foreach(applycmdargs, expr.args)
-    elseif (
-        expr isa Expr &&
-        expr.head ≡ :macrocall &&
-        expr.args[1] ≡ Symbol("@testset") &&
-        !hasacceptedchild(expr)
-    )
+    elseif istestsetexpr(expr) && !hasacceptedchild(expr)
         expr.args[4] = Expr(:block)
     end
     return expr
@@ -80,12 +83,16 @@ function visitfiles(dir::String; force :: Bool = false)
         using Logging
         using Bokeh
         using Test: @test, @testset, @test_throws
+        using Main: istestsetexpr
+
         Core.eval(x...) = Base.eval($mdl, x...)
     end)
     hasacceptedfile(dir) || return
 
+    cmd = applycmdargs
     if isfile(joinpath(dir, "__init__.jl"))
         Base.include(mdl, joinpath(dir, "__init__.jl"))
+        (:test_include ∈ names(mdl)) && (cmd = applycmdargs∘mdl.test_include)
     end
     for path ∈ readdir(dir; join = true)
         if isdir(path)
@@ -93,8 +100,9 @@ function visitfiles(dir::String; force :: Bool = false)
                 $visitfiles($path; force = $(acceptfile(path)))
             end))
         else
+
             acceptfile(path) && mdleval(:(@testset $("$(basename(path))") begin
-                $(Base.include)($applycmdargs, $mdl, $path)
+                $(Base.include)($cmd, $mdl, $path)
             end))
         end
     end

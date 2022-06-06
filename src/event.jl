@@ -16,7 +16,7 @@ function eventlist!(func::Function, λ = EventList(); flush :: Bool = true)
     task_local_storage(:DOC_EVENTS, λ) do
         out = nothing
         try
-            out = func()
+            out = applicable(func) ? func() : func(λ)
         finally
             flush && (out = flushevents!(λ))
         end
