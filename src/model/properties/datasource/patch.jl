@@ -134,7 +134,7 @@ end
 end
 
 function Base.merge!(γ::DataSource, patches::Vararg{Pair{<:AbstractString, <:Pair}}; dotrigger :: Bool = true)
-    patch!(γ, patches; dotrigger)
+    patch!(γ, patches...; dotrigger)
 end
 
 function Base.merge!(
@@ -142,6 +142,6 @@ function Base.merge!(
         patches::Vararg{AbstractDict{<:AbstractString, <:AbstractVector{<:Pair}}};
         dotrigger :: Bool = true
 )
-    patch!(γ, patches; dotrigger)
+    patch!(γ, patches...; dotrigger)
 end
 export patch!

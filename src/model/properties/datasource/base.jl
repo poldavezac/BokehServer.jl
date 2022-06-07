@@ -76,3 +76,5 @@ bokehwrite(::Type{DataSource}, x::DataDict) = copy(x)
 function bokehwrite(::Type{DataSource}, x)
     DataDict("$i" => datatypearray(j) for (i, j) ∈ x)
 end
+
+bokehchildren(x::DataDict) = Iterators.flatten(Iterators.filter(Base.Fix2(<:, iHasProps) ∘ eltype, values(x)))

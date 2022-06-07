@@ -29,6 +29,33 @@
     end
 end
 
+@testset "_dereference!" begin
+    𝐶 = Dict{String, Any}(
+        "events" => Any[Dict{String, Any}(
+            "column_source" => Dict{String, Any}("id" => "14001"),
+            "kind" => "ColumnDataChanged",
+            "new" => Dict{String, Any}(
+                "a" => Dict{String, Any}("dtype" => "float64", "shape" => Any[1], "__ndarray__" => "AAAAAAAAAEA=", "order" => "little")
+            ),
+            "cols" => Any["a"]
+        )],
+        "references" => Any[]
+    )
+    truth = Dict{String, Any}(
+        "events" => Any[Dict{String, Any}(
+            "column_source" => Dict{String, Any}("id" => "14001"),
+            "kind" => "ColumnDataChanged",
+            "new" => Dict{String, Any}("a" => Float64[2.]),
+            "cols" => Any["a"]
+        )],
+        "references" => Any[]
+    )
+    Bokeh.Protocol.PatchDocReceive._dereference!(𝐶, Bokeh.Protocol.Buffers())
+
+    @test 𝐶 == truth
+end
+
+
 @testset "receive" begin
     doc  = Bokeh.Document()
     mdl  = ProtocolX(; id = 100,a  = 10)

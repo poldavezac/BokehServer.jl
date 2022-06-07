@@ -30,10 +30,10 @@ const NoGood = Union{AbstractString, Number, Symbol}
 
 bokehchildren(::Any) = ()
 bokehchildren(mdl::iHasProps) = (mdl,)
-bokehchildren(mdl::Union{Set{<:iHasProps}, AbstractArray{<:iHasProps}}) = mdl
-bokehchildren(::Union{Set{<:NoGood}, AbstractArray{<:NoGood}, Dict{<:NoGood, <:NoGood}}) = ()
-bokehchildren(mdl::Union{AbstractSet, AbstractArray}) = (i for i ∈ mdl if i isa iHasProps)
-bokehchildren(mdl::Dict) = (i for j ∈ mdl for i ∈ j if i isa iHasProps)
+bokehchildren(mdl::Union{AbstractSet{<:iHasProps}, AbstractArray{<:iHasProps}}) = mdl
+bokehchildren(::Union{AbstractSet{<:NoGood}, AbstractArray{<:NoGood}, AbstractDict{<:NoGood, <:NoGood}}) = ()
+bokehchildren(mdl::Union{AbstractSet, AbstractArray}) = Iterators.filter(Base.Fix2(isa, iHasProps), mdl)
+bokehchildren(mdl::AbstractDict) = Iterators.filter(Base.Fix2(isa, iHasProps), Iterators.flatten(pairs(mdl)))
 
 const _𝑐𝑚𝑝_BIN = Union{Number, Symbol, Missing, Nothing, Function}
 

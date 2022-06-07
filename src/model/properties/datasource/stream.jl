@@ -43,7 +43,7 @@ function Base.push!(
         rollover  :: Union{Int, Nothing} = nothing,
         dotrigger :: Bool                = true
 )
-    stream!(γ, 𝑑s; rollover, dotrigger)
+    stream!(γ, 𝑑s...; rollover, dotrigger)
 end
 
 export stream!

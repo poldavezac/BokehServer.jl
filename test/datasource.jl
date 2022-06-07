@@ -2,6 +2,16 @@ X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
     source :: Bokeh.Model.DataSource = zero
 end
 
+Y = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+    a:: Int
+end
+
+@testset "children" begin
+    x = X(; source = Dict("a" => [Y(; a = 1), Y(; a = 2)]))
+    y = [i.a for i ∈ Bokeh.Model.allbokehchildren(x)]
+    @test y == [1, 2]
+end
+
 @testset "merge!" begin
     x = X(; source = Dict("a" => [1, 2]))
     Bokeh.Events.eventlist!() do

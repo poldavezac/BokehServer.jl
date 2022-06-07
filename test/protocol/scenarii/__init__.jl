@@ -27,18 +27,18 @@ function _compare(x::T, y::T) where {T <: Bokeh.iModel}
     end
 end
 
-function _compare(x::Array{T}, y::Array{T}) where {T <: Union{String, Symbol, Number}}
+function _compare(x::AbstractArray{T}, y::AbstractArray{T}) where {T <: Union{String, Symbol, Number}}
     @test x == y
 end
 
-function _compare(x::Array{T}, y::Array{T}) where {T <: Bokeh.iModel}
+function _compare(x::AbstractArray{T}, y::AbstractArray{T}) where {T <: Bokeh.iModel}
     @test size(x) == size(y)
     for (i, j) ∈ zip(x, y)
         _compare(i, j)
     end
 end
 
-function _compare(x::Dict{T, K}, y::Dict{T, K}) where {T, K}
+function _compare(x::AbstractDict{T, K}, y::AbstractDict{T, K}) where {T, K}
     @test length(x) == length(y)
     @test all(i ∈ keys(y) for i ∈ keys(x))
     @test all(i ∈ keys(x) for i ∈ keys(y))
