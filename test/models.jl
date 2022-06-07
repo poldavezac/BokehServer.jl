@@ -54,7 +54,7 @@
     end))
     dflt(x)  = (; default = x, js = true, alias = false, readonly = false, child = false, children = true)
     truth = [
-        (; index = 2, name = :b, type = Bokeh.Model.Container{Vector{Dummy}}, dflt(Some(:(zero(Vector{Dummy}))))...),
+        (; index = 2, name = :b, type = Bokeh.Model.Container{Vector{Dummy}}, dflt("Some(:((Vector{Dummy})()))")...),
         (; index = 4, name = :c, type = Bokeh.Model.Container{Dict{Int32, Dummy}}, dflt(nothing)...),
         (; index = 6, name = :d, type = Bokeh.Model.Container{Dict{Dummy, Int32}}, dflt(Some(:(Dict(Dummy()=>1))))...),
         (; index = 8, name = :e, type = Bokeh.Model.Container{Set{Dummy}}, dflt("Some(:((Set{Dummy})()))")...)
@@ -129,9 +129,9 @@ end
     @test X().c.values == [1, 2]
 
     x = X()
-    push!(x.c, 10)
+    push!(x.c, 10; dotrigger = false)
     @test x.c.values == Int64[1, 2, 10]
-    empty!(x.c)
+    empty!(x.c; dotrigger = false)
     @test isempty(x.c.values)
 end
 
