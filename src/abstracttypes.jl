@@ -4,6 +4,7 @@ module AbstractTypes
     abstract type iDataSource   <: iModel end
     abstract type iDocument end
     abstract type iTheme end
+    abstract type iProperty end
 
     """
     The Bokeh protocol only allows limited element types in a DataDict.
@@ -44,6 +45,6 @@ module AbstractTypes
 
     bokehidmaker(T::Type = Int64) = T ≡ Symbol ? BokehSymbolIdMaker() : BokehIdMaker()
 
-    export iHasProps, iModel, iDataSource, iDocument, iTheme, bokehid, bokehidmaker, DataDict
+    export iHasProps, iModel, iDataSource, iDocument, iTheme, iProperty, bokehid, bokehidmaker, DataDict
 end
 using .AbstractTypes

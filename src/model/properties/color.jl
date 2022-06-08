@@ -1,7 +1,7 @@
 using Printf
 using Colors
 
-struct Color
+struct Color <: iProperty
     r::UInt8
     g::UInt8
     b::UInt8
@@ -58,7 +58,7 @@ macro color_str(val)
     :($c)
 end
 
-struct ColorHex end
+struct ColorHex <: iProperty end
 
 colorhex(ν) = colorhex(Color(ν))
 function colorhex(ν::Color)

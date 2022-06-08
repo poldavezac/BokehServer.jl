@@ -1,4 +1,4 @@
-abstract type iSpec{T} end
+abstract type iSpec{T} <: iProperty end
 abstract type iUnitSpec{T, K} <: iSpec{T} end
 
 macro dataspec(code::Expr)

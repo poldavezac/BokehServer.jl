@@ -1,4 +1,4 @@
-struct EnumType{T}
+struct EnumType{T} <: iProperty
 end
 
 bokehfieldtype(::Type{<:EnumType}) = Symbol

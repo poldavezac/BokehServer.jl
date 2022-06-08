@@ -1,4 +1,4 @@
-abstract type iContainer{T} end
+abstract type iContainer{T} <: iProperty end
 struct Container{T} <: iContainer{T}
     parent::WeakRef
     attr  ::Symbol

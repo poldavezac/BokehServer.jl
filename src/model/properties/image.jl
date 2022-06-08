@@ -1,4 +1,4 @@
-struct Image end
+struct Image <: iProperty end
 
 bokehfieldtype(::Type{Image}) = String
 
