@@ -39,18 +39,23 @@ function color(ν::AbstractString)
     end
     return missing
 end
+function color(ν::Symbol)
+    clr = get(Colors.color_names, "$ν", missing)
+    ismissing(clr) ? missing : Color(clr)
+end
+color(r, g, b, a)                                         = Color(r, g, b, a)
+color(r, g, b)                                            = Color(r, g, b, 0xff)
+color(ν::Union{NTuple{4,<:Integer}, NTuple{3,<:Integer}}) = Color(ν...)
+color(ν::Int32)                                           = Color(reinterpret(UIn8, Int32[ν])...)
 
 Color(r, g, b)                                            = Color(r, g, b, 0xff)
 Color(ν::Union{NTuple{4,<:Integer}, NTuple{3,<:Integer}}) = Color(ν...)
-Color(ν::Symbol)                                          = Color(Colors.color_names["$ν"]...)
 Color(ν::Int32)                                           = Color(reinterpret(UIn8, Int32[ν])...)
-
 function Color(ν::AbstractString)
     c = color(ν)
     ismissing(ν) && throw(ErrorException("unknown color $ν"))
     return c
 end
-
 
 macro color_str(val)
     c = color(String(val))
@@ -60,7 +65,8 @@ end
 
 struct ColorHex <: iProperty end
 
-colorhex(ν) = colorhex(Color(ν))
+colorhex(ν) = colorhex(color(ν))
+colorhex(::Missing) = missing
 function colorhex(ν::Color)
     if ν.a ≡ 0xff
         @sprintf("#%02X%02X%02X", ν.r, ν.g, ν.b)
@@ -69,6 +75,16 @@ function colorhex(ν::Color)
     end
 end
 
-bokehwrite(::Type{Color}, ν)    = Color(ν)
-bokehwrite(::Type{ColorHex}, ν) = colorhex(ν)
+const COLOR_ARGS = Union{NTuple{4, <:Integer}, NTuple{3, <:Integer}, Symbol, Int32, AbstractString, Color}
+
+function bokehwrite(::Type{Color}, ν::COLOR_ARGS)
+    clr = color(ν)
+    ismissing(clr) ? Unknown() : clr
+end
+
+function bokehwrite(::Type{Color}, ν::Union{COLOR_ARGS, ColorHex})
+    clr = colorhex(ν)
+    ismissing(clr) ? Unknown() : clr
+end
+
 bokehfieldtype(::ColorHex) = String

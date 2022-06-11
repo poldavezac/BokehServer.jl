@@ -154,10 +154,13 @@ function _👻structure(
 
         return if field.type <: Internal
             val
-        elseif field.type <: ReadOnly
-            :($(@__MODULE__).bokehwrite($(field.type.parameters[1]), $val))
         else
-            :($(@__MODULE__).bokehwrite($(field.type), $val))
+            quote
+                let x = $(@__MODULE__).bokehwrite($(field.type), $val)
+                    (x isa $Unknown) && throw(ErrorException("Could not convert `$ν` to $(field.type)"))
+                    x
+                end
+            end
         end
     end
 
@@ -195,6 +198,7 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
             end
             quote
                 ν = $(@__MODULE__).bokehwrite($(i.type), $(@__MODULE__).bokehrawtype(ν))
+                (ν isa $Unknown) && throw(ErrorException("Could not convert `$ν` to $(i.type)"))
                 $set
                 getproperty(µ, $name)
             end

@@ -135,6 +135,30 @@ end
     @test isempty(x.c.values)
 end
 
+@testset "bokeh tuple attribute" begin
+    X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+        a::Bokeh.Model.Tuple{Bokeh.Model.Spec{Int32},Float64}  = (Int32(1), 2.0)
+    end
+    @test X().a ≡ ((; value = one(Int32)), 2.0)
+    @test fieldtype(X, :a) ≡ Tuple{Bokeh.Model.Spec{Int32}, Float64}
+    x = X(; a = ("toto", 4))
+    @test x.a == ((; field = "toto"), 4.0)
+    @nullevents x.a = (Dict("value" => 10), -1.0)
+    @test x.a == ((; value = 10), -1.0)
+end
+
+@testset "bokeh either attribute" begin
+    X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+        a::Bokeh.Model.Either{Tuple{Bokeh.Model.EnumType{(:a, :b, :c)}, Float64}}  = "a"
+    end
+    @test fieldtype(X, :a) ≡ Tuple{Union{Symbol, Float64}, UInt8}
+    @test X().a ≡ :a
+    x = X(; a = 4)
+    @test x.a ≡ 4.0
+    @nullevents x.a = :c
+    @test x.a ≡ :c
+end
+
 @testset "bokeh color" begin
     X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
         a::Bokeh.Model.Color =  :gray

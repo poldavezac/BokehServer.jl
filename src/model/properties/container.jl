@@ -6,9 +6,13 @@ struct Container{T} <: iContainer{T}
 end
 
 const CONTAINERS = Union{AbstractArray, AbstractDict, AbstractSet}
-bokehread(𝑇::Type{<:iContainer}, µ::iHasProps, α::Symbol, ν) = 𝑇(WeakRef(µ), α, ν)
+bokehread(𝑇::Type{<:iContainer{T}}, µ::iHasProps, α::Symbol, ν::T) where {T} = 𝑇(WeakRef(µ), α, ν)
 bokehrawtype(ν::iContainer) = ν.values
 bokehfieldtype(::Type{<:iContainer{T}}) where {T} = T
+
+for cls ∈ (AbstractDict, AbstractArray, AbstractSet)
+    @eval bokehwrite(::Type{<:iContainer{<:$cls}}, ν::$cls) = ν
+end
 
 for (𝐹, 𝑇) ∈ (
         :push!      => Container,

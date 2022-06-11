@@ -73,7 +73,14 @@ end
 @inline datatypearray(y::AbstractVector{<:Union{T, AbstractArray{<:T}}}) where {T <: Union{iHasProps, AbstractTypes.ElTypeDataDict...}} = y
 
 bokehwrite(::Type{DataSource}, x::DataDict) = copy(x)
-function bokehwrite(::Type{DataSource}, x)
+function bokehwrite(
+        ::Type{DataSource},
+        x::Union{
+            AbstractDict{<:AbstractString, <:AbstractVector},
+            AbstractVector{<:Pair{<:AbstractString, <:AbstractVector}},
+            DataSource
+        }
+)
     DataDict("$i" => datatypearray(j) for (i, j) ∈ x)
 end
 

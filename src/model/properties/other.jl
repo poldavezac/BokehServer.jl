@@ -17,13 +17,15 @@ struct Internal{T} <: iProperty end
 
 struct ReadOnly{T} <: iProperty end
 @inline bokehfieldtype(::Type{ReadOnly{T}}) where {T} = bokehfieldtype(T)
-@inline bokehwrite(::Type{<:ReadOnly}, @nospecialize(ν)) = throw(ErrorException("Readonly attribute"))
+@inline bokehwrite(::Type{<:ReadOnly}, ::Any) = throw(ErrorException("Readonly attribute"))
 
 
 struct Nullable{T} <: iProperty end
 @inline bokehfieldtype(::Type{Nullable{T}}) where {T} = Union{Nothing, bokehfieldtype(T)}
-@inline bokehwrite(::Type{<:Nullable}, @nospecialize(µ::iHasProps), α::Symbol, ::Nothing) = nothing
-@inline bokehwrite(::Type{Nullable{T}}, ν) where{T} = bokehwrite(T, ν)
+@inline bokehread(::Type{<:Nullable}, ::iHasProps, ::Symbol, ::Nothing) = nothing
+@inline bokehread(::Type{Nullable{T}}, µ::iHasProps, α::Symbol, ν::Any) where {T} = bokehread(T, μ, α, ν)
+@inline bokehwrite(::Type{<:Nullable}, ν::Nothing) = nothing
+@inline bokehwrite(::Type{Nullable{T}}, ν::Any) where {T} = bokehwrite(T, ν)
 
 struct FontSize <: iProperty end
 
@@ -31,31 +33,10 @@ const FONTSTYLE_PATTERN = r"^[0-9]+(.[0-9]+)?(%|em|ex|ch|ic|rem|vw|vh|vi|vb|vmin
 
 @inline bokehfieldtype(::Type{FontSize}) = String
 
-function bokehwrite(::Type{FontSize}, ν::AbstractString)
-    @assert !isnothing(match(FONTSTYLE_PATTERN, ν))
-    return ν
-end
+@inline bokehread(::Type{FontSize}, ::iHasProps, ::Symbol, ν::AbstractString) = ν
+bokehwrite(::Type{FontSize}, ν::AbstractString) = isnothing(match(FONTSTYLE_PATTERN, ν)) ? Unknown() : ν
 
 macro fontstyle_str(value)
     @assert !isnothing(match(FONTSTYLE_PATTERN, value))
     return value
-end
-
-struct Either{T} <: iProperty end
-
-bokehfieldtype(𝑇::Type{<:Either}) = Union{𝑇.parameters...}
-
-@generated function bokehwrite(𝑇::Type{<:Either}, ν)
-    _👻elseif(𝑇.parameters[1].parameters, :(throw(ErrorException("Can't deal with $𝑇 = $ν")))) do T
-        :(if applicable(bokehwrite, $T, ν)
-            bokehwrite($T, ν)
-        end)
-    end
-end
-
-bokehfieldtype(𝑇::Type{<:Tuple}) = Tuple{(bokehfieldtype(T) for T ∈ 𝑇.parameters)...}
-@generated function bokehwrite(𝑇::Type{<:Tuple}, ν::Union{Vector, Tuple})
-    quote
-        tuple($((:(bokehwrite($T, ν[$i])) for (i, T) ∈ enumerate(𝑇.parameters[1].parameters))...))
-    end
 end

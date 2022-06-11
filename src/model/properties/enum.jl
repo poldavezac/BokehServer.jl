@@ -9,10 +9,11 @@ Base.values(::Type{<:EnumType{𝑇}}) where {𝑇}    = 𝑇
 Base.in(ν::Symbol, 𝑇::Type{<:EnumType})         = longform(𝑇, ν) ∈ values(𝑇)
 Base.in(ν::AbstractString, 𝑇::Type{<:EnumType}) = Symbol(ν) ∈ 𝑇
 
+@inline bokehread(::Type{<:EnumType}, ::iHasProps, ::Symbol, ν::Symbol) = ν
+
 function bokehwrite(𝑇::Type{<:EnumType}, ν::Union{AbstractString, Symbol})
     val = longform(𝑇, ν)
-    @assert val ∈ 𝑇
-    return val
+    return val ∈ 𝑇 ? val : Unknown()
 end
 
 const DashPattern = EnumType{(:solid, :dashed, :dotted, :dotdash, :dashdot)}
