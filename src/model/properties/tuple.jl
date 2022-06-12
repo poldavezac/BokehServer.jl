@@ -9,19 +9,19 @@ function bokehread(𝑇::Type{<:Tuple}, μ::iHasProps, σ::Symbol, ν::Tuple)
 end
 
 bokehfieldtype(𝑇::Type{<:NamedTuple}) = NamedTuple{
-    𝑇.parameters[1], tuple((bokehfieldtype(T) for T ∈ 𝑇.parameters[2].parameters)...)
+    𝑇.parameters[1], Tuple{(bokehfieldtype(T) for T ∈ 𝑇.parameters[2].parameters)...}
 }
 
+_👻items(𝑇::Type{<:NamedTuple}) = zip(𝑇.parameters[1], 𝑇.parameters[2].parameters)
+
 function bokehwrite(𝑇::Type{<:NamedTuple}, ν::NamedTuple)
-    return (;(i => bokehwrite(T, ν[i]) for (i, T) ∈ zip(keys(𝑇), fieldtypes(𝑇)))...)
+    return (;(i => bokehwrite(T, ν[i]) for (i, T) ∈ _👻items(𝑇))...)
 end
 
 function bokehwrite(𝑇::Type{<:NamedTuple}, ν::AbstractDict{<:AbstractString})
-    return (;(i => bokehwrite(T, ν[string(i)]) for (i, T) ∈ zip(keys(𝑇), fieldtypes(𝑇)))...)
+    return (;(i => bokehwrite(T, ν[string(i)]) for (i, T) ∈  _👻items(𝑇))...)
 end
 
 function bokehread(𝑇::Type{<:NamedTuple}, μ::iHasProps, σ::Symbol, ν::NamedTuple)
-    return (;(i => bokehread(T, μ, σ, ν[i]) for (i, T) ∈ zip(keys(𝑇), fieldtypes(𝑇)))...)
+    return (;(i => bokehread(T, μ, σ, ν[i]) for (i, T) ∈ _👻items(𝑇))...)
 end
-
-bokehwrite(::Type{Any}, ν) = ν

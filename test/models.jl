@@ -159,6 +159,18 @@ end
     @test x.a ≡ :c
 end
 
+@testset "bokeh namedstruct attribute" begin
+    X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+        a::@NamedTuple{x :: Bokeh.Model.EnumType{(:a, :b, :c)}, y:: Float64}  = (; x = :a, y = 1.0)
+    end
+    @test fieldtype(X, :a) ≡ @NamedTuple{x::Symbol, y::Float64}
+    @test X().a ≡ (; x = :a, y = 1.0)
+    x = X(; a = (; x  = :b, y = 4.0))
+    @test x.a ≡ (; x  = :b, y = 4.0)
+    @nullevents x.a = (; y= 10., x = :c)
+    @test x.a ≡ (; x = :c, y = 10.)
+end
+
 @testset "bokeh color" begin
     X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
         a::Bokeh.Model.Color =  :gray
