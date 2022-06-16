@@ -87,7 +87,7 @@ function serialref(η::Events.ColumnsStreamedEvent, 𝑅::iRules)
 end
 
 function serialref(η::Events.ColumnDataChangedEvent, 𝑅::iRules)
-    new           = serialref(Model.DataSource, η.data, 𝑅)
+    new           = serialref(Model.DataDictContainer, η.data, 𝑅)
     return (;
         cols          = serialref(collect(keys(η.data)), 𝑅),
         column_source = serialref(η.model, 𝑅),
@@ -133,7 +133,7 @@ function _𝑑𝑠_to(𝑑::_𝑑𝑠_NDBIN, 𝑅::iRules)
     end
 end
 
-function serialref(::Type{Model.DataSource}, 𝑑::DataDict, 𝑅::iRules)
+function serialref(::Type{Model.DataDictContainer}, 𝑑::DataDict, 𝑅::iRules)
     return Dict{String, Union{Vector, NamedTuple}}(k => _𝑑𝑠_to(v, 𝑅) for (k, v) ∈ 𝑑)
 end
 

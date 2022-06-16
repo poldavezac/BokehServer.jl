@@ -1,6 +1,6 @@
 using Dates
 
-struct DataSource <: iContainer{DataDict}
+struct DataDictContainer <: iContainer{DataDict}
     parent :: WeakRef
     attr   :: Symbol
     values :: DataDict
@@ -8,11 +8,11 @@ end
 
 Base.show(io::IO, ::Type{DataDict}) = print(io, "Bokeh.Model.DataDict")
 
-Base.setindex!(γ::DataSource, 𝑘, 𝑣) = (merge!(γ, 𝑘 => 𝑣); 𝑣)
-Base.size(γ::DataSource) = isempty(γ.values) ? (0, 0) : (length(first(values(γ.values))), length(γ.values))
-Base.size(γ::DataSource, i :: Int) = isempty(γ.values) ? 0 : i ≡ 1 ? length(first(values(γ.values))) : length(γ.values)
+Base.setindex!(γ::DataDictContainer, 𝑘, 𝑣) = (merge!(γ, 𝑘 => 𝑣); 𝑣)
+Base.size(γ::DataDictContainer) = isempty(γ.values) ? (0, 0) : (length(first(values(γ.values))), length(γ.values))
+Base.size(γ::DataDictContainer, i :: Int) = isempty(γ.values) ? 0 : i ≡ 1 ? length(first(values(γ.values))) : length(γ.values)
 
-bokehread(𝑇::Type{DataDict}, µ::iHasProps, α::Symbol, ν::DataDict) = DataSource(WeakRef(µ), α, ν)
+bokehread(𝑇::Type{DataDict}, µ::iHasProps, α::Symbol, ν::DataDict) = DataDictContainer(WeakRef(µ), α, ν)
 
 macro _𝑑𝑠_trigger(T, args...)
     esc(quote
@@ -83,7 +83,7 @@ function bokehwrite(
         x::Union{
             AbstractDict{<:AbstractString, <:AbstractVector},
             AbstractVector{<:Pair{<:AbstractString, <:AbstractVector}},
-            DataSource
+            DataDictContainer
         }
 )
     DataDict("$i" => datatypearray(j) for (i, j) ∈ x)

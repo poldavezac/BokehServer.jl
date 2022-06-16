@@ -2,7 +2,7 @@ E    = Bokeh.Events
 ser  = Bokeh.Protocol.Serialize.serialize
 
 CDS  = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
-    data :: Bokeh.Model.DataSource
+    data :: Bokeh.Model.DataDict
 end
 
 @testset "basic events" begin

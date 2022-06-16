@@ -2,11 +2,11 @@ const DataDictArg = Union{
     Pair{<:AbstractString, <:AbstractVector},
     AbstractDict{<:AbstractString, <:AbstractVector},
     AbstractVector{<:Pair{<:AbstractString, <:AbstractVector}},
-    DataSource
+    DataDictContainer
 }
 
 function stream!(
-        γ         :: DataSource,
+        γ         :: DataDictContainer,
         𝑑s        :: Vararg{DataDictArg};
         rollover  :: Union{Int, Nothing} = nothing,
         dotrigger :: Bool                = true
@@ -38,7 +38,7 @@ function stream!(
 end
 
 function Base.push!(
-        γ         :: DataSource,
+        γ         :: DataDictContainer,
         𝑑s        :: Vararg{DataDictArg};
         rollover  :: Union{Int, Nothing} = nothing,
         dotrigger :: Bool                = true

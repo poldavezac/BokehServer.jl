@@ -1,7 +1,6 @@
 module AbstractTypes
     abstract type iHasProps end
-    abstract type iModel        <: iHasProps end
-    abstract type iDataSource   <: iModel end
+    abstract type iModel <: iHasProps end
     abstract type iDocument end
     abstract type iTheme end
     abstract type iProperty end
@@ -45,6 +44,6 @@ module AbstractTypes
 
     bokehidmaker(T::Type = Int64) = T ≡ Symbol ? BokehSymbolIdMaker() : BokehIdMaker()
 
-    export iHasProps, iModel, iDataSource, iDocument, iTheme, iProperty, bokehid, bokehidmaker, DataDict
+    export iHasProps, iModel, iDocument, iTheme, iProperty, bokehid, bokehidmaker, DataDict
 end
 using .AbstractTypes

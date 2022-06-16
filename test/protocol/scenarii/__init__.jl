@@ -9,7 +9,7 @@ end
 end
 
 @Bokeh.model mutable struct Cds <: Bokeh.iModel
-    data::Bokeh.Model.DataSource
+    data::Bokeh.Model.DataDict
 end
 
 function _compare(x::T, y::T) where {T <: Union{String, Symbol, Number}}

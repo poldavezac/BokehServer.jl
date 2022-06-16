@@ -1,9 +1,9 @@
 """
-    update!(γ::DataSource, 𝑑s::Vararg{Dict{String, Vector}}; dotrigger::Bool = true)
+    update!(γ::DataDictContainer, 𝑑s::Vararg{Dict{String, Vector}}; dotrigger::Bool = true)
 
 Adds or replaces columns.
 """
-function update!(γ::DataSource, 𝑑s::Vararg{DataDictArg}; dotrigger::Bool = true)
+function update!(γ::DataDictContainer, 𝑑s::Vararg{DataDictArg}; dotrigger::Bool = true)
     @_𝑑𝑠_merge_args j
     filter!(𝑑) do (k, v)
         !compare(v, get(γ, k, nothing))
@@ -17,5 +17,5 @@ function update!(γ::DataSource, 𝑑s::Vararg{DataDictArg}; dotrigger::Bool = t
     return γ
 end
 
-Base.merge!(γ::DataSource, 𝑑s::Vararg{DataDictArg}; dotrigger::Bool = true) = update!(γ, 𝑑s...; dotrigger)
+Base.merge!(γ::DataDictContainer, 𝑑s::Vararg{DataDictArg}; dotrigger::Bool = true) = update!(γ, 𝑑s...; dotrigger)
 export update!

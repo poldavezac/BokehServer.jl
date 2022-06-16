@@ -61,7 +61,7 @@ function getvalue(dic::Theme, cls::Type, attr::Symbol) :: Union{Function, Nothin
     attrtheme = get(dic.items, attr, nothing)
     isnothing(attrtheme) && return nothing
 
-    while cls ∉ (iHasProps, iDataSource, Any)
+    while cls ∉ (iHasProps, Any)
         key = nameof(cls)
         if key ∈ keys(attrtheme)
             return attrtheme[key]

@@ -8,7 +8,7 @@ end
 
 @testset "children" begin
     x = X(; source = Dict("a" => [Y(; a = 1), Y(; a = 2)]))
-    @test x.source isa Bokeh.Model.DataSource
+    @test x.source isa Bokeh.Model.DataDictContainer
     y = [i.a for i ∈ Bokeh.Model.allbokehchildren(x)]
     @test y == [1, 2]
 end
@@ -26,14 +26,16 @@ end
 end
 
 @testset "push!" begin
-    x = X(; source = Dict("a" => [1, 2]))
-    Bokeh.Events.eventlist!() do
-        push!(x.source, Dict("a" => [3, 4, 5], "b" => ["1", "2", "3", "4", "5"]))
-        evt = Bokeh.Events.task_eventlist().events[1]
-        @test evt isa Bokeh.Events.ColumnsStreamedEvent
-        @test Set(keys(x.source)) == Set(["a", "b"]) 
-        @test x.source["a"] == [1, 2, 3, 4, 5]
-        @test x.source["b"] == ["1", "2", "3", "4", "5"]
+    for arr ∈ ([1, 2], [1., 2.])
+        x = X(; source = Dict("a" => arr))
+        Bokeh.Events.eventlist!() do
+            push!(x.source, Dict("a" => [3, 4, 5], "b" => ["1", "2", "3", "4", "5"]))
+            evt = Bokeh.Events.task_eventlist().events[1]
+            @test evt isa Bokeh.Events.ColumnsStreamedEvent
+            @test Set(keys(x.source)) == Set(["a", "b"]) 
+            @test x.source["a"] == eltype(arr)[1, 2, 3, 4, 5]
+            @test x.source["b"] == ["1", "2", "3", "4", "5"]
+        end
     end
 end
 
