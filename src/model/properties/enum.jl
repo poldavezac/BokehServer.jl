@@ -1,19 +1,31 @@
 struct EnumType{T} <: iProperty
+    value :: Symbol
 end
 
-bokehfieldtype(::Type{<:EnumType}) = Symbol
+longform(𝑇::Type{<:EnumType}, ν::String)     = longform(𝑇, Symbol(ν))
+longform(𝑇::Type{<:EnumType}, ν::Char)       = longform(𝑇, Symbol("$v"))
+longform(::Type{<:EnumType}, ν::Symbol)      = ν
+Base.values(::Type{<:EnumType{𝑇}}) where {𝑇} = 𝑇
+Base.show(io::IO, ν::EnumType) = print(io, "𝑒", ν.value)
 
-longform(𝑇::Type{<:EnumType}, ν::String)         = longform(𝑇, Symbol(ν))
-longform(::Type{<:EnumType}, ν::Symbol)         = ν
-Base.values(::Type{<:EnumType{𝑇}}) where {𝑇}    = 𝑇
 Base.in(ν::Symbol, 𝑇::Type{<:EnumType})         = longform(𝑇, ν) ∈ values(𝑇)
 Base.in(ν::AbstractString, 𝑇::Type{<:EnumType}) = Symbol(ν) ∈ 𝑇
 
-@inline bokehread(::Type{<:EnumType}, ::iHasProps, ::Symbol, ν::Symbol) = ν
+Base.:(==)(x::EnumType, y::Symbol) = x.value ≡ y
 
-function bokehwrite(𝑇::Type{<:EnumType}, ν::Union{AbstractString, Symbol})
+function bokehwrite(𝑇::Type{<:EnumType}, ν::Union{AbstractString, Symbol, Char})
     val = longform(𝑇, ν)
-    return val ∈ 𝑇 ? val : Unknown()
+    return val ∈ 𝑇 ? 𝑇(val) : Unknown()
+end
+
+function Base.convert(𝑇::Type{<:EnumType}, ν::Union{AbstractString, Symbol, Char})
+    val = bokehwrite(𝑇, ν)
+    (val isa Unknown) && throw(KeyError("$𝑇 can't convert $ν"))
+    return val
+end
+
+macro enum_str(x)
+    EnumType{tuple(Symbol.(strip.(split(x, ',')))...)}
 end
 
 const DashPattern = EnumType{(:solid, :dashed, :dotted, :dotdash, :dashdot)}
@@ -67,3 +79,5 @@ function longform(::Type{HatchPatternType}, ν::Symbol)
         ν
     )
 end
+
+export @enum_str

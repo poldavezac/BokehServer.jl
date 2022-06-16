@@ -6,9 +6,13 @@ struct DataSource <: iContainer{DataDict}
     values :: DataDict
 end
 
+Base.show(io::IO, ::Type{DataDict}) = print(io, "Bokeh.Model.DataDict")
+
 Base.setindex!(γ::DataSource, 𝑘, 𝑣) = (merge!(γ, 𝑘 => 𝑣); 𝑣)
 Base.size(γ::DataSource) = isempty(γ.values) ? (0, 0) : (length(first(values(γ.values))), length(γ.values))
 Base.size(γ::DataSource, i :: Int) = isempty(γ.values) ? 0 : i ≡ 1 ? length(first(values(γ.values))) : length(γ.values)
+
+bokehread(𝑇::Type{DataDict}, µ::iHasProps, α::Symbol, ν::DataDict) = DataSource(WeakRef(µ), α, ν)
 
 macro _𝑑𝑠_trigger(T, args...)
     esc(quote
@@ -72,9 +76,10 @@ for (𝑇1, 𝑇2) ∈ (Union{DateTime, Date, TimePeriod} => Float64, Union{Int6
 end
 @inline datatypearray(y::AbstractVector{<:Union{T, AbstractArray{<:T}}}) where {T <: Union{iHasProps, AbstractTypes.ElTypeDataDict...}} = y
 
-bokehwrite(::Type{DataSource}, x::DataDict) = copy(x)
+bokehfieldtype(::Type{DataDict}) = DataDict
+bokehwrite(::Type{DataDict}, x::DataDict) = copy(x)
 function bokehwrite(
-        ::Type{DataSource},
+        ::Type{DataDict},
         x::Union{
             AbstractDict{<:AbstractString, <:AbstractVector},
             AbstractVector{<:Pair{<:AbstractString, <:AbstractVector}},

@@ -1,132 +1,3 @@
-"""
-    macro model(args::Vararg{Union{Expr, String, Symbol}})
-
-Allows creating Bokeh-aware model:
-
-* the model can be transfered to the javascript client
-* changes to the fields will trigger events which one can subscribe to
- 
-** Note ** Dicts and Vectors are wrapped in a `Container` class
-which allows triggering an event when using `push!` methods and
-others of the same type.
-
-** Note ** The same behaviour as when using `Base.@kwdef` is provided. It's good
-practice to always provide default values.
-
-** Note ** Wrapping a type in `Internal` will remove the field 
-from the Bokeh behavior: the client remains unaware of it and
-changes trigger no event.
-
-## Examples
-
-```julia
-@Bokeh.model mutable struct X <: Bokeh.iModel
-    field1::Int     = 0
-    field2::Float64 = 0.0
-end
-@assert propertynames(X) ≡ (:field1, :field2)
-@assert propertynames(X; private = true) ≡ (:field1, :field2, :id, :callbacks)
-@assert X().field1 ≡ 0
-@assert X().field2 ≡ 0.0
-
-"Z is a structure where fields `nojs1` and `nojs2` are *not* passed to bokehjs"
-@Bokeh.model mutable struct Z <: Bokeh.iModel
-    nojs1 ::Internal{Any} = []
-    nojs2 ::Internal{Any} = Set([])
-    field1::Int           = 0
-    field2::Float64       = 0.0
-end
-@assert Z().nojs1 isa Vector{Any}
-@assert Z().nojs2 isa Set{Any}
-"""
-:(@model)
-
-"Stores every class created by the @model macro"
-const MODEL_TYPES = Set{DataType}()
-
-function _👻elseif(func::Function, itr, elsecode = :(@assert false "unknown condition"))
-    last = expr = Expr(:if)
-    for args ∈ itr
-        val = func(args)
-        isnothing(val) && continue
-
-        push!(last.args, val.args..., Expr(:elseif))
-        last = last.args[end]
-    end
-    last.head = :block
-    push!(last.args, elsecode)
-    expr
-end
-
-function _👻fields(mod, code)
-    # filter expressions :(x::X) and :(x::X = y)
-    isfield(x) = if !(x isa Expr)
-        false
-    elseif x.head ≡ :(::)
-        true
-    else
-        (x.args[1] isa Expr) && (x.args[1].head ≡ :(::))
-    end
-
-    # create a named tuple containing all relevant info
-    # for both means of defining a struture field
-    [
-        begin
-            (name, type) = (line.head ≡ :(::) ? line : line.args[1]).args
-            realtype     = mod.eval(type)
-            if realtype <: Union{AbstractDict, AbstractArray, AbstractSet}
-                realtype = Container{realtype}
-            end
-            (;
-                index, name,
-                type     = realtype,
-                default  = _👻defaultvalue(realtype, line),
-                js       = !(realtype <: Internal),
-                alias    = realtype <: Alias,
-                readonly = realtype <: Union{
-                    ReadOnly, Internal{<:ReadOnly}, iSpec{<:ReadOnly}, Container{<:ReadOnly}
-                },
-                child    = realtype <: Union{iModel, Nullable{<:iModel}},
-                children = if realtype <: Container
-                    els = eltype(realtype)
-                    # Pair comes out for Dict, for example
-                    any(i <: iModel for i ∈ (els <: Pair ? els.parameters : (els,)))
-                else
-                    false
-                end
-            )
-        end
-        for (index, line) ∈ enumerate(code.args[end].args)
-        if isfield(line)
-    ]
-end
-
-_👻filter(fields, attr = :alias)  = (i for i ∈ fields if !getfield(i, attr))
-
-function _👻aliases(f, fields)
-    return (f.name, (i.name for i ∈ fields if i.alias && f.name ≡ i.type.parameters[1])...)
-end
-
-function _👻elseif_alias(𝐹::Function, fields::Vector{<:NamedTuple}, elsecode)
-    return _👻elseif(fields, elsecode) do cur
-        if cur.alias
-            nothing
-        else
-            code  = 𝐹(cur)
-            if isnothing(code)
-                nothing
-            else
-                names = _👻aliases(cur, fields)
-                cond  = length(names) > 2 ? :(α ∈ $names) :
-                    length(names) ≡ 1 ? :(α ≡ $(Meta.quot(names[1]))) :
-                    :(α ≡ $(Meta.quot(names[1])) || α ≡ $(Meta.quot(names[2])))
-                Expr(:if, cond, code)
-            end
-        end
-    end
-end
-        
-
 function _👻structure(
         cls     :: Symbol,
         parents :: Union{Symbol, Expr},
@@ -156,9 +27,14 @@ function _👻structure(
             val
         else
             quote
-                let x = $(@__MODULE__).bokehwrite($(field.type), $val)
-                    (x isa $Unknown) && throw(ErrorException("Could not convert `$ν` to $(field.type)"))
-                    x
+                let x = $val
+                    y = $(@__MODULE__).bokehwrite($(field.type), x)
+                    (y isa $Unknown) && throw(ErrorException(string(
+                        "Could not convert `", x, "` to ",
+                        $cls, ".", $("$(field.name)"),
+                        "::", $(bokehfieldtype(field.type))
+                    )))
+                    y
                 end
             end
         end

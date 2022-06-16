@@ -1,5 +1,5 @@
 X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
-    source :: Bokeh.Model.DataSource = zero
+    source :: Bokeh.Model.DataDict = zero
 end
 
 Y = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
@@ -8,6 +8,7 @@ end
 
 @testset "children" begin
     x = X(; source = Dict("a" => [Y(; a = 1), Y(; a = 2)]))
+    @test x.source isa Bokeh.Model.DataSource
     y = [i.a for i ∈ Bokeh.Model.allbokehchildren(x)]
     @test y == [1, 2]
 end

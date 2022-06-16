@@ -1,40 +1,68 @@
+const CONTAINERS = Union{AbstractArray, AbstractDict, AbstractSet}
+
 abstract type iContainer{T} <: iProperty end
+
 struct Container{T} <: iContainer{T}
     parent::WeakRef
     attr  ::Symbol
     values::T
 end
 
-const CONTAINERS = Union{AbstractArray, AbstractDict, AbstractSet}
-bokehread(𝑇::Type{<:iContainer{T}}, µ::iHasProps, α::Symbol, ν::T) where {T} = 𝑇(WeakRef(µ), α, ν)
+bokehread(𝑇::Type{<:CONTAINERS}, µ::iHasProps, α::Symbol, ν::CONTAINERS) = Container{𝑇}(WeakRef(µ), α, ν)
 bokehrawtype(ν::iContainer) = ν.values
-bokehfieldtype(::Type{<:iContainer{T}}) where {T} = T
 
-for cls ∈ (AbstractDict, AbstractArray, AbstractSet)
-    @eval bokehwrite(::Type{<:iContainer{<:$cls}}, ν::$cls) = ν
+bokehfieldtype(𝑇::Type{<:CONTAINERS}) = 𝑇.name.wrapper{(T isa Type ? bokehfieldtype(T) : T for T ∈ 𝑇.parameters)...}
+
+function bokehwrite(𝑇::Type{<:AbstractDict{𝐾, 𝑉}}, ν::AbstractDict) where {𝐾, 𝑉}
+    params = 𝑇.parameters
+    outp   = bokehfieldtype(𝑇)()
+    for (i,j) ∈ ν
+        iv = bokehwrite(𝐾, i)
+        (iv isa Unknown) && return Unknown()
+
+        jv = bokehwrite(𝑉, j)
+        (jv isa Unknown) && return Unknown()
+
+        push!(outp, iv => jv)
+    end
+    return outp
 end
 
-for (𝐹, 𝑇) ∈ (
-        :push!      => Container,
-        :pop!       => Container,
-        :setindex!  => Container,
-        :empty!     => Container,
-        :append!    => iContainer{<:AbstractArray},
-        :deleteat!  => iContainer{<:AbstractArray},
-        :popat!     => iContainer{<:AbstractArray},
-        :popfirst!  => iContainer{<:AbstractArray},
-        :insert!    => iContainer{<:AbstractArray},
-        :delete!    => iContainer{<:Union{AbstractDict, AbstractSet}},
-        :merge!     => iContainer{<:AbstractDict},
+for cls ∈ (AbstractSet, AbstractVector)
+    @eval function bokehwrite(𝑇::Type{<:$cls{𝐼}}, ν::$cls) where {𝐼}
+        outp = bokehfieldtype(𝑇)()
+        for i ∈ ν
+            iv = bokehwrite(𝐼, i)
+            (iv isa Unknown) && return Unknown()
+            push!(outp, iv)
+        end
+        return outp
+    end
+end
+
+bokehwrite(𝑇::Type{<:Pair}, ν::Pair) = bokehwrite(𝑇.parameters[1], first(ν)) => bokehwrite(𝑇.parameters[2], last(ν))
+
+for (𝐹, (𝑇, code)) ∈ (
+        :push!      => Container => :((bokehwrite(eltype(T), i) for i ∈ x)),
+        :setindex!  => Container{<:AbstractDict}   => :((bokehwrite(eltype(T).parameters[2], x[1]), x[2])),
+        :setindex!  => Container{<:AbstractArray}  => :((bokehwrite(eltype(T), x[1]), x[2:end]...)),
+        :pop!       => Container => :x,
+        :empty!     => Container => :x,
+        :append!    => iContainer{<:AbstractArray} => :((bokehwrite(T, i) for i ∈ x)),
+        :deleteat!  => iContainer{<:AbstractArray} => :x,
+        :popat!     => iContainer{<:AbstractArray} => :x,
+        :popfirst!  => iContainer{<:AbstractArray} => :x,
+        :insert!    => iContainer{<:AbstractArray} => :((bokehwrite(eltype(T), i) for i ∈ x)),
+        :delete!    => iContainer{<:Union{AbstractDict, AbstractSet}}  => :x,
+        :merge!     => iContainer{<:AbstractDict} => :((bokehwrite(T, i) for i ∈ x)),
 )
-    @eval function Base.$𝐹(γ::T, x...; dotrigger::Bool = true, y...) where {T <: $𝑇}
+    @eval function Base.$𝐹(γ::T, x...; dotrigger::Bool = true) where {T <: $𝑇}
         parent = γ.parent.value
         if isnothing(parent) || getfield(parent, γ.attr) ≢ γ.values
-            $𝐹(γ.values, x...; y...)
+            $𝐹(γ.values, $code...)
         else
-            old = copy(γ.values)
-            out = $𝐹(γ.values, x...; y...)
-            dotrigger && Bokeh.Events.trigger(Bokeh.Events.ModelChangedEvent(parent, γ.attr, old, out))
+            out = $𝐹(copy(γ.values), $code...)
+            setproperty!(parent, γ.attr, out; dotrigger)
             out ≡ γ.values ? γ : out
         end
     end
@@ -59,5 +87,3 @@ end
 
 Base.in(ν, γ::iContainer) = in(ν, γ.values)
 Base.eltype(::Type{<:iContainer{T}}) where {T}  = eltype(T)
-
-const FactorSeq = Container{Union{Vector{String}, Vector{Tuple{String, String}}, Vector{Tuple{String, String, String}}}}

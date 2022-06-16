@@ -25,6 +25,7 @@ function acceptfile(path::String)
     return !all(isnothing(match(i, name)) for i ∈ FILES)
 end
 
+accepttestset(name::Expr) = isempty(TESTS)
 function accepttestset(name::String)
     isempty(TESTS) && return true
     return !all(isnothing(match(i, name)) for i ∈ TESTS)
@@ -42,7 +43,9 @@ function hasacceptedchild(expr::Expr)
             cur.args[1] ≡ Symbol("@testset")
         )
             accepttestset(cur.args[3]) && return true
-            append!(todos, filter(((x)->x isa Expr), cur.args[4].args))
+            if length(cur.args) > 3
+                append!(todos, filter(((x)->x isa Expr), cur.args[4].args))
+            end
         elseif cur isa Expr
             append!(todos, filter(((x)->x isa Expr), cur.args))
         end

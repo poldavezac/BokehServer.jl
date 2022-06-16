@@ -54,10 +54,10 @@
     end))
     dflt(x)  = (; default = x, js = true, alias = false, readonly = false, child = false, children = true)
     truth = [
-        (; index = 2, name = :b, type = Bokeh.Model.Container{Vector{Dummy}}, dflt("Some(:((Vector{Dummy})()))")...),
-        (; index = 4, name = :c, type = Bokeh.Model.Container{Dict{Int32, Dummy}}, dflt(nothing)...),
-        (; index = 6, name = :d, type = Bokeh.Model.Container{Dict{Dummy, Int32}}, dflt(Some(:(Dict(Dummy()=>1))))...),
-        (; index = 8, name = :e, type = Bokeh.Model.Container{Set{Dummy}}, dflt("Some(:((Set{Dummy})()))")...)
+        (; index = 2, name = :b, type = Vector{Dummy}, dflt("Some(:((Vector{Dummy})()))")...),
+        (; index = 4, name = :c, type = Dict{Int32, Dummy}, dflt(nothing)...),
+        (; index = 6, name = :d, type = Dict{Dummy, Int32}, dflt(Some(:(Dict(Dummy()=>1))))...),
+        (; index = 8, name = :e, type = Set{Dummy}, dflt("Some(:((Set{Dummy})()))")...)
     ]
     @testset for (i, j) ∈ zip(out, truth)
         for x ∈ propertynames(i)
@@ -113,6 +113,35 @@ end
     @test fieldtype(Z, :a) ≡ Int32
 end
 
+@testset "bokeh children" begin
+    # `evals` are needed to make sure X1 exists for Y1's declaration
+    X1 = @eval @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+        a::Int64 = 1
+    end
+
+    # `evals` are needed to make sure X1 exists for Y1's declaration
+    Y1 = eval(:(@Bokeh.model mutable struct gensym() <: Bokeh.iModel
+        a::Vector{$X1}      = [$X1(; a = 1), $X1(; a = 2)]
+        b::Dict{Int64, $X1} = Dict(1 => $X1(; a = 3), 2 => $X1(; a = 4))
+        c::Dict{$X1, Int64} = Dict($X1(; a = 5) => 1, $X1(; a = 6) => 2)
+        d::Set{$X1}         = Set([$X1(; a = 7), $X1(; a = 8)])
+        e::$X1              = $X1(; a = 9)
+    end))
+
+    @test propertynames(Y1()) == (:a, :b, :c, :d, :e)
+    @test Bokeh.Model.bokehproperties(Y1) == propertynames(Y1())
+    @test Bokeh.Model.bokehproperties(Y1; select = :child) == (:e,)
+    @test Bokeh.Model.bokehproperties(Y1; select = :children) == (:a, :b, :c, :d)
+
+    y1  = Y1()
+    all = Bokeh.allmodels(y1)
+    @test Bokeh.bokehid(y1) ∈ keys(all)
+    @test Bokeh.bokehid(y1.e) ∈ keys(all)
+    @testset for i ∈ (y1.a, values(y1.b), keys(y1.c), y1.d), j ∈ i
+        @test Bokeh.bokehid(j) ∈ keys(all)
+    end
+end
+
 @testset "bokeh dataspec/container" begin
     X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
         a::Bokeh.Model.Spec{Int32}  = Int32(1)
@@ -147,28 +176,38 @@ end
     @test x.a == ((; value = 10), -1.0)
 end
 
+𝐸T = Bokeh.Model.EnumType{(:a, :b, :c)}
+
 @testset "bokeh either attribute" begin
+    @test collect(Type, Bokeh.Model._UnionIterator(Union{Symbol, String})) == [Symbol, String]
+    @test collect(Type, Bokeh.Model._UnionIterator(Union{Symbol, String, Float32})) == [Float32, Symbol, String]
+
     X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
-        a::Bokeh.Model.Either{Tuple{Bokeh.Model.EnumType{(:a, :b, :c)}, Float64}}  = "a"
+        a::Bokeh.Model.Union{𝐸T, Float64} = "a"
     end
-    @test fieldtype(X, :a) ≡ Tuple{Union{Symbol, Float64}, UInt8}
-    @test X().a ≡ :a
+    @test fieldtype(X, :a) ≡ Union{𝐸T, Float64}
+    @test X().a == :a
     x = X(; a = 4)
     @test x.a ≡ 4.0
     @nullevents x.a = :c
-    @test x.a ≡ :c
+    @test x.a == :c
+    @test_throws ErrorException X(; a = :mmm)
 end
 
 @testset "bokeh namedstruct attribute" begin
     X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
-        a::@NamedTuple{x :: Bokeh.Model.EnumType{(:a, :b, :c)}, y:: Float64}  = (; x = :a, y = 1.0)
+        a::@NamedTuple{x :: 𝐸T, y:: Float64}  = (; x = :a, y = 1.0)
     end
-    @test fieldtype(X, :a) ≡ @NamedTuple{x::Symbol, y::Float64}
-    @test X().a ≡ (; x = :a, y = 1.0)
+    @test fieldtype(X, :a) ≡ @NamedTuple{x::𝐸T, y::Float64}
+    @test X().a.x == :a
+    @test X().a.y == 1.0
     x = X(; a = (; x  = :b, y = 4.0))
-    @test x.a ≡ (; x  = :b, y = 4.0)
+    @test x.a.x == :b
+    @test x.a.y == 4.0
     @nullevents x.a = (; y= 10., x = :c)
-    @test x.a ≡ (; x = :c, y = 10.)
+    @test x.a.x == :c
+    @test x.a.y == 10.0
+    @test_throws ErrorException X(; a = (; x = :mmm, y = 10.))
 end
 
 @testset "bokeh color" begin
@@ -199,31 +238,47 @@ end
     @test X(;a = "fff").a == (; field = "fff")
 end
 
-@testset "bokeh children" begin
-    # `evals` are needed to make sure X1 exists for Y1's declaration
-    X1 = @eval @Bokeh.model mutable struct gensym() <: Bokeh.iModel
-        a::Int64 = 1
+@testset "bokeh complex field" begin
+    X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+        rows::Union{
+            Bokeh.enum"max,fit,auto,min",
+            Int64,
+            Dict{
+                Union{Int64, String},
+                Union{
+                    Bokeh.Model.enum"max,fit,auto,min",
+                    Int64,
+                    @NamedTuple{
+                        policy::Bokeh.Model.enum"auto,min",
+                        align::Bokeh.Model.enum"start,end,auto,center"
+                    },
+                    @NamedTuple{
+                        policy::Bokeh.Model.enum"fixed",
+                        height::Int64,
+                        align::Bokeh.Model.enum"start,end,auto,center"
+                    },
+                    @NamedTuple{
+                        policy::Bokeh.Model.enum"max,fit",
+                        flex::Float64,
+                        align::Bokeh.Model.enum"start,end,auto,center"
+                    }
+                }
+            }
+        }
     end
+    @test X(; rows = :auto).rows == :auto
+    @test X(; rows = 10).rows ≡ 10
 
-    # `evals` are needed to make sure X1 exists for Y1's declaration
-    Y1 = eval(:(@Bokeh.model mutable struct gensym() <: Bokeh.iModel
-        a::Vector{$X1}      = [$X1(; a = 1), $X1(; a = 2)]
-        b::Dict{Int64, $X1} = Dict(1 => $X1(; a = 3), 2 => $X1(; a = 4))
-        c::Dict{$X1, Int64} = Dict($X1(; a = 5) => 1, $X1(; a = 6) => 2)
-        d::Set{$X1}         = Set([$X1(; a = 7), $X1(; a = 8)])
-        e::$X1              = $X1(; a = 9)
-    end))
+    x = X(; rows = Dict(1=>10))
+    @test x.rows isa Bokeh.Model.Container{<:Dict}
+    @test x.rows[1] ≡ 10
 
-    @test propertynames(Y1()) == (:a, :b, :c, :d, :e)
-    @test Bokeh.Model.bokehproperties(Y1) == propertynames(Y1())
-    @test Bokeh.Model.bokehproperties(Y1; select = :child) == (:e,)
-    @test Bokeh.Model.bokehproperties(Y1; select = :children) == (:a, :b, :c, :d)
+    @nullevents x.rows[1] = :max
+    @test x.rows[1] == :max
 
-    y1  = Y1()
-    all = Bokeh.allmodels(y1)
-    @test Bokeh.bokehid(y1) ∈ keys(all)
-    @test Bokeh.bokehid(y1.e) ∈ keys(all)
-    @testset for i ∈ (y1.a, values(y1.b), keys(y1.c), y1.d), j ∈ i
-        @test Bokeh.bokehid(j) ∈ keys(all)
-    end
+    @nullevents x.rows[1] = (; policy= :auto, align = :start)
+    @test x.rows[1].policy == :auto
+    @test x.rows[1].align == :start
+
+    @test_throws ErrorException X(; a = (; policy = :mmm,  align = :start))
 end

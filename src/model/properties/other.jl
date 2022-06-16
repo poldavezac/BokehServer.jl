@@ -12,6 +12,9 @@ end
 """
 struct Alias{T} <: iProperty end
 
+@inline bokehwrite(T::Type{<:AbstractString}, ν::AbstractString) = ν
+@inline bokehfieldtype(T::Type{<:AbstractString}) = T
+
 struct Internal{T} <: iProperty end
 @inline bokehfieldtype(𝑇::Type{<:Internal}) = bokehfieldtype(𝑇.parameters[1])
 

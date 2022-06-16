@@ -22,5 +22,3 @@ function bokehwrite(::Type{Image}, ν::AbstractString)
     isnothing(match(IMAGE_PATTERN, ν)) && return Unknown()
     return ν
 end
-
-@inline bokehread(::Type{Image}, ::iHasProps, ::Symbol, ν::String) = ν

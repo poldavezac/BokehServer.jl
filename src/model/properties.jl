@@ -1,14 +1,13 @@
-@inline bokehfieldtype(@nospecialize(T::Type)) = T
-@inline bokehrawtype(@nospecialize(ν))         = ν
+@inline bokehfieldtype(T::Type)        = T
+@inline bokehrawtype(@nospecialize(ν)) = ν
 
 function bokehwrite end
 function bokehread end
 
 struct Unknown end
 
-bokehwrite(::Type{T}, ν::T) where {T} = ν
-bokehwrite(::Type, ::Any) = Unknown()
-bokehread(::Type{T}, @nospecialize(::iHasProps), @nospecialize(::Symbol), ν::T) where {T} = ν
+bokehwrite(𝑇::Type, ν) = ν isa 𝑇 ? ν : Unknown()
+bokehread(::Type, @nospecialize(::iHasProps), @nospecialize(::Symbol), ν) = ν
 
 include("properties/other.jl")
 include("properties/numeric.jl")
