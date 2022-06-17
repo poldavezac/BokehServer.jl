@@ -41,7 +41,7 @@ macro _𝑑𝑠_merge_args(code)
 
         𝑑 = DataDict(
             i => let arr = get(γ.values, i, nothing)
-                isnothing(arr) ? datatypearray(j) : datatypearray(eltype(arr), j)
+                isnothing(arr) ? datadictarray(j) : datadictarray(eltype(arr), j)
             end
             for (i,j) ∈ 𝑑
         )
@@ -56,25 +56,30 @@ function _𝑑𝑠_check(data::DataDict, others::Vararg{<:AbstractVector})
     end
 end
 
-for (T, code) ∈ (
-        TimePeriod => :𝑑,
-        DateTime   => :(Second(Dates.datetime2unix(𝑑))),
-        Date       => :(Day(Dates.date2epochdays(𝑑))),
-)
-    @eval @inline datatypeconvert(::Type{Float64}, 𝑑::$T) = datatypeconvert(𝑑)
-end
-@inline datatypeconvert(::Type{T}, y::Union{T, AbstractArray{T}}) where {T} = y
-@inline datatypeconvert(::Type{T}, y::Number) where {T} = convert(T, y)
-@inline datatypeconvert(::Type{T}, y::AbstractArray) where {T} = datatypeconvert.(T, y)
+"""
+    datadictelement(::Type{T}, 𝑑) where {T}
+    datadictelement(::Type{T}, 𝑑::AbstractArray) where {T}
 
-@inline datatypearray(::Type{T}, y::AbstractVector) where {T} = datatypeconvert.(T, y)
-@inline datatypearray(::Type{T}, y::AbstractVector{<:AbstractArray}) where {T} = [datatypeconvert.(T, i) for i ∈ y]
-@inline datatypearray(::Type{T}, y::Union{AbstractVector{T}, AbstractVector{<:AbstractArray{T}}}) where {T} = y
+Convert a `DataDict` array *element* to the correct type `T` or `<:AbstractArray{T}`
+"""
+@inline datadictelement(::Type{Float64}, 𝑑::Union{Date, DateTime, Period}) =  bokehwrite(Float64, 𝑑)
+@inline datadictelement(::Type{T}, y::Union{T, AbstractArray{T}}) where {T} = y
+@inline datadictelement(::Type{T}, y::Number) where {T} = convert(T, y)
+@inline datadictelement(::Type{T}, y::AbstractArray) where {T} = datadictelement.(T, y)
 
-for (𝑇1, 𝑇2) ∈ (Union{DateTime, Date, TimePeriod} => Float64, Union{Int64} => Int32)
-    @eval @inline datatypearray(y::AbstractVector{<:Union{$𝑇1, AbstractArray{<:$𝑇1}}}) = datatypearray($𝑇2, y)
+"""
+    datadictarray(::Type{T}, 𝑑) where {T}
+
+Convert a `DataDict` *array*  to the correct type `Vector{T}`
+"""
+@inline datadictarray(::Type{T}, y::AbstractVector) where {T} = datadictelement.(T, y)
+@inline datadictarray(::Type{T}, y::AbstractVector{<:AbstractArray}) where {T} = [datadictelement.(T, i) for i ∈ y]
+@inline datadictarray(::Type{T}, y::Union{AbstractVector{T}, AbstractVector{<:AbstractArray{T}}}) where {T} = y
+
+for (𝑇1, 𝑇2) ∈ (Union{DateTime, Date, Period} => Float64, Union{Int64} => Int32)
+    @eval @inline datadictarray(y::AbstractVector{<:Union{$𝑇1, AbstractArray{<:$𝑇1}}}) = datadictarray($𝑇2, y)
 end
-@inline datatypearray(y::AbstractVector{<:Union{T, AbstractArray{<:T}}}) where {T <: Union{iHasProps, AbstractTypes.ElTypeDataDict...}} = y
+@inline datadictarray(y::AbstractVector{<:Union{T, AbstractArray{<:T}}}) where {T <: Union{iHasProps, AbstractTypes.ElTypeDataDict...}} = y
 
 bokehfieldtype(::Type{DataDict}) = DataDict
 bokehwrite(::Type{DataDict}, x::DataDict) = copy(x)
@@ -86,7 +91,7 @@ function bokehwrite(
             DataDictContainer
         }
 )
-    DataDict("$i" => datatypearray(j) for (i, j) ∈ x)
+    DataDict("$i" => datadictarray(j) for (i, j) ∈ x)
 end
 
 bokehchildren(x::DataDict) = Iterators.flatten(Iterators.filter(Base.Fix2(<:, iHasProps) ∘ eltype, values(x)))

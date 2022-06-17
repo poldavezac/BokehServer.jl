@@ -43,3 +43,34 @@ macro fontstyle_str(value)
     @assert !isnothing(match(FONTSTYLE_PATTERN, value))
     return value
 end
+
+using JSON
+
+struct JSONString end
+bokehfieldtype(::JSONString) = String
+
+function bokehwrite(::Type{JSONString}, ν::AbstractString)
+    JSON.parse(ν)  # should thrown an error if not a json string
+    return ν
+end
+
+struct DashPattern end
+bokehfieldtype(::DashPattern) = Vector{Int64}
+
+const _DASH_PATTERN = r"\s+"
+
+function bokehwrite(::Type{DashPattern}, ν::AbstractString)
+    return if ν == "solid"
+        Int64[]
+    elseif ν == "dashed"
+        Int64[6]
+    elseif ν == "dotted"
+        Int64[2,4]
+    elseif ν == "dotdash"
+        Int64[2,4,6,4]
+    elseif ν == "dashdot"
+        Int64[6,4,2,4]
+    else
+        parse.(Int64, split(ν, _DASH_PATTERN))
+    end
+end

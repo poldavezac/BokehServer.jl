@@ -164,6 +164,20 @@ end
     @test isempty(x.c.values)
 end
 
+@testset "bokeh restricteddict" begin
+    X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+        b::Dict{Bokeh.Model.RestrictedKey{(:a,)}, Int}
+    end
+    @test fieldtype(X, :b) ≡ Dict{Symbol, Int}
+    @test X().b isa Bokeh.Model.Container{Dict{Bokeh.Model.RestrictedKey{(:a,)}, Int64}}
+
+    x = X()
+    @nullevents push!(x.b, :mmm => 1)
+    @test x.b[:mmm] ≡ 1
+
+    @test_throws KeyError x.b[:a] = 2
+end
+
 @testset "bokeh tuple attribute" begin
     X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
         a::Bokeh.Model.Tuple{Bokeh.Model.Spec{Int32},Float64}  = (Int32(1), 2.0)
@@ -179,8 +193,8 @@ end
 𝐸T = Bokeh.Model.EnumType{(:a, :b, :c)}
 
 @testset "bokeh either attribute" begin
-    @test collect(Type, Bokeh.Model._UnionIterator(Union{Symbol, String})) == [Symbol, String]
-    @test collect(Type, Bokeh.Model._UnionIterator(Union{Symbol, String, Float32})) == [Float32, Symbol, String]
+    @test collect(Type, Bokeh.Model.UnionIterator(Union{Symbol, String})) == [Symbol, String]
+    @test collect(Type, Bokeh.Model.UnionIterator(Union{Symbol, String, Float32})) == [Float32, Symbol, String]
 
     X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
         a::Bokeh.Model.Union{𝐸T, Float64} = "a"

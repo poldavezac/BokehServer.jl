@@ -82,7 +82,7 @@ _𝑑𝑠_err(𝑘, 𝑣) = throw(ErrorException("Unable to apply path $𝑘 => 
 
 function _𝑑𝑠_convert(𝑎::AbstractVector, key::Integer, patch)
     (1 ≤ key ≤ length(𝑎)) || _𝑑𝑠_err(key, patch)
-    value = @_𝑑𝑠_applicable datatypeconvert(eltype(𝑎), patch)
+    value = @_𝑑𝑠_applicable datadictelement(eltype(𝑎), patch)
     return compare(𝑎[key], value) ? nothing : key => value
 end
 
@@ -90,7 +90,7 @@ function _𝑑𝑠_convert(𝑎::_𝑑𝑠_2D, key::Tuple{<:Integer, <:Integer, 
     (1 ≤ key[1] ≤ length(𝑎)) || _𝑑𝑠_err(key, patch)
     itm = 𝑎[key[1]]
     (1 ≤ key[2] ≤ size(itm, 1) && 1 ≤ key[3] ≤ size(itm, 2)) || _𝑑𝑠_err(key, patch)
-    value = @_𝑑𝑠_applicable datatypeconvert(eltype(eltype(𝑎)), patch)
+    value = @_𝑑𝑠_applicable datadictelement(eltype(eltype(𝑎)), patch)
     return compare(itm[key[1], key[2]], value) ? nothing : key => value
 end
 
@@ -99,7 +99,7 @@ end
     quote
         key   = $slice
         (length(key) ≡ length(patch) && 1 ≤ minimum(key) && maximum(key) ≤ length(𝑎)) || _𝑑𝑠_err(key, patch)
-        value = @_𝑑𝑠_applicable datatypearray($(eltype(𝑎)), patch)
+        value = @_𝑑𝑠_applicable datadictarray($(eltype(𝑎)), patch)
         return compare(view(𝑎, key), value) ? nothing : key => value
     end
 end
@@ -128,7 +128,7 @@ end
         itm   = 𝑎[𝑘[1]]
         key   = (𝑘[1], $(slice(1)), $(slice(2)))
         ($(check(1)) && $(check(2))) || _𝑑𝑠_err(key, patch)
-        value = @_𝑑𝑠_applicable datatypearray(eltype(itm), patch)
+        value = @_𝑑𝑠_applicable datadictarray(eltype(itm), patch)
         return compare(view(itm, key[2], key[3]), value) ? nothing : key => value
     end
 end

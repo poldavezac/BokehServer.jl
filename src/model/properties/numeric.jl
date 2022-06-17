@@ -25,3 +25,8 @@ struct NonNegativeInt <: iProperty end
 
 @inline bokehwrite(::Type{NonNegativeInt}, ν::Number) = max(convert(Int64, ν), 0)
 @inline bokehfieldtype(::Type{NonNegativeInt}) = Int64
+
+using Dates
+bokehwrite(::Type{Float64}, ν::DateTime) = convert(Float64, Dates.datetime2epochms(ν))
+bokehwrite(::Type{Float64}, ν::Date)     = convert(Float64, Dates.datetime2epochms(DateTime(ν)))
+bokehwrite(::Type{Float64}, ν::Period)   = convert(Float64, round(ν, Dates.Milliseconds).value)

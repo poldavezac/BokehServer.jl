@@ -28,7 +28,6 @@ macro enum_str(x)
     EnumType{tuple(Symbol.(strip.(split(x, ',')))...)}
 end
 
-const DashPattern = EnumType{(:solid, :dashed, :dotted, :dotdash, :dashdot)}
 const MarkerType  = EnumType{(
     :asterisk, :circle, :circle_cross, :circle_dot, :circle_x,
     :circle_y, :cross, :dash, :diamond, :diamond_cross, :diamond_dot,

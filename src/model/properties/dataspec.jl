@@ -104,6 +104,9 @@ function bokehwrite(𝑇::Type{<:EnumSpec}, ν::Union{AbstractString, Symbol})
     return value ∈ 𝑇 ? 𝑇(; value) : 𝑇(; field = String(ν))
 end
 
+const IntSpec          = Spec{Int}
+const NumberSpec       = Spec{Float64}
+const AngleSpec        = UnitSpec{Float64, (:rad, :deg, :grad, :turn)}
 const LineCapSpec      = EnumSpec{(:butt, :round, :square)}
 const LineDashSpec     = EnumSpec{(:solid, :dashed, :dotted, :dotdash, :dashdot)}
 const LineJoinSpec     = EnumSpec{(:miter, :round, :bevel)}

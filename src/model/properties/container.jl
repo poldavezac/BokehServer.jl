@@ -2,13 +2,16 @@ const CONTAINERS = Union{AbstractArray, AbstractDict, AbstractSet}
 
 abstract type iContainer{T} <: iProperty end
 
-struct Container{T} <: iContainer{T}
+struct Container{T, K} <: iContainer{T}
     parent::WeakRef
     attr  ::Symbol
-    values::T
+    values::K
 end
 
-bokehread(𝑇::Type{<:CONTAINERS}, µ::iHasProps, α::Symbol, ν::CONTAINERS) = Container{𝑇}(WeakRef(µ), α, ν)
+function bokehread(𝑇::Type{<:CONTAINERS}, µ::iHasProps, α::Symbol, ν::CONTAINERS)
+    Container{𝑇, bokehfieldtype(𝑇)}(WeakRef(µ), α, ν)
+end
+
 bokehrawtype(ν::iContainer) = ν.values
 
 bokehfieldtype(𝑇::Type{<:CONTAINERS}) = 𝑇.name.wrapper{(T isa Type ? bokehfieldtype(T) : T for T ∈ 𝑇.parameters)...}
@@ -87,3 +90,12 @@ end
 
 Base.in(ν, γ::iContainer) = in(ν, γ.values)
 Base.eltype(::Type{<:iContainer{T}}) where {T}  = eltype(T)
+
+struct RestrictedKey{T} <: iProperty end
+
+bokehfieldtype(::Type{<:RestrictedKey}) = Symbol
+bokehwrite(𝑇::Type{<:RestrictedKey}, ν::AbstractString) = bokehwrite(𝑇, Symbol(ν))
+function bokehwrite(::Type{RestrictedKey{T}}, ν::Symbol) where {T}
+    (ν ∈ T) && throw(KeyError("Key $ν is not allowed"))
+    return ν
+end
