@@ -58,4 +58,5 @@ function bokehread(𝑇::Union, μ::iHasProps, σ::Symbol, ν)
     )
 end
 
+const Factor    = Union{String, Tuple{String, String}, Tuple{String, String, String}}
 const FactorSeq = Union{Vector{String}, Vector{Tuple{String, String}}, Vector{Tuple{String, String, String}}}

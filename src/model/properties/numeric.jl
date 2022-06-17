@@ -30,3 +30,24 @@ using Dates
 bokehwrite(::Type{Float64}, ν::DateTime) = convert(Float64, Dates.datetime2epochms(ν))
 bokehwrite(::Type{Float64}, ν::Date)     = convert(Float64, Dates.datetime2epochms(DateTime(ν)))
 bokehwrite(::Type{Float64}, ν::Period)   = convert(Float64, round(ν, Dates.Milliseconds).value)
+
+struct MinMaxBounds end
+bokehfieldtype(::Type{MinMaxBounds}) = Union{
+    Symbol,
+    Tuple{Float64, Nullable{Float64}},
+    Tuple{Nullable{Float64}, Float64}
+}
+
+bokehwrite(::Type{MinMaxBounds}, ν::Symbol) = ν ≡ :auto ? :auto : Unknown()
+function bokehwrite(::Type{MinMaxBounds}, ν::Tuple{<:Any, <:Any})
+    ν1 = ν2 = nothing
+    isnothing(ν[1]) || (ν1 = bokehwrite(Float64, ν[1]))
+    isnothing(ν[2]) || (ν2 = bokehwrite(Float64, ν[2]))
+    ((ν1 isa Unknown) || (ν2 isa Unknown)) && return Unknown()
+    isnothing(ν1) && isnothing(ν2) && return nothing
+
+    if !isnothing(ν1) && !isnothing(ν2) && (ν1 > ν2)
+        throw(ErrorException("MinMaxBounds $ν should be in ascending order"))
+    end
+    return (ν1, ν2)
+end

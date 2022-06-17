@@ -4,6 +4,7 @@ abstract type iUnitSpec{T, K} <: iSpec{T} end
 macro dataspec(code::Expr)
     cls       = code.args[2].args[1]
     isunits   = code.args[2].args[2].args[1] ≡ :iUnitSpec
+
     valuetype = only(filter(code.args[end].args) do i
         i isa Expr && i.head ≡ :(::) && i.args[1] ≡ :value
     end).args[2]
@@ -122,6 +123,19 @@ const FontStyleSpec    = EnumSpec{(:normal, :italic, :bold, Symbol("bold italic"
 const NullDistanceSpec = Nullable{DistanceSpec}
 const NullStringSpec   = Nullable{Spec{String}}
 const ColorSpec        = Spec{Color}
+
+struct PropertyUnitsSpec <: iSpec{Float64}
+    value     :: Union{Float64, Missing}
+    field     :: Union{String, Missing}
+    expr      :: Union{iModel, Missing}
+    transform :: Union{iModel, Missing}
+    units     :: Union{Symbol, Missing}
+
+    PropertyUnitsSpec(; k...) = new((
+        get(k, i, missing)
+        for i ∈ (:value, :field, :expr, :transform, :units)
+    )...)
+end
 
 function bokehwrite(::Type{ColorSpec}, ν::Union{AbstractDict{Symbol}, NamedTuple})
     (keys(ν) ⊈ fieldnames(ColorSpec)) && return Unknown()

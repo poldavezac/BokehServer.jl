@@ -74,3 +74,8 @@ function bokehwrite(::Type{DashPattern}, ν::AbstractString)
         parse.(Int64, split(ν, _DASH_PATTERN))
     end
 end
+
+using Base64
+struct Base64String end
+bokehfieldtype(::Type{Base64String}) = String
+bokehwrite(::Type{Base64String}, ν::AbstractString) = String(base64encode(ν))

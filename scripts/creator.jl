@@ -1,46 +1,8 @@
 push!(LOAD_PATH, joinpath((@__DIR__), ".."))
-using Dates
 using Bokeh
+using Bokeh.Model.Dates
 using Bokeh.Themes.JSON
-using Pkg.Artifacts
-using ZipFile
-using SHA
 using PythonCall
-
-function unzip(file,exdir = "")
-    fileFullPath = isabspath(file) ?  file : joinpath(pwd(),file)
-    basePath     = dirname(fileFullPath)
-    outPath      = isempty(exdir) ? basePath : (isabspath(exdir) ? exdir : joinpath(pwd(),exdir))
-    isdir(outPath) || mkpath(outPath)
-
-    zarchive = ZipFile.Reader(fileFullPath)
-    try
-        for f in zarchive.files
-            fullFilePath = joinpath(outPath,f.name)
-            if (endswith(f.name,"/") || endswith(f.name,"\\"))
-                mkpath(fullFilePath)
-            else
-                write(fullFilePath, read(f))
-            end
-        end
-    finally
-        close(zarchive)
-    end
-end
-
-function bokehartifact(tag::String = "2.4.3")
-    url  = "https://codeload.github.com/bokeh/bokeh/zip/refs/tags/$tag"
-    path = download(url, tempname()*".zip")
-
-    bind_artifact!(
-        joinpath((@__DIR__), "..", "Artifacts.toml"),
-        "bokeh-$tag",
-        create_artifact() do dir
-            unzip(path, dir)
-        end,
-        download_info = [(url, open(bytes2hex∘sha256, path))]
-    )
-end
 
 function models()
     mdl = collect(pyimport("bokeh.models" => "Model").model_class_reverse_map.values())
@@ -67,16 +29,22 @@ function properties(name::String)
     )
 end
 
+struct Instance{T} end
+
 macro jldefault(type, code)
     :(function jldefault(T::Type{<:$type}, cls, prop)
         dflt = prop._default
         name = pyconvert(Symbol, dflt.__class__.__name__)
-        (name ≡ :UndefinedType) && return nothing
-        (name ≡ :NoneType) && return Some(nothing)
         if name ≡ :function
             dflt = dflt()
-            mdl  = pyconvert(String, dflt.__class__.__module__)
-            @assert startswith(mdl, "bokeh.") "$dflt isa $mdl"
+            name = pyconvert(Symbol, dflt.__class__.__name__)
+        end
+
+        (name ≡ :UndefinedType) && return nothing
+        (name ≡ :NoneType) && return Some(nothing)
+
+        mdl = pyconvert(String, dflt.__class__.__module__)
+        if startswith(mdl, "bokeh.")
             return Some(Expr(:call, pyconvert(Symbol, dflt.__class__.__name__)))
         end
         $code
@@ -129,12 +97,14 @@ function jlprop(::Val{T}, cls, prop) where {T}
     return (; type, default, doc)
 end
 
-@jlprop Datetime => DateTime
+@jlprop Date      => Date
+@jlprop Datetime  => DateTime
 @jlprop TimeDelta => Period
 @jlprop Bool
 @jlprop Regex
 @jlprop Int
 @jlprop String
+@jlprop MathString => String
 @jlprop Any
 @jlprop Float    => Float64
 @jlprop AnyRef   => Any
@@ -148,11 +118,11 @@ end
     tuple((pyconvert(Symbol, i) for i ∈ prop._fields.keys())...),
     Tuple{(jlprop(cls, i).type for i ∈ prop._fields.values())...},
 }
-@jlprop Instance => if pyhasattr(prop._instance_type, "__name__")
+@jlprop Instance => Instance{if pyhasattr(prop._instance_type, "__name__")
     pyconvert(Symbol, prop._instance_type.__name__)
 else
     Symbol(split(pyconvert(String, prop._instance_type), '.')[end])
-end
+end}
 @jlprop Nullable => Bokeh.Model.Nullable{jlprop(cls, prop.type_param).type}
 @jlprop Readonly => Bokeh.Model.ReadOnly{jlprop(cls, prop.type_param).type}
 @jlprop Enum     => Bokeh.Model.EnumType{tuple(Set([pyconvert(Symbol, j) for j ∈ prop._enum._values])...)}
@@ -237,7 +207,9 @@ end
     end
 
     js = JSON.parse(pyconvert(String, pyimport("json").dumps(dflt)))
-    return Bokeh.Model.bokehread(T, __DUMMY__, :__dummy__, Bokeh.Model.bokehwrite(T, js))
+    return Bokeh.Model.bokehrawtype(
+        Bokeh.Model.bokehread(T, __DUMMY__, :__dummy__, Bokeh.Model.bokehwrite(T, js))
+    )
 end
 jldefault(::Symbol, cls, prop) = jldefault(Any, cls, prop)
 
