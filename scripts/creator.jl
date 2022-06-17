@@ -1,6 +1,7 @@
 push!(LOAD_PATH, joinpath((@__DIR__), ".."))
 using Dates
 using Bokeh
+using Bokeh.Themes.JSON
 using Pkg.Artifacts
 using ZipFile
 using SHA
@@ -114,7 +115,14 @@ function _enum(objs...)
 end
 
 function jlprop(::Val{T}, cls, prop) where {T}
-    type    = getfield(Bokeh.Model, T)
+    type    = if T ∈ names(Bokeh.Model; all = true)
+        getfield(Bokeh.Model, T)
+    elseif endswith("$T", "Spec")
+        Bokeh.Model.Spec{getfield(Bokeh.Model, Symbol("$T"[1:end-4]))}
+    else
+        throw(ErrorException("Cannot deal with python property `$T`"))
+    end
+
     doc     = pyis(prop.__doc__, @py(None)) ? nothing : pyconvert(String, prop.__doc__)
     default = jldefault(type, cls, prop)
     ismissing(default) && throw(ErrorException("unknown default $cls.$prop = $(prop._default)"))
@@ -176,6 +184,7 @@ for name ∈ names(Bokeh.Model; all = true)
 end
 
 jlprop(cls, prop) = jlprop(Val(pyconvert(Symbol, prop.__class__.__name__)), cls, prop)
+jlprop(c::Symbol, p::Symbol) = jlprop(jlmodel("$c"), getproperty(jlmodel("$c"), p).property)
 
 @jldefault Bokeh.Model.EnumType (name ≡ :str) && return Some(pyconvert(Symbol, dflt))
 @jldefault Vector{<:Union{String, Number}} return Some(pyconvert(T, dflt))
@@ -206,33 +215,42 @@ end
 @jldefault Bokeh.Model.Nullable return jldefault(T.parameters[1], cls, prop)
 @jldefault Bokeh.Model.ReadOnly return if T.parameters[1] isa Symbol
     Some(Expr(:call, T.parameters[1]))
-elseif 
+else
     jldefault(T.parameters[1], cls, prop)
+end
+
+__DUMMY__ = let cls = @Bokeh.model mutable struct gensym() <: Bokeh.Model.iModel
+        a :: Int
+    end
+    cls()
 end
 
 @jldefault Any begin
     for (i, j) ∈ (:str => String, :int => Int, :float => Float64, :bool => Bool)
         (name ≡ i) && return Some(pyconvert(j, dflt))
     end
-    (name ∈ (:list, :dict, :set, :tuple)) && isempty(dflt) && return nothing
-
+    name ≡ :timedelta && return nothing
+    name ∈ (:list, :dict, :set, :tuple) && isempty(dflt) && return nothing
     mdl = pyconvert(String, dflt.__class__.__module__)
     if startswith(mdl, "bokeh.")
         return Some(Expr(:call, pyconvert(Symbol, dflt.__class__.__name__)))
     end
+
+    js = JSON.parse(pyconvert(String, pyimport("json").dumps(dflt)))
+    return Bokeh.Model.bokehread(T, __DUMMY__, :__dummy__, Bokeh.Model.bokehwrite(T, js))
 end
 jldefault(::Symbol, cls, prop) = jldefault(Any, cls, prop)
 
-function jlmodel(name::String)
-    pyimport("bokeh.models" => "Model").model_class_reverse_map[name]
+function jlmodel(name)
+    pyimport("bokeh.models" => "Model").model_class_reverse_map["$name"]
 end
 function jlmodelnames()
     return pyimport("bokeh.models" => "Model").model_class_reverse_map.keys()
 end
 
-jlproperties(name::String) = jlproperties(jlmodel(name))
+jlproperties(name) = jlproperties(jlmodel(name))
 
-function jlproperties(cls)
+function jlproperties(cls::Py)
     attrs = Dict(
         pyconvert(Symbol, attr) => try
             jlprop(cls, getproperty(cls, pyconvert(String, attr)).property)

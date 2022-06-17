@@ -79,7 +79,8 @@ function bokehwrite(𝑇::Type{<:iUnitSpec}, ν::Union{AbstractDict{Symbol}, Nam
 
     value = get(ν, :value, missing)
     ismissing(value) || (value = bokehwrite(speceltype(𝑇), value))
-    @assert un ∈ units(𝑇)
+    ismissing(get(ν, :units, missing)) && (ν[:units] = first(units(𝑇)))
+    @assert ν[:units] ∈ units(𝑇)
     𝑇(; (i => j for (i, j) ∈ zip(keys(ν), values(ν)))..., value)
 end
 
@@ -104,7 +105,10 @@ function bokehwrite(𝑇::Type{<:EnumSpec}, ν::Union{AbstractString, Symbol})
     return value ∈ 𝑇 ? 𝑇(; value) : 𝑇(; field = String(ν))
 end
 
-const IntSpec          = Spec{Int}
+@dataspec struct FontSizeSpec <: iSpec{FontSize}
+    value::String
+end
+
 const NumberSpec       = Spec{Float64}
 const AngleSpec        = UnitSpec{Float64, (:rad, :deg, :grad, :turn)}
 const LineCapSpec      = EnumSpec{(:butt, :round, :square)}
