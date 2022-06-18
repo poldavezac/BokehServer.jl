@@ -126,7 +126,7 @@ jlproperty(c::Symbol, p::Symbol) = jlproperty(jlmodel("$c"), getproperty(jlmodel
 jlproperties(name) = jlproperties(jlmodel(name))
 
 function jlproperties(cls::Py)
-    attrs = Dict(
+    attrs = Dict{Symbol, Any}(
         pyconvert(Symbol, attr) => try
             jlproperty(cls, getproperty(cls, pyconvert(String, attr)).property)
         catch exc
@@ -139,7 +139,13 @@ function jlproperties(cls::Py)
         end
         for attr ∈ cls.properties()
     )
+    attrs[:__doc__] = let x = cls.__doc__
+        pyis(x, nothing) ? nothing : pyconvert(String, x)
+    end
+    attrs
 end
+
+jlproperties() = Dict(i => jlproperties(i) for i ∈ jlmodelnames())
 export jlproperty, jlproperties
 end
 

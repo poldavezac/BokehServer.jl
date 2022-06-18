@@ -3,7 +3,7 @@ using Bokeh
 using PythonCall
 
 jlmodel(name)  = pyimport("bokeh.models" => "Model").model_class_reverse_map["$name"]
-jlmodelnames() = pyimport("bokeh.models" => "Model").model_class_reverse_map.keys()
+jlmodelnames() = (pyconvert(String, i) for i ∈ pyimport("bokeh.models" => "Model").model_class_reverse_map.keys())
 
 function jlhierarchy(mdl::Py)
     todos = Pair{Py, Vector{Symbol}}[mdl => Symbol[pyconvert(Symbol, mdl.__name__)]]
@@ -45,14 +45,14 @@ end
 
 function jlhierarchy()
     opts = Dict{Symbol, Symbol}()
-    out = Tuple[]
+    out = Dict{String, Tuple}()
     for name ∈ jlmodelnames()
         cls = jlhierarchy(jlmodel(name))
         for i ∈ 2:length(cls)
             @assert !haskey(opts, cls[i-1]) || (opts[cls[i-1]] ≡ cls[i]) "$(cls[i-1]) => $(opts[cls[i-1]]) ≢ $(cls[i])"
             opts[cls[i-1]] = cls[i]
         end
-        push!(out, cls)
+        push!(out, name => cls)
     end
     return out
 end

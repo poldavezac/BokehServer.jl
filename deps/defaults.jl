@@ -5,7 +5,7 @@ using Bokeh.Themes.JSON
 using PythonCall
 
 jlmodel(name)  = pyimport("bokeh.models" => "Model").model_class_reverse_map["$name"]
-jlmodelnames() = pyimport("bokeh.models" => "Model").model_class_reverse_map.keys()
+jlmodelnames() = (pyconvert(String, i) for i ∈ pyimport("bokeh.models" => "Model").model_class_reverse_map.keys())
 
 macro jldefault(type, code)
     :(function jldefault(T::Type{<:$type}, cls, prop)
