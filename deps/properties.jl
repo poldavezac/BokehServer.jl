@@ -125,9 +125,12 @@ jlproperty(c::Symbol, p::Symbol) = jlproperty(jlmodel("$c"), getproperty(jlmodel
 
 jlproperties(name) = jlproperties(jlmodel(name))
 
+const _END_PATT = r"^end" => "finish"
+_fieldname(x) = Symbol(replace(pyconvert(String, x), _END_PATT))
+
 function jlproperties(cls::Py)
     attrs = Dict{Symbol, Any}(
-        pyconvert(Symbol, attr) => try
+        _fieldname(attr) => try
             jlproperty(cls, getproperty(cls, pyconvert(String, attr)).property)
         catch exc
             @error(

@@ -9,6 +9,8 @@ const ModelDict    = Dict{Int64, iHasProps}
 const _MODEL_TYPES = Dict{NTuple{N, Symbol} where {N}, DataType}()
 const _LOCK        = Threads.SpinLock()
 const _𝑏_OPTS      = Union{Dict{String}, Vector}
+const _END_PATT    = r"^end" => "finish"
+_fieldname(x::String) = Symbol(replace(x, _END_PATT))
 
 getid(𝐼::Dict{String}) :: Int64 = parse(Int64, 𝐼["id"])
 
@@ -60,7 +62,7 @@ end
 
 function setreferencefromjson!(mdl::iHasProps, 𝐼::Dict{String})
     for (key, val) ∈ 𝐼["attributes"]
-        setpropertyfromjson!(mdl, Symbol(key), val; dotrigger = false)
+        setpropertyfromjson!(mdl, _fieldname(key), val; dotrigger = false)
     end
 end
 
@@ -75,7 +77,7 @@ function apply(::Val{:TitleChanged}, 𝐷::iDocument, 𝐼 :: Dict{String})
 end
 
 function apply(::Val{:ModelChanged}, 𝐷::iDocument, 𝐼::Dict{String})
-    setpropertyfromjson!(𝐼["model"], Symbol(𝐼["attr"]), 𝐼["new"])
+    setpropertyfromjson!(𝐼["model"], _fieldname(𝐼["attr"]), 𝐼["new"])
 end
 
 function apply(::Val{:ColumnDataChanged}, 𝐷::iDocument, 𝐼::Dict{String})

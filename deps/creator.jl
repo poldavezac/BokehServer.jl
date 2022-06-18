@@ -8,9 +8,10 @@ include("properties.jl")
 include("hierarchy.jl")
 include("dependencies.jl")
 
-function jlabstracttypescode(io::IO)
+function jlabstracttypescode(io::IO, deplist::Dict{String})
     direct = Dict{String, Symbol}()
     done   = Set{Symbol}()
+    deps   = [nameof(i) for i ∈ ∪(values(deplist)...)]
     for (name, opts) ∈ jlhierarchy()
         (length(opts) > 2) && for i ∈ (length(opts)-1):-1:2
             if opts[i] ∉ done
@@ -18,7 +19,12 @@ function jlabstracttypescode(io::IO)
                 push!(done, opts[i])
             end
         end
-        direct[name] = opts[2]
+        if opts[1] ∈ deps
+            println(io, "abstract type i$(opts[1]) <: $(opts[2]) end")
+            direct[name] = Symbol("i$(opts[1])")
+        else
+            direct[name] = opts[2]
+        end
     end
     return direct
 end
@@ -33,16 +39,17 @@ function jldoccode(io::IO, doc::String, indent::Int)
     nothing
 end
 
-function jlstructcode(io::IO, name::String, parent; adddoc :: Symbol = :none)
-    klass = Symbol(occursin(".dom.", name) ? "Dom$(split(name, '.')[end])" : name)
+function jlstructcode(io::IO, name::String, parent, deps; adddoc :: Symbol = :none)
     props = jlproperties(jlmodel(name))
 
     println(io)
     (adddoc ∈ (:all, :struct)) && jldoccode(io, props[:__doc__], 0)
-    pop!(props, :__doc__)
 
+    klass = Symbol(occursin(".dom.", name) ? "Dom$(split(name, '.')[end])" : name)
     println(io, "@model mutable struct $klass <: $parent")
     for (i, j) ∈ props
+        (i ≡ :__doc__) && continue
+
         println(io)
         (adddoc ∈ (:all,)) && jldoccode(io, j.doc, 4)
         println(
@@ -58,13 +65,12 @@ function jlstructcode(io::IO, name::String, parent; adddoc :: Symbol = :none)
                         " = $(repr(something(j.default)))"
                     end
                 ),
-                "Bokeh.Models." => ""
+                "Bokeh.Models." => "i"
             )
         )
     end
         
     println(io, "end")
-    return klass
 end
 
 function jlcreatecode(io::IO; adddoc ::Symbol = :none)
@@ -73,21 +79,10 @@ function jlcreatecode(io::IO; adddoc ::Symbol = :none)
     println(io, "using ..Bokeh")
     println(io, "using ..Model")
     println(io, "using ..AbstractTypes")
-    cls      = jlabstracttypescode(io)
-
     deplist = Dict(i => jldependencies(jlmodel(i)) for i ∈ jlmodelnames())
-    done    = Set{Type}()
-    while !isempty(deplist)
-        sz = length(deplist)
-        for (name, deps) ∈ deplist
-            isempty(setdiff!(deps, done)) || continue
-            pop!(deplist, name)
-            klass = jlstructcode(io, name, pop!(cls, name); adddoc)
-            if klass ∈ names(Bokeh.Models; all = true)
-                push!(done, getfield(Bokeh.Models, klass))
-            end
-        end
-        (length(deplist) ≡ sz) && throw(ErrorException("Could not deal with $deplist"))
+    cls     = jlabstracttypescode(io, deplist)
+    for (name, deps) ∈ deplist
+        jlstructcode(io, name, cls[name], deps; adddoc)
     end
     println(io, "end")
 end

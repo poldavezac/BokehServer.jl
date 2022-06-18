@@ -20,9 +20,12 @@ end
 serialtype(η::T, ::iRules) where {T <: iHasProps} = (; type = nameof(T))
 serialtype(::Type{T}, ::iRules) where {T <: iHasProps} = (; type = nameof(T))
 
+const _END_PATT = r"^finish" => "end"
+_fieldname(x::Symbol) = Symbol(replace("$x", _END_PATT))
+
 function serialattributes(η::T, 𝑅::iRules) where {T <: iHasProps}
     return (;(
-        i => serialref(j, Model.bokehrawtype(getproperty(η, i)), 𝑅)
+        _fieldname(i) => serialref(j, Model.bokehrawtype(getproperty(η, i)), 𝑅)
         for (i, j) ∈ Model.bokehfields(T)
         if !Model.isdefaultvalue(η, i)
     )...)
@@ -51,7 +54,7 @@ end
 
 function serialref(η::Events.ModelChangedEvent, 𝑅::iRules)
     return (;
-        attr  = η.attr,
+        attr  = _fieldname(η.attr),
         hint  = nothing,
         kind  = :ModelChanged,
         model = serialref(η.model, 𝑅),
