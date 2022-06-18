@@ -68,20 +68,18 @@ __DUMMY__ = let cls = @Bokeh.model mutable struct gensym() <: Bokeh.Model.iModel
 end
 
 @jldefault Any begin
-    for (i, j) ∈ (:str => String, :int => Int, :float => Float64, :bool => Bool)
-        (name ≡ i) && return Some(pyconvert(j, dflt))
-    end
     name ≡ :timedelta && return nothing
     name ∈ (:list, :dict, :set, :tuple) && isempty(dflt) && return nothing
+    name ≡ :str && isempty(dflt) && return Some("")
     mdl = pyconvert(String, dflt.__class__.__module__)
     if startswith(mdl, "bokeh.")
         return Some(Expr(:call, pyconvert(Symbol, dflt.__class__.__name__)))
     end
 
     js = JSON.parse(pyconvert(String, pyimport("json").dumps(dflt)))
-    return Bokeh.Model.bokehrawtype(
+    return Some(Bokeh.Model.bokehrawtype(
         Bokeh.Model.bokehread(T, __DUMMY__, :__dummy__, Bokeh.Model.bokehwrite(T, js))
-    )
+    ))
 end
 jldefault(::Symbol, cls, prop) = jldefault(Any, cls, prop)
 end

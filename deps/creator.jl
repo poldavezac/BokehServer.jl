@@ -48,7 +48,16 @@ function jlstructcode(io::IO, name::String, parent; adddoc :: Symbol = :none)
         println(
             io,
             replace(
-                string("    $i :: $(j.type)", isnothing(j.default) ? "" : " = $(something(j.default))"),
+                string(
+                    "    $i :: $(j.type)",
+                    if isnothing(j.default)
+                        ""
+                    elseif something(j.default) isa Expr
+                        " = $(something(j.default))"
+                    else
+                        " = $(repr(something(j.default)))"
+                    end
+                ),
                 "Bokeh.Models." => ""
             )
         )

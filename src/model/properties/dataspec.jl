@@ -5,9 +5,17 @@ macro dataspec(code::Expr)
     cls       = code.args[2].args[1]
     isunits   = code.args[2].args[2].args[1] ≡ :iUnitSpec
 
-    valuetype = only(filter(code.args[end].args) do i
-        i isa Expr && i.head ≡ :(::) && i.args[1] ≡ :value
-    end).args[2]
+    valuetype = let opts = filter(code.args[end].args) do i
+            i isa Expr && i.head ≡ :(::) && i.args[1] ≡ :value
+        end
+        if (length(opts) > 1)
+            throw(ErrorException("Could not create dataspec"))
+        elseif length(opts) ≡ 1
+            opts[1].args[2]
+        else
+            valuetype = bokehfieldtype(__module__.eval(code.args[2].args[2].args[2]))
+        end
+    end
 
     construction = :(let out = new(
             $((
@@ -106,8 +114,8 @@ function bokehwrite(𝑇::Type{<:EnumSpec}, ν::Union{AbstractString, Symbol})
     return value ∈ 𝑇 ? 𝑇(; value) : 𝑇(; field = String(ν))
 end
 
-@dataspec struct FontSizeSpec <: iSpec{FontSize}
-    value::String
+for cls ∈ (:FontSize, :Size, :Alpha)
+    @eval @dataspec struct $(Symbol("$(cls)Spec")) <: iSpec{$cls} end
 end
 
 const NumberSpec       = Spec{Float64}
