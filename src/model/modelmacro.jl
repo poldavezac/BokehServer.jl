@@ -43,7 +43,7 @@ function _👻structure(
     quote
         mutable struct $cls <: $parents
             id        :: Int64
-            $((:($(i.name)::$(bokehfieldtype(i.type))) for i ∈ _👻filter(fields))...)
+            $((:($(i.name)::$(bokehfieldtype(i.type))) for i ∈ _👻filter(fields) if !i.alias)...)
             callbacks :: Vector{Function}
 
             function $cls(; id = $(@__MODULE__).ID(), kwa...)

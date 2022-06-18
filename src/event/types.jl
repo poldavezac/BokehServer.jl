@@ -1,9 +1,9 @@
 abstract type iEventList end
 abstract type iEvent end
-abstract type iDocumentEvent <: iEvent end
-abstract type iDocumentRootEvent <: iDocumentEvent end
-abstract type iModelEvent <: iEvent end
-abstract type iDataSourceEvent <: iModelEvent end
+abstract type iDocEvent <: iEvent end
+abstract type iDocRootEvent <: iDocEvent end
+abstract type iDocModelEvent <: iEvent end
+abstract type iDataSourceEvent <: iDocModelEvent end
 
 macro _𝑚_event(code)
     quote
@@ -15,7 +15,7 @@ macro _𝑚_event(code)
     end
 end
 
-@_𝑚_event struct ModelChangedEvent <: iModelEvent
+@_𝑚_event struct ModelChangedEvent <: iDocModelEvent
     old :: Any
     new :: Any
 end
@@ -34,21 +34,21 @@ end
 end
 
 for cls ∈ (:RootAddedEvent, :RootRemovedEvent)
-    @eval struct $cls <: iDocumentRootEvent
+    @eval struct $cls <: iDocRootEvent
         doc   :: iDocument
         root  :: iModel
         index :: Int64
     end
 end
 
-struct TitleChangedEvent <: iDocumentEvent
+struct TitleChangedEvent <: iDocEvent
     doc   :: iDocument
     title :: String
 end
 
-Base.hash(key::T) where {T<:iModelEvent}        = hash((T, bokehid(key.model), key.attr))
-Base.hash(key::T) where {T<:iDocumentRootEvent} = hash((T, bokehid(key.doc), bokehid(key.root), key.root))
-Base.hash(key::T) where {T<:iDocumentEvent}     = hash((T, bokehid(key.doc)))
+Base.hash(key::T) where {T<:iDocModelEvent} = hash((T, bokehid(key.model), key.attr))
+Base.hash(key::T) where {T<:iDocRootEvent}  = hash((T, bokehid(key.doc), bokehid(key.root), key.root))
+Base.hash(key::T) where {T<:iDocEvent}      = hash((T, bokehid(key.doc)))
 
 export ModelChangedEvent, RootAddedEvent, RootRemovedEvent, TitleChangedEvent
 export ColumnsPatchedEvent, ColumnsStreamedEvent, ColumnDataChangedEvent

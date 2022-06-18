@@ -103,7 +103,7 @@ end
     obj2 = EventsX()
     doc  = Bokeh.Document()
     push!(doc.roots, obj2)
-    calls1 = Bokeh.Events.iDocumentEvent[]
+    calls1 = Bokeh.Events.iDocEvent[]
     calls2 = Bokeh.RootAddedEvent[]
 
     Bokeh.onchange(doc) do evt

@@ -113,6 +113,9 @@ end
 }
 
 jlproperty(::Val{:NonNullable}, cls, prop) = merge(jlproperty(cls, prop.type_param), (; default = nothing))
+jlproperty(::Val{:Alias}, _, prop) = (;
+    type = Bokeh.Model.Alias{pyconvert(Symbol, prop.aliased_name)}, default = nothing, doc = nothing
+)
 
 for name ∈ names(Bokeh.Model; all = true)
     𝑃 = getfield(Bokeh.Model, name)

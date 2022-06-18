@@ -1,4 +1,4 @@
-eventcallbacks(key::iDocumentEvent) = key.doc.callbacks
+eventcallbacks(key::iDocEvent) = key.doc.callbacks
 eventcallbacks(key::iEvent)         = key.model.callbacks
 
 flushevents!()                = flushevents!(task_eventlist())

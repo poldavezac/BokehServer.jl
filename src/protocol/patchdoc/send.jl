@@ -2,8 +2,8 @@ function patchdoc(λ::AbstractVector{<:Events.iEvent}, doc::iDocument, oldids::S
     isempty(λ) && return nothing
 
     all = allmodels(doc)
-    filt(k::Events.iModelEvent)    = haskey(all, bokehid(k.model))
-    filt(k::Events.iDocumentEvent) = k.doc ≡ doc
+    filt(k::Events.iDocModelEvent)    = haskey(all, bokehid(k.model))
+    filt(k::Events.iDocEvent) = k.doc ≡ doc
 
     return (;
         events     = serialize([i for i ∈ λ if filt(i)], 𝑅),

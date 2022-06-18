@@ -8,7 +8,9 @@ jlmodelnames() = (pyconvert(String, i) for i ∈ pyimport("bokeh.models" => "Mod
 function jlhierarchy(mdl::Py)
     todos = Pair{Py, Vector{Symbol}}[mdl => Symbol[pyconvert(Symbol, mdl.__name__)]]
     if endswith(pyconvert(String, mdl.__module__), "dom")
-        last(todos[1])[1] = Symbol("Dom$(last(todos[1])[1])")
+        last(todos[1])[1] = Symbol("iDom$(last(todos[1])[1])")
+    else
+        last(todos[1])[1] = Symbol("i$(last(todos[1])[1])")
     end
     done  = Set{Tuple}()
     while !isempty(todos)
@@ -20,7 +22,7 @@ function jlhierarchy(mdl::Py)
             elseif name ≡ :Model
                 push!(done, tuple(names..., :iModel))
             else
-                push!(todos, cls => [names..., name])
+                push!(todos, cls => [names..., Symbol("i$name")])
             end
         end
     end

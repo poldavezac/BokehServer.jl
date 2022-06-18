@@ -14,7 +14,9 @@ end
 
 bokehrawtype(ν::iContainer) = ν.values
 
-bokehfieldtype(𝑇::Type{<:CONTAINERS}) = 𝑇.name.wrapper{(T isa Type ? bokehfieldtype(T) : T for T ∈ 𝑇.parameters)...}
+bokehfieldtype(𝑇::AbstractDict) = 𝑇.name.wrapper{(T isa Type ? bokehfieldtype(T) : T for T ∈ 𝑇.parameters)...}
+bokehfieldtype(𝑇::AbstractSet) = 𝑇.name.wrapper{(T isa Type ? bokehfieldtype(T) : T for T ∈ 𝑇.parameters)...}
+bokehfieldtype(𝑇::AbstractArray) = 𝑇.name.wrapper{(T isa Type ? bokehfieldtype(T) : T for T ∈ 𝑇.parameters)...}
 
 function bokehwrite(𝑇::Type{<:AbstractDict{𝐾, 𝑉}}, ν::AbstractDict) where {𝐾, 𝑉}
     params = 𝑇.parameters

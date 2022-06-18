@@ -30,7 +30,7 @@ julia > begin
         doc = Bokeh.Document
 
         onchange(doc) do evt
-            @assert evt isa Bokeh.Events.iDocumentEvent
+            @assert evt isa Bokeh.Events.iDocEvent
             println("callback 1: any doc events")
         end
 
@@ -50,10 +50,10 @@ callback 2: only RootAddedEvent
 callback 1: any doc events
 """
 function onchange(func::Function, model::iDocument)
-    wrap = _𝑒_onchange(func, model, iDocumentEvent)
+    wrap = _𝑒_onchange(func, model, iDocEvent)
     ismissing(wrap) && throw(KeyError("""
         No correct signature. It should be:
-        * function (::iDocumentEvent)
+        * function (::iDocEvent)
     """))
 end
 
@@ -67,7 +67,7 @@ Adds a callback to the model.
 julia > begin
         obj = Model()
         onchange(obj) do evt
-            @assert evt isa Bokeh.Events.iModelEvent
+            @assert evt isa Bokeh.Events.iDocModelEvent
             println("callback 1: receive events")
         end
 
@@ -106,10 +106,10 @@ function onchange(func::Function, model::iModel)
         push!(cb, wrap)
         wrap
     else
-        wrap = _𝑒_onchange(func, model, iModelEvent)
+        wrap = _𝑒_onchange(func, model, iDocModelEvent)
         ismissing(wrap) && throw(KeyError("""
             No correct signature. It should be:
-            * function (::<:iModelEvent)
+            * function (::<:iDocModelEvent)
             * function (obj::iModel, attr::Symbol, old::Any, new::Any)
         """))
         wrap

@@ -8,23 +8,19 @@ include("properties.jl")
 include("hierarchy.jl")
 include("dependencies.jl")
 
-function jlabstracttypescode(io::IO, deplist::Dict{String})
+function jlabstracttypescode(io::IO)
     direct = Dict{String, Symbol}()
     done   = Set{Symbol}()
-    deps   = [nameof(i) for i ∈ ∪(values(deplist)...)]
+    println(io, "const iTemplate = String")
     for (name, opts) ∈ jlhierarchy()
-        (length(opts) > 2) && for i ∈ (length(opts)-1):-1:2
+        @assert length(opts) > 1
+        for i ∈ (length(opts)-1):-1:1
             if opts[i] ∉ done
                 println(io, "abstract type $(opts[i]) <: $(opts[i+1]) end")
                 push!(done, opts[i])
             end
         end
-        if opts[1] ∈ deps
-            println(io, "abstract type i$(opts[1]) <: $(opts[2]) end")
-            direct[name] = Symbol("i$(opts[1])")
-        else
-            direct[name] = opts[2]
-        end
+        direct[name] = opts[1]
     end
     return direct
 end
@@ -45,7 +41,7 @@ function jlstructcode(io::IO, name::String, parent, deps; adddoc :: Symbol = :no
     println(io)
     (adddoc ∈ (:all, :struct)) && jldoccode(io, props[:__doc__], 0)
 
-    klass = Symbol(occursin(".dom.", name) ? "Dom$(split(name, '.')[end])" : name)
+    klass = Symbol(string(occursin(".dom.", name) ? "Dom" : "", split(name, '.')[end]))
     println(io, "@model mutable struct $klass <: $parent")
     for (i, j) ∈ props
         (i ≡ :__doc__) && continue
@@ -76,11 +72,12 @@ end
 function jlcreatecode(io::IO; adddoc ::Symbol = :none)
     println(io, "#- file created by @__PATH__: do not edit! -#")
     println(io, "module Models")
+    println(io, "using Dates")
     println(io, "using ..Bokeh")
     println(io, "using ..Model")
     println(io, "using ..AbstractTypes")
+    cls     = jlabstracttypescode(io)
     deplist = Dict(i => jldependencies(jlmodel(i)) for i ∈ jlmodelnames())
-    cls     = jlabstracttypescode(io, deplist)
     for (name, deps) ∈ deplist
         jlstructcode(io, name, cls[name], deps; adddoc)
     end
