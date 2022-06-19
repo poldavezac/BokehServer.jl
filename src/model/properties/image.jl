@@ -10,7 +10,7 @@ const _FORMATS = (
     r"\.svg"i                  => Symbol("svg+xml"),
 )
 
-function bokehwrite(::Type{Image}, ν::AbstractString)
+function bokehconvert(::Type{Image}, ν::AbstractString)
     if isfile(ν)
         ind = findfirst(!isnothing∘Base.Fix2(match, splitext(ν)[end])∘first, _FORMATS)
 

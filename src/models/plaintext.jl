@@ -2,17 +2,17 @@
 
 @model mutable struct PlainText <: iPlainText
 
-    syncable :: Bool = true
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
     subscribed_events :: Vector{Symbol}
 
-    text :: String
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
 
     tags :: Vector{Any}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    text :: String
 end

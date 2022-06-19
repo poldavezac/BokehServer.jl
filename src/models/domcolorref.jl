@@ -2,21 +2,21 @@
 
 @model mutable struct DOMColorRef <: iDOMColorRef
 
-    syncable :: Bool = true
+    field :: String
 
     hex :: Bool = true
 
-    field :: String
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    swatch :: Bool = true
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
     subscribed_events :: Vector{Symbol}
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    swatch :: Bool = true
+
+    syncable :: Bool = true
 
     tags :: Vector{Any}
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 end

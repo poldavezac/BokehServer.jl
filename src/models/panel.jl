@@ -2,23 +2,23 @@
 
 @model mutable struct Panel <: iPanel
 
-    syncable :: Bool = true
+    child :: iLayoutDOM
+
+    closable :: Bool = false
+
+    disabled :: Bool = false
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    disabled :: Bool = false
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
 
     tags :: Vector{Any}
 
     title :: String = ""
-
-    subscribed_events :: Vector{Symbol}
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    closable :: Bool = false
-
-    child :: iLayoutDOM
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 end

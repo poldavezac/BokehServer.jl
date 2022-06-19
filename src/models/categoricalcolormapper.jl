@@ -2,25 +2,25 @@
 
 @model mutable struct CategoricalColorMapper <: iCategoricalColorMapper
 
-    syncable :: Bool = true
-
-    start :: Int64 = 0
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    subscribed_events :: Vector{Symbol}
+    factors :: Union{Vector{String}, Vector{Tuple{String, String}}, Vector{Tuple{String, String, String}}}
 
     finish :: Bokeh.Model.Nullable{Int64} = nothing
 
-    nan_color :: Bokeh.Model.Color = "rgb(128,128,128)"
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
+    nan_color :: Bokeh.Model.Color = "rgb(128,128,128)"
+
     palette :: Vector{Bokeh.Model.Color}
 
-    factors :: Union{Vector{String}, Vector{Tuple{String, String}}, Vector{Tuple{String, String, String}}}
+    start :: Int64 = 0
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

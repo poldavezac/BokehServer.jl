@@ -2,25 +2,25 @@
 
 @model mutable struct FreehandDrawTool <: iFreehandDrawTool
 
-    syncable :: Bool = true
+    custom_icon :: Bokeh.Model.Nullable{Bokeh.Model.Image} = nothing
 
     description :: Bokeh.Model.Nullable{String} = nothing
 
-    renderers :: Vector{iGlyphRenderer}
+    empty_value :: Union{Bool, Float64, Int64, Dates.Date, Dates.DateTime, Bokeh.Model.Color, String}
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    subscribed_events :: Vector{Symbol}
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
     num_objects :: Int64 = 0
 
-    custom_icon :: Bokeh.Model.Nullable{Bokeh.Model.Image} = nothing
+    renderers :: Vector{iGlyphRenderer}
 
-    empty_value :: Union{Bool, Float64, Int64, Dates.Date, Dates.DateTime, Bokeh.Model.Color, String}
+    subscribed_events :: Vector{Symbol}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

@@ -2,31 +2,31 @@
 
 @model mutable struct Toolbar <: iToolbar
 
-    syncable :: Bool = true
+    active_drag :: Union{Nothing, Bokeh.Model.EnumType{(:auto,)}, iDrag} = Bokeh.Model.Unknown()
 
-    active_scroll :: Union{Nothing, iScroll, Bokeh.Model.EnumType{(:auto,)}} = Bokeh.Model.Unknown()
+    active_inspect :: Union{Nothing, Bokeh.Model.EnumType{(:auto,)}, iInspectTool, Vector{iInspectTool}} = Bokeh.Model.Unknown()
 
-    tools :: Vector{iTool}
+    active_multi :: Union{Nothing, Bokeh.Model.EnumType{(:auto,)}, iGestureTool} = Bokeh.Model.Unknown()
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    active_scroll :: Union{Nothing, Bokeh.Model.EnumType{(:auto,)}, iScroll} = Bokeh.Model.Unknown()
 
-    tags :: Vector{Any}
-
-    active_drag :: Union{Nothing, iDrag, Bokeh.Model.EnumType{(:auto,)}} = Bokeh.Model.Unknown()
-
-    logo :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:normal, :grey)}} = :normal
-
-    active_inspect :: Union{Nothing, iInspectTool, Bokeh.Model.EnumType{(:auto,)}, Vector{iInspectTool}} = Bokeh.Model.Unknown()
-
-    active_multi :: Union{Nothing, iGestureTool, Bokeh.Model.EnumType{(:auto,)}} = Bokeh.Model.Unknown()
-
-    subscribed_events :: Vector{Symbol}
+    active_tap :: Union{Nothing, Bokeh.Model.EnumType{(:auto,)}, iTap} = Bokeh.Model.Unknown()
 
     autohide :: Bool = false
 
-    name :: Bokeh.Model.Nullable{String} = nothing
-
     js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    active_tap :: Union{Nothing, iTap, Bokeh.Model.EnumType{(:auto,)}} = Bokeh.Model.Unknown()
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    logo :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:normal, :grey)}} = :normal
+
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    tools :: Vector{iTool}
 end

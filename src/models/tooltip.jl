@@ -2,33 +2,33 @@
 
 @model mutable struct Tooltip <: iTooltip
 
-    syncable :: Bool = true
+    attachment :: Bokeh.Model.EnumType{(:left, :right, :below, :vertical, :horizontal, :above)} = :horizontal
+
+    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
 
     group :: Bokeh.Model.Nullable{iRendererGroup} = nothing
 
     inner_only :: Bool = true
 
-    visible :: Bool = true
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
-
-    subscribed_events :: Vector{Symbol}
-
-    show_arrow :: Bool = true
+    level :: Bokeh.Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
-    y_range_name :: String = "default"
+    show_arrow :: Bool = true
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    visible :: Bool = true
 
     x_range_name :: String = "default"
 
-    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
-
-    level :: Bokeh.Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    attachment :: Bokeh.Model.EnumType{(:left, :right, :below, :vertical, :horizontal, :above)} = :horizontal
+    y_range_name :: String = "default"
 end

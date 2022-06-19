@@ -2,33 +2,33 @@
 
 @model mutable struct EqHistColorMapper <: iEqHistColorMapper
 
-    syncable :: Bool = true
-
-    low_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
+    bins :: Int64 = 65536
 
     domain :: Vector{Tuple{iGlyphRenderer, Union{String, Vector{String}}}}
 
+    high :: Bokeh.Model.Nullable{Float64} = nothing
+
+    high_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
+    low :: Bokeh.Model.Nullable{Float64} = nothing
+
+    low_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
+
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    nan_color :: Bokeh.Model.Color = "rgb(128,128,128)"
+
+    palette :: Vector{Bokeh.Model.Color}
 
     rescale_discrete_levels :: Bool = false
 
     subscribed_events :: Vector{Symbol}
 
-    nan_color :: Bokeh.Model.Color = "rgb(128,128,128)"
+    syncable :: Bool = true
 
-    high_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    bins :: Int64 = 65536
-
-    high :: Bokeh.Model.Nullable{Float64} = nothing
-
-    palette :: Vector{Bokeh.Model.Color}
-
-    low :: Bokeh.Model.Nullable{Float64} = nothing
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    tags :: Vector{Any}
 end

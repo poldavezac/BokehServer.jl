@@ -2,63 +2,63 @@
 
 @model mutable struct TextAreaInput <: iTextAreaInput
 
-    syncable :: Bool = true
+    align :: Union{Tuple{Bokeh.Model.EnumType{(:start, :end, :center)}, Bokeh.Model.EnumType{(:start, :end, :center)}}, Bokeh.Model.EnumType{(:start, :center, :end)}} = :start
 
-    min_height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+    aspect_ratio :: Union{Nothing, Float64, Bokeh.Model.EnumType{(:auto,)}} = nothing
+
+    background :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
+
+    cols :: Int64 = 20
 
     css_classes :: Vector{String} = String[]
 
-    visible :: Bool = true
+    default_size :: Int64 = 300
+
+    disabled :: Bool = false
 
     height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
 
     height_policy :: Bokeh.Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    width_policy :: Bokeh.Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
-
-    tags :: Vector{Any}
-
-    disabled :: Bool = false
-
-    min_width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
-
-    sizing_mode :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:stretch_width, :scale_both, :scale_width, :stretch_height, :stretch_both, :fixed, :scale_height)}} = nothing
-
-    value_input :: String = ""
-
-    title :: String = ""
-
-    subscribed_events :: Vector{Symbol}
-
-    max_width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
-
-    align :: Union{Tuple{Bokeh.Model.EnumType{(:start, :end, :center)}, Bokeh.Model.EnumType{(:start, :end, :center)}}, Bokeh.Model.EnumType{(:start, :center, :end)}} = :start
+    margin :: Bokeh.Model.Nullable{NTuple{4, Int64}} = (0, 0, 0, 0)
 
     max_height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
 
     max_length :: Bokeh.Model.Nullable{Int64} = nothing
 
-    default_size :: Int64 = 300
+    max_width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+
+    min_height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+
+    min_width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
-    background :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
-
     placeholder :: String = ""
-
-    cols :: Int64 = 20
-
-    aspect_ratio :: Union{Nothing, Float64, Bokeh.Model.EnumType{(:auto,)}} = nothing
 
     rows :: Int64 = 2
 
+    sizing_mode :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:stretch_width, :scale_both, :scale_width, :stretch_height, :stretch_both, :fixed, :scale_height)}} = nothing
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    title :: String = ""
+
     value :: String = ""
 
-    margin :: Bokeh.Model.Nullable{NTuple{4, Int64}} = (0, 0, 0, 0)
+    value_input :: String = ""
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    visible :: Bool = true
 
     width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+
+    width_policy :: Bokeh.Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 end

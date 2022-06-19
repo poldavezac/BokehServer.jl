@@ -28,7 +28,7 @@ function _👻structure(
         else
             quote
                 let x = $val
-                    y = $(@__MODULE__).bokehwrite($(field.type), x)
+                    y = $(@__MODULE__).bokehconvert($(field.type), x)
                     (y isa $Unknown) && throw(ErrorException(string(
                         "Could not convert `", x, "` to ",
                         $cls, ".", $("$(field.name)"),
@@ -73,7 +73,7 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
                 :(setfield!(µ, $name, ν))
             end
             quote
-                ν = $(@__MODULE__).bokehwrite($(i.type), $(@__MODULE__).bokehrawtype(ν))
+                ν = $(@__MODULE__).bokehconvert($(i.type), $(@__MODULE__).bokehrawtype(ν))
                 (ν isa $Unknown) && throw(ErrorException("Could not convert `$ν` to $(i.type)"))
                 $set
                 getproperty(µ, $name)

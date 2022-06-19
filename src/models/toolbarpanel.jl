@@ -2,29 +2,29 @@
 
 @model mutable struct ToolbarPanel <: iToolbarPanel
 
-    syncable :: Bool = true
+    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
 
     group :: Bokeh.Model.Nullable{iRendererGroup} = nothing
 
-    visible :: Bool = true
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
-
-    subscribed_events :: Vector{Symbol}
-
-    toolbar :: iToolbar
+    level :: Bokeh.Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
-    y_range_name :: String = "default"
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    toolbar :: iToolbar
+
+    visible :: Bool = true
 
     x_range_name :: String = "default"
 
-    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
-
-    level :: Bokeh.Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    y_range_name :: String = "default"
 end

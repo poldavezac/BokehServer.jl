@@ -2,21 +2,17 @@
 
 @model mutable struct TapTool <: iTapTool
 
-    syncable :: Bool = true
+    behavior :: Bokeh.Model.EnumType{(:select, :inspect)} = :select
+
+    callback :: Bokeh.Model.Nullable{iCallback} = nothing
 
     description :: Bokeh.Model.Nullable{String} = nothing
 
-    renderers :: Union{Bokeh.Model.EnumType{(:auto,)}, Vector{iDataRenderer}} = :auto
+    gesture :: Bokeh.Model.EnumType{(:tap, :doubletap)} = :tap
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    behavior :: Bokeh.Model.EnumType{(:select, :inspect)} = :select
-
-    subscribed_events :: Vector{Symbol}
-
-    gesture :: Bokeh.Model.EnumType{(:tap, :doubletap)} = :tap
 
     mode :: Bokeh.Model.EnumType{(:append, :replace, :subtract, :intersect)} = :replace
 
@@ -24,7 +20,11 @@
 
     names :: Vector{String} = String[]
 
-    callback :: Bokeh.Model.Nullable{iCallback} = nothing
+    renderers :: Union{Bokeh.Model.EnumType{(:auto,)}, Vector{iDataRenderer}} = :auto
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

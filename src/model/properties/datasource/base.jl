@@ -62,7 +62,7 @@ end
 
 Convert a `DataDict` array *element* to the correct type `T` or `<:AbstractArray{T}`
 """
-@inline datadictelement(::Type{Float64}, 𝑑::Union{Date, DateTime, Period}) =  bokehwrite(Float64, 𝑑)
+@inline datadictelement(::Type{Float64}, 𝑑::Union{Date, DateTime, Period}) =  bokehconvert(Float64, 𝑑)
 @inline datadictelement(::Type{T}, y::Union{T, AbstractArray{T}}) where {T} = y
 @inline datadictelement(::Type{T}, y::Number) where {T} = convert(T, y)
 @inline datadictelement(::Type{T}, y::AbstractArray) where {T} = datadictelement.(T, y)
@@ -82,8 +82,8 @@ end
 @inline datadictarray(y::AbstractVector{<:Union{T, AbstractArray{<:T}}}) where {T <: Union{iHasProps, AbstractTypes.ElTypeDataDict...}} = y
 
 bokehfieldtype(::Type{DataDict}) = DataDict
-bokehwrite(::Type{DataDict}, x::DataDict) = copy(x)
-function bokehwrite(
+bokehconvert(::Type{DataDict}, x::DataDict) = copy(x)
+function bokehconvert(
         ::Type{DataDict},
         x::Union{
             AbstractDict{<:AbstractString, <:AbstractVector},

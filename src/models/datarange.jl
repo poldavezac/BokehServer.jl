@@ -2,19 +2,19 @@
 
 @model mutable struct DataRange <: iDataRange
 
-    syncable :: Bool = true
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    subscribed_events :: Vector{Symbol}
-
-    renderers :: Union{Bokeh.Model.EnumType{(:auto,)}, Vector{iModel}}
-
-    names :: Vector{String} = String[]
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
+    name :: Bokeh.Model.Nullable{String} = nothing
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    names :: Vector{String} = String[]
+
+    renderers :: Union{Bokeh.Model.EnumType{(:auto,)}, Vector{iModel}}
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

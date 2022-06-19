@@ -2,25 +2,25 @@
 
 @model mutable struct PolyEditTool <: iPolyEditTool
 
-    syncable :: Bool = true
+    custom_icon :: Bokeh.Model.Nullable{Bokeh.Model.Image} = nothing
 
     description :: Bokeh.Model.Nullable{String} = nothing
 
-    renderers :: Vector{iGlyphRenderer}
+    empty_value :: Union{Bool, Float64, Int64, Dates.Date, Dates.DateTime, Bokeh.Model.Color, String}
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    renderers :: Vector{iGlyphRenderer}
 
     subscribed_events :: Vector{Symbol}
 
-    name :: Bokeh.Model.Nullable{String} = nothing
+    syncable :: Bool = true
 
-    custom_icon :: Bokeh.Model.Nullable{Bokeh.Model.Image} = nothing
-
-    empty_value :: Union{Bool, Float64, Int64, Dates.Date, Dates.DateTime, Bokeh.Model.Color, String}
+    tags :: Vector{Any}
 
     vertex_renderer :: Bokeh.Model.Nullable{iGlyphRenderer} = nothing
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 end

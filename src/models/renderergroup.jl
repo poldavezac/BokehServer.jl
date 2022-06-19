@@ -2,17 +2,17 @@
 
 @model mutable struct RendererGroup <: iRendererGroup
 
-    syncable :: Bool = true
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    visible :: Bool = true
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
     subscribed_events :: Vector{Symbol}
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
 
     tags :: Vector{Any}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    visible :: Bool = true
 end

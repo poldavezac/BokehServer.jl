@@ -2,19 +2,19 @@
 
 @model mutable struct DOMSpan <: iDOMSpan
 
-    syncable :: Bool = true
-
-    children :: Vector{Union{iDOMNode, iLayoutDOM, String}}
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    subscribed_events :: Vector{Symbol}
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
+    children :: Vector{Union{String, iDOMNode, iLayoutDOM}}
 
     js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    style :: Bokeh.Model.Nullable{Union{iStyles, Dict{String, String}}} = nothing
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    style :: Bokeh.Model.Nullable{Union{Dict{String, String}, iStyles}} = nothing
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

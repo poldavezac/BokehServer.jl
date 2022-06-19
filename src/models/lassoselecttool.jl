@@ -2,19 +2,11 @@
 
 @model mutable struct LassoSelectTool <: iLassoSelectTool
 
-    syncable :: Bool = true
-
     description :: Bokeh.Model.Nullable{String} = nothing
 
-    renderers :: Union{Bokeh.Model.EnumType{(:auto,)}, Vector{iDataRenderer}} = :auto
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    overlay :: iPolyAnnotation = PolyAnnotation()
-
-    subscribed_events :: Vector{Symbol}
 
     mode :: Bokeh.Model.EnumType{(:append, :replace, :subtract, :intersect)} = :replace
 
@@ -22,7 +14,15 @@
 
     names :: Vector{String} = String[]
 
+    overlay :: iPolyAnnotation = PolyAnnotation()
+
+    renderers :: Union{Bokeh.Model.EnumType{(:auto,)}, Vector{iDataRenderer}} = :auto
+
     select_every_mousemove :: Bool = true
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

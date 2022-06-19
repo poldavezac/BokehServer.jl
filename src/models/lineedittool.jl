@@ -2,27 +2,27 @@
 
 @model mutable struct LineEditTool <: iLineEditTool
 
-    syncable :: Bool = true
-
-    intersection_renderer :: iGlyphRenderer
+    custom_icon :: Bokeh.Model.Nullable{Bokeh.Model.Image} = nothing
 
     description :: Bokeh.Model.Nullable{String} = nothing
 
-    renderers :: Vector{iGlyphRenderer}
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    subscribed_events :: Vector{Symbol}
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    custom_icon :: Bokeh.Model.Nullable{Bokeh.Model.Image} = nothing
+    dimensions :: Bokeh.Model.EnumType{(:both, :height, :width)} = :both
 
     empty_value :: Union{Bool, Float64, Int64, Dates.Date, Dates.DateTime, Bokeh.Model.Color, String}
 
-    dimensions :: Bokeh.Model.EnumType{(:both, :height, :width)} = :both
+    intersection_renderer :: iGlyphRenderer
 
     js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    renderers :: Vector{iGlyphRenderer}
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

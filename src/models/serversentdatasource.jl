@@ -2,29 +2,29 @@
 
 @model mutable struct ServerSentDataSource <: iServerSentDataSource
 
-    syncable :: Bool = true
-
-    max_size :: Bokeh.Model.Nullable{Int64} = nothing
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    subscribed_events :: Vector{Symbol}
+    adapter :: Bokeh.Model.Nullable{iCustomJS} = nothing
 
     data :: Bokeh.Model.DataDict
 
-    mode :: Bokeh.Model.EnumType{(:append, :replace)} = :replace
+    data_url :: String
 
-    adapter :: Bokeh.Model.Nullable{iCustomJS} = nothing
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    max_size :: Bokeh.Model.Nullable{Int64} = nothing
+
+    mode :: Bokeh.Model.EnumType{(:append, :replace)} = :replace
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
     selected :: Bokeh.Model.ReadOnly{iSelection} = Selection()
 
-    data_url :: String
-
     selection_policy :: iSelectionPolicy = UnionRenderers()
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

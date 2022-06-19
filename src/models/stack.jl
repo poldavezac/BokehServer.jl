@@ -2,17 +2,17 @@
 
 @model mutable struct Stack <: iStack
 
-    syncable :: Bool = true
+    fields :: Vector{String} = String[]
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
     subscribed_events :: Vector{Symbol}
 
-    fields :: Vector{String} = String[]
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
 
     tags :: Vector{Any}
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 end

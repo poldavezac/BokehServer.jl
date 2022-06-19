@@ -78,7 +78,7 @@ end
 
     js = JSON.parse(pyconvert(String, pyimport("json").dumps(dflt)))
     return Some(Bokeh.Model.bokehrawtype(
-        Bokeh.Model.bokehread(T, __DUMMY__, :__dummy__, Bokeh.Model.bokehwrite(T, js))
+        Bokeh.Model.bokehread(T, __DUMMY__, :__dummy__, Bokeh.Model.bokehconvert(T, js))
     ))
 end
 parsedefault(::Symbol, cls, prop) = parsedefault(Any, cls, prop)

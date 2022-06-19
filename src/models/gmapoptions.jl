@@ -2,29 +2,29 @@
 
 @model mutable struct GMapOptions <: iGMapOptions
 
-    syncable :: Bool = true
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    scale_control :: Bool = false
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    lat :: Float64
 
     lng :: Float64
 
-    zoom :: Int64 = 12
+    map_type :: Bokeh.Model.EnumType{(:hybrid, :roadmap, :satellite, :terrain)} = :roadmap
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    scale_control :: Bool = false
+
+    styles :: Bokeh.Model.JSONString
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
 
     tags :: Vector{Any}
 
     tilt :: Int64 = 45
 
-    subscribed_events :: Vector{Symbol}
-
-    styles :: Bokeh.Model.JSONString
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    lat :: Float64
-
-    map_type :: Bokeh.Model.EnumType{(:hybrid, :roadmap, :satellite, :terrain)} = :roadmap
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    zoom :: Int64 = 12
 end

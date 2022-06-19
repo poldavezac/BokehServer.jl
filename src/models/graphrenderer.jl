@@ -2,37 +2,37 @@
 
 @model mutable struct GraphRenderer <: iGraphRenderer
 
-    layout_provider :: iLayoutProvider
-
-    syncable :: Bool = true
-
-    group :: Bokeh.Model.Nullable{iRendererGroup} = nothing
-
-    visible :: Bool = true
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    subscribed_events :: Vector{Symbol}
+    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
 
     edge_renderer :: iGlyphRenderer = GlyphRenderer()
 
+    group :: Bokeh.Model.Nullable{iRendererGroup} = nothing
+
     inspection_policy :: iGraphHitTestPolicy = NodesOnly()
 
-    name :: Bokeh.Model.Nullable{String} = nothing
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    y_range_name :: String = "default"
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    x_range_name :: String = "default"
-
-    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
-
-    node_renderer :: iGlyphRenderer = GlyphRenderer()
+    layout_provider :: iLayoutProvider
 
     level :: Bokeh.Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
 
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    node_renderer :: iGlyphRenderer = GlyphRenderer()
+
     selection_policy :: iGraphHitTestPolicy = NodesOnly()
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    visible :: Bool = true
+
+    x_range_name :: String = "default"
+
+    y_range_name :: String = "default"
 end

@@ -2,23 +2,23 @@
 
 @model mutable struct FixedTicker <: iFixedTicker
 
-    syncable :: Bool = true
+    desired_num_ticks :: Int64 = 6
 
-    ticks :: Vector{Float64} = Float64[]
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
-
     minor_ticks :: Vector{Float64} = Float64[]
-
-    subscribed_events :: Vector{Symbol}
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
     num_minor_ticks :: Int64 = 5
 
-    desired_num_ticks :: Int64 = 6
+    subscribed_events :: Vector{Symbol}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    ticks :: Vector{Float64} = Float64[]
 end

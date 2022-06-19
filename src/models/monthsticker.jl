@@ -2,23 +2,23 @@
 
 @model mutable struct MonthsTicker <: iMonthsTicker
 
-    months :: Vector{Int64} = Int64[]
-
-    syncable :: Bool = true
+    desired_num_ticks :: Int64 = 6
 
     interval :: Float64
 
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
-
-    subscribed_events :: Vector{Symbol}
+    months :: Vector{Int64} = Int64[]
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
     num_minor_ticks :: Int64 = 5
 
-    desired_num_ticks :: Int64 = 6
+    subscribed_events :: Vector{Symbol}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

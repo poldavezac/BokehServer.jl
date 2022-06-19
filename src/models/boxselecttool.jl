@@ -2,21 +2,13 @@
 
 @model mutable struct BoxSelectTool <: iBoxSelectTool
 
-    syncable :: Bool = true
-
-    origin :: Bokeh.Model.EnumType{(:corner, :center)} = :corner
-
     description :: Bokeh.Model.Nullable{String} = nothing
 
-    renderers :: Union{Bokeh.Model.EnumType{(:auto,)}, Vector{iDataRenderer}} = :auto
+    dimensions :: Bokeh.Model.EnumType{(:both, :height, :width)} = :both
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    overlay :: iBoxAnnotation = BoxAnnotation()
-
-    subscribed_events :: Vector{Symbol}
 
     mode :: Bokeh.Model.EnumType{(:append, :replace, :subtract, :intersect)} = :replace
 
@@ -24,9 +16,17 @@
 
     names :: Vector{String} = String[]
 
+    origin :: Bokeh.Model.EnumType{(:corner, :center)} = :corner
+
+    overlay :: iBoxAnnotation = BoxAnnotation()
+
+    renderers :: Union{Bokeh.Model.EnumType{(:auto,)}, Vector{iDataRenderer}} = :auto
+
     select_every_mousemove :: Bool = false
 
-    dimensions :: Bokeh.Model.EnumType{(:both, :height, :width)} = :both
+    subscribed_events :: Vector{Symbol}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

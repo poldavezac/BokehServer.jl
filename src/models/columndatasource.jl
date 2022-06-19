@@ -2,21 +2,21 @@
 
 @model mutable struct ColumnDataSource <: iColumnDataSource
 
-    syncable :: Bool = true
+    data :: Bokeh.Model.DataDict
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    name :: Bokeh.Model.Nullable{String} = nothing
 
     selected :: Bokeh.Model.ReadOnly{iSelection} = Selection()
 
     selection_policy :: iSelectionPolicy = UnionRenderers()
 
-    name :: Bokeh.Model.Nullable{String} = nothing
-
     subscribed_events :: Vector{Symbol}
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
 
     tags :: Vector{Any}
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    data :: Bokeh.Model.DataDict
 end

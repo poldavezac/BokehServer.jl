@@ -2,151 +2,151 @@
 
 @model mutable struct Plot <: iPlot
 
-    syncable :: Bool = true
-
-    min_border :: Bokeh.Model.Nullable{Int64} = 5
-
-    border_fill_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(128,128,128)"
-
-    height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
-
-    x_range :: iRange = DataRange1d()
-
-    outline_line_join :: Bokeh.Model.EnumType{(:round, :miter, :bevel)} = :bevel
-
     above :: Vector{iRenderer}
-
-    inner_width :: Bokeh.Model.ReadOnly{Int64} = 0
-
-    outer_width :: Bokeh.Model.ReadOnly{Int64} = 0
-
-    inner_height :: Bokeh.Model.ReadOnly{Int64} = 0
-
-    lod_interval :: Int64 = 300
 
     align :: Union{Tuple{Bokeh.Model.EnumType{(:start, :end, :center)}, Bokeh.Model.EnumType{(:start, :end, :center)}}, Bokeh.Model.EnumType{(:start, :center, :end)}} = :start
 
-    min_border_top :: Bokeh.Model.Nullable{Int64} = nothing
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    background :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
-
-    outline_line_alpha :: Bokeh.Model.Percent = 1.0
-
-    border_fill_alpha :: Bokeh.Model.Percent = 1.0
-
-    below :: Vector{iRenderer}
-
-    frame_width :: Bokeh.Model.Nullable{Int64} = nothing
-
-    extra_y_ranges :: Dict{String, iRange}
-
-    min_border_left :: Bokeh.Model.Nullable{Int64} = nothing
-
-    plot_height :: Bokeh.Model.Alias{:height}
-
-    margin :: Bokeh.Model.Nullable{NTuple{4, Int64}} = (0, 0, 0, 0)
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    title_location :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:below, :left, :right, :above)}} = :above
-
-    min_height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
-
-    visible :: Bool = true
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    lod_factor :: Int64 = 10
-
-    output_backend :: Bokeh.Model.EnumType{(:svg, :canvas, :webgl)} = :canvas
-
-    extra_x_scales :: Dict{String, iScale}
-
-    title :: Union{Nothing, iTitle} = Title()
-
-    background_fill_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(128,128,128)"
-
-    right :: Vector{iRenderer}
-
-    max_height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
-
-    reset_policy :: Bokeh.Model.EnumType{(:standard, :event_only)} = :standard
-
-    min_border_right :: Bokeh.Model.Nullable{Int64} = nothing
-
-    css_classes :: Vector{String} = String[]
-
-    y_range :: iRange = DataRange1d()
-
-    toolbar_sticky :: Bool = true
-
-    outline_line_cap :: Bokeh.Model.EnumType{(:round, :square, :butt)} = :butt
-
-    renderers :: Vector{iRenderer}
-
-    outline_line_dash :: Bokeh.Model.DashPattern
-
-    width_policy :: Bokeh.Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
-
-    tags :: Vector{Any}
-
-    height_policy :: Bokeh.Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
-
-    left :: Vector{iRenderer}
-
-    min_width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
-
-    hidpi :: Bool = true
-
-    outer_height :: Bokeh.Model.ReadOnly{Int64} = 0
-
-    background_fill_alpha :: Bokeh.Model.Percent = 1.0
-
-    subscribed_events :: Vector{Symbol}
-
-    max_width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
-
-    outline_line_dash_offset :: Int64 = 0
-
     aspect_ratio :: Union{Nothing, Float64, Bokeh.Model.EnumType{(:auto,)}} = nothing
-
-    outline_line_width :: Float64 = 1.0
-
-    match_aspect :: Bool = false
-
-    extra_y_scales :: Dict{String, iScale}
-
-    lod_threshold :: Bokeh.Model.Nullable{Int64} = 2000
-
-    outline_line_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(0,0,0)"
-
-    width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
-
-    frame_height :: Bokeh.Model.Nullable{Int64} = nothing
-
-    y_scale :: iScale = LinearScale()
-
-    disabled :: Bool = false
 
     aspect_scale :: Float64 = 1.0
 
-    sizing_mode :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:stretch_width, :scale_both, :scale_width, :stretch_height, :stretch_both, :fixed, :scale_height)}} = nothing
+    background :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
 
-    lod_timeout :: Int64 = 500
+    background_fill_alpha :: Bokeh.Model.Percent = 1.0
 
-    toolbar :: iToolbar = Toolbar()
+    background_fill_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(128,128,128)"
+
+    below :: Vector{iRenderer}
+
+    border_fill_alpha :: Bokeh.Model.Percent = 1.0
+
+    border_fill_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(128,128,128)"
 
     center :: Vector{iRenderer}
 
-    toolbar_location :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:below, :left, :right, :above)}} = :right
+    css_classes :: Vector{String} = String[]
 
-    min_border_bottom :: Bokeh.Model.Nullable{Int64} = nothing
+    disabled :: Bool = false
 
     extra_x_ranges :: Dict{String, iRange}
 
-    x_scale :: iScale = LinearScale()
+    extra_x_scales :: Dict{String, iScale}
+
+    extra_y_ranges :: Dict{String, iRange}
+
+    extra_y_scales :: Dict{String, iScale}
+
+    frame_height :: Bokeh.Model.Nullable{Int64} = nothing
+
+    frame_width :: Bokeh.Model.Nullable{Int64} = nothing
+
+    height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+
+    height_policy :: Bokeh.Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
+
+    hidpi :: Bool = true
+
+    inner_height :: Bokeh.Model.ReadOnly{Int64} = 0
+
+    inner_width :: Bokeh.Model.ReadOnly{Int64} = 0
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    left :: Vector{iRenderer}
+
+    lod_factor :: Int64 = 10
+
+    lod_interval :: Int64 = 300
+
+    lod_threshold :: Bokeh.Model.Nullable{Int64} = 2000
+
+    lod_timeout :: Int64 = 500
+
+    margin :: Bokeh.Model.Nullable{NTuple{4, Int64}} = (0, 0, 0, 0)
+
+    match_aspect :: Bool = false
+
+    max_height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+
+    max_width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+
+    min_border :: Bokeh.Model.Nullable{Int64} = 5
+
+    min_border_bottom :: Bokeh.Model.Nullable{Int64} = nothing
+
+    min_border_left :: Bokeh.Model.Nullable{Int64} = nothing
+
+    min_border_right :: Bokeh.Model.Nullable{Int64} = nothing
+
+    min_border_top :: Bokeh.Model.Nullable{Int64} = nothing
+
+    min_height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+
+    min_width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    outer_height :: Bokeh.Model.ReadOnly{Int64} = 0
+
+    outer_width :: Bokeh.Model.ReadOnly{Int64} = 0
+
+    outline_line_alpha :: Bokeh.Model.Percent = 1.0
+
+    outline_line_cap :: Bokeh.Model.EnumType{(:round, :square, :butt)} = :butt
+
+    outline_line_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(0,0,0)"
+
+    outline_line_dash :: Bokeh.Model.DashPattern
+
+    outline_line_dash_offset :: Int64 = 0
+
+    outline_line_join :: Bokeh.Model.EnumType{(:round, :miter, :bevel)} = :bevel
+
+    outline_line_width :: Float64 = 1.0
+
+    output_backend :: Bokeh.Model.EnumType{(:svg, :canvas, :webgl)} = :canvas
+
+    plot_height :: Bokeh.Model.Alias{:height}
 
     plot_width :: Bokeh.Model.Alias{:width}
+
+    renderers :: Vector{iRenderer}
+
+    reset_policy :: Bokeh.Model.EnumType{(:standard, :event_only)} = :standard
+
+    right :: Vector{iRenderer}
+
+    sizing_mode :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:stretch_width, :scale_both, :scale_width, :stretch_height, :stretch_both, :fixed, :scale_height)}} = nothing
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    title :: Union{Nothing, iTitle} = Title()
+
+    title_location :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:below, :left, :right, :above)}} = :above
+
+    toolbar :: iToolbar = Toolbar()
+
+    toolbar_location :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:below, :left, :right, :above)}} = :right
+
+    toolbar_sticky :: Bool = true
+
+    visible :: Bool = true
+
+    width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+
+    width_policy :: Bokeh.Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
+
+    x_range :: iRange = DataRange1d()
+
+    x_scale :: iScale = LinearScale()
+
+    y_range :: iRange = DataRange1d()
+
+    y_scale :: iScale = LinearScale()
 end

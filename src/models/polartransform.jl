@@ -2,23 +2,23 @@
 
 @model mutable struct PolarTransform <: iPolarTransform
 
-    syncable :: Bool = true
+    angle :: Bokeh.Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (field = "angle",)
+
+    angle_units :: Bokeh.Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
+
+    direction :: Bokeh.Model.EnumType{(:clock, :anticlock)} = :anticlock
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    subscribed_events :: Vector{Symbol}
-
-    angle :: Bokeh.Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (field = "angle",)
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
     radius :: Bokeh.Model.Spec{Float64} = (field = "radius",)
 
-    angle_units :: Bokeh.Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
+    subscribed_events :: Vector{Symbol}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
 
-    direction :: Bokeh.Model.EnumType{(:clock, :anticlock)} = :anticlock
+    tags :: Vector{Any}
 end

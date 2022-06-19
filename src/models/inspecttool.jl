@@ -2,19 +2,19 @@
 
 @model mutable struct InspectTool <: iInspectTool
 
-    syncable :: Bool = true
-
     description :: Bokeh.Model.Nullable{String} = nothing
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
     subscribed_events :: Vector{Symbol}
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    toggleable :: Bool = true
+    syncable :: Bool = true
 
     tags :: Vector{Any}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    toggleable :: Bool = true
 end

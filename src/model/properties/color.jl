@@ -77,12 +77,12 @@ end
 
 const COLOR_ARGS = Union{NTuple{4, <:Integer}, NTuple{3, <:Integer}, Symbol, Int32, AbstractString, Color}
 
-function bokehwrite(::Type{Color}, ν::COLOR_ARGS)
+function bokehconvert(::Type{Color}, ν::COLOR_ARGS)
     clr = color(ν)
     ismissing(clr) ? Unknown() : clr
 end
 
-function bokehwrite(::Type{Color}, ν::Union{COLOR_ARGS, ColorHex})
+function bokehconvert(::Type{Color}, ν::Union{COLOR_ARGS, ColorHex})
     clr = colorhex(ν)
     ismissing(clr) ? Unknown() : clr
 end

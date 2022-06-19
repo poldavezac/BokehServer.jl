@@ -75,27 +75,27 @@ Base.in(ν::Symbol, 𝑇::Type{<:EnumSpec})         = longform(𝑇, ν) ∈ val
 Base.in(ν::AbstractString, 𝑇::Type{<:EnumSpec}) = Symbol(ν) ∈ 𝑇
 units(::Type{<:iUnitSpec{T, K}}) where {T, K}   = K
 
-function bokehwrite(𝑇::Type{<:iSpec}, ν::Union{AbstractDict{Symbol}, NamedTuple})
+function bokehconvert(𝑇::Type{<:iSpec}, ν::Union{AbstractDict{Symbol}, NamedTuple})
     (keys(ν) ⊈ fieldnames(𝑇)) && return Unknown()
 
     value = get(ν, :value, missing)
-    ismissing(value) || (value = bokehwrite(speceltype(𝑇), value))
+    ismissing(value) || (value = bokehconvert(speceltype(𝑇), value))
     𝑇(; (i => j for (i, j) ∈ zip(keys(ν), values(ν)))..., value)
 end
 
-function bokehwrite(𝑇::Type{<:iUnitSpec}, ν::Union{AbstractDict{Symbol}, NamedTuple})
+function bokehconvert(𝑇::Type{<:iUnitSpec}, ν::Union{AbstractDict{Symbol}, NamedTuple})
     (keys(ν) ⊈ fieldnames(𝑇)) && return Unknown()
 
     value = get(ν, :value, missing)
-    ismissing(value) || (value = bokehwrite(speceltype(𝑇), value))
+    ismissing(value) || (value = bokehconvert(speceltype(𝑇), value))
     ismissing(get(ν, :units, missing)) && (ν[:units] = first(units(𝑇)))
     @assert ν[:units] ∈ units(𝑇)
     𝑇(; (i => j for (i, j) ∈ zip(keys(ν), values(ν)))..., value)
 end
 
-bokehwrite(𝑇::Type{<:iSpec}, ν::AbstractDict{<:AbstractString}) = bokehwrite(𝑇, Dict{Symbol, Any}((Symbol(i) => j for (i, j) ∈ ν)))
-bokehwrite(𝑇::Type{<:iSpec}, ν::Union{Symbol, Number}) = 𝑇(; value = bokehwrite(speceltype(𝑇), ν))
-bokehwrite(𝑇::Type{<:iSpec{<:Number}}, ν::AbstractString) = 𝑇(; field = string(ν))
+bokehconvert(𝑇::Type{<:iSpec}, ν::AbstractDict{<:AbstractString}) = bokehconvert(𝑇, Dict{Symbol, Any}((Symbol(i) => j for (i, j) ∈ ν)))
+bokehconvert(𝑇::Type{<:iSpec}, ν::Union{Symbol, Number}) = 𝑇(; value = bokehconvert(speceltype(𝑇), ν))
+bokehconvert(𝑇::Type{<:iSpec{<:Number}}, ν::AbstractString) = 𝑇(; field = string(ν))
 
 function bokehread(::Type{T}, ::iHasProps, ::Symbol, ν::T) where {T <: iSpec}
     @assert xor(ismissing(ν.value), ismissing(ν.field))
@@ -109,7 +109,7 @@ function bokehread(::Type{T}, ::iHasProps, ::Symbol, ν::T) where {T <: iUnitSpe
     return (; (i=>getfield(ν, i) for i ∈ fields if !ismissing(getfield(ν, i)))...)
 end
 
-function bokehwrite(𝑇::Type{<:EnumSpec}, ν::Union{AbstractString, Symbol})
+function bokehconvert(𝑇::Type{<:EnumSpec}, ν::Union{AbstractString, Symbol})
     value = longform(𝑇, ν)
     return value ∈ 𝑇 ? 𝑇(; value) : 𝑇(; field = String(ν))
 end
@@ -145,7 +145,7 @@ struct PropertyUnitsSpec <: iSpec{Float64}
     )...)
 end
 
-function bokehwrite(::Type{ColorSpec}, ν::Union{AbstractDict{Symbol}, NamedTuple})
+function bokehconvert(::Type{ColorSpec}, ν::Union{AbstractDict{Symbol}, NamedTuple})
     (keys(ν) ⊈ fieldnames(ColorSpec)) && return Unknown()
     value = get(ν, :value, missing)
     if ismissing(value)
@@ -156,13 +156,13 @@ function bokehwrite(::Type{ColorSpec}, ν::Union{AbstractDict{Symbol}, NamedTupl
     ColorSpec(; (i => j for (i, j) ∈ zip(keys(ν), values(ν)))..., value)
 end
 
-function bokehwrite(::Type{ColorSpec}, ν::AbstractString)
+function bokehconvert(::Type{ColorSpec}, ν::AbstractString)
     (keys(ν) ⊈ fieldnames(ColorSpec)) && return Unknown()
     value = color(v)
     return ismissing(value) : ColorSpec(; field = string(ν)) : ColorSpec(; value)
 end
 
-function bokehwrite(::Type{ColorSpec}, ν::COLOR_ARGS)
+function bokehconvert(::Type{ColorSpec}, ν::COLOR_ARGS)
     value = color(ν)
     ismissing(value) ? Unknown() : ColorSpec(; value)
 end

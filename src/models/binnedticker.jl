@@ -2,19 +2,19 @@
 
 @model mutable struct BinnedTicker <: iBinnedTicker
 
-    syncable :: Bool = true
-
-    num_major_ticks :: Union{Int64, Bokeh.Model.EnumType{(:auto,)}} = 8
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    subscribed_events :: Vector{Symbol}
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     mapper :: iScanningColorMapper
 
-    tags :: Vector{Any}
+    name :: Bokeh.Model.Nullable{String} = nothing
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    num_major_ticks :: Union{Int64, Bokeh.Model.EnumType{(:auto,)}} = 8
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

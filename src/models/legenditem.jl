@@ -2,23 +2,23 @@
 
 @model mutable struct LegendItem <: iLegendItem
 
-    syncable :: Bool = true
+    index :: Bokeh.Model.Nullable{Int64} = nothing
 
-    visible :: Bool = true
-
-    label :: Bokeh.Model.Nullable{Bokeh.Model.Spec{String}} = nothing
-
-    renderers :: Vector{iGlyphRenderer}
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
-
-    subscribed_events :: Vector{Symbol}
-
-    index :: Bokeh.Model.Nullable{Int64} = nothing
+    label :: Bokeh.Model.Nullable{Bokeh.Model.Spec{String}} = nothing
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    renderers :: Vector{iGlyphRenderer}
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    visible :: Bool = true
 end

@@ -2,21 +2,21 @@
 
 @model mutable struct CustomJSTransform <: iCustomJSTransform
 
-    syncable :: Bool = true
-
-    v_func :: String = ""
-
     args :: Dict{String, Any}
+
+    func :: String = ""
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
     subscribed_events :: Vector{Symbol}
 
-    func :: String = ""
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
 
     tags :: Vector{Any}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    v_func :: String = ""
 end

@@ -2,21 +2,21 @@
 
 @model mutable struct MapOptions <: iMapOptions
 
-    syncable :: Bool = true
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    lat :: Float64
 
     lng :: Float64
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
-    lat :: Float64
-
     subscribed_events :: Vector{Symbol}
 
-    zoom :: Int64 = 12
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
 
     tags :: Vector{Any}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    zoom :: Int64 = 12
 end

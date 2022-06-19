@@ -4,17 +4,17 @@
 
     filters :: Vector{iFilter}
 
-    syncable :: Bool = true
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    subscribed_events :: Vector{Symbol}
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    name :: Bokeh.Model.Nullable{String} = nothing
 
     source :: iColumnarDataSource
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

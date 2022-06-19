@@ -2,21 +2,21 @@
 
 @model mutable struct CategoricalMapper <: iCategoricalMapper
 
-    syncable :: Bool = true
-
     factors :: Union{Vector{String}, Vector{Tuple{String, String}}, Vector{Tuple{String, String, String}}}
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    subscribed_events :: Vector{Symbol}
-
-    start :: Int64 = 0
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     finish :: Bokeh.Model.Nullable{Int64} = nothing
 
-    tags :: Vector{Any}
-
     js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    start :: Int64 = 0
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

@@ -2,25 +2,25 @@
 
 @model mutable struct BoxZoomTool <: iBoxZoomTool
 
-    syncable :: Bool = true
-
-    origin :: Bokeh.Model.EnumType{(:corner, :center)} = :corner
-
     description :: Bokeh.Model.Nullable{String} = nothing
+
+    dimensions :: Bokeh.Model.EnumType{(:both, :height, :width)} = :both
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
+    match_aspect :: Bool = false
+
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    origin :: Bokeh.Model.EnumType{(:corner, :center)} = :corner
 
     overlay :: iBoxAnnotation = BoxAnnotation()
 
     subscribed_events :: Vector{Symbol}
 
-    name :: Bokeh.Model.Nullable{String} = nothing
+    syncable :: Bool = true
 
-    match_aspect :: Bool = false
-
-    dimensions :: Bokeh.Model.EnumType{(:both, :height, :width)} = :both
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    tags :: Vector{Any}
 end

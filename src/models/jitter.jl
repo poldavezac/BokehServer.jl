@@ -2,23 +2,23 @@
 
 @model mutable struct Jitter <: iJitter
 
-    syncable :: Bool = true
+    distribution :: Bokeh.Model.EnumType{(:normal, :uniform)} = :uniform
 
-    range :: Bokeh.Model.Nullable{iRange} = nothing
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
-
-    subscribed_events :: Vector{Symbol}
-
     mean :: Float64 = 0.0
-
-    distribution :: Bokeh.Model.EnumType{(:normal, :uniform)} = :uniform
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    range :: Bokeh.Model.Nullable{iRange} = nothing
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 
     width :: Float64 = 1.0
 end

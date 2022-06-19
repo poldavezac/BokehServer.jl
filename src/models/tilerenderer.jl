@@ -2,35 +2,35 @@
 
 @model mutable struct TileRenderer <: iTileRenderer
 
-    syncable :: Bool = true
-
     alpha :: Float64 = 1.0
+
+    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
 
     group :: Bokeh.Model.Nullable{iRendererGroup} = nothing
 
-    smoothing :: Bool = true
-
-    visible :: Bool = true
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    level :: Bokeh.Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
+
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    render_parents :: Bool = true
+
+    smoothing :: Bool = true
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
 
     tags :: Vector{Any}
 
     tile_source :: iTileSource = WMTSTileSource()
 
-    subscribed_events :: Vector{Symbol}
-
-    render_parents :: Bool = true
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    y_range_name :: String = "default"
+    visible :: Bool = true
 
     x_range_name :: String = "default"
 
-    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
-
-    level :: Bokeh.Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    y_range_name :: String = "default"
 end

@@ -2,33 +2,33 @@
 
 @model mutable struct TileSource <: iTileSource
 
-    syncable :: Bool = true
-
-    min_zoom :: Int64 = 0
+    attribution :: String = ""
 
     extra_url_vars :: Dict{String, Any}
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
     initial_resolution :: Bokeh.Model.Nullable{Float64} = nothing
 
-    attribution :: String = ""
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    y_origin_offset :: Float64
-
-    tile_size :: Int64 = 256
-
-    subscribed_events :: Vector{Symbol}
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     max_zoom :: Int64 = 30
 
-    url :: String = ""
+    min_zoom :: Int64 = 0
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    tile_size :: Int64 = 256
+
+    url :: String = ""
+
     x_origin_offset :: Float64
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    y_origin_offset :: Float64
 end

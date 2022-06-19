@@ -2,39 +2,39 @@
 
 @model mutable struct AjaxDataSource <: iAjaxDataSource
 
-    syncable :: Bool = true
-
-    if_modified :: Bool = false
-
-    max_size :: Bokeh.Model.Nullable{Int64} = nothing
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    method :: Bokeh.Model.EnumType{(:POST, :GET)} = :POST
+    adapter :: Bokeh.Model.Nullable{iCustomJS} = nothing
 
     content_type :: String = "application/json"
 
-    polling_interval :: Bokeh.Model.Nullable{Int64} = nothing
+    data :: Bokeh.Model.DataDict
+
+    data_url :: String
 
     http_headers :: Dict{String, String}
 
-    subscribed_events :: Vector{Symbol}
+    if_modified :: Bool = false
 
-    data :: Bokeh.Model.DataDict
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    max_size :: Bokeh.Model.Nullable{Int64} = nothing
+
+    method :: Bokeh.Model.EnumType{(:POST, :GET)} = :POST
 
     mode :: Bokeh.Model.EnumType{(:append, :replace)} = :replace
 
-    adapter :: Bokeh.Model.Nullable{iCustomJS} = nothing
-
     name :: Bokeh.Model.Nullable{String} = nothing
+
+    polling_interval :: Bokeh.Model.Nullable{Int64} = nothing
 
     selected :: Bokeh.Model.ReadOnly{iSelection} = Selection()
 
     selection_policy :: iSelectionPolicy = UnionRenderers()
 
-    data_url :: String
+    subscribed_events :: Vector{Symbol}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

@@ -2,23 +2,23 @@
 
 @model mutable struct StringFormatter <: iStringFormatter
 
-    syncable :: Bool = true
-
-    nan_format :: String = "-"
-
-    text_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
-
     font_style :: Bokeh.Model.EnumType{(:bold, :normal, Symbol("bold italic"), :italic)} = :normal
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    nan_format :: String = "-"
 
     subscribed_events :: Vector{Symbol}
 
-    name :: Bokeh.Model.Nullable{String} = nothing
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 
     text_align :: Bokeh.Model.EnumType{(:left, :right, :center)} = :left
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    text_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
 end

@@ -2,23 +2,23 @@
 
 @model mutable struct ZoomOutTool <: iZoomOutTool
 
-    syncable :: Bool = true
-
-    factor :: Bokeh.Model.Percent = 0.1
-
     description :: Bokeh.Model.Nullable{String} = nothing
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    maintain_focus :: Bool = true
-
-    subscribed_events :: Vector{Symbol}
-
-    name :: Bokeh.Model.Nullable{String} = nothing
 
     dimensions :: Bokeh.Model.EnumType{(:both, :height, :width)} = :both
 
+    factor :: Bokeh.Model.Percent = 0.1
+
     js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    maintain_focus :: Bool = true
+
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

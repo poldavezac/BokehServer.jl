@@ -2,23 +2,23 @@
 
 @model mutable struct LinearInterpolator <: iLinearInterpolator
 
-    syncable :: Bool = true
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
     clip :: Bool = true
-
-    subscribed_events :: Vector{Symbol}
 
     data :: Bokeh.Model.Nullable{iColumnarDataSource} = nothing
 
-    x :: Union{String, Vector{Float64}}
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
-    y :: Union{String, Vector{Float64}}
+    subscribed_events :: Vector{Symbol}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    x :: Union{String, Vector{Float64}}
+
+    y :: Union{String, Vector{Float64}}
 end

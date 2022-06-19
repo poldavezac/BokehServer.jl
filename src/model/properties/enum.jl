@@ -13,13 +13,13 @@ Base.in(ν::AbstractString, 𝑇::Type{<:EnumType}) = Symbol(ν) ∈ 𝑇
 
 Base.:(==)(x::EnumType, y::Symbol) = x.value ≡ y
 
-function bokehwrite(𝑇::Type{<:EnumType}, ν::Union{AbstractString, Symbol, Char})
+function bokehconvert(𝑇::Type{<:EnumType}, ν::Union{AbstractString, Symbol, Char})
     val = longform(𝑇, ν)
     return val ∈ 𝑇 ? 𝑇(val) : Unknown()
 end
 
 function Base.convert(𝑇::Type{<:EnumType}, ν::Union{AbstractString, Symbol, Char})
-    val = bokehwrite(𝑇, ν)
+    val = bokehconvert(𝑇, ν)
     (val isa Unknown) && throw(KeyError("$𝑇 can't convert $ν"))
     return val
 end

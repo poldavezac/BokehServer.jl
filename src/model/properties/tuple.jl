@@ -3,8 +3,8 @@ function bokehfieldtype(𝑇::Type{<:Tuple})
     return 𝑇.name.wrapper{(bokehfieldtype(T) for T ∈ 𝑇.parameters)...}
 end
 
-function bokehwrite(𝑇::Type{<:Tuple}, ν::Union{Vector, Tuple})
-    return tuple((bokehwrite(T, i) for (i, T) ∈ zip(ν, 𝑇.parameters))...)
+function bokehconvert(𝑇::Type{<:Tuple}, ν::Union{Vector, Tuple})
+    return tuple((bokehconvert(T, i) for (i, T) ∈ zip(ν, 𝑇.parameters))...)
 end
 
 function bokehread(𝑇::Type{<:Tuple}, μ::iHasProps, σ::Symbol, ν::Tuple)
@@ -15,14 +15,14 @@ bokehfieldtype(𝑇::Type{<:NamedTuple}) = 𝑇.name.wrapper{𝑇.parameters[1],
 
 _👻items(𝑇::Type{<:NamedTuple}) = zip(𝑇.parameters[1], 𝑇.parameters[2].parameters)
 
-function bokehwrite(𝑇::Type{<:NamedTuple}, ν::NamedTuple)
+function bokehconvert(𝑇::Type{<:NamedTuple}, ν::NamedTuple)
     (length(fieldnames(𝑇) ∩ keys(ν)) ≡ length(fieldnames(𝑇))) || return Unknown()
-    outp = (;(i => bokehwrite(T, ν[i]) for (i, T) ∈ _👻items(𝑇))...)
+    outp = (;(i => bokehconvert(T, ν[i]) for (i, T) ∈ _👻items(𝑇))...)
     return any(i isa Unknown for i ∈ outp) ? Unknown() : outp
 end
 
-function bokehwrite(𝑇::Type{<:NamedTuple}, ν::AbstractDict{<:AbstractString})
-    return bokehwrite(𝑇, (; (Symbol(i) => j for (i, j) ∈ ν)...))
+function bokehconvert(𝑇::Type{<:NamedTuple}, ν::AbstractDict{<:AbstractString})
+    return bokehconvert(𝑇, (; (Symbol(i) => j for (i, j) ∈ ν)...))
 end
 
 function bokehread(𝑇::Type{<:NamedTuple}, μ::iHasProps, σ::Symbol, ν::NamedTuple)

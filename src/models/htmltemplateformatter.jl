@@ -2,17 +2,17 @@
 
 @model mutable struct HTMLTemplateFormatter <: iHTMLTemplateFormatter
 
-    syncable :: Bool = true
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    template :: String = "<%= value %>"
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
     subscribed_events :: Vector{Symbol}
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
 
     tags :: Vector{Any}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    template :: String = "<%= value %>"
 end

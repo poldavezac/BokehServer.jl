@@ -2,25 +2,25 @@
 
 @model mutable struct MercatorTickFormatter <: iMercatorTickFormatter
 
-    syncable :: Bool = true
+    dimension :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:lat, :lon)}} = nothing
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
-
-    precision :: Union{Int64, Bokeh.Model.EnumType{(:auto,)}} = :auto
-
-    power_limit_low :: Int64 = -3
-
-    subscribed_events :: Vector{Symbol}
-
-    use_scientific :: Bool = true
-
     name :: Bokeh.Model.Nullable{String} = nothing
-
-    dimension :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:lat, :lon)}} = nothing
 
     power_limit_high :: Int64 = 5
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    power_limit_low :: Int64 = -3
+
+    precision :: Union{Int64, Bokeh.Model.EnumType{(:auto,)}} = :auto
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    use_scientific :: Bool = true
 end

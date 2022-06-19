@@ -2,29 +2,29 @@
 
 @model mutable struct ScanningColorMapper <: iScanningColorMapper
 
-    syncable :: Bool = true
-
-    low_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
-
     domain :: Vector{Tuple{iGlyphRenderer, Union{String, Vector{String}}}}
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    subscribed_events :: Vector{Symbol}
-
-    nan_color :: Bokeh.Model.Color = "rgb(128,128,128)"
-
-    high_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
-
-    name :: Bokeh.Model.Nullable{String} = nothing
 
     high :: Bokeh.Model.Nullable{Float64} = nothing
 
-    palette :: Vector{Bokeh.Model.Color}
+    high_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     low :: Bokeh.Model.Nullable{Float64} = nothing
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    low_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
+
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    nan_color :: Bokeh.Model.Color = "rgb(128,128,128)"
+
+    palette :: Vector{Bokeh.Model.Color}
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

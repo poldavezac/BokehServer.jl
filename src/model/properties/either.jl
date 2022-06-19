@@ -40,10 +40,10 @@ function bokehfieldtype(𝑇::Union)
     return Union{types...}
 end
 
-function bokehwrite(𝑇::Union, ν)
+function bokehconvert(𝑇::Union, ν)
     @nospecialize 𝑇 ν
     for T ∈ UnionIterator(𝑇)
-        out = bokehwrite(T, ν)
+        out = bokehconvert(T, ν)
         (out isa Unknown) || return out
     end
 

@@ -2,17 +2,17 @@
 
 @model mutable struct IntEditor <: iIntEditor
 
-    syncable :: Bool = true
-
-    step :: Int64 = 1
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    subscribed_events :: Vector{Symbol}
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
+    name :: Bokeh.Model.Nullable{String} = nothing
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    step :: Int64 = 1
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

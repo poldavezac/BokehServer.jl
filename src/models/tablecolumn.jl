@@ -2,31 +2,31 @@
 
 @model mutable struct TableColumn <: iTableColumn
 
-    syncable :: Bool = true
-
-    visible :: Bool = true
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
     default_sort :: Bokeh.Model.EnumType{(:ascending, :descending)} = :ascending
-
-    sortable :: Bool = true
-
-    title :: Bokeh.Model.Nullable{String} = nothing
-
-    formatter :: iCellFormatter = StringFormatter()
-
-    subscribed_events :: Vector{Symbol}
-
-    field :: String
-
-    name :: Bokeh.Model.Nullable{String} = nothing
 
     editor :: iCellEditor = StringEditor()
 
+    field :: String
+
+    formatter :: iCellFormatter = StringFormatter()
+
     js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    sortable :: Bool = true
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    title :: Bokeh.Model.Nullable{String} = nothing
+
+    visible :: Bool = true
 
     width :: Int64 = 300
 end

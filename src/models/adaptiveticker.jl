@@ -2,27 +2,27 @@
 
 @model mutable struct AdaptiveTicker <: iAdaptiveTicker
 
-    syncable :: Bool = true
+    base :: Float64 = 10.0
+
+    desired_num_ticks :: Int64 = 6
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
-
-    subscribed_events :: Vector{Symbol}
-
     mantissas :: Vector{Float64} = [1.0, 2.0, 5.0]
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    num_minor_ticks :: Int64 = 5
 
     max_interval :: Bokeh.Model.Nullable{Float64} = nothing
 
     min_interval :: Float64 = 0.0
 
-    desired_num_ticks :: Int64 = 6
+    name :: Bokeh.Model.Nullable{String} = nothing
 
-    base :: Float64 = 10.0
+    num_minor_ticks :: Int64 = 5
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

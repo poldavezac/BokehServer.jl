@@ -2,49 +2,49 @@
 
 @model mutable struct Span <: iSpan
 
-    syncable :: Bool = true
-
-    location :: Bokeh.Model.Nullable{Float64} = nothing
-
-    group :: Bokeh.Model.Nullable{iRendererGroup} = nothing
-
-    line_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(0,0,0)"
-
-    visible :: Bool = true
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    line_alpha :: Bokeh.Model.Percent = 1.0
-
-    subscribed_events :: Vector{Symbol}
-
-    line_cap :: Bokeh.Model.EnumType{(:round, :square, :butt)} = :butt
-
-    line_join :: Bokeh.Model.EnumType{(:round, :miter, :bevel)} = :bevel
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    location_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
-
-    y_range_name :: String = "default"
-
-    x_range_name :: String = "default"
-
-    render_mode :: Bokeh.Model.EnumType{(:canvas, :css)} = :canvas
-
-    line_width :: Float64 = 1.0
+    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
 
     dimension :: Bokeh.Model.EnumType{(:height, :width)} = :width
 
-    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
+    group :: Bokeh.Model.Nullable{iRendererGroup} = nothing
 
-    line_dash_offset :: Int64 = 0
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     level :: Bokeh.Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
 
+    line_alpha :: Bokeh.Model.Percent = 1.0
+
+    line_cap :: Bokeh.Model.EnumType{(:round, :square, :butt)} = :butt
+
+    line_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(0,0,0)"
+
     line_dash :: Bokeh.Model.DashPattern
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    line_dash_offset :: Int64 = 0
+
+    line_join :: Bokeh.Model.EnumType{(:round, :miter, :bevel)} = :bevel
+
+    line_width :: Float64 = 1.0
+
+    location :: Bokeh.Model.Nullable{Float64} = nothing
+
+    location_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
+
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    render_mode :: Bokeh.Model.EnumType{(:canvas, :css)} = :canvas
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    visible :: Bool = true
+
+    x_range_name :: String = "default"
+
+    y_range_name :: String = "default"
 end

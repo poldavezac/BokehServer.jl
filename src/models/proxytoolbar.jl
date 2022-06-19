@@ -2,23 +2,23 @@
 
 @model mutable struct ProxyToolbar <: iProxyToolbar
 
-    syncable :: Bool = true
+    autohide :: Bool = false
 
-    tools :: Vector{iTool}
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
-
     logo :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:normal, :grey)}} = :normal
-
-    subscribed_events :: Vector{Symbol}
-
-    toolbars :: Vector{iToolbar}
-
-    autohide :: Bool = false
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    toolbars :: Vector{iToolbar}
+
+    tools :: Vector{iTool}
 end

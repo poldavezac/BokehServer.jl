@@ -2,65 +2,65 @@
 
 @model mutable struct PolyAnnotation <: iPolyAnnotation
 
-    syncable :: Bool = true
-
-    hatch_extra :: Dict{String, iTexture}
-
-    ys :: Vector{Float64} = Float64[]
-
-    group :: Bokeh.Model.Nullable{iRendererGroup} = nothing
-
-    line_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(0,0,0)"
-
-    visible :: Bool = true
-
-    hatch_scale :: Bokeh.Model.Size = 12.0
-
-    hatch_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(0,0,0)"
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    ys_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
-
-    line_alpha :: Bokeh.Model.Percent = 1.0
+    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
 
     fill_alpha :: Bokeh.Model.Percent = 1.0
 
-    hatch_pattern :: Bokeh.Model.Nullable{String} = nothing
+    fill_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(128,128,128)"
 
-    subscribed_events :: Vector{Symbol}
+    group :: Bokeh.Model.Nullable{iRendererGroup} = nothing
 
     hatch_alpha :: Bokeh.Model.Percent = 1.0
 
-    line_cap :: Bokeh.Model.EnumType{(:round, :square, :butt)} = :butt
+    hatch_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(0,0,0)"
 
-    line_join :: Bokeh.Model.EnumType{(:round, :miter, :bevel)} = :bevel
+    hatch_extra :: Dict{String, iTexture}
 
-    name :: Bokeh.Model.Nullable{String} = nothing
+    hatch_pattern :: Bokeh.Model.Nullable{String} = nothing
 
-    y_range_name :: String = "default"
+    hatch_scale :: Bokeh.Model.Size = 12.0
 
-    x_range_name :: String = "default"
+    hatch_weight :: Bokeh.Model.Size = 1.0
 
-    line_width :: Float64 = 1.0
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    fill_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(128,128,128)"
-
-    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
-
-    line_dash_offset :: Int64 = 0
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     level :: Bokeh.Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
 
-    hatch_weight :: Bokeh.Model.Size = 1.0
+    line_alpha :: Bokeh.Model.Percent = 1.0
+
+    line_cap :: Bokeh.Model.EnumType{(:round, :square, :butt)} = :butt
+
+    line_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(0,0,0)"
+
+    line_dash :: Bokeh.Model.DashPattern
+
+    line_dash_offset :: Int64 = 0
+
+    line_join :: Bokeh.Model.EnumType{(:round, :miter, :bevel)} = :bevel
+
+    line_width :: Float64 = 1.0
+
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
+
+    visible :: Bool = true
+
+    x_range_name :: String = "default"
 
     xs :: Vector{Float64} = Float64[]
 
     xs_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
 
-    line_dash :: Bokeh.Model.DashPattern
+    y_range_name :: String = "default"
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    ys :: Vector{Float64} = Float64[]
+
+    ys_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
 end

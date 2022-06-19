@@ -2,19 +2,19 @@
 
 @model mutable struct LogTickFormatter <: iLogTickFormatter
 
-    syncable :: Bool = true
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     min_exponent :: Int64 = 0
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
-    ticker :: Bokeh.Model.Nullable{iTicker} = nothing
-
     subscribed_events :: Vector{Symbol}
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
 
     tags :: Vector{Any}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    ticker :: Bokeh.Model.Nullable{iTicker} = nothing
 end

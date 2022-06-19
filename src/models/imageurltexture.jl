@@ -2,19 +2,19 @@
 
 @model mutable struct ImageURLTexture <: iImageURLTexture
 
-    syncable :: Bool = true
-
-    url :: String
-
-    repetition :: Bokeh.Model.EnumType{(:repeat_y, :repeat_x, :no_repeat, :repeat)} = :repeat
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    subscribed_events :: Vector{Symbol}
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    repetition :: Bokeh.Model.EnumType{(:repeat_y, :repeat_x, :no_repeat, :repeat)} = :repeat
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
     tags :: Vector{Any}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    url :: String
 end

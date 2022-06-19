@@ -2,21 +2,21 @@
 
 @model mutable struct TeX <: iTeX
 
-    syncable :: Bool = true
+    inline :: Bool = false
 
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    subscribed_events :: Vector{Symbol}
-
-    text :: String
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     macros :: Dict{String, Union{String, Tuple{String, Int64}}}
 
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
     tags :: Vector{Any}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    inline :: Bool = false
+    text :: String
 end

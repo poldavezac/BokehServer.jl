@@ -2,83 +2,83 @@
 
 @model mutable struct LabelSet <: iLabelSet
 
-    syncable :: Bool = true
+    angle :: Bokeh.Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (value = 0.0,)
 
-    source :: iDataSource = ColumnDataSource()
-
-    group :: Bokeh.Model.Nullable{iRendererGroup} = nothing
-
-    text_font :: Bokeh.Model.Spec{String} = (value = "helvetica",)
-
-    border_line_cap :: Bokeh.Model.EnumSpec{(:butt, :round, :square)} = (value = :butt,)
-
-    visible :: Bool = true
-
-    text_color :: Bokeh.Model.Spec{Bokeh.Model.Color} = Bokeh.Model.Unknown()
-
-    text_alpha :: Bokeh.Model.AlphaSpec = (value = 1.0,)
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    text :: Bokeh.Model.Spec{String} = (field = "text",)
-
-    tags :: Vector{Any}
-
-    border_line_dash_offset :: Bokeh.Model.Spec{Int64} = (value = 0,)
+    angle_units :: Bokeh.Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
 
     background_fill_alpha :: Bokeh.Model.AlphaSpec = (value = 1.0,)
 
-    subscribed_events :: Vector{Symbol}
-
     background_fill_color :: Bokeh.Model.Spec{Bokeh.Model.Color} = Bokeh.Model.Unknown()
 
-    x_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
+    border_line_alpha :: Bokeh.Model.AlphaSpec = (value = 1.0,)
 
-    x :: Bokeh.Model.Spec{Float64} = (field = "x",)
+    border_line_cap :: Bokeh.Model.EnumSpec{(:butt, :round, :square)} = (value = :butt,)
 
-    text_line_height :: Bokeh.Model.Spec{Float64} = (value = 1.2,)
+    border_line_color :: Bokeh.Model.Spec{Bokeh.Model.Color} = Bokeh.Model.Unknown()
 
-    angle :: Bokeh.Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (value = 0.0,)
+    border_line_dash :: Bokeh.Model.Spec{Bokeh.Model.DashPattern}
 
-    y_offset :: Bokeh.Model.Spec{Float64} = (value = 0.0,)
+    border_line_dash_offset :: Bokeh.Model.Spec{Int64} = (value = 0,)
 
-    text_baseline :: Bokeh.Model.EnumSpec{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)} = (value = :bottom,)
+    border_line_join :: Bokeh.Model.EnumSpec{(:miter, :round, :bevel)} = (value = :bevel,)
 
-    y_range_name :: String = "default"
+    border_line_width :: Bokeh.Model.Spec{Float64} = (value = 1.0,)
 
-    x_range_name :: String = "default"
+    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
+
+    group :: Bokeh.Model.Nullable{iRendererGroup} = nothing
+
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    level :: Bokeh.Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
 
     name :: Bokeh.Model.Nullable{String} = nothing
 
     render_mode :: Bokeh.Model.EnumType{(:canvas, :css)} = :canvas
 
-    text_font_size :: Bokeh.Model.FontSizeSpec = (value = "16px",)
+    source :: iDataSource = ColumnDataSource()
 
-    border_line_join :: Bokeh.Model.EnumSpec{(:miter, :round, :bevel)} = (value = :bevel,)
+    subscribed_events :: Vector{Symbol}
 
-    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
+    syncable :: Bool = true
 
-    border_line_alpha :: Bokeh.Model.AlphaSpec = (value = 1.0,)
+    tags :: Vector{Any}
 
-    text_font_style :: Bokeh.Model.EnumSpec{(:normal, :italic, :bold, Symbol("bold italic"))} = (value = :normal,)
-
-    level :: Bokeh.Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
-
-    x_offset :: Bokeh.Model.Spec{Float64} = (value = 0.0,)
-
-    y_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
-
-    y :: Bokeh.Model.Spec{Float64} = (field = "y",)
-
-    angle_units :: Bokeh.Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
-
-    border_line_width :: Bokeh.Model.Spec{Float64} = (value = 1.0,)
+    text :: Bokeh.Model.Spec{String} = (field = "text",)
 
     text_align :: Bokeh.Model.EnumSpec{(:left, :right, :center)} = (value = :left,)
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    text_alpha :: Bokeh.Model.AlphaSpec = (value = 1.0,)
 
-    border_line_color :: Bokeh.Model.Spec{Bokeh.Model.Color} = Bokeh.Model.Unknown()
+    text_baseline :: Bokeh.Model.EnumSpec{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)} = (value = :bottom,)
 
-    border_line_dash :: Bokeh.Model.Spec{Bokeh.Model.DashPattern}
+    text_color :: Bokeh.Model.Spec{Bokeh.Model.Color} = Bokeh.Model.Unknown()
+
+    text_font :: Bokeh.Model.Spec{String} = (value = "helvetica",)
+
+    text_font_size :: Bokeh.Model.FontSizeSpec = (value = "16px",)
+
+    text_font_style :: Bokeh.Model.EnumSpec{(:normal, :italic, :bold, Symbol("bold italic"))} = (value = :normal,)
+
+    text_line_height :: Bokeh.Model.Spec{Float64} = (value = 1.2,)
+
+    visible :: Bool = true
+
+    x :: Bokeh.Model.Spec{Float64} = (field = "x",)
+
+    x_offset :: Bokeh.Model.Spec{Float64} = (value = 0.0,)
+
+    x_range_name :: String = "default"
+
+    x_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
+
+    y :: Bokeh.Model.Spec{Float64} = (field = "y",)
+
+    y_offset :: Bokeh.Model.Spec{Float64} = (value = 0.0,)
+
+    y_range_name :: String = "default"
+
+    y_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
 end

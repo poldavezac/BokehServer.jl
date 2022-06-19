@@ -2,19 +2,19 @@
 
 @model mutable struct Dodge <: iDodge
 
-    syncable :: Bool = true
-
-    value :: Float64 = 0.0
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    subscribed_events :: Vector{Symbol}
-
-    range :: Bokeh.Model.Nullable{iRange} = nothing
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
+    name :: Bokeh.Model.Nullable{String} = nothing
+
+    range :: Bokeh.Model.Nullable{iRange} = nothing
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
     tags :: Vector{Any}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    value :: Float64 = 0.0
 end

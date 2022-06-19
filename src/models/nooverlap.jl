@@ -2,7 +2,9 @@
 
 @model mutable struct NoOverlap <: iNoOverlap
 
-    syncable :: Bool = true
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+
+    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     min_distance :: Int64 = 5
 
@@ -10,9 +12,7 @@
 
     subscribed_events :: Vector{Symbol}
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    syncable :: Bool = true
 
     tags :: Vector{Any}
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 end

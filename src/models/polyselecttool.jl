@@ -2,19 +2,11 @@
 
 @model mutable struct PolySelectTool <: iPolySelectTool
 
-    syncable :: Bool = true
-
     description :: Bokeh.Model.Nullable{String} = nothing
 
-    renderers :: Union{Bokeh.Model.EnumType{(:auto,)}, Vector{iDataRenderer}} = :auto
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    tags :: Vector{Any}
-
-    overlay :: iPolyAnnotation = PolyAnnotation()
-
-    subscribed_events :: Vector{Symbol}
 
     mode :: Bokeh.Model.EnumType{(:append, :replace, :subtract, :intersect)} = :replace
 
@@ -22,5 +14,13 @@
 
     names :: Vector{String} = String[]
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    overlay :: iPolyAnnotation = PolyAnnotation()
+
+    renderers :: Union{Bokeh.Model.EnumType{(:auto,)}, Vector{iDataRenderer}} = :auto
+
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end

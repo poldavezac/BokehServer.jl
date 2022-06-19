@@ -1,5 +1,10 @@
+module Bokeh
+# a very simplified Bokeh for parsing bokeh
+include(joinpath((@__DIR__), "..", "..", "src", "abstracttypes.jl"))
+include(joinpath((@__DIR__), "..", "..", "src", "model.jl"))
+end
+
 module CodeCreator
-using Bokeh
 using PythonCall
 
 include("defaults.jl")
@@ -14,7 +19,7 @@ function abstracttypescode(io::IO)
     done   = Set{Symbol}()
     println(io, "module ModelTypes")
     println(io, "using ..AbstractTypes")
-    for (name, opts) ∈ hierarchy()
+    for (name, opts) ∈ sort!(collect(hierarchy()); by = string∘first)
         @assert length(opts) > 1
         for i ∈ (length(opts)-1):-1:1
             if opts[i] ∉ done
@@ -47,7 +52,7 @@ function structcode(io::IO, name::String, parent; adddoc :: Symbol = :none)
     (adddoc ∈ (:all, :struct)) && doccode(io, props[:__doc__], 0)
 
     println(io, "@model mutable struct $(structname(name)) <: $parent")
-    for (i, j) ∈ props
+    for (i, j) ∈ sort!(collect(props); by = string∘first)
         (i ≡ :__doc__) && continue
 
         println(io)
@@ -82,7 +87,7 @@ function createmainfile(io::IO, deplist)
     println(io, "using ..AbstractTypes")
 
     done   = Set{Symbol}()
-    for (name, opts) ∈ hierarchy()
+    for (name, opts) ∈ sort!(collect(hierarchy()); by = string∘first)
         @assert length(opts) > 1
         for i ∈ (length(opts)-1):-1:1
             rem = setdiff(opts, done)
@@ -94,7 +99,7 @@ function createmainfile(io::IO, deplist)
     end
 
     println(io, "const iTemplate = String")
-    for (name, _) ∈ deplist
+    for name ∈ sort!(collect(keys(deplist)))
         println(io, "include(\"models/$(filename(name)).jl\")")
     end
     println(io, "end")
@@ -113,7 +118,7 @@ function createcode(; adddoc ::Symbol = :none)
 
     cls = file(abstracttypescode, "modeltypes.jl")
     file(Base.Fix2(createmainfile, deplist), "models.jl")
-    for (name, _) ∈ deplist
+    for name ∈ sort!(collect(keys(deplist)))
         file("models", "$(filename(name)).jl") do io
             structcode(io, name, cls[name]; adddoc)
         end

@@ -18,14 +18,14 @@ bokehfieldtype(𝑇::AbstractDict) = 𝑇.name.wrapper{(T isa Type ? bokehfieldt
 bokehfieldtype(𝑇::AbstractSet) = 𝑇.name.wrapper{(T isa Type ? bokehfieldtype(T) : T for T ∈ 𝑇.parameters)...}
 bokehfieldtype(𝑇::AbstractArray) = 𝑇.name.wrapper{(T isa Type ? bokehfieldtype(T) : T for T ∈ 𝑇.parameters)...}
 
-function bokehwrite(𝑇::Type{<:AbstractDict{𝐾, 𝑉}}, ν::AbstractDict) where {𝐾, 𝑉}
+function bokehconvert(𝑇::Type{<:AbstractDict{𝐾, 𝑉}}, ν::AbstractDict) where {𝐾, 𝑉}
     params = 𝑇.parameters
     outp   = bokehfieldtype(𝑇)()
     for (i,j) ∈ ν
-        iv = bokehwrite(𝐾, i)
+        iv = bokehconvert(𝐾, i)
         (iv isa Unknown) && return Unknown()
 
-        jv = bokehwrite(𝑉, j)
+        jv = bokehconvert(𝑉, j)
         (jv isa Unknown) && return Unknown()
 
         push!(outp, iv => jv)
@@ -34,10 +34,10 @@ function bokehwrite(𝑇::Type{<:AbstractDict{𝐾, 𝑉}}, ν::AbstractDict) wh
 end
 
 for cls ∈ (AbstractSet, AbstractVector)
-    @eval function bokehwrite(𝑇::Type{<:$cls{𝐼}}, ν::$cls) where {𝐼}
+    @eval function bokehconvert(𝑇::Type{<:$cls{𝐼}}, ν::$cls) where {𝐼}
         outp = bokehfieldtype(𝑇)()
         for i ∈ ν
-            iv = bokehwrite(𝐼, i)
+            iv = bokehconvert(𝐼, i)
             (iv isa Unknown) && return Unknown()
             push!(outp, iv)
         end
@@ -45,21 +45,21 @@ for cls ∈ (AbstractSet, AbstractVector)
     end
 end
 
-bokehwrite(𝑇::Type{<:Pair}, ν::Pair) = bokehwrite(𝑇.parameters[1], first(ν)) => bokehwrite(𝑇.parameters[2], last(ν))
+bokehconvert(𝑇::Type{<:Pair}, ν::Pair) = bokehconvert(𝑇.parameters[1], first(ν)) => bokehconvert(𝑇.parameters[2], last(ν))
 
 for (𝐹, (𝑇, code)) ∈ (
-        :push!      => Container => :((bokehwrite(eltype(T), i) for i ∈ x)),
-        :setindex!  => Container{<:AbstractDict}   => :((bokehwrite(eltype(T).parameters[2], x[1]), x[2])),
-        :setindex!  => Container{<:AbstractArray}  => :((bokehwrite(eltype(T), x[1]), x[2:end]...)),
+        :push!      => Container => :((bokehconvert(eltype(T), i) for i ∈ x)),
+        :setindex!  => Container{<:AbstractDict}   => :((bokehconvert(eltype(T).parameters[2], x[1]), x[2])),
+        :setindex!  => Container{<:AbstractArray}  => :((bokehconvert(eltype(T), x[1]), x[2:end]...)),
         :pop!       => Container => :x,
         :empty!     => Container => :x,
-        :append!    => iContainer{<:AbstractArray} => :((bokehwrite(T, i) for i ∈ x)),
+        :append!    => iContainer{<:AbstractArray} => :((bokehconvert(T, i) for i ∈ x)),
         :deleteat!  => iContainer{<:AbstractArray} => :x,
         :popat!     => iContainer{<:AbstractArray} => :x,
         :popfirst!  => iContainer{<:AbstractArray} => :x,
-        :insert!    => iContainer{<:AbstractArray} => :((bokehwrite(eltype(T), i) for i ∈ x)),
+        :insert!    => iContainer{<:AbstractArray} => :((bokehconvert(eltype(T), i) for i ∈ x)),
         :delete!    => iContainer{<:Union{AbstractDict, AbstractSet}}  => :x,
-        :merge!     => iContainer{<:AbstractDict} => :((bokehwrite(T, i) for i ∈ x)),
+        :merge!     => iContainer{<:AbstractDict} => :((bokehconvert(T, i) for i ∈ x)),
 )
     @eval function Base.$𝐹(γ::T, x...; dotrigger::Bool = true) where {T <: $𝑇}
         parent = γ.parent.value
@@ -96,8 +96,8 @@ Base.eltype(::Type{<:iContainer{T}}) where {T}  = eltype(T)
 struct RestrictedKey{T} <: iProperty end
 
 bokehfieldtype(::Type{<:RestrictedKey}) = Symbol
-bokehwrite(𝑇::Type{<:RestrictedKey}, ν::AbstractString) = bokehwrite(𝑇, Symbol(ν))
-function bokehwrite(::Type{RestrictedKey{T}}, ν::Symbol) where {T}
+bokehconvert(𝑇::Type{<:RestrictedKey}, ν::AbstractString) = bokehconvert(𝑇, Symbol(ν))
+function bokehconvert(::Type{RestrictedKey{T}}, ν::Symbol) where {T}
     (ν ∈ T) && throw(KeyError("Key $ν is not allowed"))
     return ν
 end

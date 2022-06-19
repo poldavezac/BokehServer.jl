@@ -2,21 +2,21 @@
 
 @model mutable struct CustomAction <: iCustomAction
 
-    syncable :: Bool = true
+    callback :: Bokeh.Model.Nullable{iCallback} = nothing
 
     description :: Bokeh.Model.Nullable{String} = nothing
 
-    name :: Bokeh.Model.Nullable{String} = nothing
-
     icon :: Bokeh.Model.Image
 
-    subscribed_events :: Vector{Symbol}
-
-    callback :: Bokeh.Model.Nullable{iCallback} = nothing
+    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
     js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
-    tags :: Vector{Any}
+    name :: Bokeh.Model.Nullable{String} = nothing
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    subscribed_events :: Vector{Symbol}
+
+    syncable :: Bool = true
+
+    tags :: Vector{Any}
 end
