@@ -118,6 +118,8 @@ function createcode(; adddoc ::Symbol = :none)
 
     cls = file(abstracttypescode, "modeltypes.jl")
     file(Base.Fix2(createmainfile, deplist), "models.jl")
+    Base.Filesystem.rm(joinpath((@__DIR__), "..", "..", "src", "models"); recursive = true)
+    Base.Filesystem.mkdir(joinpath((@__DIR__), "..", "..", "src", "models"))
     for name ∈ sort!(collect(keys(deplist)))
         file("models", "$(filename(name)).jl") do io
             structcode(io, name, cls[name]; adddoc)
