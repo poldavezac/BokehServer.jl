@@ -9,5 +9,7 @@ include("protocol.jl")
 include("token.jl")
 include("server.jl")
 include("client.jl")
+include("modeltypes.jl")
+include("action.jl")
 include("models.jl")
 end # module
