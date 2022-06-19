@@ -5,7 +5,7 @@ abstract type iTicker <: iModel end
 abstract type iContinuousTicker <: iTicker end
 abstract type iDOMNode <: iModel end
 abstract type iDOMElement <: iDOMNode end
-abstract type iDomSpan <: iDOMElement end
+abstract type iDOMSpan <: iDOMElement end
 abstract type iTool <: iModel end
 abstract type iGestureTool <: iTool end
 abstract type iSelectTool <: iGestureTool end
@@ -50,7 +50,7 @@ abstract type iBaseText <: iModel end
 abstract type iPlainText <: iBaseText end
 abstract type iPlaceholder <: iDOMNode end
 abstract type iValueRef <: iPlaceholder end
-abstract type iDomColorRef <: iValueRef end
+abstract type iDOMColorRef <: iValueRef end
 abstract type iConnectedXYGlyph <: iXYGlyph end
 abstract type iTickFormatter <: iModel end
 abstract type iBasicTickFormatter <: iTickFormatter end
@@ -100,7 +100,7 @@ abstract type iAxis <: iGuideRenderer end
 abstract type iContinuousAxis <: iAxis end
 abstract type iLinearAxis <: iContinuousAxis end
 abstract type iAnnularWedge <: iGlyph end
-abstract type iDomTemplate <: iDOMElement end
+abstract type iDOMTemplate <: iDOMElement end
 abstract type iCategoricalTickFormatter <: iTickFormatter end
 abstract type iDatetimeRangeSlider <: iAbstractSlider end
 abstract type iCoordinateTransform <: iExpression end
@@ -119,7 +119,7 @@ abstract type iBoxZoomTool <: iDrag end
 abstract type iColorMapper <: iMapper end
 abstract type iDataAnnotation <: iAnnotation end
 abstract type iArrow <: iDataAnnotation end
-abstract type iDomDiv <: iDOMElement end
+abstract type iDOMDiv <: iDOMElement end
 abstract type iTexture <: iModel end
 abstract type iCanvasTexture <: iTexture end
 abstract type iOval <: iGlyph end
@@ -127,7 +127,7 @@ abstract type iLabelingPolicy <: iModel end
 abstract type iAllLabels <: iLabelingPolicy end
 abstract type iGeoJSONDataSource <: iColumnarDataSource end
 abstract type iMinAggregator <: iRowAggregator end
-abstract type iDomPlaceholder <: iDOMNode end
+abstract type iDOMPlaceholder <: iDOMNode end
 abstract type iMaxAggregator <: iRowAggregator end
 abstract type iMathText <: iBaseText end
 abstract type iTileRenderer <: iRenderer end
@@ -163,7 +163,7 @@ abstract type iSpinner <: iNumericInput end
 abstract type iScalarExpression <: iModel end
 abstract type iMinimum <: iScalarExpression end
 abstract type iHatchGlyph <: iGlyph end
-abstract type iDomTable <: iDOMElement end
+abstract type iDOMTable <: iDOMElement end
 abstract type iButtonGroup <: iAbstractGroup end
 abstract type iRadioButtonGroup <: iButtonGroup end
 abstract type iTextGlyph <: iGlyph end
@@ -178,7 +178,7 @@ abstract type iRendererGroup <: iModel end
 abstract type iCategoricalMapper <: iMapper end
 abstract type iCategoricalMarkerMapper <: iCategoricalMapper end
 abstract type iAction <: iModel end
-abstract type iDomToggleGroup <: iAction end
+abstract type iDOMToggleGroup <: iAction end
 abstract type iFixedTicker <: iContinuousTicker end
 abstract type iPasswordInput <: iTextInput end
 abstract type iWebDataSource <: iColumnDataSource end
@@ -195,15 +195,14 @@ abstract type iSaveTool <: iActionTool end
 abstract type iDatetimeAxis <: iLinearAxis end
 abstract type iInterpolator <: iTransform end
 abstract type iLinearInterpolator <: iInterpolator end
-abstract type iDomValueRef <: iPlaceholder end
+abstract type iDOMValueRef <: iPlaceholder end
 abstract type iToolbarBox <: iLayoutDOM end
 abstract type iCheckboxEditor <: iCellEditor end
 abstract type iImage <: iXYGlyph end
 abstract type iVBar <: iGlyph end
 abstract type iLineGlyph <: iGlyph end
-abstract type iDomDOMElement <: iDOMNode end
 abstract type iTooltip <: iAnnotation end
-abstract type iDomTableRow <: iDOMElement end
+abstract type iDOMTableRow <: iDOMElement end
 abstract type iGroup <: iAbstractGroup end
 abstract type iQuad <: iGlyph end
 abstract type iPanel <: iModel end
@@ -240,7 +239,7 @@ abstract type iBezier <: iLineGlyph end
 abstract type iDateFormatter <: iStringFormatter end
 abstract type iPointDrawTool <: iGestureTool end
 abstract type iBinnedTicker <: iTicker end
-abstract type iDomAction <: iModel end
+abstract type iDOMAction <: iModel end
 abstract type iHArea <: iGlyph end
 abstract type iWhisker <: iDataAnnotation end
 abstract type iLassoSelectTool <: iGestureTool end
@@ -251,7 +250,7 @@ abstract type iTapTool <: iGestureTool end
 abstract type iLayoutProvider <: iModel end
 abstract type iStaticLayoutProvider <: iLayoutProvider end
 abstract type iDataRange1d <: iDataRange end
-abstract type iDomIndex <: iPlaceholder end
+abstract type iDOMIndex <: iPlaceholder end
 abstract type iBooleanFilter <: iFilter end
 abstract type iDatetimeTicker <: iCompositeTicker end
 abstract type iStack <: iExpression end
@@ -264,7 +263,6 @@ abstract type iCustomAction <: iActionTool end
 abstract type iBoxEditTool <: iGestureTool end
 abstract type iPolyTool <: iEditTool end
 abstract type iCustomJSHover <: iModel end
-abstract type iDomDOMNode <: iModel end
 abstract type iIntersectRenderers <: iSelectionPolicy end
 abstract type iWheelPanTool <: iScroll end
 abstract type iSelectEditor <: iCellEditor end
@@ -323,7 +321,7 @@ abstract type iSegment <: iLineGlyph end
 abstract type iDatetimeTickFormatter <: iTickFormatter end
 abstract type iPolyEditTool <: iGestureTool end
 abstract type iStepInterpolator <: iInterpolator end
-abstract type iDomText <: iDOMNode end
+abstract type iDOMText <: iDOMNode end
 abstract type iDataCube <: iDataTable end
 abstract type iMonthsTicker <: iSingleIntervalTicker end
 abstract type iCustomLabelingPolicy <: iLabelingPolicy end

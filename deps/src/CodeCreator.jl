@@ -7,7 +7,7 @@ include("properties.jl")
 include("hierarchy.jl")
 include("dependencies.jl")
 
-structname(name::String) = Symbol(string(occursin(".dom.", name) ? "Dom" : "", split(name, '.')[end]))
+filename(name::String) = lowercase(String(structname(name)))
 
 function abstracttypescode(io::IO)
     direct = Dict{String, Symbol}()
@@ -38,14 +38,11 @@ function doccode(io::IO, doc::String, indent::Int)
     nothing
 end
 
-const _BM_PATT1 = r"Bokeh\.Models\."
-const _BM_PATT2 = r"{\s*Bokeh\.Models\."
+const _BM_PATT = r"Bokeh\.Models\." => "i"
 
-function structcode(io::IO, name::String, parent, deps; adddoc :: Symbol = :none)
+function structcode(io::IO, name::String, parent; adddoc :: Symbol = :none)
     props = parseproperties(model(name))
 
-    println(io)
-    println(io, "using ..ModelTypes: $parent, $(join(deps, ", "))")
     println(io)
     (adddoc ∈ (:all, :struct)) && doccode(io, props[:__doc__], 0)
 
@@ -58,20 +55,17 @@ function structcode(io::IO, name::String, parent, deps; adddoc :: Symbol = :none
         println(
             io,
             replace(
-                replace(
-                    string(
-                        "    $i :: $(j.type)",
-                        if isnothing(j.default)
-                            ""
-                        elseif something(j.default) isa Expr
-                            " = $(something(j.default))"
-                        else
-                            " = $(repr(something(j.default)))"
-                        end
-                    ),
-                    _BM_PATT2 => "{<:i"
+                string(
+                    "    $i :: $(j.type)",
+                    if isnothing(j.default)
+                        ""
+                    elseif something(j.default) isa Expr
+                        " = $(something(j.default))"
+                    else
+                        " = $(repr(something(j.default)))"
+                    end
                 ),
-                _BM_PATT1 => "i"
+                _BM_PATT
             )
         )
     end
@@ -87,15 +81,31 @@ function createmainfile(io::IO, deplist)
     println(io, "using ..Model")
     println(io, "using ..AbstractTypes")
 
+    done   = Set{Symbol}()
+    for (name, opts) ∈ hierarchy()
+        @assert length(opts) > 1
+        for i ∈ (length(opts)-1):-1:1
+            rem = setdiff(opts, done)
+            if !isempty(rem)
+                println(io, "using ..ModelTypes: $(join(rem, ", "))")
+                push!(done, rem...)
+            end
+        end
+    end
+
     println(io, "const iTemplate = String")
-    for (name, deps) ∈ deplist
-        println(io, "include(\"models/$name.jl\")")
+    for (name, _) ∈ deplist
+        println(io, "include(\"models/$(filename(name)).jl\")")
     end
     println(io, "end")
 end
 
 function createcode(; adddoc ::Symbol = :none)
-    deplist       = Dict(i => dependencies(model(i)) for i ∈ modelnames())
+    deplist       = Dict(
+        i => dependencies(model(i))
+        for i ∈ modelnames()
+        if !startswith("$i", "Abstract")
+    )
     file(f, x...) = open(joinpath((@__DIR__), "..", "..", "src", x...), "w") do io
         println(io, "#- file created by '$(@__FILE__)': edit at your own risk! -#")
         f(io)
@@ -103,9 +113,9 @@ function createcode(; adddoc ::Symbol = :none)
 
     cls = file(abstracttypescode, "modeltypes.jl")
     file(Base.Fix2(createmainfile, deplist), "models.jl")
-    for (name, deps) ∈ deplist
-        file("models", "$(structname(name)).jl") do io
-            structcode(io, name, cls[name], deps; adddoc)
+    for (name, _) ∈ deplist
+        file("models", "$(filename(name)).jl") do io
+            structcode(io, name, cls[name]; adddoc)
         end
     end
 end

@@ -9,6 +9,14 @@ function instancetype(cls)
     getfield(Bokeh.Models, cls)
 end
 
+function structname(name::String)
+    cls = split(name, '.')[end]
+    if occursin(".dom.", name) && !occursin("DOM", name)
+        cls = "DOM$cls"
+    end
+    return Symbol(cls)
+end
+
 propdependencies(::Val, _...) = Set{Type}()
 propdependencies(::Val{:Dict}, prop) = propdependencies(prop.keys_type) ∪ propdependencies(prop.values_type)
 propdependencies(::Union{(Val{i} for i ∈ (:List, :Seq, :Array))...}, prop) = propdependencies(prop.item_type)
@@ -25,9 +33,8 @@ propdependencies(::Val{:Instance}, prop) = let qual = if pyhasattr(prop._instanc
     else
         pyconvert(String, prop._instance_type)
     end
-    cls = Symbol((occursin(".dom.", qual) ? "Dom" : "") * (split(qual, '.')[end]))
-
-    cls ∈ (:Model, :DOMNode) ? Set{Type}() : Set{Type}([instancetype(cls)])
+    cls = structname(qual)
+    cls ≡ :Model ? Set{Type}() : Set{Type}([instancetype(cls)])
 end
 
 propdependencies(prop::Py) = propdependencies(Val(pyconvert(Symbol, prop.__class__.__name__)), prop)
@@ -41,7 +48,7 @@ function dependencies(mdl::Py)
     out
 end
 
-export dependencies
+export dependencies, structname
 end
 
 using .Dependencies

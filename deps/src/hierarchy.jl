@@ -7,8 +7,8 @@ modelnames() = (pyconvert(String, i) for i ∈ pyimport("bokeh.models" => "Model
 
 function hierarchy(mdl::Py)
     todos = Pair{Py, Vector{Symbol}}[mdl => Symbol[pyconvert(Symbol, mdl.__name__)]]
-    if endswith(pyconvert(String, mdl.__module__), "dom")
-        last(todos[1])[1] = Symbol("iDom$(last(todos[1])[1])")
+    if endswith(pyconvert(String, mdl.__module__), "dom") && !startswith("$(last(todos[1])[1])", "DOM")
+        last(todos[1])[1] = Symbol("iDOM$(last(todos[1])[1])")
     else
         last(todos[1])[1] = Symbol("i$(last(todos[1])[1])")
     end
