@@ -20,13 +20,12 @@ struct Internal{T} <: iProperty end
 
 struct ReadOnly{T} <: iProperty end
 @inline bokehfieldtype(::Type{ReadOnly{T}}) where {T} = bokehfieldtype(T)
-@inline bokehconvert(::Type{<:ReadOnly}, ::Any) = throw(ErrorException("Readonly attribute"))
+@inline bokehconvert(::Type{ReadOnly{T}}, ::Any) where {T} = throw(ErrorException("Readonly attribute"))
 
 
 struct Nullable{T} <: iProperty end
 @inline bokehfieldtype(::Type{Nullable{T}}) where {T} = Union{Nothing, bokehfieldtype(T)}
-@inline bokehread(::Type{<:Nullable}, ::iHasProps, ::Symbol, ::Nothing) = nothing
-@inline bokehread(::Type{Nullable{T}}, µ::iHasProps, α::Symbol, ν::Any) where {T} = bokehread(T, μ, α, ν)
+@inline bokehread(::Type{Nullable{T}}, µ::iHasProps, α::Symbol, ν::Any) where {T} = isnothing(ν) ? nothing : bokehread(T, μ, α, ν)
 @inline bokehconvert(::Type{Nullable{T}}, ν::Any) where {T} = isnothing(ν) ? nothing : bokehconvert(T, ν)
 
 struct FontSize <: iProperty end

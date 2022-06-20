@@ -56,7 +56,6 @@ end
     @test 𝐶 == truth
 end
 
-
 @testset "receive" begin
     doc  = Bokeh.Document()
     mdl  = ProtocolX(; id = 100,a  = 10)
@@ -155,6 +154,25 @@ end
             Bokeh.Protocol.patchdoc!(doc, cnt, buf)
             @test length(doc.roots) == 2
             @test doc.roots[end].a.id ≡ other.id
+        end
+    end
+
+    @testset "action attribute" begin
+        btn = Bokeh.Models.Button()
+        E.eventlist!() do
+            push!(doc.roots, btn)
+
+            called = Ref(false)
+            Bokeh.onchange(btn) do x
+                called[] = true
+            end
+                
+            cnt = Dict(
+                "references" => [],
+                "events" =>  [js(Bokeh.Actions.ButtonClick(; model = btn))],
+            )
+            Bokeh.Protocol.patchdoc!(doc, cnt, buf)
+            @test called[]
         end
     end
 end

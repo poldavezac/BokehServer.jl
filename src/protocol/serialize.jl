@@ -99,11 +99,14 @@ function serialref(η::Events.ColumnDataChangedEvent, 𝑅::iRules)
     )
 end
 
-function serialref(η::Events.iActionEvent, 𝑅::iRules)
+function serialref(η::T, 𝑅::iRules) where {T <: Events.iActionEvent}
     return (;
         kind     = :MessageSent,
+        msg_data = (;
+            event_name   = η.event_name,
+            event_values = (; (i => serialref(getfield(η, i), 𝑅) for i ∈ fieldnames(T) if i ≢ :doc)...),
+        ),
         msg_type = :bokeh_event,
-        msg_data = (; (i => serialref(getproperty(η, i), 𝑅) for i ∈ propertynames(η) if i ≢ :doc)...)
     )
 end
 

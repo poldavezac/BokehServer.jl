@@ -103,7 +103,7 @@ function apply(::Val{:MessageSent}, 𝐷::iDocument, 𝐼::Dict{String})
     if 𝐼["msg_type"] == "bokeh_event"
         data = 𝐼["msg_data"]
         Bokeh.action!(
-            D,
+            𝐷,
             Val(Symbol(data["event_name"]));
             (Symbol(i) => j for (i, j) ∈ data["event_values"])...
         )
