@@ -73,12 +73,12 @@ end
                 "events" =>  [js(E.RootAddedEvent(doc, mdl, 1))],
             )
 
-            @test isempty(doc.roots)
+            @test isempty(doc)
             Bokeh.Protocol.patchdoc!(doc, cnt, buf)
-            @test length(doc.roots) == 1
-            @test Bokeh.bokehid(doc.roots[1]) == 100
-            @test doc.roots[1].a == 10
-            @test doc.roots[1] ≢ mdl
+            @test length(doc) == 1
+            @test Bokeh.bokehid(doc[1]) == 100
+            @test doc[1].a == 10
+            @test doc[1] ≢ mdl
         end
     end
 
@@ -89,9 +89,9 @@ end
                 "events" =>  [js(E.RootAddedEvent(doc, mdl, 1))],
             )
 
-            @test length(doc.roots) == 1
+            @test length(doc) == 1
             @test_throws ErrorException Bokeh.Protocol.patchdoc!(doc, cnt, buf)
-            @test length(doc.roots) == 1
+            @test length(doc) == 1
         end
     end
 
@@ -102,9 +102,9 @@ end
                 "events" =>  [js(E.RootRemovedEvent(doc, mdl, 1))],
             )
 
-            @test length(doc.roots) == 1
+            @test length(doc) == 1
             Bokeh.Protocol.patchdoc!(doc, cnt, buf)
-            @test length(doc.roots) == 0
+            @test isempty(doc)
         end
     end
 
@@ -132,12 +132,12 @@ end
                 ],
             )
 
-            @test length(doc.roots) == 0
+            @test isempty(doc)
             Bokeh.Protocol.patchdoc!(doc, cnt, buf)
-            @test length(doc.roots) == 2
-            @test doc.roots[1].id ≡ mdl.id
-            @test doc.roots[2].id ≡ ymdl.id
-            @test doc.roots[2].a.id ≡ ymdl.a.id
+            @test length(doc) == 2
+            @test doc[1].id ≡ mdl.id
+            @test doc[2].id ≡ ymdl.id
+            @test doc[2].a.id ≡ ymdl.a.id
         end
     end
 
@@ -149,18 +149,18 @@ end
                 "events" =>  [js(E.ModelChangedEvent(ymdl, :a, nothing, other))],
             )
 
-            @test length(doc.roots) == 2
-            @test doc.roots[end].a.id ≢ other.id
+            @test length(doc) == 2
+            @test last(doc).a.id ≢ other.id
             Bokeh.Protocol.patchdoc!(doc, cnt, buf)
-            @test length(doc.roots) == 2
-            @test doc.roots[end].a.id ≡ other.id
+            @test length(doc) == 2
+            @test last(doc).a.id ≡ other.id
         end
     end
 
     @testset "action attribute" begin
         btn = Bokeh.Models.Button()
         E.eventlist!() do
-            push!(doc.roots, btn)
+            push!(getfield(doc, :roots), btn)
 
             called = Ref(false)
             Bokeh.onchange(btn) do x

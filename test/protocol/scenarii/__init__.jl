@@ -72,7 +72,7 @@ macro initscenario(codes...)
 end
 
 function runscenario(𝐹::Function, srv = Bokeh.Document(), client = Bokeh.Document())
-    _compare(srv.roots, client.roots)
+    _compare(getfield(srv, :roots), getfield(client, :roots))
 
     evts = Bokeh.Protocol.patchdoc(𝐹, srv)
     @test !isnothing(evts)
@@ -83,7 +83,7 @@ function runscenario(𝐹::Function, srv = Bokeh.Document(), client = Bokeh.Docu
             Bokeh.Protocol.patchdoc!(client, cnv(evts), Bokeh.Protocol.Buffers())
         end
 
-        _compare(srv.roots, client.roots)
+        _compare(getfield(srv, :roots), getfield(client, :roots))
     end
     return (srv, client)
 end

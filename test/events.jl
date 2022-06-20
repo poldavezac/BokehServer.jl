@@ -43,7 +43,7 @@ end
     ini = EventsX()
 
     doc = Bokeh.Document()
-    push!(doc.roots, ini)
+    push!(getfield(doc, :roots), ini)
 
     obj = EventsX()
 
@@ -102,7 +102,7 @@ end
     obj1 = EventsX()
     obj2 = EventsX()
     doc  = Bokeh.Document()
-    push!(doc.roots, obj2)
+    push!(getfield(doc, :roots), obj2)
     calls1 = Bokeh.Events.iDocEvent[]
     calls2 = Bokeh.RootAddedEvent[]
 
@@ -133,7 +133,7 @@ end
 @testset "check action callback" begin
     obj = Bokeh.Models.Button()
     doc = Bokeh.Document()
-    push!(doc.roots, obj)
+    push!(getfield(doc, :roots), obj)
     calls = Any[]
 
     Bokeh.onchange(doc) do evt::Bokeh.Actions.DocumentReady

@@ -2,7 +2,7 @@
     doc  = Bokeh.Document()
     obj  =  ProtocolX(; id = 1)
     setfield!(doc, :title, "A")
-    push!(doc.roots, obj)
+    push!(getfield(doc, :roots), obj)
 
     truth = (; doc = (;
         title   = "A",

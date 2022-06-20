@@ -61,9 +61,9 @@ end
         testserve(:app => (doc) -> push!(doc, ServerTestObj(; a = 1), ServerTestObj(; a = 2))) do
             Bokeh.Client.open("ws://localhost:$TEST_PORT/app/ws") do _, doc
                 val[] = true
-                @test length(doc.roots) == 2
-                @test all(i isa ServerTestObj for i ∈ doc.roots)
-                @test getproperty.(doc.roots, :a) == [1, 2]
+                @test length(doc) == 2
+                @test all(i isa ServerTestObj for i ∈ doc)
+                @test getproperty.(getfield(doc, :roots), :a) == [1, 2]
             end
             yield()
         end
