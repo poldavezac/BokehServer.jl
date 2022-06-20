@@ -1,4 +1,4 @@
-module ActionEvents
+module Actions
 using ..AbstractTypes
 using ..Model
 using ..Events
@@ -9,7 +9,9 @@ abstract type iModelActionEvent <: iActionEvent end
 abstract type iPlotActionEvent <: iModelActionEvent end
 
 """Announce when a Document is fully idle."""
-@Base.kwdef struct DocumentReady <: iDocActionEvent end
+@Base.kwdef struct DocumentReady <: iDocActionEvent
+    doc::iDocument
+end
 
 """Announce a button click event on a Bokeh button widget."""
 @Base.kwdef struct ButtonClick <: iModelActionEvent
@@ -215,13 +217,14 @@ const _EVENT_TYPES = (;
 const _EVENT_NAMES = (; (nameof(j) => i for (i, j) ∈ pairs(_EVENT_TYPES))...)
 
 actionevent(name::Symbol, values)   = getfield(_EVENTS, name)(; (Symbol(i)=>j for (i,j) ∈ values)...)
-actionname(T::Type{<:iActionEvent}) = getfield(_EVENT_NAMES, nameof(T))
 
 Events.eventtypes(::iModel)          = (Events.iDocModelEvent,)
-Events.eventtypes(::iPlot)           = (Events.eventtypes(iModel)..., (i for i ∈ values(_EVENT_TYPES) if i <: iPlotActionEvent)...)
-Events.eventtypes(::iAbstractButton) = (Events.eventtypes(iModel)..., ButtonClick)
-Events.eventtypes(::iDropdown)       = (Events.eventtypes(iAbstractButton)..., MenuItemClick)
+Events.eventtypes(::iPlot)           = (Events.iDocModelEvent, (i for i ∈ values(_EVENT_TYPES) if i <: iPlotActionEvent)...)
+Events.eventtypes(::iAbstractButton) = (Events.iDocModelEvent, ButtonClick)
+Events.eventtypes(::iDropdown)       = (Events.iDocModelEvent, ButtonClick, MenuItemClick)
 Events.eventtypes(::iDocument)       = (Events.iDocEvent, DocumentReady)
+Events.trigger!(λ::Events.iEventList, ε::iActionEvent) = push!(λ, ε)
+Events.eventcallbacks(e::DocumentReady) = e.doc.callbacks
 
 function Events.pushcallback!(μ::Union{iPlot, iAbstractButton}, 𝐹::Function, 𝑇s::Tuple)
     push!(μ.callbacks, 𝐹)
@@ -231,7 +234,5 @@ function Events.pushcallback!(μ::Union{iPlot, iAbstractButton}, 𝐹::Function,
     end
     𝐹
 end
-
-export actionname, actionevent, iActionEvent, iPlotActionEvent, iDocActionEvent, iModelActionEvent
 end
-using .ActionEvents
+using .Actions

@@ -1,8 +1,8 @@
 eventcallbacks(key::iDocEvent) = key.doc.callbacks
-eventcallbacks(key::iEvent)         = key.model.callbacks
+eventcallbacks(key::iEvent)    = key.model.callbacks
 
-flushevents!()                = flushevents!(task_eventlist())
-flushevents!(::NullEventList) = iEvent[]
+flushevents!()                 = flushevents!(task_eventlist())
+flushevents!(::NullEventList)  = iEvent[]
 
 function flushevents!(λ::iEventList)
     lst = iEvent[]

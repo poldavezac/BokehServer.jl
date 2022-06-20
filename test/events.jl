@@ -129,3 +129,30 @@ end
     @test length(calls1) == 3
     @test length(calls2) == 1
 end
+
+@testset "check action callback" begin
+    obj = Bokeh.Models.Button()
+    doc = Bokeh.Document()
+    push!(doc.roots, obj)
+    calls = Any[]
+
+    Bokeh.onchange(doc) do evt::Bokeh.Actions.DocumentReady
+        push!(calls, evt)
+    end
+
+    Bokeh.Events.eventlist!() do
+        Bokeh.onchange(obj) do evt::Bokeh.Actions.ButtonClick
+            push!(calls, evt)
+        end
+    end
+    @test obj.subscribed_events.values == Symbol[:button_click]
+
+    Bokeh.Events.eventlist!() do
+        Bokeh.Events.trigger(Bokeh.Actions.DocumentReady(; doc = doc))
+        Bokeh.Events.trigger(Bokeh.Actions.ButtonClick(; model = obj))
+    end
+
+    @test length(calls) == 2
+    @test calls[1] isa Bokeh.Actions.DocumentReady
+    @test calls[2] isa Bokeh.Actions.ButtonClick
+end

@@ -13,11 +13,11 @@ end
 
 function _𝑒_onchange(func::Function, model)
     hascallback(model, func) && return func
-    T = tuple(
+    T = tuple((
         i
         for i ∈ eventtypes(model)
         if !isempty(invokable(func, i))
-    )
+    )...)
     return isempty(T) ? missing : pushcallback!(model, func, T)
 end
 
