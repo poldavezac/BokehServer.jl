@@ -1,18 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@wrap mutable struct Ascii <: iAscii
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
+@model mutable struct Ascii <: iAscii
 
     text :: String
 end

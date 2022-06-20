@@ -1,74 +1,62 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@Bokeh.wrap mutable struct DateRangeSlider <: iDateRangeSlider
+@model mutable struct DateRangeSlider <: iDateRangeSlider
 
-    align :: Union{Tuple{Bokeh.Model.EnumType{(:start, :end, :center)}, Bokeh.Model.EnumType{(:start, :end, :center)}}, Bokeh.Model.EnumType{(:start, :center, :end)}} = :start
+    align :: Union{Tuple{Model.EnumType{(:start, :end, :center)}, Model.EnumType{(:start, :end, :center)}}, Model.EnumType{(:start, :center, :end)}} = :start
 
-    aspect_ratio :: Union{Nothing, Float64, Bokeh.Model.EnumType{(:auto,)}} = nothing
+    aspect_ratio :: Union{Nothing, Float64, Model.EnumType{(:auto,)}} = nothing
 
-    background :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
+    background :: Model.Nullable{Model.Color} = nothing
 
-    bar_color :: Bokeh.Model.Color = "rgb(230,230,230)"
+    bar_color :: Model.Color = "rgb(230,230,230)"
 
     css_classes :: Vector{String} = String[]
 
     default_size :: Int64 = 300
 
-    direction :: Bokeh.Model.EnumType{(:rtl, :ltr)} = :ltr
+    direction :: Model.EnumType{(:rtl, :ltr)} = :ltr
 
     disabled :: Bool = false
 
     finish :: Dates.DateTime
 
-    format :: Union{String, iTickFormatter} = ""
+    format :: Union{iTickFormatter, String} = ""
 
-    height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+    height :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    height_policy :: Bokeh.Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
+    height_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    margin :: Model.Nullable{NTuple{4, Int64}} = (0, 0, 0, 0)
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    max_height :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    margin :: Bokeh.Model.Nullable{NTuple{4, Int64}} = (0, 0, 0, 0)
+    max_width :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    max_height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+    min_height :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    max_width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+    min_width :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    min_height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
-
-    min_width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    orientation :: Bokeh.Model.EnumType{(:vertical, :horizontal)} = :horizontal
+    orientation :: Model.EnumType{(:vertical, :horizontal)} = :horizontal
 
     show_value :: Bool = true
 
-    sizing_mode :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:stretch_width, :scale_both, :scale_width, :stretch_height, :stretch_both, :fixed, :scale_height)}} = nothing
+    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :scale_both, :scale_width, :stretch_height, :stretch_both, :fixed, :scale_height)}} = nothing
 
     start :: Dates.DateTime
 
     step :: Int64 = 1
 
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
-
-    title :: Bokeh.Model.Nullable{String} = ""
+    title :: Model.Nullable{String} = ""
 
     tooltips :: Bool = true
 
     value :: Tuple{Dates.DateTime, Dates.DateTime}
 
-    value_throttled :: Bokeh.Model.ReadOnly{Tuple{Dates.DateTime, Dates.DateTime}}
+    value_throttled :: Model.ReadOnly{Tuple{Dates.DateTime, Dates.DateTime}}
 
     visible :: Bool = true
 
-    width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+    width :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    width_policy :: Bokeh.Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
+    width_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 end

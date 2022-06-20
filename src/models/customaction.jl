@@ -1,22 +1,10 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@Bokeh.wrap mutable struct CustomAction <: iCustomAction
+@model mutable struct CustomAction <: iCustomAction
 
-    callback :: Bokeh.Model.Nullable{iCallback} = nothing
+    callback :: Model.Nullable{iCallback} = nothing
 
-    description :: Bokeh.Model.Nullable{String} = nothing
+    description :: Model.Nullable{String} = nothing
 
-    icon :: Bokeh.Model.Image
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
+    icon :: Model.Image
 end

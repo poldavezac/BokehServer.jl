@@ -1,5 +1,5 @@
 module Dependencies
-using Bokeh
+using ..Bokeh
 using PythonCall
 
 function instancetype(cls)

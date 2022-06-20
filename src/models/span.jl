@@ -1,46 +1,34 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@Bokeh.wrap mutable struct Span <: iSpan
+@model mutable struct Span <: iSpan
 
-    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
+    coordinates :: Model.Nullable{iCoordinateMapping} = nothing
 
-    dimension :: Bokeh.Model.EnumType{(:height, :width)} = :width
+    dimension :: Model.EnumType{(:height, :width)} = :width
 
-    group :: Bokeh.Model.Nullable{iRendererGroup} = nothing
+    group :: Model.Nullable{iRendererGroup} = nothing
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    level :: Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    line_alpha :: Model.Percent = 1.0
 
-    level :: Bokeh.Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
+    line_cap :: Model.EnumType{(:round, :square, :butt)} = :butt
 
-    line_alpha :: Bokeh.Model.Percent = 1.0
+    line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    line_cap :: Bokeh.Model.EnumType{(:round, :square, :butt)} = :butt
-
-    line_color :: Bokeh.Model.Nullable{Bokeh.Model.Color} = "rgb(0,0,0)"
-
-    line_dash :: Bokeh.Model.DashPattern
+    line_dash :: Model.DashPattern
 
     line_dash_offset :: Int64 = 0
 
-    line_join :: Bokeh.Model.EnumType{(:round, :miter, :bevel)} = :bevel
+    line_join :: Model.EnumType{(:round, :miter, :bevel)} = :bevel
 
     line_width :: Float64 = 1.0
 
-    location :: Bokeh.Model.Nullable{Float64} = nothing
+    location :: Model.Nullable{Float64} = nothing
 
-    location_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
+    location_units :: Model.EnumType{(:screen, :data)} = :data
 
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    render_mode :: Bokeh.Model.EnumType{(:canvas, :css)} = :canvas
-
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
+    render_mode :: Model.EnumType{(:canvas, :css)} = :canvas
 
     visible :: Bool = true
 

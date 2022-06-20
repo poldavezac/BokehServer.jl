@@ -1,28 +1,16 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@Bokeh.wrap mutable struct TileSource <: iTileSource
+@model mutable struct TileSource <: iTileSource
 
     attribution :: String = ""
 
     extra_url_vars :: Dict{String, Any}
 
-    initial_resolution :: Bokeh.Model.Nullable{Float64} = nothing
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    initial_resolution :: Model.Nullable{Float64} = nothing
 
     max_zoom :: Int64 = 30
 
     min_zoom :: Int64 = 0
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
 
     tile_size :: Int64 = 256
 

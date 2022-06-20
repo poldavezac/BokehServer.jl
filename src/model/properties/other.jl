@@ -27,8 +27,7 @@ struct Nullable{T} <: iProperty end
 @inline bokehfieldtype(::Type{Nullable{T}}) where {T} = Union{Nothing, bokehfieldtype(T)}
 @inline bokehread(::Type{<:Nullable}, ::iHasProps, ::Symbol, ::Nothing) = nothing
 @inline bokehread(::Type{Nullable{T}}, µ::iHasProps, α::Symbol, ν::Any) where {T} = bokehread(T, μ, α, ν)
-@inline bokehconvert(::Type{<:Nullable}, ν::Nothing) = nothing
-@inline bokehconvert(::Type{Nullable{T}}, ν::Any) where {T} = bokehconvert(T, ν)
+@inline bokehconvert(::Type{Nullable{T}}, ν::Any) where {T} = isnothing(ν) ? nothing : bokehconvert(T, ν)
 
 struct FontSize <: iProperty end
 

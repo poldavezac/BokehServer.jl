@@ -1,20 +1,8 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@wrap mutable struct BinnedTicker <: iBinnedTicker
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+@model mutable struct BinnedTicker <: iBinnedTicker
 
     mapper :: iScanningColorMapper
 
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    num_major_ticks :: Union{Int64, Bokeh.Model.EnumType{(:auto,)}} = 8
-
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
+    num_major_ticks :: Union{Int64, Model.EnumType{(:auto,)}} = 8
 end

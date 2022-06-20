@@ -1,8 +1,8 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@Bokeh.wrap mutable struct TableColumn <: iTableColumn
+@model mutable struct TableColumn <: iTableColumn
 
-    default_sort :: Bokeh.Model.EnumType{(:ascending, :descending)} = :ascending
+    default_sort :: Model.EnumType{(:ascending, :descending)} = :ascending
 
     editor :: iCellEditor = StringEditor()
 
@@ -10,21 +10,9 @@
 
     formatter :: iCellFormatter = StringFormatter()
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
     sortable :: Bool = true
 
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
-
-    title :: Bokeh.Model.Nullable{String} = nothing
+    title :: Model.Nullable{String} = nothing
 
     visible :: Bool = true
 

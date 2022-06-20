@@ -1,46 +1,34 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@Bokeh.wrap mutable struct Text <: iText
+@model mutable struct Text <: iText
 
-    angle :: Bokeh.Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (value = 0.0,)
+    angle :: Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (value = 0.0,)
 
-    angle_units :: Bokeh.Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
+    angle_units :: Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    text :: Model.Spec{String} = (field = "text",)
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    text_align :: Model.EnumSpec{(:left, :right, :center)} = (value = :left,)
 
-    name :: Bokeh.Model.Nullable{String} = nothing
+    text_alpha :: Model.AlphaSpec = (value = 1.0,)
 
-    subscribed_events :: Vector{Symbol}
+    text_baseline :: Model.EnumSpec{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)} = (value = :bottom,)
 
-    syncable :: Bool = true
+    text_color :: Model.Spec{Model.Color} = (value = "rgb(68,68,68)",)
 
-    tags :: Vector{Any}
+    text_font :: Model.Spec{String} = (value = "helvetica",)
 
-    text :: Bokeh.Model.Spec{String} = Bokeh.Model.Unknown()
+    text_font_size :: Model.FontSizeSpec = (value = "16px",)
 
-    text_align :: Bokeh.Model.EnumSpec{(:left, :right, :center)} = (value = :left,)
+    text_font_style :: Model.EnumSpec{(:normal, :italic, :bold, Symbol("bold italic"))} = (value = :normal,)
 
-    text_alpha :: Bokeh.Model.AlphaSpec = (value = 1.0,)
+    text_line_height :: Model.Spec{Float64} = (value = 1.2,)
 
-    text_baseline :: Bokeh.Model.EnumSpec{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)} = (value = :bottom,)
+    x :: Model.Spec{Float64} = (field = "x",)
 
-    text_color :: Bokeh.Model.Spec{Bokeh.Model.Color} = Bokeh.Model.Unknown()
+    x_offset :: Model.Spec{Float64} = (value = 0.0,)
 
-    text_font :: Bokeh.Model.Spec{String} = (value = "helvetica",)
+    y :: Model.Spec{Float64} = (field = "y",)
 
-    text_font_size :: Bokeh.Model.FontSizeSpec = (value = "16px",)
-
-    text_font_style :: Bokeh.Model.EnumSpec{(:normal, :italic, :bold, Symbol("bold italic"))} = (value = :normal,)
-
-    text_line_height :: Bokeh.Model.Spec{Float64} = (value = 1.2,)
-
-    x :: Bokeh.Model.Spec{Float64} = (field = "x",)
-
-    x_offset :: Bokeh.Model.Spec{Float64} = (value = 0.0,)
-
-    y :: Bokeh.Model.Spec{Float64} = (field = "y",)
-
-    y_offset :: Bokeh.Model.Spec{Float64} = (value = 0.0,)
+    y_offset :: Model.Spec{Float64} = (value = 0.0,)
 end

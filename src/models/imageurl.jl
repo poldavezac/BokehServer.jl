@@ -1,44 +1,32 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@Bokeh.wrap mutable struct ImageURL <: iImageURL
+@model mutable struct ImageURL <: iImageURL
 
-    anchor :: Bokeh.Model.EnumType{(:right, :bottom_left, :top_center, :center_center, :center, :left, :center_left, :bottom, :top_right, :top, :bottom_center, :bottom_right, :top_left, :center_right)} = :top_left
+    anchor :: Model.EnumType{(:right, :bottom_left, :top_center, :center_center, :center, :left, :center_left, :bottom, :top_right, :top, :bottom_center, :bottom_right, :top_left, :center_right)} = :top_left
 
-    angle :: Bokeh.Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (value = 0.0,)
+    angle :: Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (value = 0.0,)
 
-    angle_units :: Bokeh.Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
+    angle_units :: Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
 
     dilate :: Bool = false
 
-    global_alpha :: Bokeh.Model.Spec{Float64} = (value = 1.0,)
+    global_alpha :: Model.Spec{Float64} = (value = 1.0,)
 
-    h :: Bokeh.Model.Nullable{Bokeh.Model.DistanceSpec} = nothing
+    h :: Model.Nullable{Model.DistanceSpec} = nothing
 
-    h_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    name :: Bokeh.Model.Nullable{String} = nothing
+    h_units :: Model.EnumType{(:screen, :data)} = :data
 
     retry_attempts :: Int64 = 0
 
     retry_timeout :: Int64 = 0
 
-    subscribed_events :: Vector{Symbol}
+    url :: Model.Spec{String} = (field = "url",)
 
-    syncable :: Bool = true
+    w :: Model.Nullable{Model.DistanceSpec} = nothing
 
-    tags :: Vector{Any}
+    w_units :: Model.EnumType{(:screen, :data)} = :data
 
-    url :: Bokeh.Model.Spec{String} = (field = "url",)
+    x :: Model.Spec{Float64} = (field = "x",)
 
-    w :: Bokeh.Model.Nullable{Bokeh.Model.DistanceSpec} = nothing
-
-    w_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
-
-    x :: Bokeh.Model.Spec{Float64} = (field = "x",)
-
-    y :: Bokeh.Model.Spec{Float64} = (field = "y",)
+    y :: Model.Spec{Float64} = (field = "y",)
 end

@@ -1,7 +1,7 @@
 module Defaults
-using Bokeh
-using Bokeh.Model.Dates
-using Bokeh.Themes.JSON
+using ..Bokeh
+using ..Bokeh.Model.Dates
+using ..Bokeh.Themes.JSON
 using PythonCall
 
 model(name)  = pyimport("bokeh.models" => "Model").model_class_reverse_map["$name"]
@@ -61,7 +61,7 @@ else
     parsedefault(T.parameters[1], cls, prop)
 end
 
-__DUMMY__ = let cls = @Bokeh.model mutable struct gensym() <: Bokeh.Model.iModel
+__DUMMY__ = let cls = @Bokeh.wrap mutable struct gensym() <: Bokeh.Model.iModel
         a :: Int
     end
     cls()
@@ -76,10 +76,11 @@ end
         return Some(Expr(:call, pyconvert(Symbol, dflt.__class__.__name__)))
     end
 
-    js = JSON.parse(pyconvert(String, pyimport("json").dumps(dflt)))
-    return Some(Bokeh.Model.bokehrawtype(
-        Bokeh.Model.bokehread(T, __DUMMY__, :__dummy__, Bokeh.Model.bokehconvert(T, js))
-    ))
+    js  = JSON.parse(pyconvert(String, pyimport("json").dumps(dflt)))
+    out = Bokeh.Model.bokehconvert(T, js)
+    if !(out isa Bokeh.Model.Unknown)
+        return Some(Bokeh.Model.bokehrawtype(Bokeh.Model.bokehread(T, __DUMMY__, :__dummy__, out)))
+    end
 end
 parsedefault(::Symbol, cls, prop) = parsedefault(Any, cls, prop)
 end

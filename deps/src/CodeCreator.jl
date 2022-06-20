@@ -1,10 +1,13 @@
-module Bokeh
-# a very simplified Bokeh for parsing bokeh
-include(joinpath((@__DIR__), "..", "..", "src", "abstracttypes.jl"))
-include(joinpath((@__DIR__), "..", "..", "src", "model.jl"))
-end
 
 module CodeCreator
+module Bokeh
+# a very simplified Bokeh for parsing bokeh
+for name ∈ (:abstracttypes, :model, :event, :theme, :document)
+    include(joinpath((@__DIR__), "..", "..", "src", "$name.jl"))
+end
+end
+
+using .Bokeh
 using PythonCall
 
 include("defaults.jl")
@@ -13,6 +16,15 @@ include("hierarchy.jl")
 include("dependencies.jl")
 
 filename(name::String) = lowercase(String(structname(name)))
+
+const _ABSTRACT = pyconvert(String, pyimport("bokeh.core.has_props")._ABSTRACT_ADMONITION)
+
+function isvirtual(name::String)
+    occursin("Abstract", name) && return true
+    doc = model(name).__doc__
+    pyisinstance(doc, Py(nothing).__class__) && return false
+    return occursin(_ABSTRACT, pyconvert(String, doc))
+end
 
 function abstracttypescode(io::IO)
     direct = Dict{String, Symbol}()
@@ -27,7 +39,7 @@ function abstracttypescode(io::IO)
                 push!(done, opts[i])
             end
         end
-        direct[name] = opts[1]
+        isvirtual(name) || (direct[name] = opts[1])
     end
     println(io, "end")
     return direct
@@ -43,7 +55,9 @@ function doccode(io::IO, doc::String, indent::Int)
     nothing
 end
 
-const _BM_PATT = r"Bokeh\.Models\." => "i"
+const _BM_PATT  = r"Bokeh\.Models\." => "i"
+const _BM_PATT2 = r"(CodeCreator\.)*?Bokeh\." => ""
+const _BM_PATT3 = r"CodeCreator\." => ""
 
 function structcode(io::IO, name::String, parent; adddoc :: Symbol = :none)
     props = parseproperties(model(name))
@@ -60,17 +74,23 @@ function structcode(io::IO, name::String, parent; adddoc :: Symbol = :none)
         println(
             io,
             replace(
-                string(
-                    "    $i :: $(j.type)",
-                    if isnothing(j.default)
-                        ""
-                    elseif something(j.default) isa Expr
-                        " = $(something(j.default))"
-                    else
-                        " = $(repr(something(j.default)))"
-                    end
+                replace(
+                    replace(
+                        string(
+                            "    $i :: $(j.type)",
+                            if isnothing(j.default)
+                                ""
+                            elseif something(j.default) isa Expr
+                                " = $(something(j.default))"
+                            else
+                                " = $(repr(something(j.default)))"
+                            end
+                        ),
+                        _BM_PATT
+                    ),
+                    _BM_PATT2
                 ),
-                _BM_PATT
+                _BM_PATT3
             )
         )
     end
@@ -109,7 +129,7 @@ function createcode(; adddoc ::Symbol = :none)
     deplist       = Dict(
         i => dependencies(model(i))
         for i ∈ modelnames()
-        if !startswith("$i", "Abstract")
+        if !isvirtual(i)
     )
     file(f, x...) = open(joinpath((@__DIR__), "..", "..", "src", x...), "w") do io
         println(io, "#- file created by '$(@__FILE__)': edit at your own risk! -#")

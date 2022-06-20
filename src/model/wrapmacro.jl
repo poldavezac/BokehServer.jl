@@ -8,12 +8,15 @@ function _👻structure(
     function initcode(field)
         opts = [first(j) for j ∈ aliases if last(j) ≡ field.name]
         κ    = Meta.quot(field.name)
-        val  = quote
-            val = Bokeh.Themes.theme($cls, $κ)
-            $(isnothing(field.default) ? nothing : :(isnothing(val) && (val = $(something(field.default)))))
-
-            isnothing(val) && throw(ErrorException(($("$cls.$(field.name) is a mandatory argument"))))
-            something(val)
+        val  = if isnothing(field.default)
+            :(let val = Bokeh.Themes.theme($cls, $κ)
+                isnothing(val) && throw(ErrorException(($("$cls.$(field.name) is a mandatory argument"))))
+                something(val)
+            end)
+        else
+            :(let val = Bokeh.Themes.theme($cls, $κ)
+                isnothing(val) ? $(something(field.default)) : something(val)
+            end)
         end
             
         val = _👻elseif((field.name, opts...), val) do key
@@ -207,28 +210,6 @@ function hasbokehproperty end
 function bokehpropertytype end
 function bokehfields end
 function defaultvalue end
-
-function _👻defaultvalue(T::Type, line::Expr)
-    return if line.head ≡ :(::)
-        _👻defaultvalue(T)
-    elseif line.args[2] ≡ :nodefaults
-        nothing
-    elseif line.args[2] ≡ :zero
-        out = _👻defaultvalue(T)
-        if isnothing(out)
-            R = bokehfieldtype(T)
-            throw(ErrorException("Unknown defaults for $R (calls `zero($R)` or `$R()` are unavailable)"))
-        end
-        out
-    else
-        Some(line.args[2])
-    end
-end
-
-function _👻defaultvalue(T::Type)
-    R = bokehfieldtype(T)
-    applicable(zero, R) ? Some(:(zero($R))) : applicable(R) ? Some(:($R())) : nothing
-end
 
 const ID = bokehidmaker()
 

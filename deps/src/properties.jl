@@ -1,13 +1,13 @@
 module Properties
-using Bokeh
-using Bokeh.Model.Dates
-using Bokeh.Themes.JSON
+using ..Bokeh
+using ..Bokeh.Model.Dates
+using ..Bokeh.Themes.JSON
 try
-    using Bokeh.Models
+    using ..Bokeh.Models
 catch
     Bokeh.eval(:(module Models end))
 end
-using Bokeh.Models
+using ..Bokeh.Models
 using PythonCall
 using ..Defaults: parsedefault, model, modelnames
 export parsedefault, model, modelnames
@@ -71,6 +71,7 @@ end
 @property AnyRef   => Any
 @property Null     => Nothing
 @property ColumnData => DataDict
+@property Interval => Bokeh.Model.Interval{pyconvert(Float64, prop.start), pyconvert(Float64, prop.end)}
 @property JSON => Bokeh.Model.JSONString
 @property Dict     => Dict{parseproperty(cls, prop.keys_type).type, parseproperty(cls, prop.values_type).type}
 @property (List, Seq, Array) => Vector{parseproperty(cls, prop.item_type).type}
@@ -129,18 +130,13 @@ parseproperty(c::Symbol, p::Symbol) = parseproperty(model("$c"), getproperty(mod
 parseproperties(name) = parseproperties(model(name))
 
 const _END_PATT = r"^end" => "finish"
+const _MODEL_FIELDS = (:js_event_callbacks, :js_property_callbacks, :name, :subscribed_events, :syncable, :tags)
 _fieldname(x) = Symbol(replace(pyconvert(String, x), _END_PATT))
 
-refineproperty(::Val, prop)                         = prop
-refineproperty(::Val{:subscribed_events}, prop)     = merge(prop, (; type = Vector{Symbol}, default = nothing))
-refineproperty(::Val{:js_event_callbacks}, prop)    = merge(prop, (; type = Dict{Symbol, Vector{Bokeh.Models.CustomJS}}))
-refineproperty(::Val{:js_property_callbacks}, prop) = merge(prop, (; type = Dict{Symbol, Vector{Bokeh.Models.CustomJS}}))
-
-function parseproperties(cls::Py)
+function parseproperties(cls::Py; allprops::Bool = false)
     attrs = Dict{Symbol, Any}(
         _fieldname(attr) => try
-            prop = parseproperty(cls, getproperty(cls, pyconvert(String, attr)).property)
-            refineproperty(Val(_fieldname(attr)), prop)
+            parseproperty(cls, getproperty(cls, pyconvert(String, attr)).property)
         catch exc
             @error(
                 "Could not deal with $cls.$attr => $(getproperty(cls, pyconvert(String, attr)).property)",
@@ -150,6 +146,7 @@ function parseproperties(cls::Py)
             rethrow()
         end
         for attr ∈ cls.properties()
+        if allprops || _fieldname(attr) ∉ _MODEL_FIELDS
     )
     attrs[:__doc__] = let x = cls.__doc__
         pyis(x, nothing) ? nothing : pyconvert(String, x)

@@ -3,9 +3,9 @@ using ..Bokeh
 using ..AbstractTypes
 
 """
-    macro model(args::Vararg{Union{Expr, String, Symbol}})
+    macro wrap(args::Expr)
 
-Allows creating Bokeh-aware model:
+For advanced uses only. Allows creating Bokeh-aware model:
 
 * the model can be transfered to the javascript client
 * changes to the fields will trigger events which one can subscribe to
@@ -45,12 +45,23 @@ end
 """
 :(@wrap)
 
+"""
+    macro model(args::Expr)
+
+Allows creating Bokeh-aware model, just as `@wrap` does, but adding default
+fields used by every `iModel` structure. This macro should be used rather than
+`@wrap` which is called internally.
+"""
+:(@model)
+
 "Stores every class created by the @wrap macro"
 const MODEL_TYPES = Set{DataType}()
 
+Base.show(io::IO, µ::iHasProps) = print(io, "$(nameof(typeof(µ)))(id = $(µ.id))")
 include("model/properties.jl")
 include("model/macrohelpers.jl")
 include("model/wrapmacro.jl")
+include("model/modelmacro.jl")
 include("model/allmodels.jl")
 end
 using .Model

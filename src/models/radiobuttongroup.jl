@@ -1,16 +1,16 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@Bokeh.wrap mutable struct RadioButtonGroup <: iRadioButtonGroup
+@model mutable struct RadioButtonGroup <: iRadioButtonGroup
 
-    active :: Bokeh.Model.Nullable{Int64} = nothing
+    active :: Model.Nullable{Int64} = nothing
 
-    align :: Union{Tuple{Bokeh.Model.EnumType{(:start, :end, :center)}, Bokeh.Model.EnumType{(:start, :end, :center)}}, Bokeh.Model.EnumType{(:start, :center, :end)}} = :start
+    align :: Union{Tuple{Model.EnumType{(:start, :end, :center)}, Model.EnumType{(:start, :end, :center)}}, Model.EnumType{(:start, :center, :end)}} = :start
 
-    aspect_ratio :: Union{Nothing, Float64, Bokeh.Model.EnumType{(:auto,)}} = nothing
+    aspect_ratio :: Union{Nothing, Float64, Model.EnumType{(:auto,)}} = nothing
 
-    background :: Bokeh.Model.Nullable{Bokeh.Model.Color} = nothing
+    background :: Model.Nullable{Model.Color} = nothing
 
-    button_type :: Bokeh.Model.EnumType{(:warning, :default, :success, :light, :danger, :primary)} = :default
+    button_type :: Model.EnumType{(:warning, :default, :success, :light, :danger, :primary)} = :default
 
     css_classes :: Vector{String} = String[]
 
@@ -18,41 +18,29 @@
 
     disabled :: Bool = false
 
-    height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+    height :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    height_policy :: Bokeh.Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    height_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 
     labels :: Vector{String} = String[]
 
-    margin :: Bokeh.Model.Nullable{NTuple{4, Int64}} = (0, 0, 0, 0)
+    margin :: Model.Nullable{NTuple{4, Int64}} = (0, 0, 0, 0)
 
-    max_height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+    max_height :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    max_width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+    max_width :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    min_height :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+    min_height :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    min_width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+    min_width :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    name :: Bokeh.Model.Nullable{String} = nothing
+    orientation :: Model.EnumType{(:vertical, :horizontal)} = :horizontal
 
-    orientation :: Bokeh.Model.EnumType{(:vertical, :horizontal)} = :horizontal
-
-    sizing_mode :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:stretch_width, :scale_both, :scale_width, :stretch_height, :stretch_both, :fixed, :scale_height)}} = nothing
-
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
+    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :scale_both, :scale_width, :stretch_height, :stretch_both, :fixed, :scale_height)}} = nothing
 
     visible :: Bool = true
 
-    width :: Bokeh.Model.Nullable{Bokeh.Model.NonNegativeInt} = nothing
+    width :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    width_policy :: Bokeh.Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
+    width_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 end

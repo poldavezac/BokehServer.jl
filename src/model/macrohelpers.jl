@@ -76,3 +76,26 @@ function _👻elseif_alias(𝐹::Function, fields::Vector{<:NamedTuple}, elsecod
         end
     end
 end
+
+function _👻defaultvalue(T::Type, line::Expr)
+    return if line.head ≡ :(::)
+        _👻defaultvalue(T)
+    elseif line.args[2] ≡ :nodefaults
+        nothing
+    elseif line.args[2] ≡ :zero
+        out = _👻defaultvalue(T)
+        if isnothing(out)
+            R = bokehfieldtype(T)
+            throw(ErrorException("Unknown defaults for $R (calls `zero($R)` or `$R()` are unavailable)"))
+        end
+        out
+    else
+        Some(line.args[2])
+    end
+end
+
+function _👻defaultvalue(T::Type)
+    R = bokehfieldtype(T)
+    applicable(zero, R) ? Some(:(zero($R))) : applicable(R) ? Some(:($R())) : nothing
+end
+

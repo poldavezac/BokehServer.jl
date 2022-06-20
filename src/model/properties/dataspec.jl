@@ -95,7 +95,7 @@ end
 
 bokehconvert(𝑇::Type{<:iSpec}, ν::AbstractDict{<:AbstractString}) = bokehconvert(𝑇, Dict{Symbol, Any}((Symbol(i) => j for (i, j) ∈ ν)))
 bokehconvert(𝑇::Type{<:iSpec}, ν::Union{Symbol, Number}) = 𝑇(; value = bokehconvert(speceltype(𝑇), ν))
-bokehconvert(𝑇::Type{<:iSpec{<:Number}}, ν::AbstractString) = 𝑇(; field = string(ν))
+bokehconvert(𝑇::Type{<:iSpec}, ν::AbstractString) = 𝑇(; field = string(ν))
 
 function bokehread(::Type{T}, ::iHasProps, ::Symbol, ν::T) where {T <: iSpec}
     @assert xor(ismissing(ν.value), ismissing(ν.field))
@@ -109,7 +109,8 @@ function bokehread(::Type{T}, ::iHasProps, ::Symbol, ν::T) where {T <: iUnitSpe
     return (; (i=>getfield(ν, i) for i ∈ fields if !ismissing(getfield(ν, i)))...)
 end
 
-function bokehconvert(𝑇::Type{<:EnumSpec}, ν::Union{AbstractString, Symbol})
+bokehconvert(𝑇::Type{<:EnumSpec}, ν::AbstractString) = bokehconvert(𝑇, Symbol(ν))
+function bokehconvert(𝑇::Type{<:EnumSpec}, ν::Symbol)
     value = longform(𝑇, ν)
     return value ∈ 𝑇 ? 𝑇(; value) : 𝑇(; field = String(ν))
 end
@@ -157,9 +158,8 @@ function bokehconvert(::Type{ColorSpec}, ν::Union{AbstractDict{Symbol}, NamedTu
 end
 
 function bokehconvert(::Type{ColorSpec}, ν::AbstractString)
-    (keys(ν) ⊈ fieldnames(ColorSpec)) && return Unknown()
-    value = color(v)
-    return ismissing(value) : ColorSpec(; field = string(ν)) : ColorSpec(; value)
+    value = color(ν)
+    return ismissing(value) ? ColorSpec(; field = string(ν)) : ColorSpec(; value)
 end
 
 function bokehconvert(::Type{ColorSpec}, ν::COLOR_ARGS)

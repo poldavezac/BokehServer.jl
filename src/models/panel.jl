@@ -1,24 +1,12 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@Bokeh.wrap mutable struct Panel <: iPanel
+@model mutable struct Panel <: iPanel
 
     child :: iLayoutDOM
 
     closable :: Bool = false
 
     disabled :: Bool = false
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
 
     title :: String = ""
 end

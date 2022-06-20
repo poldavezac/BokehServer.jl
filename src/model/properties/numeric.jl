@@ -39,6 +39,7 @@ bokehfieldtype(::Type{MinMaxBounds}) = Union{
 }
 
 bokehconvert(::Type{MinMaxBounds}, ν::Symbol) = ν ≡ :auto ? :auto : Unknown()
+bokehconvert(::Type{MinMaxBounds}, ν::AbstractString) = ν == "auto" ? :auto : Unknown()
 function bokehconvert(::Type{MinMaxBounds}, ν::Tuple{<:Any, <:Any})
     ν1 = ν2 = nothing
     isnothing(ν[1]) || (ν1 = bokehconvert(Float64, ν[1]))

@@ -1,22 +1,10 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@Bokeh.wrap mutable struct DOMTemplate <: iDOMTemplate
+@model mutable struct DOMTemplate <: iDOMTemplate
 
     actions :: Vector{iAction}
 
-    children :: Vector{Union{String, iDOMNode, iLayoutDOM}}
+    children :: Vector{Union{iDOMNode, iLayoutDOM, String}}
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    style :: Bokeh.Model.Nullable{Union{Dict{String, String}, iStyles}} = nothing
-
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
+    style :: Model.Nullable{Union{iStyles, Dict{String, String}}} = nothing
 end

@@ -1,48 +1,36 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@wrap mutable struct Arc <: iArc
+@model mutable struct Arc <: iArc
 
-    direction :: Bokeh.Model.EnumType{(:clock, :anticlock)} = :anticlock
+    direction :: Model.EnumType{(:clock, :anticlock)} = :anticlock
 
-    finish_angle :: Bokeh.Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (field = "end_angle",)
+    finish_angle :: Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (field = "end_angle",)
 
-    finish_angle_units :: Bokeh.Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
+    finish_angle_units :: Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    line_alpha :: Model.AlphaSpec = (value = 1.0,)
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    line_cap :: Model.EnumSpec{(:butt, :round, :square)} = (value = :butt,)
 
-    line_alpha :: Bokeh.Model.AlphaSpec = (value = 1.0,)
+    line_color :: Model.Spec{Model.Color} = (value = "rgb(0,0,0)",)
 
-    line_cap :: Bokeh.Model.EnumSpec{(:butt, :round, :square)} = (value = :butt,)
+    line_dash :: Model.Spec{Model.DashPattern}
 
-    line_color :: Bokeh.Model.Spec{Bokeh.Model.Color} = Bokeh.Model.Unknown()
+    line_dash_offset :: Model.Spec{Int64} = (value = 0,)
 
-    line_dash :: Bokeh.Model.Spec{Bokeh.Model.DashPattern}
+    line_join :: Model.EnumSpec{(:miter, :round, :bevel)} = (value = :bevel,)
 
-    line_dash_offset :: Bokeh.Model.Spec{Int64} = (value = 0,)
+    line_width :: Model.Spec{Float64} = (value = 1.0,)
 
-    line_join :: Bokeh.Model.EnumSpec{(:miter, :round, :bevel)} = (value = :bevel,)
+    radius :: Model.DistanceSpec = (field = "radius",)
 
-    line_width :: Bokeh.Model.Spec{Float64} = (value = 1.0,)
+    radius_units :: Model.EnumType{(:screen, :data)} = :data
 
-    name :: Bokeh.Model.Nullable{String} = nothing
+    start_angle :: Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (field = "start_angle",)
 
-    radius :: Bokeh.Model.DistanceSpec = (field = "radius",)
+    start_angle_units :: Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
 
-    radius_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
+    x :: Model.Spec{Float64} = (field = "x",)
 
-    start_angle :: Bokeh.Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (field = "start_angle",)
-
-    start_angle_units :: Bokeh.Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
-
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
-
-    x :: Bokeh.Model.Spec{Float64} = (field = "x",)
-
-    y :: Bokeh.Model.Spec{Float64} = (field = "y",)
+    y :: Model.Spec{Float64} = (field = "y",)
 end

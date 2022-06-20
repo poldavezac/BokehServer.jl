@@ -1,30 +1,18 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@Bokeh.wrap mutable struct MercatorTicker <: iMercatorTicker
+@model mutable struct MercatorTicker <: iMercatorTicker
 
     base :: Float64 = 10.0
 
     desired_num_ticks :: Int64 = 6
 
-    dimension :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:lat, :lon)}} = nothing
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    dimension :: Model.Nullable{Model.EnumType{(:lat, :lon)}} = nothing
 
     mantissas :: Vector{Float64} = [1.0, 2.0, 5.0]
 
-    max_interval :: Bokeh.Model.Nullable{Float64} = nothing
+    max_interval :: Model.Nullable{Float64} = nothing
 
     min_interval :: Float64 = 0.0
 
-    name :: Bokeh.Model.Nullable{String} = nothing
-
     num_minor_ticks :: Int64 = 5
-
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
 end

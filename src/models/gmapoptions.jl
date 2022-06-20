@@ -1,28 +1,16 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@Bokeh.wrap mutable struct GMapOptions <: iGMapOptions
-
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
-
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+@model mutable struct GMapOptions <: iGMapOptions
 
     lat :: Float64
 
     lng :: Float64
 
-    map_type :: Bokeh.Model.EnumType{(:hybrid, :roadmap, :satellite, :terrain)} = :roadmap
-
-    name :: Bokeh.Model.Nullable{String} = nothing
+    map_type :: Model.EnumType{(:hybrid, :roadmap, :satellite, :terrain)} = :roadmap
 
     scale_control :: Bool = false
 
-    styles :: Bokeh.Model.JSONString
-
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
+    styles :: Model.JSONString
 
     tilt :: Int64 = 45
 

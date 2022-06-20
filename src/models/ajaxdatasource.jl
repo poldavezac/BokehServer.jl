@@ -1,12 +1,12 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@wrap mutable struct AjaxDataSource <: iAjaxDataSource
+@model mutable struct AjaxDataSource <: iAjaxDataSource
 
-    adapter :: Bokeh.Model.Nullable{iCustomJS} = nothing
+    adapter :: Model.Nullable{iCustomJS} = nothing
 
     content_type :: String = "application/json"
 
-    data :: Bokeh.Model.DataDict
+    data :: Model.DataDict
 
     data_url :: String
 
@@ -14,27 +14,15 @@
 
     if_modified :: Bool = false
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    max_size :: Model.Nullable{Int64} = nothing
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    method :: Model.EnumType{(:POST, :GET)} = :POST
 
-    max_size :: Bokeh.Model.Nullable{Int64} = nothing
+    mode :: Model.EnumType{(:append, :replace)} = :replace
 
-    method :: Bokeh.Model.EnumType{(:POST, :GET)} = :POST
+    polling_interval :: Model.Nullable{Int64} = nothing
 
-    mode :: Bokeh.Model.EnumType{(:append, :replace)} = :replace
-
-    name :: Bokeh.Model.Nullable{String} = nothing
-
-    polling_interval :: Bokeh.Model.Nullable{Int64} = nothing
-
-    selected :: Bokeh.Model.ReadOnly{iSelection} = Selection()
+    selected :: Model.ReadOnly{iSelection} = Selection()
 
     selection_policy :: iSelectionPolicy = UnionRenderers()
-
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
 end

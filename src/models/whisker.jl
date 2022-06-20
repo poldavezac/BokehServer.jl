@@ -1,58 +1,46 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@Bokeh.wrap mutable struct Whisker <: iWhisker
+@model mutable struct Whisker <: iWhisker
 
-    base :: Bokeh.Model.PropertyUnitsSpec = (field = "base",)
+    base :: Model.PropertyUnitsSpec = (field = "base",)
 
-    base_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
+    base_units :: Model.EnumType{(:screen, :data)} = :data
 
-    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
+    coordinates :: Model.Nullable{iCoordinateMapping} = nothing
 
-    dimension :: Bokeh.Model.EnumType{(:height, :width)} = :height
+    dimension :: Model.EnumType{(:height, :width)} = :height
 
-    group :: Bokeh.Model.Nullable{iRendererGroup} = nothing
+    group :: Model.Nullable{iRendererGroup} = nothing
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    level :: Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    line_alpha :: Model.AlphaSpec = (value = 1.0,)
 
-    level :: Bokeh.Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
+    line_cap :: Model.EnumSpec{(:butt, :round, :square)} = (value = :butt,)
 
-    line_alpha :: Bokeh.Model.AlphaSpec = (value = 1.0,)
+    line_color :: Model.Spec{Model.Color} = (value = "rgb(0,0,0)",)
 
-    line_cap :: Bokeh.Model.EnumSpec{(:butt, :round, :square)} = (value = :butt,)
+    line_dash :: Model.Spec{Model.DashPattern}
 
-    line_color :: Bokeh.Model.Spec{Bokeh.Model.Color} = Bokeh.Model.Unknown()
+    line_dash_offset :: Model.Spec{Int64} = (value = 0,)
 
-    line_dash :: Bokeh.Model.Spec{Bokeh.Model.DashPattern}
+    line_join :: Model.EnumSpec{(:miter, :round, :bevel)} = (value = :bevel,)
 
-    line_dash_offset :: Bokeh.Model.Spec{Int64} = (value = 0,)
+    line_width :: Model.Spec{Float64} = (value = 1.0,)
 
-    line_join :: Bokeh.Model.EnumSpec{(:miter, :round, :bevel)} = (value = :bevel,)
+    lower :: Model.PropertyUnitsSpec = (field = "lower",)
 
-    line_width :: Bokeh.Model.Spec{Float64} = (value = 1.0,)
+    lower_head :: Model.Nullable{iArrowHead} = TeeHead()
 
-    lower :: Bokeh.Model.PropertyUnitsSpec = (field = "lower",)
-
-    lower_head :: Bokeh.Model.Nullable{iArrowHead} = TeeHead()
-
-    lower_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
-
-    name :: Bokeh.Model.Nullable{String} = nothing
+    lower_units :: Model.EnumType{(:screen, :data)} = :data
 
     source :: iDataSource = ColumnDataSource()
 
-    subscribed_events :: Vector{Symbol}
+    upper :: Model.PropertyUnitsSpec = (field = "upper",)
 
-    syncable :: Bool = true
+    upper_head :: Model.Nullable{iArrowHead} = TeeHead()
 
-    tags :: Vector{Any}
-
-    upper :: Bokeh.Model.PropertyUnitsSpec = (field = "upper",)
-
-    upper_head :: Bokeh.Model.Nullable{iArrowHead} = TeeHead()
-
-    upper_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
+    upper_units :: Model.EnumType{(:screen, :data)} = :data
 
     visible :: Bool = true
 

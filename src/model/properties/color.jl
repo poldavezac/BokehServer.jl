@@ -82,7 +82,7 @@ function bokehconvert(::Type{Color}, ν::COLOR_ARGS)
     ismissing(clr) ? Unknown() : clr
 end
 
-function bokehconvert(::Type{Color}, ν::Union{COLOR_ARGS, ColorHex})
+function bokehconvert(::Type{ColorHex}, ν::COLOR_ARGS)
     clr = colorhex(ν)
     ismissing(clr) ? Unknown() : clr
 end

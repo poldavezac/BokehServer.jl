@@ -1,60 +1,48 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@wrap mutable struct Arrow <: iArrow
+@model mutable struct Arrow <: iArrow
 
-    coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
+    coordinates :: Model.Nullable{iCoordinateMapping} = nothing
 
-    finish :: Bokeh.Model.Nullable{iArrowHead} = OpenHead()
+    finish :: Model.Nullable{iArrowHead} = OpenHead()
 
-    finish_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
+    finish_units :: Model.EnumType{(:screen, :data)} = :data
 
-    group :: Bokeh.Model.Nullable{iRendererGroup} = nothing
+    group :: Model.Nullable{iRendererGroup} = nothing
 
-    js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    level :: Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
 
-    js_property_callbacks :: Dict{Symbol, Vector{iCustomJS}}
+    line_alpha :: Model.AlphaSpec = (value = 1.0,)
 
-    level :: Bokeh.Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
+    line_cap :: Model.EnumSpec{(:butt, :round, :square)} = (value = :butt,)
 
-    line_alpha :: Bokeh.Model.AlphaSpec = (value = 1.0,)
+    line_color :: Model.Spec{Model.Color} = (value = "rgb(0,0,0)",)
 
-    line_cap :: Bokeh.Model.EnumSpec{(:butt, :round, :square)} = (value = :butt,)
+    line_dash :: Model.Spec{Model.DashPattern}
 
-    line_color :: Bokeh.Model.Spec{Bokeh.Model.Color} = Bokeh.Model.Unknown()
+    line_dash_offset :: Model.Spec{Int64} = (value = 0,)
 
-    line_dash :: Bokeh.Model.Spec{Bokeh.Model.DashPattern}
+    line_join :: Model.EnumSpec{(:miter, :round, :bevel)} = (value = :bevel,)
 
-    line_dash_offset :: Bokeh.Model.Spec{Int64} = (value = 0,)
-
-    line_join :: Bokeh.Model.EnumSpec{(:miter, :round, :bevel)} = (value = :bevel,)
-
-    line_width :: Bokeh.Model.Spec{Float64} = (value = 1.0,)
-
-    name :: Bokeh.Model.Nullable{String} = nothing
+    line_width :: Model.Spec{Float64} = (value = 1.0,)
 
     source :: iDataSource = ColumnDataSource()
 
-    start :: Bokeh.Model.Nullable{iArrowHead} = nothing
+    start :: Model.Nullable{iArrowHead} = nothing
 
-    start_units :: Bokeh.Model.EnumType{(:screen, :data)} = :data
-
-    subscribed_events :: Vector{Symbol}
-
-    syncable :: Bool = true
-
-    tags :: Vector{Any}
+    start_units :: Model.EnumType{(:screen, :data)} = :data
 
     visible :: Bool = true
 
-    x_end :: Bokeh.Model.Spec{Float64} = (field = "x_end",)
+    x_end :: Model.Spec{Float64} = (field = "x_end",)
 
     x_range_name :: String = "default"
 
-    x_start :: Bokeh.Model.Spec{Float64} = (field = "x_start",)
+    x_start :: Model.Spec{Float64} = (field = "x_start",)
 
-    y_end :: Bokeh.Model.Spec{Float64} = (field = "y_end",)
+    y_end :: Model.Spec{Float64} = (field = "y_end",)
 
     y_range_name :: String = "default"
 
-    y_start :: Bokeh.Model.Spec{Float64} = (field = "y_start",)
+    y_start :: Model.Spec{Float64} = (field = "y_start",)
 end
