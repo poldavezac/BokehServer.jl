@@ -11,12 +11,14 @@ function invokable(func::Function, args...)
     )
 end
 
-function _𝑒_onchange(func::Function, model, T::Type)
-    cb = model.callbacks
-    (func ∈ cb) && return func
-    isempty(invokable(func, T)) && return missing
-    push!(cb, func)
-    return func
+function _𝑒_onchange(func::Function, model)
+    hascallback(model, func) && return func
+    T = tuple(
+        i
+        for i ∈ eventtypes(model)
+        if !isempty(invokable(func, i))
+    )
+    return isempty(T) ? missing : pushcallback!(model, func, T)
 end
 
 """
@@ -50,10 +52,10 @@ callback 2: only RootAddedEvent
 callback 1: any doc events
 """
 function onchange(func::Function, model::iDocument)
-    wrap = _𝑒_onchange(func, model, iDocEvent)
+    wrap = _𝑒_onchange(func, model)
     ismissing(wrap) && throw(KeyError("""
         No correct signature. It should be:
-        * function (::iDocEvent)
+        * function (::Union{$(eventtypes(model))})
     """))
 end
 
@@ -95,25 +97,33 @@ callback 2: just sugar
 callback 3: a specific type for `new`
 """
 function onchange(func::Function, model::iModel)
-    cb = model.callbacks
-    (func ∈ cb) && return func
+    hascallback(model, func) && return func
     if !isempty(invokable(func, iModel, Symbol, Any, Any))
         wrap = function (e::ModelChangedEvent) 
             if applicable(func, e.model, e.attr, e.old, e.new)
                 func(e.model, e.attr, e.old, e.new)
             end
         end
-        push!(cb, wrap)
-        wrap
+        pushcallback!(model, wrap, (ModelChangedEvent,))
     else
-        wrap = _𝑒_onchange(func, model, iDocModelEvent)
+        wrap = _𝑒_onchange(func, model)
         ismissing(wrap) && throw(KeyError("""
             No correct signature. It should be:
-            * function (::<:iDocModelEvent)
+            * function (::Union{$(eventtypes(model))})
             * function (obj::iModel, attr::Symbol, old::Any, new::Any)
         """))
         wrap
     end
 end
+
+hascallback(model, func::Function) = func ∈ model.callbacks
+
+function pushcallback!(model, func::Function, _)
+    push!(model.callbacks, func)
+    return func
+end
+
+# see implementation in "src/actions.jl"
+function eventtypes end
 
 export onchange

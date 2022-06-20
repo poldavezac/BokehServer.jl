@@ -1,8 +1,9 @@
 module ActionEvents
+using ..AbstractTypes
 using ..Model
-using ..Events: iEvent
-using ..ModelTypes: iAbstractButton, iPlot, iModel
-abstract type iActionEvent <: iEvent end
+using ..Events
+using ..ModelTypes: iAbstractButton, iPlot, iModel, iDropdown
+abstract type iActionEvent <: Events.iEvent end
 abstract type iDocActionEvent <: iActionEvent end
 abstract type iModelActionEvent <: iActionEvent end
 abstract type iPlotActionEvent <: iModelActionEvent end
@@ -143,7 +144,7 @@ Attributes:
 
 """
 @Base.kwdef struct MouseWheel <: iPointEvent
-    model :: iModel
+    model :: iPlot
     delta :: Union{Missing, Float64} = missing
     sx    :: Union{Missing, Float64} = missing
     sy    :: Union{Missing, Float64} = missing
@@ -164,7 +165,7 @@ Attributes:
 
 """
 @Base.kwdef struct Pan <: iPointEvent
-    model     :: iModel
+    model     :: iPlot
     delta_x   :: Union{Missing, Float64} = missing
     delta_y   :: Union{Missing, Float64} = missing
     direction :: Union{Missing, Float64} = missing
@@ -188,7 +189,7 @@ Attributes:
 
 """
 @Base.kwdef struct Pinch <: iPointEvent
-    model     :: iModel
+    model     :: iPlot
     scale     :: Union{Missing, Float64} = missing
     sx        :: Union{Missing, Float64} = missing
     sy        :: Union{Missing, Float64} = missing
@@ -215,6 +216,21 @@ const _EVENT_NAMES = (; (nameof(j) => i for (i, j) ∈ pairs(_EVENT_TYPES))...)
 
 actionevent(name::Symbol, values)   = getfield(_EVENTS, name)(; (Symbol(i)=>j for (i,j) ∈ values)...)
 actionname(T::Type{<:iActionEvent}) = getfield(_EVENT_NAMES, nameof(T))
+
+Events.eventtypes(::iModel)          = (Events.iDocModelEvent,)
+Events.eventtypes(::iPlot)           = (Events.eventtypes(iModel)..., (i for i ∈ values(_EVENT_TYPES) if i <: iPlotActionEvent)...)
+Events.eventtypes(::iAbstractButton) = (Events.eventtypes(iModel)..., ButtonClick)
+Events.eventtypes(::iDropdown)       = (Events.eventtypes(iAbstractButton)..., MenuItemClick)
+Events.eventtypes(::iDocument)       = (Events.iDocEvent, DocumentReady)
+
+function Events.pushcallback!(μ::Union{iPlot, iAbstractButton}, 𝐹::Function, 𝑇s::Tuple)
+    push!(μ.callbacks, 𝐹)
+    for T ∈ 𝑇s
+        n = get(_EVENT_NAMES, nameof(T), missing)
+        (!ismissing(n) && (n ∉ μ.subscribed_events)) && push!(μ.subscribed_events, n)
+    end
+    𝐹
+end
 
 export actionname, actionevent, iActionEvent, iPlotActionEvent, iDocActionEvent, iModelActionEvent
 end

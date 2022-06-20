@@ -1,6 +1,7 @@
 struct Unknown end
 @inline bokehfieldtype(T::Type)        = T
 @inline bokehrawtype(@nospecialize(ν)) = ν
+
 bokehconvert(𝑇::Type, ν) = ν isa 𝑇 ? ν : Unknown()
 bokehread(::Type, @nospecialize(::iHasProps), @nospecialize(::Symbol), ν) = ν
 

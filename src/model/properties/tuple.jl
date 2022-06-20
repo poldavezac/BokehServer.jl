@@ -1,30 +1,32 @@
-function bokehfieldtype(𝑇::Type{<:Tuple})
-    @assert !any(T <: iContainer for T ∈ 𝑇.parameters)
-    return 𝑇.name.wrapper{(bokehfieldtype(T) for T ∈ 𝑇.parameters)...}
+for i = 1:24 # we need specific implementations per tuple size. Otherwise `bokehfieldtype(::Union)` doesn't get called
+    let 𝑇s = tuple((Symbol("T$j") for j ∈ 1:i)...)
+        @eval function bokehfieldtype(::Type{Tuple{$(𝑇s...)}}) where {$(𝑇s...)}
+            return Tuple{$((:(bokehfieldtype($𝑉)) for 𝑉 ∈ 𝑇s)...)}
+        end
+
+        @eval function bokehconvert(::Type{Tuple{$(𝑇s...)}}, ν::Union{Vector, Tuple}) where {$(𝑇s...)}
+            return tuple($((:(bokehconvert($𝑉, ν[$j])) for (j, 𝑉) ∈ enumerate(𝑇s))...))
+        end
+
+        @eval function bokehread(::Type{Tuple{$(𝑇s...)}}, μ::iHasProps, σ::Symbol, ν::Tuple) where {$(𝑇s...)}
+            return tuple($((:(bokehread($𝑉, μ, σ, ν[$j])) for (j, 𝑉) ∈ enumerate(𝑇s))...))
+        end
+    end
 end
 
-function bokehconvert(𝑇::Type{<:Tuple}, ν::Union{Vector, Tuple})
-    return tuple((bokehconvert(T, i) for (i, T) ∈ zip(ν, 𝑇.parameters))...)
-end
+bokehfieldtype(::Type{NamedTuple{K, V}}) where {K, V} = NamedTuple{K, bokehfieldtype(V)}
 
-function bokehread(𝑇::Type{<:Tuple}, μ::iHasProps, σ::Symbol, ν::Tuple)
-    return tuple((bokehread(T, µ, σ, i) for (i, T) ∈ zip(ν, 𝑇.parameters))...)
-end
-
-bokehfieldtype(𝑇::Type{<:NamedTuple}) = 𝑇.name.wrapper{𝑇.parameters[1], bokehfieldtype(𝑇.parameters[2])}
-
-_👻items(𝑇::Type{<:NamedTuple}) = zip(𝑇.parameters[1], 𝑇.parameters[2].parameters)
-
-function bokehconvert(𝑇::Type{<:NamedTuple}, ν::NamedTuple)
-    (length(fieldnames(𝑇) ∩ keys(ν)) ≡ length(fieldnames(𝑇))) || return Unknown()
-    outp = (;(i => bokehconvert(T, ν[i]) for (i, T) ∈ _👻items(𝑇))...)
+function bokehconvert(::Type{NamedTuple{K, V}}, ν::NamedTuple) where {K, V}
+    ((length(keys(ν)) ≡ length(K)) && all(k ∈ K for k ∈ keys(ν))) || return Unknown()
+    outp = (;(i => bokehconvert(T, ν[i]) for (i, T) ∈ zip(K, V.parameters))...)
     return any(i isa Unknown for i ∈ outp) ? Unknown() : outp
 end
 
-function bokehconvert(𝑇::Type{<:NamedTuple}, ν::AbstractDict{<:AbstractString})
+function bokehconvert(𝑇::Type{NamedTuple{K, V}}, ν::AbstractDict) where {K, V}
+    (length(keys(ν)) ≡ length(K)) || return Unknown()
     return bokehconvert(𝑇, (; (Symbol(i) => j for (i, j) ∈ ν)...))
 end
 
-function bokehread(𝑇::Type{<:NamedTuple}, μ::iHasProps, σ::Symbol, ν::NamedTuple)
-    return (; (i => bokehread(T, μ, σ, ν[i]) for (i, T) ∈ _👻items(𝑇))...)
+function bokehread(::Type{NamedTuple{K, V}}, μ::iHasProps, σ::Symbol, ν::NamedTuple{K}) where {K, V}
+    return (; (i => bokehread(T, μ, σ, ν[i]) for (i, T) ∈ zip(K, V.parameters))...)
 end

@@ -14,9 +14,10 @@ end
 
 bokehrawtype(ν::iContainer) = ν.values
 
-bokehfieldtype(𝑇::AbstractDict) = 𝑇.name.wrapper{(T isa Type ? bokehfieldtype(T) : T for T ∈ 𝑇.parameters)...}
-bokehfieldtype(𝑇::AbstractSet) = 𝑇.name.wrapper{(T isa Type ? bokehfieldtype(T) : T for T ∈ 𝑇.parameters)...}
-bokehfieldtype(𝑇::AbstractArray) = 𝑇.name.wrapper{(T isa Type ? bokehfieldtype(T) : T for T ∈ 𝑇.parameters)...}
+# WARNING: we need explicit template args to make sure `bokehfieldtype(::Union)` will be called when needed
+bokehfieldtype(𝑇::Type{<:AbstractDict{K, V}})  where {K, V} = 𝑇.name.wrapper{bokehfieldtype(K), bokehfieldtype(V)}
+bokehfieldtype(𝑇::Type{<:AbstractSet{T}})      where {T}    = 𝑇.name.wrapper{bokehfieldtype(T)}
+bokehfieldtype(𝑇::Type{<:AbstractArray{T, N}}) where {T, N} = 𝑇.name.wrapper{bokehfieldtype(T), N}
 
 function bokehconvert(𝑇::Type{<:AbstractDict{𝐾, 𝑉}}, ν::AbstractDict) where {𝐾, 𝑉}
     params = 𝑇.parameters
