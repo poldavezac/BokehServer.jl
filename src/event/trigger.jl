@@ -20,6 +20,8 @@ function trigger!(λ::iEventList, ε::TitleChangedEvent)
     push!(λ, ε)
 end
 
+trigger!(λ::Events.iEventList, ε::iActionEvent) = push!(λ, ε)
+
 function trigger(args...)
     @assert task_hasevents() "No event list was set: doc is readonly in this task!"
     trigger!(task_eventlist(), args...)

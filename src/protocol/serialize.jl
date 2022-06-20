@@ -99,6 +99,14 @@ function serialref(η::Events.ColumnDataChangedEvent, 𝑅::iRules)
     )
 end
 
+function serialref(η::Events.iActionEvent, 𝑅::iRules)
+    return (;
+        kind     = :MessageSent,
+        msg_type = :bokeh_event,
+        msg_data = (; (i => serialref(getproperty(η, i), 𝑅) for i ∈ propertynames(η) if i ≢ :doc)...)
+    )
+end
+
 const _𝑑𝑠_ID    = bokehidmaker()
 const _𝑑𝑠_BIN   = Union{(AbstractVector{i} for i ∈ AbstractTypes.NumberElTypeDataDict)...}
 const _𝑑𝑠_NDBIN = Union{(AbstractVector{<:AbstractArray{i}} for i ∈ AbstractTypes.NumberElTypeDataDict)...} 

@@ -2,10 +2,8 @@ module Actions
 using ..AbstractTypes
 using ..Model
 using ..Events
+using ..Events: iDocActionEvent, iModelActionEvent, iActionEvent
 using ..ModelTypes: iAbstractButton, iPlot, iModel, iDropdown
-abstract type iActionEvent <: Events.iEvent end
-abstract type iDocActionEvent <: iActionEvent end
-abstract type iModelActionEvent <: iActionEvent end
 abstract type iPlotActionEvent <: iModelActionEvent end
 
 """Announce when a Document is fully idle."""
@@ -199,31 +197,32 @@ Attributes:
     y         :: Union{Missing, Float64} = missing
 end
 
+Base.propertynames(::T; private::Bool = false) where {T <: iActionEvent} = (fieldnames(T)..., :event_name)
 
-const _EVENT_TYPES = (;
-    document_ready  = DocumentReady,
-    button_click    = ButtonClick,
-    menu_item_click = MenuItemClick,
+function Base.getproperty(μ::T, σ::Symbol) where {T <: iActionEvent}
+    return σ ≡ :event_name ? getfield(_EVENT_NAMES, nameof(T)) : getfield(μ, σ)
+end
+
+const _EVENT_NAMES = (;
     (
-        Symbol(lowercase("$cls")) => getfield((@__MODULE__), cls)
+        cls => Symbol(lowercase("$cls"))
         for cls ∈ names((@__MODULE__); all = true)
         if "$cls"[1] != '_' && let itm = getfield((@__MODULE__), cls)
-            itm isa DataType && itm <: iActionEvent &&
-            nameof(itm) ∉ (:DocumentReady, :ButtonClick, :MenuItemClick)
+            itm isa DataType && itm <: Events.iActionEvent
         end
-    )...
+    )...,
+    DocumentReady = :document_ready,
+    ButtonClick   = :button_click,
+    MenuItemClick = :menu_item_click,
 )
 
-const _EVENT_NAMES = (; (nameof(j) => i for (i, j) ∈ pairs(_EVENT_TYPES))...)
+const _EVENT_TYPES = (; (j => getfield((@__MODULE__), i) for (i, j) ∈ pairs(_EVENT_NAMES))...)
 
-actionevent(name::Symbol, values)   = getfield(_EVENTS, name)(; (Symbol(i)=>j for (i,j) ∈ values)...)
-
-Events.eventtypes(::iModel)          = (Events.iDocModelEvent,)
-Events.eventtypes(::iPlot)           = (Events.iDocModelEvent, (i for i ∈ values(_EVENT_TYPES) if i <: iPlotActionEvent)...)
-Events.eventtypes(::iAbstractButton) = (Events.iDocModelEvent, ButtonClick)
-Events.eventtypes(::iDropdown)       = (Events.iDocModelEvent, ButtonClick, MenuItemClick)
-Events.eventtypes(::iDocument)       = (Events.iDocEvent, DocumentReady)
-Events.trigger!(λ::Events.iEventList, ε::iActionEvent) = push!(λ, ε)
+Events.eventtypes(::iModel)             = (Events.iDocModelEvent,)
+Events.eventtypes(::iPlot)              = (Events.iDocModelEvent, (i for i ∈ values(_EVENT_TYPES) if i <: iPlotActionEvent)...)
+Events.eventtypes(::iAbstractButton)    = (Events.iDocModelEvent, ButtonClick)
+Events.eventtypes(::iDropdown)          = (Events.iDocModelEvent, ButtonClick, MenuItemClick)
+Events.eventtypes(::iDocument)          = (Events.iDocEvent, DocumentReady)
 Events.eventcallbacks(e::DocumentReady) = e.doc.callbacks
 
 function Events.pushcallback!(μ::Union{iPlot, iAbstractButton}, 𝐹::Function, 𝑇s::Tuple)
@@ -234,5 +233,17 @@ function Events.pushcallback!(μ::Union{iPlot, iAbstractButton}, 𝐹::Function,
     end
     𝐹
 end
+
+"""
+    action!(𝐷::iDocument, ::Val{T}; model::iModel, k...) where {T}
+
+Calls callbacks linked to the event associated with arguments and keywords.
+"""
+action!(𝐷::iDocument, ::Val{:document_ready}; k...) = Events.executecallbacks(DocumentReady(𝐷))
+function action!(𝐷::iDocument, ::Val{T}; model::iModel, k...) where {T}
+    Events.executecallbacks(getfield(_EVENT_TYPES, T)(; model, k...))
+end
+
+export action!
 end
 using .Actions

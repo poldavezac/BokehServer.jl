@@ -1,5 +1,6 @@
 module PatchDocReceive
 using Base64
+using ...Bokeh
 using ...Model
 using ...AbstractTypes
 using ..Serialize
@@ -81,21 +82,32 @@ function apply(::Val{:ModelChanged}, 𝐷::iDocument, 𝐼::Dict{String})
 end
 
 function apply(::Val{:ColumnDataChanged}, 𝐷::iDocument, 𝐼::Dict{String})
-    Model.update!(𝐼["column_source"].data, fromjson(DataDict, 𝐼["new"]))
+    Bokeh.update!(𝐼["column_source"].data, fromjson(DataDict, 𝐼["new"]))
 end
 
 function apply(::Val{:ColumnsStreamed}, 𝐷::iDocument, 𝐼::Dict{String})
-    Model.stream!(𝐼["column_source"].data, fromjson(DataDict, 𝐼["data"]); rollover = 𝐼["rollover"])
+    Bokeh.stream!(𝐼["column_source"].data, fromjson(DataDict, 𝐼["data"]); rollover = 𝐼["rollover"])
 end
 
 function apply(::Val{:ColumnsPatched}, 𝐷::iDocument, 𝐼::Dict{String})
-    Model.patch!(
+    Bokeh.patch!(
         𝐼["column_source"].data,
         Dict{String, Vector{Pair}}(
             col => Pair[_𝑐𝑝_key(x) => _𝑐𝑝_value(y) for (x, y) ∈ lst]
             for (col, lst) ∈ 𝐼["patches"]
         )
     )
+end
+
+function apply(::Val{:MessageSent}, 𝐷::iDocument, 𝐼::Dict{String})
+    if 𝐼["msg_type"] == "bokeh_event"
+        data = 𝐼["msg_data"]
+        Bokeh.action!(
+            D,
+            Val(Symbol(data["event_name"]));
+            (Symbol(i) => j for (i, j) ∈ data["event_values"])...
+        )
+    end
 end
 
 parsereferences(𝐶::_𝑏_OPTS, 𝐵::Buffers = Buffers()) = parsereferences!(ModelDict(), 𝐶, 𝐵)
