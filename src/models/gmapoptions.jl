@@ -6,7 +6,7 @@
 
     lng :: Float64
 
-    map_type :: Model.EnumType{(:hybrid, :roadmap, :satellite, :terrain)} = :roadmap
+    map_type :: Model.EnumType{(:satellite, :roadmap, :terrain, :hybrid)} = :roadmap
 
     scale_control :: Bool = false
 

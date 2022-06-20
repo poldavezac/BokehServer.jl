@@ -4,7 +4,7 @@
 
     above :: Vector{iRenderer}
 
-    align :: Union{Tuple{Model.EnumType{(:start, :end, :center)}, Model.EnumType{(:start, :end, :center)}}, Model.EnumType{(:start, :center, :end)}} = :start
+    align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:start, :center, :end)}} = :start
 
     api_key :: Model.Base64String
 
@@ -94,7 +94,7 @@
 
     outline_line_alpha :: Model.Percent = 1.0
 
-    outline_line_cap :: Model.EnumType{(:round, :square, :butt)} = :butt
+    outline_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
 
     outline_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
@@ -102,11 +102,11 @@
 
     outline_line_dash_offset :: Int64 = 0
 
-    outline_line_join :: Model.EnumType{(:round, :miter, :bevel)} = :bevel
+    outline_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
 
     outline_line_width :: Float64 = 1.0
 
-    output_backend :: Model.EnumType{(:svg, :canvas, :webgl)} = :canvas
+    output_backend :: Model.EnumType{(:canvas, :svg, :webgl)} = :canvas
 
     plot_height :: Model.Alias{:height}
 
@@ -118,15 +118,15 @@
 
     right :: Vector{iRenderer}
 
-    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :scale_both, :scale_width, :stretch_height, :stretch_both, :fixed, :scale_height)}} = nothing
+    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
     title :: Union{Nothing, iTitle} = Title()
 
-    title_location :: Model.Nullable{Model.EnumType{(:below, :left, :right, :above)}} = :above
+    title_location :: Model.Nullable{Model.EnumType{(:above, :below, :left, :right)}} = :above
 
     toolbar :: iToolbar = Toolbar()
 
-    toolbar_location :: Model.Nullable{Model.EnumType{(:below, :left, :right, :above)}} = :right
+    toolbar_location :: Model.Nullable{Model.EnumType{(:above, :below, :left, :right)}} = :right
 
     toolbar_sticky :: Bool = true
 

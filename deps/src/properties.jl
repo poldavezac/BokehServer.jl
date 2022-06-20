@@ -93,7 +93,9 @@ end
 end
 @property Nullable => Bokeh.Model.Nullable{parseproperty(cls, prop.type_param).type}
 @property Readonly => Bokeh.Model.ReadOnly{parseproperty(cls, prop.type_param).type}
-@property Enum     => Bokeh.Model.EnumType{tuple(Set([pyconvert(Symbol, j) for j ∈ prop._enum._values])...)}
+@property Enum     => let vals = tuple(unique!([pyconvert(Symbol, j) for j ∈ prop._enum._values])...)
+    Bokeh.Model.EnumType{vals}
+end
 @property Either   => let enu = (; type = _enum((i for i ∈ prop._type_params)...))
     types = NamedTuple[(parseproperty(cls, i) for i ∈ prop._type_params if !_isenum(i))...]
     if isempty(types)

@@ -4,7 +4,7 @@
 
     angle :: Float64 = 0.0
 
-    angle_units :: Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
+    angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     background_fill_alpha :: Model.Percent = 1.0
 
@@ -12,7 +12,7 @@
 
     border_line_alpha :: Model.Percent = 1.0
 
-    border_line_cap :: Model.EnumType{(:round, :square, :butt)} = :butt
+    border_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
 
     border_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
@@ -20,7 +20,7 @@
 
     border_line_dash_offset :: Int64 = 0
 
-    border_line_join :: Model.EnumType{(:round, :miter, :bevel)} = :bevel
+    border_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
 
     border_line_width :: Float64 = 1.0
 
@@ -28,7 +28,7 @@
 
     group :: Model.Nullable{iRendererGroup} = nothing
 
-    level :: Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
+    level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
     render_mode :: Model.EnumType{(:canvas, :css)} = :canvas
 
@@ -38,7 +38,7 @@
 
     text_alpha :: Model.Percent = 1.0
 
-    text_baseline :: Model.EnumType{(:middle, :bottom, :top, :hanging, :alphabetic, :ideographic)} = :bottom
+    text_baseline :: Model.EnumType{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)} = :bottom
 
     text_color :: Model.Nullable{Model.Color} = "rgb(68,68,68)"
 
@@ -46,7 +46,7 @@
 
     text_font_size :: Model.FontSize = "16px"
 
-    text_font_style :: Model.EnumType{(:bold, :normal, Symbol("bold italic"), :italic)} = :normal
+    text_font_style :: Model.EnumType{(:normal, :italic, :bold, Symbol("bold italic"))} = :normal
 
     text_line_height :: Float64 = 1.2
 

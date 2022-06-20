@@ -8,7 +8,7 @@
 
     group :: Model.Nullable{iRendererGroup} = nothing
 
-    level :: Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
+    level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
     render_parents :: Bool = true
 

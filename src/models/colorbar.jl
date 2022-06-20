@@ -8,7 +8,7 @@
 
     bar_line_alpha :: Model.Percent = 1.0
 
-    bar_line_cap :: Model.EnumType{(:round, :square, :butt)} = :butt
+    bar_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
 
     bar_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
@@ -16,13 +16,13 @@
 
     bar_line_dash_offset :: Int64 = 0
 
-    bar_line_join :: Model.EnumType{(:round, :miter, :bevel)} = :bevel
+    bar_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
 
     bar_line_width :: Float64 = 1.0
 
     border_line_alpha :: Model.Percent = 1.0
 
-    border_line_cap :: Model.EnumType{(:round, :square, :butt)} = :butt
+    border_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
 
     border_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
@@ -30,7 +30,7 @@
 
     border_line_dash_offset :: Int64 = 0
 
-    border_line_join :: Model.EnumType{(:round, :miter, :bevel)} = :bevel
+    border_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
 
     border_line_width :: Float64 = 1.0
 
@@ -46,7 +46,7 @@
 
     label_standoff :: Int64 = 5
 
-    level :: Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
+    level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
     location :: Union{Tuple{Float64, Float64}, Model.EnumType{(:top_left, :top_center, :top_right, :center_left, :center_center, :center_right, :bottom_left, :bottom_center, :bottom_right, :top, :left, :center, :right, :bottom)}} = :top_right
 
@@ -58,7 +58,7 @@
 
     major_label_text_alpha :: Model.Percent = 1.0
 
-    major_label_text_baseline :: Model.EnumType{(:middle, :bottom, :top, :hanging, :alphabetic, :ideographic)} = :bottom
+    major_label_text_baseline :: Model.EnumType{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)} = :bottom
 
     major_label_text_color :: Model.Nullable{Model.Color} = "rgb(68,68,68)"
 
@@ -66,7 +66,7 @@
 
     major_label_text_font_size :: Model.FontSize = "16px"
 
-    major_label_text_font_style :: Model.EnumType{(:bold, :normal, Symbol("bold italic"), :italic)} = :normal
+    major_label_text_font_style :: Model.EnumType{(:normal, :italic, :bold, Symbol("bold italic"))} = :normal
 
     major_label_text_line_height :: Float64 = 1.2
 
@@ -74,7 +74,7 @@
 
     major_tick_line_alpha :: Model.Percent = 1.0
 
-    major_tick_line_cap :: Model.EnumType{(:round, :square, :butt)} = :butt
+    major_tick_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
 
     major_tick_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
@@ -82,7 +82,7 @@
 
     major_tick_line_dash_offset :: Int64 = 0
 
-    major_tick_line_join :: Model.EnumType{(:round, :miter, :bevel)} = :bevel
+    major_tick_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
 
     major_tick_line_width :: Float64 = 1.0
 
@@ -94,7 +94,7 @@
 
     minor_tick_line_alpha :: Model.Percent = 1.0
 
-    minor_tick_line_cap :: Model.EnumType{(:round, :square, :butt)} = :butt
+    minor_tick_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
 
     minor_tick_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
@@ -102,7 +102,7 @@
 
     minor_tick_line_dash_offset :: Int64 = 0
 
-    minor_tick_line_join :: Model.EnumType{(:round, :miter, :bevel)} = :bevel
+    minor_tick_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
 
     minor_tick_line_width :: Float64 = 1.0
 
@@ -124,7 +124,7 @@
 
     title_text_alpha :: Model.Percent = 1.0
 
-    title_text_baseline :: Model.EnumType{(:middle, :bottom, :top, :hanging, :alphabetic, :ideographic)} = :bottom
+    title_text_baseline :: Model.EnumType{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)} = :bottom
 
     title_text_color :: Model.Nullable{Model.Color} = "rgb(68,68,68)"
 
@@ -132,7 +132,7 @@
 
     title_text_font_size :: Model.FontSize = "16px"
 
-    title_text_font_style :: Model.EnumType{(:bold, :normal, Symbol("bold italic"), :italic)} = :normal
+    title_text_font_style :: Model.EnumType{(:normal, :italic, :bold, Symbol("bold italic"))} = :normal
 
     title_text_line_height :: Float64 = 1.2
 

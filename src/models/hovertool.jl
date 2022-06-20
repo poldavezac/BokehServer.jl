@@ -2,9 +2,9 @@
 
 @model mutable struct HoverTool <: iHoverTool
 
-    anchor :: Model.EnumType{(:right, :bottom_left, :top_center, :center_center, :center, :left, :center_left, :bottom, :top_right, :top, :bottom_center, :bottom_right, :top_left, :center_right)} = :center
+    anchor :: Model.EnumType{(:top_left, :top_center, :top_right, :center_left, :center_center, :center_right, :bottom_left, :bottom_center, :bottom_right, :top, :left, :center, :right, :bottom)} = :center
 
-    attachment :: Model.EnumType{(:left, :right, :below, :vertical, :horizontal, :above)} = :horizontal
+    attachment :: Model.EnumType{(:horizontal, :vertical, :left, :right, :above, :below)} = :horizontal
 
     callback :: Model.Nullable{iCallback} = nothing
 
@@ -12,11 +12,11 @@
 
     formatters :: Dict{String, Union{iCustomJSHover, Model.EnumType{(:numeral, :datetime, :printf)}}}
 
-    line_policy :: Model.EnumType{(:none, :nearest, :interp, :prev, :next)} = :nearest
+    line_policy :: Model.EnumType{(:prev, :next, :nearest, :interp, :none)} = :nearest
 
-    mode :: Model.EnumType{(:mouse, :vline, :hline)} = :mouse
+    mode :: Model.EnumType{(:mouse, :hline, :vline)} = :mouse
 
-    muted_policy :: Model.EnumType{(:ignore, :show)} = :show
+    muted_policy :: Model.EnumType{(:show, :ignore)} = :show
 
     names :: Vector{String} = String[]
 

@@ -2,7 +2,7 @@
 
 @model mutable struct Tooltip <: iTooltip
 
-    attachment :: Model.EnumType{(:left, :right, :below, :vertical, :horizontal, :above)} = :horizontal
+    attachment :: Model.EnumType{(:horizontal, :vertical, :left, :right, :above, :below)} = :horizontal
 
     coordinates :: Model.Nullable{iCoordinateMapping} = nothing
 
@@ -10,7 +10,7 @@
 
     inner_only :: Bool = true
 
-    level :: Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
+    level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
     show_arrow :: Bool = true
 

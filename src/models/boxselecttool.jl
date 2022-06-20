@@ -4,9 +4,9 @@
 
     description :: Model.Nullable{String} = nothing
 
-    dimensions :: Model.EnumType{(:both, :height, :width)} = :both
+    dimensions :: Model.EnumType{(:width, :height, :both)} = :both
 
-    mode :: Model.EnumType{(:append, :replace, :subtract, :intersect)} = :replace
+    mode :: Model.EnumType{(:replace, :append, :intersect, :subtract)} = :replace
 
     names :: Vector{String} = String[]
 

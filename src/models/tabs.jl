@@ -4,7 +4,7 @@
 
     active :: Int64 = 0
 
-    align :: Union{Tuple{Model.EnumType{(:start, :end, :center)}, Model.EnumType{(:start, :end, :center)}}, Model.EnumType{(:start, :center, :end)}} = :start
+    align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:start, :center, :end)}} = :start
 
     aspect_ratio :: Union{Nothing, Float64, Model.EnumType{(:auto,)}} = nothing
 
@@ -28,11 +28,11 @@
 
     min_width :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :scale_both, :scale_width, :stretch_height, :stretch_both, :fixed, :scale_height)}} = nothing
+    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
     tabs :: Vector{iPanel}
 
-    tabs_location :: Model.EnumType{(:below, :left, :right, :above)} = :above
+    tabs_location :: Model.EnumType{(:above, :below, :left, :right)} = :above
 
     visible :: Bool = true
 

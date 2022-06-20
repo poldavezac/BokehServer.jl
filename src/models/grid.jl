@@ -28,7 +28,7 @@
 
     grid_line_alpha :: Model.Percent = 1.0
 
-    grid_line_cap :: Model.EnumType{(:round, :square, :butt)} = :butt
+    grid_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
 
     grid_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
@@ -36,17 +36,17 @@
 
     grid_line_dash_offset :: Int64 = 0
 
-    grid_line_join :: Model.EnumType{(:round, :miter, :bevel)} = :bevel
+    grid_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
 
     grid_line_width :: Float64 = 1.0
 
     group :: Model.Nullable{iRendererGroup} = nothing
 
-    level :: Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
+    level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
     minor_grid_line_alpha :: Model.Percent = 1.0
 
-    minor_grid_line_cap :: Model.EnumType{(:round, :square, :butt)} = :butt
+    minor_grid_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
 
     minor_grid_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
@@ -54,7 +54,7 @@
 
     minor_grid_line_dash_offset :: Int64 = 0
 
-    minor_grid_line_join :: Model.EnumType{(:round, :miter, :bevel)} = :bevel
+    minor_grid_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
 
     minor_grid_line_width :: Float64 = 1.0
 

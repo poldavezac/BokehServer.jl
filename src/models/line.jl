@@ -4,7 +4,7 @@
 
     line_alpha :: Model.Percent = 1.0
 
-    line_cap :: Model.EnumType{(:round, :square, :butt)} = :butt
+    line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
 
     line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
@@ -12,7 +12,7 @@
 
     line_dash_offset :: Int64 = 0
 
-    line_join :: Model.EnumType{(:round, :miter, :bevel)} = :bevel
+    line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
 
     line_width :: Float64 = 1.0
 

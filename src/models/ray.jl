@@ -4,7 +4,7 @@
 
     angle :: Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (value = 0.0,)
 
-    angle_units :: Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
+    angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     length :: Model.DistanceSpec = (value = 0.0,)
 

@@ -10,7 +10,7 @@
 
     gesture :: Model.EnumType{(:tap, :doubletap)} = :tap
 
-    mode :: Model.EnumType{(:append, :replace, :subtract, :intersect)} = :replace
+    mode :: Model.EnumType{(:replace, :append, :intersect, :subtract)} = :replace
 
     names :: Vector{String} = String[]
 

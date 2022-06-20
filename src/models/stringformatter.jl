@@ -2,7 +2,7 @@
 
 @model mutable struct StringFormatter <: iStringFormatter
 
-    font_style :: Model.EnumType{(:bold, :normal, Symbol("bold italic"), :italic)} = :normal
+    font_style :: Model.EnumType{(:normal, :italic, :bold, Symbol("bold italic"))} = :normal
 
     nan_format :: String = "-"
 

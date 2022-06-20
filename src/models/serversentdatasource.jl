@@ -10,7 +10,7 @@
 
     max_size :: Model.Nullable{Int64} = nothing
 
-    mode :: Model.EnumType{(:append, :replace)} = :replace
+    mode :: Model.EnumType{(:replace, :append)} = :replace
 
     selected :: Model.ReadOnly{iSelection} = Selection()
 

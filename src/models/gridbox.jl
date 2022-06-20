@@ -2,7 +2,7 @@
 
 @model mutable struct GridBox <: iGridBox
 
-    align :: Union{Tuple{Model.EnumType{(:start, :end, :center)}, Model.EnumType{(:start, :end, :center)}}, Model.EnumType{(:start, :center, :end)}} = :start
+    align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:start, :center, :end)}} = :start
 
     aspect_ratio :: Union{Nothing, Float64, Model.EnumType{(:auto,)}} = nothing
 
@@ -10,7 +10,7 @@
 
     children :: Vector{Union{Tuple{iLayoutDOM, Int64, Int64}, Tuple{iLayoutDOM, Int64, Int64, Int64, Int64}}}
 
-    cols :: Union{Int64, Dict{Union{Int64, String}, Union{Int64, NamedTuple{(:policy, :align), Tuple{Model.EnumType{(:auto, :min)}, Model.EnumType{(:auto, :start, :center, :end)}}}, NamedTuple{(:policy, :flex, :align), Tuple{Model.EnumType{(:max, :fit)}, Float64, Model.EnumType{(:auto, :start, :center, :end)}}}, NamedTuple{(:policy, :width, :align), Tuple{Model.EnumType{(:fixed,)}, Int64, Model.EnumType{(:auto, :start, :center, :end)}}}, Model.EnumType{(:auto, :min, :fit, :max)}}}, Model.EnumType{(:auto, :min, :fit, :max)}} = :auto
+    cols :: Union{Int64, Dict{Union{Int64, String}, Union{Int64, NamedTuple{(:policy, :align), Tuple{Model.EnumType{(:auto, :min)}, Model.EnumType{(:auto, :start, :center, :end)}}}, NamedTuple{(:policy, :flex, :align), Tuple{Model.EnumType{(:fit, :max)}, Float64, Model.EnumType{(:auto, :start, :center, :end)}}}, NamedTuple{(:policy, :width, :align), Tuple{Model.EnumType{(:fixed,)}, Int64, Model.EnumType{(:auto, :start, :center, :end)}}}, Model.EnumType{(:auto, :min, :fit, :max)}}}, Model.EnumType{(:auto, :min, :fit, :max)}} = :auto
 
     css_classes :: Vector{String} = String[]
 
@@ -30,9 +30,9 @@
 
     min_width :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    rows :: Union{Int64, Dict{Union{Int64, String}, Union{Int64, NamedTuple{(:policy, :align), Tuple{Model.EnumType{(:auto, :min)}, Model.EnumType{(:auto, :start, :center, :end)}}}, NamedTuple{(:policy, :flex, :align), Tuple{Model.EnumType{(:max, :fit)}, Float64, Model.EnumType{(:auto, :start, :center, :end)}}}, NamedTuple{(:policy, :height, :align), Tuple{Model.EnumType{(:fixed,)}, Int64, Model.EnumType{(:auto, :start, :center, :end)}}}, Model.EnumType{(:auto, :min, :fit, :max)}}}, Model.EnumType{(:auto, :min, :fit, :max)}} = :auto
+    rows :: Union{Int64, Dict{Union{Int64, String}, Union{Int64, NamedTuple{(:policy, :align), Tuple{Model.EnumType{(:auto, :min)}, Model.EnumType{(:auto, :start, :center, :end)}}}, NamedTuple{(:policy, :flex, :align), Tuple{Model.EnumType{(:fit, :max)}, Float64, Model.EnumType{(:auto, :start, :center, :end)}}}, NamedTuple{(:policy, :height, :align), Tuple{Model.EnumType{(:fixed,)}, Int64, Model.EnumType{(:auto, :start, :center, :end)}}}, Model.EnumType{(:auto, :min, :fit, :max)}}}, Model.EnumType{(:auto, :min, :fit, :max)}} = :auto
 
-    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :scale_both, :scale_width, :stretch_height, :stretch_both, :fixed, :scale_height)}} = nothing
+    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
     spacing :: Union{Int64, Tuple{Int64, Int64}} = 0
 

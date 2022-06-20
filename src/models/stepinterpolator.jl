@@ -6,7 +6,7 @@
 
     data :: Model.Nullable{iColumnarDataSource} = nothing
 
-    mode :: Model.EnumType{(:after, :before, :center)} = :after
+    mode :: Model.EnumType{(:before, :after, :center)} = :after
 
     x :: Union{String, Vector{Float64}}
 

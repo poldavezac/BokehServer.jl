@@ -2,7 +2,7 @@
 
 @model mutable struct RangeSlider <: iRangeSlider
 
-    align :: Union{Tuple{Model.EnumType{(:start, :end, :center)}, Model.EnumType{(:start, :end, :center)}}, Model.EnumType{(:start, :center, :end)}} = :start
+    align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:start, :center, :end)}} = :start
 
     aspect_ratio :: Union{Nothing, Float64, Model.EnumType{(:auto,)}} = nothing
 
@@ -14,7 +14,7 @@
 
     default_size :: Int64 = 300
 
-    direction :: Model.EnumType{(:rtl, :ltr)} = :ltr
+    direction :: Model.EnumType{(:ltr, :rtl)} = :ltr
 
     disabled :: Bool = false
 
@@ -36,11 +36,11 @@
 
     min_width :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    orientation :: Model.EnumType{(:vertical, :horizontal)} = :horizontal
+    orientation :: Model.EnumType{(:horizontal, :vertical)} = :horizontal
 
     show_value :: Bool = true
 
-    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :scale_both, :scale_width, :stretch_height, :stretch_both, :fixed, :scale_height)}} = nothing
+    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
     start :: Float64
 

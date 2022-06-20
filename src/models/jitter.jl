@@ -2,7 +2,7 @@
 
 @model mutable struct Jitter <: iJitter
 
-    distribution :: Model.EnumType{(:normal, :uniform)} = :uniform
+    distribution :: Model.EnumType{(:uniform, :normal)} = :uniform
 
     mean :: Float64 = 0.0
 

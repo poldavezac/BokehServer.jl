@@ -4,5 +4,5 @@
 
     description :: Model.Nullable{String} = nothing
 
-    dimension :: Model.EnumType{(:height, :width)} = :width
+    dimension :: Model.EnumType{(:width, :height)} = :width
 end

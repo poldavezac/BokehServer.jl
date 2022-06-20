@@ -4,5 +4,5 @@
 
     code :: String
 
-    repetition :: Model.EnumType{(:repeat_y, :repeat_x, :no_repeat, :repeat)} = :repeat
+    repetition :: Model.EnumType{(:repeat, :repeat_x, :repeat_y, :no_repeat)} = :repeat
 end

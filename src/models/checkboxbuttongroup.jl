@@ -4,13 +4,13 @@
 
     active :: Vector{Int64} = Int64[]
 
-    align :: Union{Tuple{Model.EnumType{(:start, :end, :center)}, Model.EnumType{(:start, :end, :center)}}, Model.EnumType{(:start, :center, :end)}} = :start
+    align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:start, :center, :end)}} = :start
 
     aspect_ratio :: Union{Nothing, Float64, Model.EnumType{(:auto,)}} = nothing
 
     background :: Model.Nullable{Model.Color} = nothing
 
-    button_type :: Model.EnumType{(:warning, :default, :success, :light, :danger, :primary)} = :default
+    button_type :: Model.EnumType{(:default, :primary, :success, :warning, :danger, :light)} = :default
 
     css_classes :: Vector{String} = String[]
 
@@ -34,9 +34,9 @@
 
     min_width :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    orientation :: Model.EnumType{(:vertical, :horizontal)} = :horizontal
+    orientation :: Model.EnumType{(:horizontal, :vertical)} = :horizontal
 
-    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :scale_both, :scale_width, :stretch_height, :stretch_both, :fixed, :scale_height)}} = nothing
+    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
     visible :: Bool = true
 

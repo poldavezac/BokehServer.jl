@@ -2,15 +2,15 @@
 
 @model mutable struct NumberFormatter <: iNumberFormatter
 
-    font_style :: Model.EnumType{(:bold, :normal, Symbol("bold italic"), :italic)} = :normal
+    font_style :: Model.EnumType{(:normal, :italic, :bold, Symbol("bold italic"))} = :normal
 
     format :: String = "0,0"
 
-    language :: Model.EnumType{(Symbol("da-dk"), :de, :en, :th, :chs, Symbol("fr-ch"), :pl, :tr, Symbol("pt-pt"), Symbol("es-ES"), :fr, Symbol("pt-br"), :es, Symbol("en-gb"), :ja, :hu, Symbol("fr-CA"), Symbol("de-ch"), Symbol("nl-nl"), :it, :ru, Symbol("ru-UA"), :fi, Symbol("be-nl"), :cs, :et, :sk, Symbol("uk-UA"))} = :en
+    language :: Model.EnumType{(Symbol("be-nl"), :chs, :cs, Symbol("da-dk"), Symbol("de-ch"), :de, :en, Symbol("en-gb"), Symbol("es-ES"), :es, :et, :fi, Symbol("fr-CA"), Symbol("fr-ch"), :fr, :hu, :it, :ja, Symbol("nl-nl"), :pl, Symbol("pt-br"), Symbol("pt-pt"), :ru, Symbol("ru-UA"), :sk, :th, :tr, Symbol("uk-UA"))} = :en
 
     nan_format :: String = "-"
 
-    rounding :: Model.EnumType{(:rounddown, :round, :nearest, :floor, :ceil, :roundup)} = :round
+    rounding :: Model.EnumType{(:round, :nearest, :floor, :rounddown, :ceil, :roundup)} = :round
 
     text_align :: Model.EnumType{(:left, :right, :center)} = :left
 

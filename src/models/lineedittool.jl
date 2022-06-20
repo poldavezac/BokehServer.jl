@@ -6,7 +6,7 @@
 
     description :: Model.Nullable{String} = nothing
 
-    dimensions :: Model.EnumType{(:both, :height, :width)} = :both
+    dimensions :: Model.EnumType{(:width, :height, :both)} = :both
 
     empty_value :: Union{Bool, Float64, Int64, Dates.Date, Dates.DateTime, Model.Color, String}
 

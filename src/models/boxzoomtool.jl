@@ -4,7 +4,7 @@
 
     description :: Model.Nullable{String} = nothing
 
-    dimensions :: Model.EnumType{(:both, :height, :width)} = :both
+    dimensions :: Model.EnumType{(:width, :height, :both)} = :both
 
     match_aspect :: Bool = false
 

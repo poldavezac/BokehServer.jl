@@ -6,7 +6,7 @@
 
     finish_angle :: Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (field = "end_angle",)
 
-    finish_angle_units :: Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
+    finish_angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     line_alpha :: Model.AlphaSpec = (value = 1.0,)
 
@@ -28,7 +28,7 @@
 
     start_angle :: Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (field = "start_angle",)
 
-    start_angle_units :: Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
+    start_angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     x :: Model.Spec{Float64} = (field = "x",)
 

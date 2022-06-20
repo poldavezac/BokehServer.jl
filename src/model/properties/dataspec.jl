@@ -19,7 +19,9 @@ macro dataspec(code::Expr)
 
     construction = :(let out = new(
             $((
-                :(get(kwa, $(Meta.quot(i)), missing))
+                :(let x = get(kwa, $(Meta.quot(i)), missing)
+                    isnothing(x) ? missing : x
+                end)
                 for i ∈ (:value, :field, :expr, :transform)
             )...),
             $((isunits ? (:units,) : ())...)
@@ -140,10 +142,15 @@ struct PropertyUnitsSpec <: iSpec{Float64}
     transform :: Union{iModel, Missing}
     units     :: Union{Symbol, Missing}
 
-    PropertyUnitsSpec(; k...) = new((
-        get(k, i, missing)
-        for i ∈ (:value, :field, :expr, :transform, :units)
-    )...)
+    PropertyUnitsSpec(;
+            value = missing, field = missing, expr = missing, transform = missing, units = :data
+    ) = new(
+        (ismissing(value)   || isnothing(value)) ? missing : convert(Float64, value),
+        (ismissing(field)   || isnothing(field)) ? missing : "$field",
+        isnothing(expr)                          ? missing : expr,
+        isnothing(transform)                     ? missing : transform,
+        (ismissing(units)   || isnothing(units)) ? missing : Symbol(units)
+    )
 end
 
 function bokehconvert(::Type{ColorSpec}, ν::Union{AbstractDict{Symbol}, NamedTuple})

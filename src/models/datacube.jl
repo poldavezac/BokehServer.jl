@@ -2,13 +2,13 @@
 
 @model mutable struct DataCube <: iDataCube
 
-    align :: Union{Tuple{Model.EnumType{(:start, :end, :center)}, Model.EnumType{(:start, :end, :center)}}, Model.EnumType{(:start, :center, :end)}} = :start
+    align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:start, :center, :end)}} = :start
 
     aspect_ratio :: Union{Nothing, Float64, Model.EnumType{(:auto,)}} = nothing
 
     auto_edit :: Bool = false
 
-    autosize_mode :: Model.EnumType{(:none, :fit_columns, :fit_viewport, :force_fit)} = :force_fit
+    autosize_mode :: Model.EnumType{(:fit_columns, :fit_viewport, :force_fit, :none)} = :force_fit
 
     background :: Model.Nullable{Model.Color} = nothing
 
@@ -60,7 +60,7 @@
 
     selectable :: Union{Bool, Model.EnumType{(:checkbox,)}} = true
 
-    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :scale_both, :scale_width, :stretch_height, :stretch_both, :fixed, :scale_height)}} = nothing
+    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
     sortable :: Bool = true
 

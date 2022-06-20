@@ -10,7 +10,7 @@
 
     group :: Model.Nullable{iRendererGroup} = nothing
 
-    level :: Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
+    level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
     line_alpha :: Model.AlphaSpec = (value = 1.0,)
 

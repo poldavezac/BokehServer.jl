@@ -4,7 +4,7 @@
 
     angle :: Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (value = 0.0,)
 
-    angle_units :: Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
+    angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     fill_alpha :: Model.AlphaSpec = (value = 1.0,)
 
@@ -40,7 +40,7 @@
 
     radius :: Model.Nullable{Model.DistanceSpec} = nothing
 
-    radius_dimension :: Model.EnumType{(:max, :min, :y, :x)} = :x
+    radius_dimension :: Model.EnumType{(:x, :y, :max, :min)} = :x
 
     radius_units :: Model.EnumType{(:screen, :data)} = :data
 

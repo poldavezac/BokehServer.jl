@@ -2,5 +2,5 @@
 
 @model mutable struct BooleanFormatter <: iBooleanFormatter
 
-    icon :: Model.EnumType{(Symbol("check-square-o"), Symbol("check-circle"), :check, Symbol("check-circle-o"), Symbol("check-square"))} = :check
+    icon :: Model.EnumType{(:check, Symbol("check-circle"), Symbol("check-circle-o"), Symbol("check-square"), Symbol("check-square-o"))} = :check
 end

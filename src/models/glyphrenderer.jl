@@ -12,7 +12,7 @@
 
     hover_glyph :: Model.Nullable{iGlyph} = nothing
 
-    level :: Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
+    level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
     muted :: Bool = false
 

@@ -4,7 +4,7 @@
 
     angle :: Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (value = 0.0,)
 
-    angle_units :: Model.EnumType{(:rad, :turn, :deg, :grad)} = :rad
+    angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     background_fill_alpha :: Model.AlphaSpec = (value = 1.0,)
 
@@ -28,7 +28,7 @@
 
     group :: Model.Nullable{iRendererGroup} = nothing
 
-    level :: Model.EnumType{(:annotation, :underlay, :image, :overlay, :guide, :glyph)} = :image
+    level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
     render_mode :: Model.EnumType{(:canvas, :css)} = :canvas
 

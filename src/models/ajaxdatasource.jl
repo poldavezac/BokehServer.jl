@@ -18,7 +18,7 @@
 
     method :: Model.EnumType{(:POST, :GET)} = :POST
 
-    mode :: Model.EnumType{(:append, :replace)} = :replace
+    mode :: Model.EnumType{(:replace, :append)} = :replace
 
     polling_interval :: Model.Nullable{Int64} = nothing
 
