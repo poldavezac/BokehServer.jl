@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Toggle <: iToggle
+@Bokeh.wrap mutable struct Toggle <: iToggle
 
     active :: Bool = false
 

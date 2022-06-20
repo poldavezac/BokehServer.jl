@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Ellipse <: iEllipse
+@Bokeh.wrap mutable struct Ellipse <: iEllipse
 
     angle :: Bokeh.Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (value = 0.0,)
 

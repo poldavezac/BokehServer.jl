@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct ColorPicker <: iColorPicker
+@Bokeh.wrap mutable struct ColorPicker <: iColorPicker
 
     align :: Union{Tuple{Bokeh.Model.EnumType{(:start, :end, :center)}, Bokeh.Model.EnumType{(:start, :end, :center)}}, Bokeh.Model.EnumType{(:start, :center, :end)}} = :start
 

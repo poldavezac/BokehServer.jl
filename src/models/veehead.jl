@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct VeeHead <: iVeeHead
+@Bokeh.wrap mutable struct VeeHead <: iVeeHead
 
     fill_alpha :: Bokeh.Model.AlphaSpec = (value = 1.0,)
 

@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct RangeTool <: iRangeTool
+@Bokeh.wrap mutable struct RangeTool <: iRangeTool
 
     description :: Bokeh.Model.Nullable{String} = nothing
 

@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct ColorBar <: iColorBar
+@Bokeh.wrap mutable struct ColorBar <: iColorBar
 
     background_fill_alpha :: Bokeh.Model.Percent = 1.0
 

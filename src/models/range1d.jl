@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Range1d <: iRange1d
+@Bokeh.wrap mutable struct Range1d <: iRange1d
 
     bounds :: Bokeh.Model.Nullable{Bokeh.Model.MinMaxBounds} = nothing
 

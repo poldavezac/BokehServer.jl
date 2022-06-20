@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct GraphRenderer <: iGraphRenderer
+@Bokeh.wrap mutable struct GraphRenderer <: iGraphRenderer
 
     coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
 

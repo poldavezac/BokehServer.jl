@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Legend <: iLegend
+@Bokeh.wrap mutable struct Legend <: iLegend
 
     background_fill_alpha :: Bokeh.Model.Percent = 1.0
 

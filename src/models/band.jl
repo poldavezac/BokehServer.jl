@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Band <: iBand
+@wrap mutable struct Band <: iBand
 
     base :: Bokeh.Model.PropertyUnitsSpec = (field = "base",)
 

@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Toolbar <: iToolbar
+@Bokeh.wrap mutable struct Toolbar <: iToolbar
 
     active_drag :: Union{Nothing, Bokeh.Model.EnumType{(:auto,)}, iDrag} = Bokeh.Model.Unknown()
 

@@ -1,14 +1,14 @@
-@Bokeh.model mutable struct X <: Bokeh.iModel
+@Bokeh.wrap mutable struct X <: Bokeh.iModel
     a::Int
     b::Float64
 end
 
-@Bokeh.model mutable struct Cnt <: Bokeh.iModel
+@Bokeh.wrap mutable struct Cnt <: Bokeh.iModel
     a::Vector{X}
     b::Dict{String, X}
 end
 
-@Bokeh.model mutable struct Cds <: Bokeh.iModel
+@Bokeh.wrap mutable struct Cds <: Bokeh.iModel
     data::Bokeh.Model.DataDict
 end
 

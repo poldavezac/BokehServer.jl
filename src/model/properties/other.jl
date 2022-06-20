@@ -2,7 +2,7 @@
 Allows defining an alias to a given field
 
 ```julia
-@model struct X  <: iModel
+@wrap struct X  <: iModel
     a :: Int = 1
     b :: Alias{A}
 end

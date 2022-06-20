@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Grid <: iGrid
+@Bokeh.wrap mutable struct Grid <: iGrid
 
     axis :: Bokeh.Model.Nullable{iAxis} = nothing
 

@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Styles <: iStyles
+@Bokeh.wrap mutable struct Styles <: iStyles
 
     align_content :: Bokeh.Model.Nullable{String} = nothing
 

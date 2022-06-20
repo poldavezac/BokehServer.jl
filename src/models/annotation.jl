@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Annotation <: iAnnotation
+@wrap mutable struct Annotation <: iAnnotation
 
     coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
 

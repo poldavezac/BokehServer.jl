@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct TileRenderer <: iTileRenderer
+@Bokeh.wrap mutable struct TileRenderer <: iTileRenderer
 
     alpha :: Float64 = 1.0
 

@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Quadratic <: iQuadratic
+@Bokeh.wrap mutable struct Quadratic <: iQuadratic
 
     cx :: Bokeh.Model.Spec{Float64} = (field = "cx",)
 

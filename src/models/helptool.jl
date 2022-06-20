@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct HelpTool <: iHelpTool
+@Bokeh.wrap mutable struct HelpTool <: iHelpTool
 
     description :: Bokeh.Model.Nullable{String} = nothing
 

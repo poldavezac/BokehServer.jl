@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct CellFormatter <: iCellFormatter
+@Bokeh.wrap mutable struct CellFormatter <: iCellFormatter
 
     js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 

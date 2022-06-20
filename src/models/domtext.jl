@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct DOMText <: iDOMText
+@Bokeh.wrap mutable struct DOMText <: iDOMText
 
     content :: String = ""
 

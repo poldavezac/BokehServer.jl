@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct EqHistColorMapper <: iEqHistColorMapper
+@Bokeh.wrap mutable struct EqHistColorMapper <: iEqHistColorMapper
 
     bins :: Int64 = 65536
 

@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct BinnedTicker <: iBinnedTicker
+@wrap mutable struct BinnedTicker <: iBinnedTicker
 
     js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 

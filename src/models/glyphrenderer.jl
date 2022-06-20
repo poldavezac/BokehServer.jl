@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct GlyphRenderer <: iGlyphRenderer
+@Bokeh.wrap mutable struct GlyphRenderer <: iGlyphRenderer
 
     coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
 

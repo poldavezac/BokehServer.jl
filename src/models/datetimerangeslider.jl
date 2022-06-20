@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct DatetimeRangeSlider <: iDatetimeRangeSlider
+@Bokeh.wrap mutable struct DatetimeRangeSlider <: iDatetimeRangeSlider
 
     align :: Union{Tuple{Bokeh.Model.EnumType{(:start, :end, :center)}, Bokeh.Model.EnumType{(:start, :end, :center)}}, Bokeh.Model.EnumType{(:start, :center, :end)}} = :start
 

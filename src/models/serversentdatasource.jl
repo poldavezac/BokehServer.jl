@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct ServerSentDataSource <: iServerSentDataSource
+@Bokeh.wrap mutable struct ServerSentDataSource <: iServerSentDataSource
 
     adapter :: Bokeh.Model.Nullable{iCustomJS} = nothing
 

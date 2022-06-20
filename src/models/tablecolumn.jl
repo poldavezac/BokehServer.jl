@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct TableColumn <: iTableColumn
+@Bokeh.wrap mutable struct TableColumn <: iTableColumn
 
     default_sort :: Bokeh.Model.EnumType{(:ascending, :descending)} = :ascending
 

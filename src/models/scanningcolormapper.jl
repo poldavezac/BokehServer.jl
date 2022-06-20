@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct ScanningColorMapper <: iScanningColorMapper
+@Bokeh.wrap mutable struct ScanningColorMapper <: iScanningColorMapper
 
     domain :: Vector{Tuple{iGlyphRenderer, Union{String, Vector{String}}}}
 

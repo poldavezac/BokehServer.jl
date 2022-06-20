@@ -1,10 +1,10 @@
-EventsX = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+EventsX = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
     a::Int = 1
     b::Int = 1
     c::Int = 1
 end
 
-EventsY = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+EventsY = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
     a::EventsX = EventsX(; a = -1)
 end
 

@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Arrow <: iArrow
+@wrap mutable struct Arrow <: iArrow
 
     coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
 

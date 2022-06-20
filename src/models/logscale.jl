@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct LogScale <: iLogScale
+@Bokeh.wrap mutable struct LogScale <: iLogScale
 
     js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 

@@ -51,7 +51,7 @@ end
     end
 end
 
-@Bokeh.model mutable struct ServerTestObj <: Bokeh.iModel
+@Bokeh.wrap mutable struct ServerTestObj <: Bokeh.iModel
     a::Int = 1
 end
 

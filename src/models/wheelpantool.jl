@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct WheelPanTool <: iWheelPanTool
+@Bokeh.wrap mutable struct WheelPanTool <: iWheelPanTool
 
     description :: Bokeh.Model.Nullable{String} = nothing
 

@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Title <: iTitle
+@Bokeh.wrap mutable struct Title <: iTitle
 
     align :: Bokeh.Model.EnumType{(:left, :right, :center)} = :left
 

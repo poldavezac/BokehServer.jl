@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct SingleIntervalTicker <: iSingleIntervalTicker
+@Bokeh.wrap mutable struct SingleIntervalTicker <: iSingleIntervalTicker
 
     desired_num_ticks :: Int64 = 6
 

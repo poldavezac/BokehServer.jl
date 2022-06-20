@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct VBar <: iVBar
+@Bokeh.wrap mutable struct VBar <: iVBar
 
     bottom :: Bokeh.Model.Spec{Float64} = (value = 0.0,)
 

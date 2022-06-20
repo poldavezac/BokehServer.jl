@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct NumeralTickFormatter <: iNumeralTickFormatter
+@Bokeh.wrap mutable struct NumeralTickFormatter <: iNumeralTickFormatter
 
     format :: String = "0,0"
 

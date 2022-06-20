@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct GeoJSONDataSource <: iGeoJSONDataSource
+@Bokeh.wrap mutable struct GeoJSONDataSource <: iGeoJSONDataSource
 
     geojson :: Bokeh.Model.JSONString
 

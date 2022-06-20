@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct FileInput <: iFileInput
+@Bokeh.wrap mutable struct FileInput <: iFileInput
 
     accept :: String = ""
 

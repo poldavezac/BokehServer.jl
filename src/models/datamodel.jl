@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct DataModel <: iDataModel
+@Bokeh.wrap mutable struct DataModel <: iDataModel
 
     js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 

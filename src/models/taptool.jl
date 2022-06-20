@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct TapTool <: iTapTool
+@Bokeh.wrap mutable struct TapTool <: iTapTool
 
     behavior :: Bokeh.Model.EnumType{(:select, :inspect)} = :select
 

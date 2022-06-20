@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct DOMPlaceholder <: iDOMPlaceholder
+@Bokeh.wrap mutable struct DOMPlaceholder <: iDOMPlaceholder
 
     js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 

@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Patch <: iPatch
+@Bokeh.wrap mutable struct Patch <: iPatch
 
     fill_alpha :: Bokeh.Model.Percent = 1.0
 

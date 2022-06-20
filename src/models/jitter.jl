@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Jitter <: iJitter
+@Bokeh.wrap mutable struct Jitter <: iJitter
 
     distribution :: Bokeh.Model.EnumType{(:normal, :uniform)} = :uniform
 

@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct HArea <: iHArea
+@Bokeh.wrap mutable struct HArea <: iHArea
 
     fill_alpha :: Bokeh.Model.Percent = 1.0
 

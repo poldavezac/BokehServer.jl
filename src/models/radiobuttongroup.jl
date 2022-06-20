@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct RadioButtonGroup <: iRadioButtonGroup
+@Bokeh.wrap mutable struct RadioButtonGroup <: iRadioButtonGroup
 
     active :: Bokeh.Model.Nullable{Int64} = nothing
 

@@ -1,8 +1,8 @@
-X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
     source :: Bokeh.Model.DataDict = zero
 end
 
-Y = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+Y = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
     a:: Int
 end
 

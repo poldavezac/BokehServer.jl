@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct DOMSpan <: iDOMSpan
+@Bokeh.wrap mutable struct DOMSpan <: iDOMSpan
 
     children :: Vector{Union{String, iDOMNode, iLayoutDOM}}
 

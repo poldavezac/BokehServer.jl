@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct TeX <: iTeX
+@Bokeh.wrap mutable struct TeX <: iTeX
 
     inline :: Bool = false
 

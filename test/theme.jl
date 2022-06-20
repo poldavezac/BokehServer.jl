@@ -33,7 +33,7 @@ end
 @testset "create object" begin
     @eval abstract type _TestTheme1 <: Bokeh.iModel end
 
-    @eval @Bokeh.model mutable struct _TestTheme2 <: _TestTheme1
+    @eval @Bokeh.wrap mutable struct _TestTheme2 <: _TestTheme1
         a::Float64 = -1.
         b::Float64 = -1.
         c::Float64 = -1.

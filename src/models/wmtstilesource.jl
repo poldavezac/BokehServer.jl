@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct WMTSTileSource <: iWMTSTileSource
+@Bokeh.wrap mutable struct WMTSTileSource <: iWMTSTileSource
 
     attribution :: String = ""
 

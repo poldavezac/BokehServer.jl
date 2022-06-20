@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Span <: iSpan
+@Bokeh.wrap mutable struct Span <: iSpan
 
     coordinates :: Bokeh.Model.Nullable{iCoordinateMapping} = nothing
 

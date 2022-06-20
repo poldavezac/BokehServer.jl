@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct CheckboxButtonGroup <: iCheckboxButtonGroup
+@Bokeh.wrap mutable struct CheckboxButtonGroup <: iCheckboxButtonGroup
 
     active :: Vector{Int64} = Int64[]
 

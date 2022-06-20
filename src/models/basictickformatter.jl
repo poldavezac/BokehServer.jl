@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct BasicTickFormatter <: iBasicTickFormatter
+@wrap mutable struct BasicTickFormatter <: iBasicTickFormatter
 
     js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 

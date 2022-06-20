@@ -43,14 +43,14 @@ end
 @assert Z().nojs1 isa Vector{Any}
 @assert Z().nojs2 isa Set{Any}
 """
-:(@model)
+:(@wrap)
 
-"Stores every class created by the @model macro"
+"Stores every class created by the @wrap macro"
 const MODEL_TYPES = Set{DataType}()
 
 include("model/properties.jl")
 include("model/macrohelpers.jl")
-include("model/modelmacro.jl")
+include("model/wrapmacro.jl")
 include("model/allmodels.jl")
 end
 using .Model

@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct IntersectRenderers <: iIntersectRenderers
+@Bokeh.wrap mutable struct IntersectRenderers <: iIntersectRenderers
 
     js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 

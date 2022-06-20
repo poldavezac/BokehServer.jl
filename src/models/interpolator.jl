@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Interpolator <: iInterpolator
+@Bokeh.wrap mutable struct Interpolator <: iInterpolator
 
     clip :: Bool = true
 

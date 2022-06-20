@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct CategoricalColorMapper <: iCategoricalColorMapper
+@Bokeh.wrap mutable struct CategoricalColorMapper <: iCategoricalColorMapper
 
     factors :: Union{Vector{String}, Vector{Tuple{String, String}}, Vector{Tuple{String, String, String}}}
 

@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct PolyEditTool <: iPolyEditTool
+@Bokeh.wrap mutable struct PolyEditTool <: iPolyEditTool
 
     custom_icon :: Bokeh.Model.Nullable{Bokeh.Model.Image} = nothing
 

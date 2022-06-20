@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Axis <: iAxis
+@wrap mutable struct Axis <: iAxis
 
     axis_label :: Bokeh.Model.Nullable{Union{String, iBaseText}} = nothing
 

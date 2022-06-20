@@ -71,7 +71,7 @@
 end
 
 @testset "defaultvalue" begin
-    ProtocolX = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+    ProtocolX = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
         a::Int = 1
         b::Float64 = 2.
         c::Vector{String} = ["3"]
@@ -91,7 +91,7 @@ end
 end
 
 @testset "bokeh structure" begin
-    X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
         a::Int32   = Int32(1)
         b::Float32 = 10f0
     end
@@ -101,7 +101,7 @@ end
     @test X().a ≡ one(Int32)
     @test X().b ≡ 10f0
 
-    Z = @Bokeh.model  mutable struct gensym() <: Bokeh.iHasProps
+    Z = @Bokeh.wrap  mutable struct gensym() <: Bokeh.iHasProps
         a::Bokeh.Model.Internal{Int32} = Int32(1)
         b::Float32 = 10f0
     end
@@ -115,12 +115,12 @@ end
 
 @testset "bokeh children" begin
     # `evals` are needed to make sure X1 exists for Y1's declaration
-    X1 = @eval @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+    X1 = @eval @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
         a::Int64 = 1
     end
 
     # `evals` are needed to make sure X1 exists for Y1's declaration
-    Y1 = eval(:(@Bokeh.model mutable struct gensym() <: Bokeh.iModel
+    Y1 = eval(:(@Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
         a::Vector{$X1}      = [$X1(; a = 1), $X1(; a = 2)]
         b::Dict{Int64, $X1} = Dict(1 => $X1(; a = 3), 2 => $X1(; a = 4))
         c::Dict{$X1, Int64} = Dict($X1(; a = 5) => 1, $X1(; a = 6) => 2)
@@ -143,7 +143,7 @@ end
 end
 
 @testset "bokeh dataspec/container" begin
-    X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
         a::Bokeh.Model.Spec{Int32}  = Int32(1)
         b::Bokeh.Model.DistanceSpec = 10f0
         c::Vector{Int64}             = Int64[1, 2]
@@ -165,7 +165,7 @@ end
 end
 
 @testset "bokeh restricteddict" begin
-    X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
         b::Dict{Bokeh.Model.RestrictedKey{(:a,)}, Int}
     end
     @test fieldtype(X, :b) ≡ Dict{Symbol, Int}
@@ -179,7 +179,7 @@ end
 end
 
 @testset "bokeh tuple attribute" begin
-    X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
         a::Bokeh.Model.Tuple{Bokeh.Model.Spec{Int32},Float64}  = (Int32(1), 2.0)
     end
     @test X().a ≡ ((; value = one(Int32)), 2.0)
@@ -196,7 +196,7 @@ end
     @test collect(Type, Bokeh.Model.UnionIterator(Union{Symbol, String})) == [Symbol, String]
     @test collect(Type, Bokeh.Model.UnionIterator(Union{Symbol, String, Float32})) == [Float32, Symbol, String]
 
-    X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
         a::Bokeh.Model.Union{𝐸T, Float64} = "a"
     end
     @test fieldtype(X, :a) ≡ Union{𝐸T, Float64}
@@ -209,7 +209,7 @@ end
 end
 
 @testset "bokeh namedstruct attribute" begin
-    X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
         a::@NamedTuple{x :: 𝐸T, y:: Float64}  = (; x = :a, y = 1.0)
     end
     @test fieldtype(X, :a) ≡ @NamedTuple{x::𝐸T, y::Float64}
@@ -225,7 +225,7 @@ end
 end
 
 @testset "bokeh color" begin
-    X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
         a::Bokeh.Model.Color =  :gray
     end
     @test X().a.r ≡ X().a.g ≡ X().a.b ≡ 0x80
@@ -245,7 +245,7 @@ end
 end
 
 @testset "bokeh marker" begin
-    X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
         a::Bokeh.Model.MarkerSpec = "x"
     end
     @test X().a == (; value = :x)
@@ -253,7 +253,7 @@ end
 end
 
 @testset "bokeh complex field" begin
-    X = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
         rows::Union{
             Bokeh.enum"max,fit,auto,min",
             Int64,

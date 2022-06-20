@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct MercatorTickFormatter <: iMercatorTickFormatter
+@Bokeh.wrap mutable struct MercatorTickFormatter <: iMercatorTickFormatter
 
     dimension :: Bokeh.Model.Nullable{Bokeh.Model.EnumType{(:lat, :lon)}} = nothing
 

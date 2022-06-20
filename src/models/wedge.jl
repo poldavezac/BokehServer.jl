@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Wedge <: iWedge
+@Bokeh.wrap mutable struct Wedge <: iWedge
 
     direction :: Bokeh.Model.EnumType{(:clock, :anticlock)} = :anticlock
 

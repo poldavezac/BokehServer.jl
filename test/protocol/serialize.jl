@@ -1,7 +1,7 @@
 E    = Bokeh.Events
 ser  = Bokeh.Protocol.Serialize.serialize
 
-CDS  = @Bokeh.model mutable struct gensym() <: Bokeh.iModel
+CDS  = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
     data :: Bokeh.Model.DataDict
 end
 

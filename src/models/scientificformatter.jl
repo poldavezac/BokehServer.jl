@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct ScientificFormatter <: iScientificFormatter
+@Bokeh.wrap mutable struct ScientificFormatter <: iScientificFormatter
 
     font_style :: Bokeh.Model.EnumType{(:bold, :normal, Symbol("bold italic"), :italic)} = :normal
 

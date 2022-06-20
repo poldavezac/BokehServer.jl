@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct BasicTicker <: iBasicTicker
+@wrap mutable struct BasicTicker <: iBasicTicker
 
     base :: Float64 = 10.0
 

@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct BoxAnnotation <: iBoxAnnotation
+@wrap mutable struct BoxAnnotation <: iBoxAnnotation
 
     bottom :: Union{Nothing, Bokeh.Model.EnumType{(:auto,)}, Bokeh.Model.Spec{Float64}} = nothing
 

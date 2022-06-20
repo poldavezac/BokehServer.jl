@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct BoxEditTool <: iBoxEditTool
+@Bokeh.wrap mutable struct BoxEditTool <: iBoxEditTool
 
     custom_icon :: Bokeh.Model.Nullable{Bokeh.Model.Image} = nothing
 

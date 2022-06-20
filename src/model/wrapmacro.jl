@@ -198,7 +198,7 @@ function _👻code(src, mod::Module, code::Expr)
     end)
 end
 
-macro model(expr::Expr)
+macro wrap(expr::Expr)
     _👻code(__source__, __module__, expr)
 end
 
@@ -234,4 +234,4 @@ const ID = bokehidmaker()
 
 Base.repr(mdl::T) where {T <: iHasProps} = "$T(id = $(bokehid(mdl)))" 
 
-export @model
+export @wrap

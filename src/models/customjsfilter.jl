@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct CustomJSFilter <: iCustomJSFilter
+@Bokeh.wrap mutable struct CustomJSFilter <: iCustomJSFilter
 
     args :: Dict{Bokeh.Model.RestrictedKey{(:source,)}, Any}
 

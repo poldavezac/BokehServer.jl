@@ -1,6 +1,6 @@
 #- file created by '/home/pdavezac/code/Bokeh/deps/src/CodeCreator.jl': edit at your own risk! -#
 
-@model mutable struct Glyph <: iGlyph
+@Bokeh.wrap mutable struct Glyph <: iGlyph
 
     js_event_callbacks :: Dict{Symbol, Vector{iCustomJS}}
 
