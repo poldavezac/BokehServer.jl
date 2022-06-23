@@ -44,3 +44,4 @@
 
     size :: Float64 = 1.0
 end
+glyphargs(::Type{HexTile}) = (:q, :r)

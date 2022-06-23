@@ -20,3 +20,4 @@
 
     ys :: Model.Spec{Float64} = (field = "ys",)
 end
+glyphargs(::Type{MultiLine}) = (:xs, :ys)

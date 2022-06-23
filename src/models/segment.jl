@@ -24,3 +24,4 @@
 
     y1 :: Model.Spec{Float64} = (field = "y1",)
 end
+glyphargs(::Type{Segment}) = (:x0, :y0, :x1, :y1)

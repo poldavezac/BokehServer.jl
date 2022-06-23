@@ -32,3 +32,4 @@
 
     y_offset :: Model.Spec{Float64} = (value = 0.0,)
 end
+glyphargs(::Type{Text}) = (:x, :y, :text, :angle, :x_offset, :y_offset)

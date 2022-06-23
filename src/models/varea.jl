@@ -24,3 +24,4 @@
 
     y2 :: Model.Spec{Float64} = (field = "y2",)
 end
+glyphargs(::Type{VArea}) = (:x, :y1, :y2)

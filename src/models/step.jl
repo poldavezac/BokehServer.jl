@@ -22,3 +22,4 @@
 
     y :: Model.Spec{Float64} = (field = "y",)
 end
+glyphargs(::Type{Step}) = (:x, :y)

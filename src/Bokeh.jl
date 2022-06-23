@@ -12,4 +12,5 @@ include("client.jl")
 include("modeltypes.jl")
 include("action.jl")
 include("models.jl")
+include("plotting.jl")
 end # module

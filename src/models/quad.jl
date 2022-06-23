@@ -40,3 +40,4 @@
 
     top :: Model.Spec{Float64} = (field = "top",)
 end
+glyphargs(::Type{Quad}) = (:left, :right, :top, :bottom)

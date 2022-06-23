@@ -20,3 +20,4 @@
 
     y_origin_offset :: Float64
 end
+glyphargs(::Type{TileSource}) = (:url, :tile_size, :min_zoom, :max_zoom, :extra_url_vars)

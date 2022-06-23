@@ -28,3 +28,4 @@
 
     y1 :: Model.Spec{Float64} = (field = "y1",)
 end
+glyphargs(::Type{Quadratic}) = (:x0, :y0, :x1, :y1, :cx, :cy)

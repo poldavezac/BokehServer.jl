@@ -34,3 +34,4 @@
 
     y :: Model.Spec{Float64} = (field = "y",)
 end
+glyphargs(::Type{Arc}) = (:x, :y, :radius, :start_angle, :end_angle, :direction)

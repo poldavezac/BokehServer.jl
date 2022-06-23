@@ -44,3 +44,4 @@
 
     y :: Model.Spec{Float64} = (field = "y",)
 end
+glyphargs(::Type{Annulus}) = (:x, :y, :inner_radius, :outer_radius)

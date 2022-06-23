@@ -46,3 +46,4 @@
 
     y :: Model.Spec{Float64} = (field = "y",)
 end
+glyphargs(::Type{Scatter}) = (:x, :y, :size, :angle, :marker)

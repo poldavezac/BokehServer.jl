@@ -32,3 +32,4 @@
 
     y1 :: Model.Spec{Float64} = (field = "y1",)
 end
+glyphargs(::Type{Bezier}) = (:x0, :y0, :x1, :y1, :cx0, :cy0, :cx1, :cy1)

@@ -54,3 +54,4 @@
 
     y :: Model.Spec{Float64} = (field = "y",)
 end
+glyphargs(::Type{AnnularWedge}) = (:x, :y, :inner_radius, :outer_radius, :start_angle, :end_angle, :direction)

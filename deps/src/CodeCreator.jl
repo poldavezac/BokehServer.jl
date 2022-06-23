@@ -55,9 +55,33 @@ function doccode(io::IO, doc::String, indent::Int)
     nothing
 end
 
-const _BM_PATT  = r"Bokeh\.Models\." => "i"
-const _BM_PATT2 = r"(CodeCreator\.)*?Bokeh\." => ""
-const _BM_PATT3 = r"CodeCreator\." => ""
+const _BM_PATT  = (r"Bokeh\.Models\." => "i", r"(CodeCreator\.)*?Bokeh\." => "", r"CodeCreator\." => "")
+
+function structcode_field(io::IO, name, info, adddoc)
+    (name ≡ :__doc__) && return
+
+    field = "    $name :: $(info.type)"
+    if !isnothing(info.default)
+        dflt   = something(info.default)
+        field *= " = $(dflt isa Expr ? dflt : repr(dflt))"
+    end
+
+    for patt ∈ _BM_PATT
+        field = replace(field, patt)
+    end
+
+    println(io)
+    (adddoc ∈ (:all,)) && doccode(io, info.doc, 4)
+    println(io, field)
+end
+
+function structcode_glyphargs(io::IO, name::String)
+    obj = model(name)
+    if pyhasattr(obj, "_args")
+        args = [pyconvert(Symbol, i) for i ∈ obj._args]
+        println(io, "glyphargs(::Type{$(structname(name))}) = $(tuple(args...))")
+    end
+end
 
 function structcode(io::IO, name::String, parent; adddoc :: Symbol = :none)
     props = parseproperties(model(name))
@@ -65,37 +89,13 @@ function structcode(io::IO, name::String, parent; adddoc :: Symbol = :none)
     println(io)
     (adddoc ∈ (:all, :struct)) && doccode(io, props[:__doc__], 0)
 
-    println(io, "@model mutable struct $(structname(name)) <: $parent")
+    println(io, "@$(parent ≡ :iHasProps ? :wrap : :model) mutable struct $(structname(name)) <: $parent")
     for (i, j) ∈ sort!(collect(props); by = string∘first)
-        (i ≡ :__doc__) && continue
-
-        println(io)
-        (adddoc ∈ (:all,)) && doccode(io, j.doc, 4)
-        println(
-            io,
-            replace(
-                replace(
-                    replace(
-                        string(
-                            "    $i :: $(j.type)",
-                            if isnothing(j.default)
-                                ""
-                            elseif something(j.default) isa Expr
-                                " = $(something(j.default))"
-                            else
-                                " = $(repr(something(j.default)))"
-                            end
-                        ),
-                        _BM_PATT
-                    ),
-                    _BM_PATT2
-                ),
-                _BM_PATT3
-            )
-        )
+        structcode_field(io, i, j, adddoc)
     end
         
     println(io, "end")
+    structcode_glyphargs(io, name)
 end
 
 function createmainfile(io::IO, deplist)
@@ -122,6 +122,7 @@ function createmainfile(io::IO, deplist)
     for name ∈ sort!(collect(keys(deplist)))
         println(io, "include(\"models/$(filename(name)).jl\")")
     end
+    println(io, "include(\"models/figureoptions.jl\")")
     println(io, "end")
 end
 
@@ -144,6 +145,9 @@ function createcode(; adddoc ::Symbol = :none)
         file("models", "$(filename(name)).jl") do io
             structcode(io, name, cls[name]; adddoc)
         end
+    end
+    file("models", "figureoptions.jl") do io
+        structcode(io, "FigureOptions", :iHasProps; adddoc)
     end
 end
 end

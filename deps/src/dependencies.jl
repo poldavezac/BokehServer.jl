@@ -9,6 +9,7 @@ function instancetype(cls)
     getfield(Bokeh.Models, cls)
 end
 
+structname(name::Symbol) = name
 function structname(name::String)
     cls = split(name, '.')[end]
     if occursin(".dom.", name) && !occursin("DOM", name)

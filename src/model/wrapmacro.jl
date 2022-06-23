@@ -211,6 +211,11 @@ function bokehpropertytype end
 function bokehfields end
 function defaultvalue end
 
+function themevalue(𝑇::Type{<:iHasProps}, σ::Symbol)
+    dflt = Bokeh.Themes.theme(𝑇, cols[i])
+    return isnothing(dflt) ? Model.defaultvalue(𝑇, cols[i]) : dflt
+end
+
 const ID = bokehidmaker()
 
 Base.repr(mdl::T) where {T <: iHasProps} = "$T(id = $(bokehid(mdl)))" 

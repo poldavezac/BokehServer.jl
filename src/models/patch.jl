@@ -36,3 +36,4 @@
 
     y :: Model.Spec{Float64} = (field = "y",)
 end
+glyphargs(::Type{Patch}) = (:x, :y)

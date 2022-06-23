@@ -2,7 +2,7 @@
 
 @model mutable struct Whisker <: iWhisker
 
-    base :: Model.PropertyUnitsSpec = (field = "base",)
+    base :: Model.PropertyUnitsSpec = (field = "base", units = :data)
 
     base_units :: Model.EnumType{(:screen, :data)} = :data
 
@@ -28,7 +28,7 @@
 
     line_width :: Model.Spec{Float64} = (value = 1.0,)
 
-    lower :: Model.PropertyUnitsSpec = (field = "lower",)
+    lower :: Model.PropertyUnitsSpec = (field = "lower", units = :data)
 
     lower_head :: Model.Nullable{iArrowHead} = TeeHead()
 
@@ -36,7 +36,7 @@
 
     source :: iDataSource = ColumnDataSource()
 
-    upper :: Model.PropertyUnitsSpec = (field = "upper",)
+    upper :: Model.PropertyUnitsSpec = (field = "upper", units = :data)
 
     upper_head :: Model.Nullable{iArrowHead} = TeeHead()
 

@@ -40,3 +40,4 @@
 
     x :: Model.Spec{Float64} = (field = "x",)
 end
+glyphargs(::Type{VBar}) = (:x, :width, :top, :bottom)

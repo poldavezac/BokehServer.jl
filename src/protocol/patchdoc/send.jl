@@ -8,8 +8,11 @@ function patchdoc(
 
     all = allmodels(doc)
     filt(k::Events.iDocActionEvent)   = false
-    filt(k::Events.iModelActionEvent) = haskey(all, bokehid(k.model))
-    filt(k::Events.iDocModelEvent)    = haskey(all, bokehid(k.model))
+    function filt(k::Union{Events.iDocModelEvent, Events.iModelActionEvent})
+        # only keep mutation events which refer to a model not in the references
+        id = bokehid(k.model)
+        (id ∈ oldids) && haskey(all, id)
+    end
     filt(k::Events.iDocEvent)         = k.doc ≡ doc
 
     return (;

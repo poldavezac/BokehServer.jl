@@ -4,8 +4,9 @@ using ..Bokeh.Model.Dates
 using ..Bokeh.Themes.JSON
 using PythonCall
 
-model(name)  = pyimport("bokeh.models" => "Model").model_class_reverse_map["$name"]
-modelnames() = (pyconvert(String, i) for i ∈ pyimport("bokeh.models" => "Model").model_class_reverse_map.keys())
+modelsmap()  = pyimport("bokeh.models" => "Model").model_class_reverse_map
+modelnames() = (pyconvert(String, i) for i ∈ modelsmap().keys())
+model(name)  = name == "FigureOptions" ? pyimport("bokeh.plotting.figure" => name) : modelsmap()["$name"]
 
 macro default(type, code)
     :(function parsedefault(T::Type{<:$type}, cls, prop)

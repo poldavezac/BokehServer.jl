@@ -30,3 +30,4 @@
 
     y :: Model.Spec{Float64} = (field = "y",)
 end
+glyphargs(::Type{ImageURL}) = (:url, :x, :y, :w, :h, :angle, :dilate)

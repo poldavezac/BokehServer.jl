@@ -50,3 +50,4 @@
 
     y :: Model.Spec{Float64} = (field = "y",)
 end
+glyphargs(::Type{Wedge}) = (:x, :y, :radius, :start_angle, :end_angle, :direction)

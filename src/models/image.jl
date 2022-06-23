@@ -22,3 +22,4 @@
 
     y :: Model.Spec{Float64} = (field = "y",)
 end
+glyphargs(::Type{Image}) = (:image, :x, :y, :dw, :dh, :dilate)
