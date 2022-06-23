@@ -32,7 +32,7 @@
 
     sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
-    style :: Dict{String, Any}
+    style :: Dict{String, Any} = Dict{String, Any}()
 
     text :: String = ""
 

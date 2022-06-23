@@ -3,8 +3,20 @@ using ...Model
 using ...Models
 using ...AbstractTypes
 
-glyph(𝑇::Symbol; kwargs...) = glyph(getfield(Models, 𝑇); kwargs...)
+function glyph(𝑇::Symbol; kwargs...)
+    opts = filter((x -> "$x"[1] ∈ 'A':'Z'), names(Models; all = true))
+    if 𝑇 ∉ opts
+        𝑇 = only(i for i ∈ opts if lowercase("$𝑇") == lowercase("$i"))
+    end
+    return glyph(getfield(Models, 𝑇); kwargs...)
+end
 
+"""
+    glyph(𝑇::Union{Symbol, Type{<:Models.iGlyph}}; kwargs...)
+
+Create a glyph renderer given a glyph type or its name.
+The kwargs should include all `glyphargs(𝑇)` at a minimum
+"""
 function glyph(𝑇::Type{<:Models.iGlyph}; trait_color = missing, kwargs...)
     out = (; (i => pop!(kwarg, i) for i ∈ _👻RENDERER if i ∈ keys(kwargs))...)
     out = merge(out, _👻datasource!(kwargs, get(kwa, :source, missing), 𝑇))
@@ -25,13 +37,25 @@ function glyph(𝑇::Type{<:Models.iGlyph}; trait_color = missing, kwargs...)
     )
 end
 
+"""
+    glyph!(fig::Models.Plot, rend::Models.GlyphRenderer; dotrigger :: Bool = true, kwa...)
+    glyph!(fig::Models.Plot, 𝑇::Union{Symbol, Type{<:Models.iGlyph}}; dotrigger :: Bool = true, kwa...)
+
+Create a glyph renderer given a glyph type or its name and add it to the plot.
+The kwargs should include all `glyphargs(𝑇)` at a minimum
+"""
 function glyph!(fig::Models.Plot, rend::Models.GlyphRenderer; dotrigger :: Bool = true, kwa...)
     push!(plot.renderers, rend; dotrigger)
     _👻legend!(fig, rend, kwa)
     return rend
 end
 
-function glyph!(fig::Models.Plot, 𝑇::Type; dotrigger :: Bool = true, kwa...)
+function glyph!(
+        fig       :: Models.Plot,
+        𝑇         :: Union{Symbol, Type{Models.iGlyph}};
+        dotrigger :: Bool = true,
+        kwa...
+)
     trait_color = let cnt = count(Base.Fix2(isa, Models.iGlyphRenderer), fig.renderers)
         _👻COLORS[min(length(_👻COLORS), 1+cnt)]
     end

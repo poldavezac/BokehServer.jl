@@ -34,7 +34,7 @@
 
     option_limit :: Model.Nullable{Int64} = nothing
 
-    options :: Vector{Union{String, Tuple{String, String}}}
+    options :: Vector{Union{String, Tuple{String, String}}} = Union{String, Tuple{String, String}}[]
 
     placeholder :: Model.Nullable{String} = nothing
 

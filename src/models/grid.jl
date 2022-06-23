@@ -12,7 +12,7 @@
 
     band_hatch_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    band_hatch_extra :: Dict{String, iTexture}
+    band_hatch_extra :: Dict{String, iTexture} = Dict{String, iTexture}()
 
     band_hatch_pattern :: Model.Nullable{String} = nothing
 
@@ -32,7 +32,7 @@
 
     grid_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    grid_line_dash :: Model.DashPattern
+    grid_line_dash :: Model.DashPattern = Int64[]
 
     grid_line_dash_offset :: Int64 = 0
 
@@ -50,7 +50,7 @@
 
     minor_grid_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    minor_grid_line_dash :: Model.DashPattern
+    minor_grid_line_dash :: Model.DashPattern = Int64[]
 
     minor_grid_line_dash_offset :: Int64 = 0
 

@@ -2,7 +2,7 @@
 
 @model mutable struct CustomJSExpr <: iCustomJSExpr
 
-    args :: Dict{String, Any}
+    args :: Dict{String, Any} = Dict{String, Any}()
 
     code :: String = ""
 end

@@ -70,7 +70,6 @@ end
 
 @default Any begin
     name ≡ :timedelta && return nothing
-    name ∈ (:list, :dict, :set, :tuple) && isempty(dflt) && return nothing
     name ≡ :str && isempty(dflt) && return Some("")
     mdl = pyconvert(String, dflt.__class__.__module__)
     if startswith(mdl, "bokeh.")

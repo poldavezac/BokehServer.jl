@@ -10,7 +10,7 @@
 
     description :: Model.Nullable{String} = nothing
 
-    formatters :: Dict{String, Union{iCustomJSHover, Model.EnumType{(:numeral, :datetime, :printf)}}}
+    formatters :: Dict{String, Union{iCustomJSHover, Model.EnumType{(:numeral, :datetime, :printf)}}} = Dict{String, Union{iCustomJSHover, Model.EnumType{(:numeral, :datetime, :printf)}}}()
 
     line_policy :: Model.EnumType{(:prev, :next, :nearest, :interp, :none)} = :nearest
 

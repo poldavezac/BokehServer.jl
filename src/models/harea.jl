@@ -10,7 +10,7 @@
 
     hatch_color :: Model.Spec{Model.Color} = (value = "rgb(0,0,0)",)
 
-    hatch_extra :: Dict{String, iTexture}
+    hatch_extra :: Dict{String, iTexture} = Dict{String, iTexture}()
 
     hatch_pattern :: Model.EnumSpec{(:blank, :dot, :ring, :horizontal_line, :vertical_line, :cross, :horizontal_dash, :vertical_dash, :spiral, :right_diagonal_line, :left_diagonal_line, :diagonal_cross, :right_diagonal_dash, :left_diagonal_dash, :horizontal_wave, :vertical_wave, :criss_cross)} = nothing
 

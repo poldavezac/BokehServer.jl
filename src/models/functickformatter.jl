@@ -2,7 +2,7 @@
 
 @model mutable struct FuncTickFormatter <: iFuncTickFormatter
 
-    args :: Dict{String, Any}
+    args :: Dict{String, Any} = Dict{String, Any}()
 
     code :: String = ""
 end

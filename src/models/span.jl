@@ -16,7 +16,7 @@
 
     line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    line_dash :: Model.DashPattern
+    line_dash :: Model.DashPattern = Int64[]
 
     line_dash_offset :: Int64 = 0
 

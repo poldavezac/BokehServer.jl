@@ -12,5 +12,5 @@
 
     intersection_renderer :: iGlyphRenderer
 
-    renderers :: Vector{iGlyphRenderer}
+    renderers :: Vector{iGlyphRenderer} = iGlyphRenderer[]
 end

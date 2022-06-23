@@ -6,7 +6,7 @@
 
     label :: Model.Nullable{Model.Spec{String}} = nothing
 
-    renderers :: Vector{iGlyphRenderer}
+    renderers :: Vector{iGlyphRenderer} = iGlyphRenderer[]
 
     visible :: Bool = true
 end

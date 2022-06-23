@@ -2,7 +2,7 @@
 
 @model mutable struct DOMSpan <: iDOMSpan
 
-    children :: Vector{Union{iDOMNode, iLayoutDOM, String}}
+    children :: Vector{Union{iDOMNode, iLayoutDOM, String}} = Union{iDOMNode, iLayoutDOM, String}[]
 
     style :: Model.Nullable{Union{iStyles, Dict{String, String}}} = nothing
 end

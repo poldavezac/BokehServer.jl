@@ -96,7 +96,12 @@ function bokehconvert(𝑇::Type{<:iUnitSpec}, ν::Union{AbstractDict{Symbol}, N
 end
 
 bokehconvert(𝑇::Type{<:iSpec}, ν::AbstractDict{<:AbstractString}) = bokehconvert(𝑇, Dict{Symbol, Any}((Symbol(i) => j for (i, j) ∈ ν)))
-bokehconvert(𝑇::Type{<:iSpec}, ν::Union{Symbol, Number}) = 𝑇(; value = bokehconvert(speceltype(𝑇), ν))
+
+function bokehconvert(𝑇::Type{<:iSpec}, ν)
+    value = bokehconvert(speceltype(𝑇), ν)
+    return value isa Unknown ? value : 𝑇(; value)
+end
+
 bokehconvert(𝑇::Type{<:iSpec}, ν::AbstractString) = 𝑇(; field = string(ν))
 
 function bokehread(::Type{T}, ::iHasProps, ::Symbol, ν::T) where {T <: iSpec}
@@ -134,6 +139,10 @@ const FontStyleSpec    = EnumSpec{(:normal, :italic, :bold, Symbol("bold italic"
 const NullDistanceSpec = Nullable{DistanceSpec}
 const NullStringSpec   = Nullable{Spec{String}}
 const ColorSpec        = Spec{Color}
+
+@dataspec struct DashPatternSpec <: iSpec{DashPattern}
+    value::Vector{Int64}
+end
 
 struct PropertyUnitsSpec <: iSpec{Float64}
     value     :: Union{Float64, Missing}

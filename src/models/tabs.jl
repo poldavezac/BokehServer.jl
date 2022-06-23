@@ -30,7 +30,7 @@
 
     sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
-    tabs :: Vector{iPanel}
+    tabs :: Vector{iPanel} = iPanel[]
 
     tabs_location :: Model.EnumType{(:above, :below, :left, :right)} = :above
 

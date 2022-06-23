@@ -8,7 +8,7 @@
 
     empty_value :: Union{Bool, Float64, Int64, Dates.Date, Dates.DateTime, Model.Color, String}
 
-    renderers :: Vector{iGlyphRenderer}
+    renderers :: Vector{iGlyphRenderer} = iGlyphRenderer[]
 
     vertex_renderer :: Model.Nullable{iGlyphRenderer} = nothing
 end

@@ -12,7 +12,7 @@
 
     num_objects :: Int64 = 0
 
-    renderers :: Vector{iGlyphRenderer}
+    renderers :: Vector{iGlyphRenderer} = iGlyphRenderer[]
 
     vertex_renderer :: Model.Nullable{iGlyphRenderer} = nothing
 end

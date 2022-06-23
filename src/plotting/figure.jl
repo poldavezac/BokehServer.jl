@@ -3,7 +3,7 @@ function figure(; k...)
         (i=>j for (i, j) ∈ k if hasfield(Models.FigureOptions, i))...
     )
 
-    plot = Models.plot()
+    plot = Models.Plot()
     axis!(
         plot, true;
         type            = opts.x_axis_type,

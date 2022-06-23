@@ -2,7 +2,7 @@
 
 @model mutable struct CustomJSTransform <: iCustomJSTransform
 
-    args :: Dict{String, Any}
+    args :: Dict{String, Any} = Dict{String, Any}()
 
     func :: String = ""
 

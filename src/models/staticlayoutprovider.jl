@@ -2,5 +2,5 @@
 
 @model mutable struct StaticLayoutProvider <: iStaticLayoutProvider
 
-    graph_layout :: Dict{Union{Int64, String}, Vector{Any}}
+    graph_layout :: Dict{Union{Int64, String}, Vector{Any}} = Dict{Union{Int64, String}, Vector{Any}}()
 end

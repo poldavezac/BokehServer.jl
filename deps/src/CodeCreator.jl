@@ -142,6 +142,7 @@ function createcode(; adddoc ::Symbol = :none)
     Base.Filesystem.rm(joinpath((@__DIR__), "..", "..", "src", "models"); recursive = true)
     Base.Filesystem.mkdir(joinpath((@__DIR__), "..", "..", "src", "models"))
     for name ∈ sort!(collect(keys(deplist)))
+        @info "writing $(filename(name)).jl"
         file("models", "$(filename(name)).jl") do io
             structcode(io, name, cls[name]; adddoc)
         end

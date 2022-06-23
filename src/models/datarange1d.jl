@@ -26,7 +26,7 @@
 
     range_padding_units :: Model.EnumType{(:percent, :absolute)} = :percent
 
-    renderers :: Union{Model.EnumType{(:auto,)}, Vector{iModel}}
+    renderers :: Union{Model.EnumType{(:auto,)}, Vector{iModel}} = iModel[]
 
     start :: Union{Nothing, Float64, Dates.DateTime, Dates.Period} = nothing
 end

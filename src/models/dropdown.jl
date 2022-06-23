@@ -30,7 +30,7 @@
 
     max_width :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    menu :: Vector{Union{Nothing, String, Tuple{String, Union{iCallback, String}}}}
+    menu :: Vector{Union{Nothing, String, Tuple{String, Union{iCallback, String}}}} = Union{Nothing, String, Tuple{String, Union{iCallback, String}}}[]
 
     min_height :: Model.Nullable{Model.NonNegativeInt} = nothing
 

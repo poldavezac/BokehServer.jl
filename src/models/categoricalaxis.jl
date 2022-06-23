@@ -28,7 +28,7 @@
 
     axis_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    axis_line_dash :: Model.DashPattern
+    axis_line_dash :: Model.DashPattern = Int64[]
 
     axis_line_dash_offset :: Int64 = 0
 
@@ -68,7 +68,7 @@
 
     major_label_orientation :: Union{Float64, Model.EnumType{(:horizontal, :vertical)}} = :horizontal
 
-    major_label_overrides :: Dict{Union{Float64, String}, Union{iBaseText, String}}
+    major_label_overrides :: Dict{Union{Float64, String}, Union{iBaseText, String}} = Dict{Union{Float64, String}, Union{iBaseText, String}}()
 
     major_label_policy :: iLabelingPolicy = AllLabels()
 
@@ -98,7 +98,7 @@
 
     major_tick_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    major_tick_line_dash :: Model.DashPattern
+    major_tick_line_dash :: Model.DashPattern = Int64[]
 
     major_tick_line_dash_offset :: Int64 = 0
 
@@ -116,7 +116,7 @@
 
     minor_tick_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    minor_tick_line_dash :: Model.DashPattern
+    minor_tick_line_dash :: Model.DashPattern = Int64[]
 
     minor_tick_line_dash_offset :: Int64 = 0
 
@@ -132,7 +132,7 @@
 
     separator_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    separator_line_dash :: Model.DashPattern
+    separator_line_dash :: Model.DashPattern = Int64[]
 
     separator_line_dash_offset :: Int64 = 0
 

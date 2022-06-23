@@ -12,7 +12,7 @@
 
     background :: Model.Nullable{Model.Color} = nothing
 
-    columns :: Vector{iTableColumn}
+    columns :: Vector{iTableColumn} = iTableColumn[]
 
     css_classes :: Vector{String} = String[]
 

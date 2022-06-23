@@ -6,5 +6,5 @@
 
     num_minor_ticks :: Int64 = 5
 
-    tickers :: Vector{iTicker}
+    tickers :: Vector{iTicker} = iTicker[]
 end

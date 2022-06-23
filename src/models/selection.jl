@@ -6,5 +6,5 @@
 
     line_indices :: Vector{Int64} = Int64[]
 
-    multiline_indices :: Dict{String, Vector{Int64}}
+    multiline_indices :: Dict{String, Vector{Int64}} = Dict{String, Vector{Int64}}()
 end

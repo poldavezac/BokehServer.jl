@@ -16,5 +16,5 @@
 
     logo :: Model.Nullable{Model.EnumType{(:normal, :grey)}} = :normal
 
-    tools :: Vector{iTool}
+    tools :: Vector{iTool} = iTool[]
 end

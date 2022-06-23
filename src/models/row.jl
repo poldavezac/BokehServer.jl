@@ -8,7 +8,7 @@
 
     background :: Model.Nullable{Model.Color} = nothing
 
-    children :: Vector{iLayoutDOM}
+    children :: Vector{iLayoutDOM} = iLayoutDOM[]
 
     cols :: Union{Int64, Dict{Union{Int64, String}, Union{Int64, NamedTuple{(:policy, :align), Tuple{Model.EnumType{(:auto, :min)}, Model.EnumType{(:auto, :start, :center, :end)}}}, NamedTuple{(:policy, :flex, :align), Tuple{Model.EnumType{(:fit, :max)}, Float64, Model.EnumType{(:auto, :start, :center, :end)}}}, NamedTuple{(:policy, :width, :align), Tuple{Model.EnumType{(:fixed,)}, Int64, Model.EnumType{(:auto, :start, :center, :end)}}}, Model.EnumType{(:auto, :min, :fit, :max)}}}, Model.EnumType{(:auto, :min, :fit, :max)}} = :auto
 

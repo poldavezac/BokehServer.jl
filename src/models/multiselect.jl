@@ -28,7 +28,7 @@
 
     min_width :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    options :: Vector{Union{String, Tuple{String, String}}}
+    options :: Vector{Union{String, Tuple{String, String}}} = Union{String, Tuple{String, String}}[]
 
     size :: Int64 = 4
 

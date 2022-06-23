@@ -20,7 +20,7 @@ struct Internal{T} <: iProperty end
 
 struct ReadOnly{T} <: iProperty end
 @inline bokehfieldtype(::Type{ReadOnly{T}}) where {T} = bokehfieldtype(T)
-@inline bokehconvert(::Type{ReadOnly{T}}, ::Any) where {T} = throw(ErrorException("Readonly attribute"))
+@inline bokehconvert(::Type{ReadOnly{T}}, x::Any) where {T} = bokehconvert(T, x)
 
 
 struct Nullable{T} <: iProperty end
@@ -55,21 +55,31 @@ end
 struct DashPattern end
 bokehfieldtype(::DashPattern) = Vector{Int64}
 
-const _DASH_PATTERN = r"\s+"
+const _DASH_SPLIT = r"\s+"
+const _DASH_PATTERN = r"^\d+(\s+\d+)*?"
 
+bokehconvert(::Type{DashPattern}, ν::AbstractVector) = collect(Int64, ν)
 function bokehconvert(::Type{DashPattern}, ν::AbstractString)
-    return if ν == "solid"
+    if isnothing(match(_DASH_PATTERN, ν))
+        return bokehconvert(DashPattern, Symbol(ν))
+    else
+        return parse.(Int64, split(ν, _DASH_SPLIT))
+    end
+end
+
+function bokehconvert(::Type{DashPattern}, ν::Symbol)
+    return if ν == :solid
         Int64[]
-    elseif ν == "dashed"
+    elseif ν == :dashed
         Int64[6]
-    elseif ν == "dotted"
+    elseif ν == :dotted
         Int64[2,4]
-    elseif ν == "dotdash"
+    elseif ν == :dotdash
         Int64[2,4,6,4]
-    elseif ν == "dashdot"
+    elseif ν == :dashdot
         Int64[6,4,2,4]
     else
-        parse.(Int64, split(ν, _DASH_PATTERN))
+        return Unknown()
     end
 end
 

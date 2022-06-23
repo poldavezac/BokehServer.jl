@@ -4,7 +4,7 @@
 
     adapter :: Model.Nullable{iCustomJS} = nothing
 
-    data :: Model.DataDict
+    data :: Model.DataDict = Model.DataDict()
 
     data_url :: String
 

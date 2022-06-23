@@ -8,7 +8,7 @@
 
     background :: Model.Nullable{Model.Color} = nothing
 
-    children :: Vector{iLayoutDOM}
+    children :: Vector{iLayoutDOM} = iLayoutDOM[]
 
     css_classes :: Vector{String} = String[]
 

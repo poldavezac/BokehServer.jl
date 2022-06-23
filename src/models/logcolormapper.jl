@@ -2,7 +2,7 @@
 
 @model mutable struct LogColorMapper <: iLogColorMapper
 
-    domain :: Vector{Tuple{iGlyphRenderer, Union{String, Vector{String}}}}
+    domain :: Vector{Tuple{iGlyphRenderer, Union{String, Vector{String}}}} = Tuple{iGlyphRenderer, Union{String, Vector{String}}}[]
 
     high :: Model.Nullable{Float64} = nothing
 

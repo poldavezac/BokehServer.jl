@@ -8,7 +8,7 @@
 
     line_color :: Model.Spec{Model.Color} = (value = "rgb(0,0,0)",)
 
-    line_dash :: Model.Spec{Model.DashPattern}
+    line_dash :: Model.DashPatternSpec = (value = Int64[],)
 
     line_dash_offset :: Model.Spec{Int64} = (value = 0,)
 

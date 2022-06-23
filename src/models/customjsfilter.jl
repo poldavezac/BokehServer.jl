@@ -2,7 +2,7 @@
 
 @model mutable struct CustomJSFilter <: iCustomJSFilter
 
-    args :: Dict{Model.RestrictedKey{(:source,)}, Any}
+    args :: Dict{Model.RestrictedKey{(:source,)}, Any} = Dict{Symbol, Any}()
 
     code :: String = ""
 end

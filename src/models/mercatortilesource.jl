@@ -4,7 +4,7 @@
 
     attribution :: String = ""
 
-    extra_url_vars :: Dict{String, Any}
+    extra_url_vars :: Dict{String, Any} = Dict{String, Any}()
 
     initial_resolution :: Model.Nullable{Float64} = nothing
 

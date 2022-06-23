@@ -4,7 +4,7 @@
 
     bins :: Int64 = 65536
 
-    domain :: Vector{Tuple{iGlyphRenderer, Union{String, Vector{String}}}}
+    domain :: Vector{Tuple{iGlyphRenderer, Union{String, Vector{String}}}} = Tuple{iGlyphRenderer, Union{String, Vector{String}}}[]
 
     high :: Model.Nullable{Float64} = nothing
 

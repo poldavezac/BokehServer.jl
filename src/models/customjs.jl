@@ -2,7 +2,7 @@
 
 @model mutable struct CustomJS <: iCustomJS
 
-    args :: Dict{String, Any}
+    args :: Dict{String, Any} = Dict{String, Any}()
 
     code :: String = ""
 end

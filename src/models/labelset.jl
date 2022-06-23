@@ -16,7 +16,7 @@
 
     border_line_color :: Model.Spec{Model.Color} = (value = "rgb(0,0,0)",)
 
-    border_line_dash :: Model.Spec{Model.DashPattern}
+    border_line_dash :: Model.DashPatternSpec = (value = Int64[],)
 
     border_line_dash_offset :: Model.Spec{Int64} = (value = 0,)
 

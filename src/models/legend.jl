@@ -12,7 +12,7 @@
 
     border_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    border_line_dash :: Model.DashPattern
+    border_line_dash :: Model.DashPattern = Int64[]
 
     border_line_dash_offset :: Int64 = 0
 
@@ -34,7 +34,7 @@
 
     inactive_fill_color :: Model.Nullable{Model.Color} = "rgb(128,128,128)"
 
-    items :: Vector{iLegendItem}
+    items :: Vector{iLegendItem} = iLegendItem[]
 
     label_height :: Int64 = 20
 

@@ -14,9 +14,9 @@
 
     disabled :: Bool = false
 
-    disabled_dates :: Vector{Union{Tuple{Dates.Date, Dates.Date}, Dates.Date}}
+    disabled_dates :: Vector{Union{Tuple{Dates.Date, Dates.Date}, Dates.Date}} = Union{Tuple{Dates.Date, Dates.Date}, Dates.Date}[]
 
-    enabled_dates :: Vector{Union{Tuple{Dates.Date, Dates.Date}, Dates.Date}}
+    enabled_dates :: Vector{Union{Tuple{Dates.Date, Dates.Date}, Dates.Date}} = Union{Tuple{Dates.Date, Dates.Date}, Dates.Date}[]
 
     height :: Model.Nullable{Model.NonNegativeInt} = nothing
 

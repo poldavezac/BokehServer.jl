@@ -12,7 +12,7 @@
 
     bar_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    bar_line_dash :: Model.DashPattern
+    bar_line_dash :: Model.DashPattern = Int64[]
 
     bar_line_dash_offset :: Int64 = 0
 
@@ -26,7 +26,7 @@
 
     border_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    border_line_dash :: Model.DashPattern
+    border_line_dash :: Model.DashPattern = Int64[]
 
     border_line_dash_offset :: Int64 = 0
 
@@ -50,7 +50,7 @@
 
     location :: Union{Tuple{Float64, Float64}, Model.EnumType{(:top_left, :top_center, :top_right, :center_left, :center_center, :center_right, :bottom_left, :bottom_center, :bottom_right, :top, :left, :center, :right, :bottom)}} = :top_right
 
-    major_label_overrides :: Dict{Union{Float64, String}, Union{iBaseText, String}}
+    major_label_overrides :: Dict{Union{Float64, String}, Union{iBaseText, String}} = Dict{Union{Float64, String}, Union{iBaseText, String}}()
 
     major_label_policy :: iLabelingPolicy = NoOverlap()
 
@@ -78,7 +78,7 @@
 
     major_tick_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    major_tick_line_dash :: Model.DashPattern
+    major_tick_line_dash :: Model.DashPattern = Int64[]
 
     major_tick_line_dash_offset :: Int64 = 0
 
@@ -98,7 +98,7 @@
 
     minor_tick_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    minor_tick_line_dash :: Model.DashPattern
+    minor_tick_line_dash :: Model.DashPattern = Int64[]
 
     minor_tick_line_dash_offset :: Int64 = 0
 

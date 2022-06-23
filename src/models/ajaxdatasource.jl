@@ -6,11 +6,11 @@
 
     content_type :: String = "application/json"
 
-    data :: Model.DataDict
+    data :: Model.DataDict = Model.DataDict()
 
     data_url :: String
 
-    http_headers :: Dict{String, String}
+    http_headers :: Dict{String, String} = Dict{String, String}()
 
     if_modified :: Bool = false
 

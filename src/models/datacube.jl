@@ -12,7 +12,7 @@
 
     background :: Model.Nullable{Model.Color} = nothing
 
-    columns :: Vector{iTableColumn}
+    columns :: Vector{iTableColumn} = iTableColumn[]
 
     css_classes :: Vector{String} = String[]
 
@@ -28,7 +28,7 @@
 
     frozen_rows :: Model.Nullable{Int64} = nothing
 
-    grouping :: Vector{iGroupingInfo}
+    grouping :: Vector{iGroupingInfo} = iGroupingInfo[]
 
     header_row :: Bool = true
 

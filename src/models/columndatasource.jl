@@ -2,7 +2,7 @@
 
 @model mutable struct ColumnDataSource <: iColumnDataSource
 
-    data :: Model.DataDict
+    data :: Model.DataDict = Model.DataDict()
 
     selected :: Model.ReadOnly{iSelection} = Selection()
 

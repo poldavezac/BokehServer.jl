@@ -28,7 +28,7 @@
 
     min_width :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    options :: Union{Dict{String, Vector{Union{String, Tuple{String, String}}}}, Vector{Union{String, Tuple{String, String}}}}
+    options :: Union{Dict{String, Vector{Union{String, Tuple{String, String}}}}, Vector{Union{String, Tuple{String, String}}}} = Union{String, Tuple{String, String}}[]
 
     sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 

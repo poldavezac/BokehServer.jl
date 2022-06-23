@@ -2,7 +2,7 @@
 
 @model mutable struct GMapPlot <: iGMapPlot
 
-    above :: Vector{iRenderer}
+    above :: Vector{iRenderer} = iRenderer[]
 
     align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:start, :center, :end)}} = :start
 
@@ -20,25 +20,25 @@
 
     background_fill_color :: Model.Nullable{Model.Color} = "rgb(128,128,128)"
 
-    below :: Vector{iRenderer}
+    below :: Vector{iRenderer} = iRenderer[]
 
     border_fill_alpha :: Model.Percent = 1.0
 
     border_fill_color :: Model.Nullable{Model.Color} = "rgb(128,128,128)"
 
-    center :: Vector{iRenderer}
+    center :: Vector{iRenderer} = iRenderer[]
 
     css_classes :: Vector{String} = String[]
 
     disabled :: Bool = false
 
-    extra_x_ranges :: Dict{String, iRange}
+    extra_x_ranges :: Dict{String, iRange} = Dict{String, iRange}()
 
-    extra_x_scales :: Dict{String, iScale}
+    extra_x_scales :: Dict{String, iScale} = Dict{String, iScale}()
 
-    extra_y_ranges :: Dict{String, iRange}
+    extra_y_ranges :: Dict{String, iRange} = Dict{String, iRange}()
 
-    extra_y_scales :: Dict{String, iScale}
+    extra_y_scales :: Dict{String, iScale} = Dict{String, iScale}()
 
     frame_height :: Model.Nullable{Int64} = nothing
 
@@ -54,7 +54,7 @@
 
     inner_width :: Model.ReadOnly{Int64} = 0
 
-    left :: Vector{iRenderer}
+    left :: Vector{iRenderer} = iRenderer[]
 
     lod_factor :: Int64 = 10
 
@@ -98,7 +98,7 @@
 
     outline_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
-    outline_line_dash :: Model.DashPattern
+    outline_line_dash :: Model.DashPattern = Int64[]
 
     outline_line_dash_offset :: Int64 = 0
 
@@ -112,11 +112,11 @@
 
     plot_width :: Model.Alias{:width}
 
-    renderers :: Vector{iRenderer}
+    renderers :: Vector{iRenderer} = iRenderer[]
 
     reset_policy :: Model.EnumType{(:standard, :event_only)} = :standard
 
-    right :: Vector{iRenderer}
+    right :: Vector{iRenderer} = iRenderer[]
 
     sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 

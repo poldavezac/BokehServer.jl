@@ -6,7 +6,7 @@
 
     logo :: Model.Nullable{Model.EnumType{(:normal, :grey)}} = :normal
 
-    toolbars :: Vector{iToolbar}
+    toolbars :: Vector{iToolbar} = iToolbar[]
 
-    tools :: Vector{iTool}
+    tools :: Vector{iTool} = iTool[]
 end

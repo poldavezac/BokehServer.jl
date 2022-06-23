@@ -2,5 +2,5 @@
 
 @model mutable struct DOMToggleGroup <: iDOMToggleGroup
 
-    groups :: Vector{iRendererGroup}
+    groups :: Vector{iRendererGroup} = iRendererGroup[]
 end

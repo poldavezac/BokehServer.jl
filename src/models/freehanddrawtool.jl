@@ -10,5 +10,5 @@
 
     num_objects :: Int64 = 0
 
-    renderers :: Vector{iGlyphRenderer}
+    renderers :: Vector{iGlyphRenderer} = iGlyphRenderer[]
 end

@@ -2,7 +2,7 @@
 
 @model mutable struct GroupingInfo <: iGroupingInfo
 
-    aggregators :: Vector{iRowAggregator}
+    aggregators :: Vector{iRowAggregator} = iRowAggregator[]
 
     collapsed :: Bool = false
 
