@@ -18,13 +18,18 @@
 
     E.eventlist!() do
         push!(doc, mdl)
+        # next change should not be sent to the client as the model is brand new
         mdl.a = 100
         val   = Bokeh.Protocol.Messages.JSON.json(Bokeh.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}()))
-        truth = (
-            """{"events":[{"kind":"RootAdded","model":{"id":"1"}}"""*
-            """,{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"""*
-            """"new":100}],"references":[{"attributes":{"a":100},"id":"1","type":"$(nameof(ProtocolX))"}]}"""
-        )
+        truth = """{"events":[{"kind":"RootAdded","model":{"id":"1"}}],"""*
+            """"references":[{"attributes":{"a":100},"id":"1","type":"$(nameof(ProtocolX))"}]}"""
+        @test val == truth
+    end
+
+    E.eventlist!() do
+        mdl.a = 10
+        val   = Bokeh.Protocol.Messages.JSON.json(Bokeh.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([mdl.id])))
+        truth = """{"events":[{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"new":10}],"references":[]}"""
         @test val == truth
     end
 end
