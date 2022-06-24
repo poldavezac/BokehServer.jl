@@ -1,14 +1,15 @@
 module AxesPlotting
+using Dates
 using ...Model
 using ...Models
 using ...AbstractTypes
 
-Model.bokehconvert(::Type{Models.iAxis}, ν::Union{Nothing, Missing}) = Models.DataRange1d()
-Model.bokehconvert(::Type{Models.iAxis}, ν::Model.FactorSeq) = Models.FactorRange(; factors = ν)
-function Model.bokehconvert(::Type{Models.iAxis}, ν::Union{Tuple{<:Number, <:Number}, AbstractRange})
+Model.bokehconvert(::Type{Models.iRange}, ν::Union{Nothing, Missing}) = Models.DataRange1d()
+Model.bokehconvert(::Type{Models.iRange}, ν::Model.FactorSeq) = Models.FactorRange(; factors = ν)
+function Model.bokehconvert(::Type{Models.iRange}, ν::Union{Tuple{<:Number, <:Number}, AbstractRange})
     Models.Range1d(; start = first(ν), finish = last(ν))
 end
-function Model.bokehconvert(::Type{Models.iAxis}, ν::Symbol)
+function Model.bokehconvert(::Type{Models.iRange}, ν::Symbol)
     ν ≡ :user ? Models.Range1d() : ν ≡ :factor ? Models.FactorRange() : Models.DataRange1d()
 end
 
@@ -32,7 +33,7 @@ newscale(::Models.iRange,      ::Models.iScale)           = missing
 Provides a new scale if needed, or returns `missing` if not.
 """
 newscale(rng::Models.FactorRange, :: Symbol) = Models.CategoricalScale()
-newscale(::Models.iRange, scale::Symbol) = bokehconvert(iScale, scale)
+newscale(::Models.iRange, scale::Symbol) = Model.bokehconvert(Models.iScale, scale)
 
 
 """
@@ -54,7 +55,7 @@ function initscale!(fig::Models.Plot; dotrigger::Bool = true)
     end
 end
 
-const _LOCATIONS = (:center, :left, :bottom, :right, :above)
+const _LOCATIONS = (:center, :left, :below, :right, :above)
 
 """
     axis!(
@@ -80,7 +81,7 @@ Adds a new axis to the figure. It does not remove old ones!
 * type: any of (:categorical, :linear, :mercator, :log, :datetime)
 * range: any of (:data, :user) or can be a tuple or a range to set fixed limits
 * scale: depends on `range` and `type` when those are specified or should be (:linear, :categorical or :log)
-* location: any of (:auto, :left, :bottom, :right, :above, :center)
+* location: any of (:auto, :left, :below, :right, :above, :center)
 * num_minor_ticks: either `nothing`, `:auto` or a positive integer
 * label: the axis label
 * rangename: if specified, implies the range is added to `extra_(xy)_ranges`.
@@ -90,31 +91,31 @@ Adds a new axis to the figure. It does not remove old ones!
 function axis!(
         fig             :: Models.Plot,
         isxaxis         :: Bool;
-        type            :: Union{Symbol, Nothing}                   = :auto,
-        range           :: Union{Symbol, Tuple, AbstractRange}      = :data,
-        scale           :: Symbol                                   = :linear,
-        location        :: Union{Nothing, Missing, Symbol}          = missing,
-        num_minor_ticks :: Union{Missing, Int, Nothing}             = missing,
-        label           :: Union{Models.iBaseText, String, Missing} = missing,
-        rangename       :: String                                   = "default",
-        axisname        :: Union{Missing, String}                   = missing,
-        grid            :: Bool                                     = true,
-        dotrigger       :: Bool                                     = true,
+        type            :: Union{Symbol, Nothing}                       = :auto,
+        range           :: Union{Symbol, Tuple, AbstractRange, Nothing} = :data,
+        scale           :: Symbol                                       = :linear,
+        location        :: Union{Nothing, Missing, Symbol}              = missing,
+        num_minor_ticks :: Union{Missing, Int, Nothing}                 = missing,
+        label           :: Union{Models.iBaseText, String, Missing}     = missing,
+        rangename       :: String                                       = "default",
+        axisname        :: Union{Missing, String}                       = missing,
+        grid            :: Bool                                         = true,
+        dotrigger       :: Bool                                         = true,
 )
-    ismissing(location) && (location = isxaxis ? :bottom : :left)
+    ismissing(location) && (location = isxaxis ? :below : :left)
     if !isnothing(location) && (location ∉ _LOCATIONS)
         throw(ErrorException("Location should be Nothing or $_LOCATIONS"))
     end
 
-    rng  = Model.bokehconvert(Models.iRange, range)
+    rng  = Model.bokehconvert(Models.iRange, something(range, :data))
     sca  = newscale(rng, scale)
     axis = if isnothing(type)
         nothing
-    elseif rng isa FactorRange
+    elseif rng isa Models.FactorRange
         Models.CategoricalAxis()
     elseif type ≡ :mercator
         Models.MercatorAxis(; dimension = isxaxis ? :lon : :lat)
-    elseif (type ≡ :datetime || (!(range isa Symbol) && first(range) isa Dates.AbstractTime))
+    elseif (type ≡ :datetime || (range isa Union{Tuple, AbstractRange} && first(range) isa Dates.AbstractTime))
         Models.DatetimeAxis()
     elseif type ≡ :log
         Models.LogAxis()
@@ -124,10 +125,10 @@ function axis!(
 
     if !isnothing(axis)
         if !ismissing(label)
-            setproperty(axis, :axis_label, label; dotrigger = false)
+            setproperty!(axis, :axis_label, label; dotrigger = false)
         end
-        if !ismissing(name)
-            setproperty(axis, :name, name; dotrigger = false)
+        if !ismissing(axisname)
+            setproperty!(axis, :name, axisname; dotrigger = false)
         end
 
         if axis isa Models.iContinuousAxis
@@ -137,8 +138,8 @@ function axis!(
             setproperty!(axis.ticker, :num_minor_ticks, num_minor_ticks; dotrigger = false)
         end
 
-        grid && push!(plot.center, Grid(dimension=isaxis ? 0 : 1, axis); dotrigger)
-        isnothing(location) || push!(getproperty(plot, location), axis; dotrigger)
+        grid && push!(fig.center, Models.Grid(; dimension = isxaxis ? 0 : 1, axis); dotrigger)
+        isnothing(location) || push!(getproperty(fig, location), axis; dotrigger)
     end
 
     if rangename == "default"

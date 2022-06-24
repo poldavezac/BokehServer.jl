@@ -18,12 +18,8 @@ macro dataspec(code::Expr)
     end
 
     construction = :(let out = new(
-            $((
-                :(let x = get(kwa, $(Meta.quot(i)), missing)
-                    isnothing(x) ? missing : x
-                end)
-                for i ∈ (:value, :field, :expr, :transform)
-            )...),
+            get(kwa, :value, missing), get(kwa, :field, missing),
+            get(kwa, :expr, missing),  get(kwa, :transform, missing),
             $((isunits ? (:units,) : ())...)
         )
         @assert(
@@ -46,8 +42,7 @@ macro dataspec(code::Expr)
             field     :: Union{String, Missing}
             expr      :: Union{iModel, Missing}
             transform :: Union{iModel, Missing}
-            $((isunits ? (:(units :: Symbol),) : ())...)
-
+            $((isunits ? (:(units :: $(code.args[2].args[2].args[end])),) : ())...)
             $constructor
         end
     end)
@@ -61,41 +56,39 @@ end
     value::T
 end
 
-@dataspec struct EnumSpec{T} <: iSpec{Symbol}
-    value::Symbol
-end
-
-@dataspec struct DistanceSpec <: iUnitSpec{Distance, (:data, :screen)}
+@dataspec struct DistanceSpec <: iUnitSpec{Distance, SpatialUnits}
     value::Float64
 end
 
-speceltype(::Type{<:iSpec{T}}) where {T}        = T
-longform(𝑇::Type{<:EnumSpec}, ν::String)        = longform(𝑇, Symbol(ν))
-longform(::Type{<:EnumSpec}, ν::Symbol)         = ν
-Base.values(::Type{<:EnumSpec{T}}) where {T}    = T
-Base.in(ν::Symbol, 𝑇::Type{<:EnumSpec})         = longform(𝑇, ν) ∈ values(𝑇)
-Base.in(ν::AbstractString, 𝑇::Type{<:EnumSpec}) = Symbol(ν) ∈ 𝑇
-units(::Type{<:iUnitSpec{T, K}}) where {T, K}   = K
+speceltype(::Type{<:iSpec{T}})          where {T}    = T
+specunittype(::Type{<:iUnitSpec{T, K}}) where {T, K} = K
+units(::Type{<:iUnitSpec{T, K}})        where {T, K} = values(K)
+
+function _👻specvalue(𝑇::Type, α, ν)
+    value = get(ν, α, missing)
+    return ismissing(value) ? missing : bokehconvert(𝑇, value)
+end
 
 function bokehconvert(𝑇::Type{<:iSpec}, ν::Union{AbstractDict{Symbol}, NamedTuple})
     (keys(ν) ⊈ fieldnames(𝑇)) && return Unknown()
-
-    value = get(ν, :value, missing)
-    ismissing(value) || (value = bokehconvert(speceltype(𝑇), value))
-    𝑇(; (i => j for (i, j) ∈ zip(keys(ν), values(ν)))..., value)
+    value = _👻specvalue(speceltype(𝑇), :value, ν)
+    (value isa Unknown) && return Unknown
+    𝑇(; (i => get(ν, i, missing) for i ∈ (:field, :expr, :transform))..., value)
 end
 
 function bokehconvert(𝑇::Type{<:iUnitSpec}, ν::Union{AbstractDict{Symbol}, NamedTuple})
     (keys(ν) ⊈ fieldnames(𝑇)) && return Unknown()
+    value = _👻specvalue(speceltype(𝑇), :value, ν)
+    (value isa Unknown) && return Unknown
 
-    value = get(ν, :value, missing)
-    ismissing(value) || (value = bokehconvert(speceltype(𝑇), value))
-    ismissing(get(ν, :units, missing)) && (ν[:units] = first(units(𝑇)))
-    @assert ν[:units] ∈ units(𝑇)
-    𝑇(; (i => j for (i, j) ∈ zip(keys(ν), values(ν)))..., value)
+    unt = _👻specvalue(specunittype(𝑇), :units, ν)
+    (unt isa Unknown) && return Unknown
+    𝑇(; (i => get(ν, i, missing) for i ∈ (:field, :expr, :transform))..., value, unt)
 end
 
-bokehconvert(𝑇::Type{<:iSpec}, ν::AbstractDict{<:AbstractString}) = bokehconvert(𝑇, Dict{Symbol, Any}((Symbol(i) => j for (i, j) ∈ ν)))
+function bokehconvert(𝑇::Type{<:iSpec}, ν::AbstractDict{<:AbstractString})
+    bokehconvert(𝑇, Dict{Symbol, Any}((Symbol(i) => j for (i, j) ∈ ν)))
+end
 
 function bokehconvert(𝑇::Type{<:iSpec}, ν)
     value = bokehconvert(speceltype(𝑇), ν)
@@ -104,41 +97,48 @@ end
 
 bokehconvert(𝑇::Type{<:iSpec}, ν::AbstractString) = 𝑇(; field = string(ν))
 
+function bokehconvert(𝑇::Type{<:Spec{<:EnumType}}, ν::AbstractString)
+    value = bokehconvert(speceltype(𝑇), ν)
+    return value isa Unknown ? 𝑇(; field = string(ν)) : 𝑇(; value)
+end
+
+function Base.getproperty(μ::iSpec{<:EnumType}, σ::Symbol)
+    val = getfield(μ, σ)
+    return ismissing(val) || σ ≢ :value ? val : val.value
+end
+
+function Base.getproperty(μ::iUnitSpec, σ::Symbol)
+    val = getfield(μ, σ)
+    return ismissing(val) || σ ≢ :units ? val : val.value
+end
+
 function bokehread(::Type{T}, ::iHasProps, ::Symbol, ν::T) where {T <: iSpec}
-    @assert xor(ismissing(ν.value), ismissing(ν.field))
-    return (; (i=>getfield(ν, i) for i ∈ fieldnames(T) if !ismissing(getfield(ν, i)))...)
+    return (; (i=>getproperty(ν, i) for i ∈ fieldnames(T) if !ismissing(getfield(ν, i)))...)
 end
 
 function bokehread(::Type{T}, ::iHasProps, ::Symbol, ν::T) where {T <: iUnitSpec}
-    @assert xor(ismissing(ν.value), ismissing(ν.field))
-    @assert ν.units ∈ units(T)
     fields = fieldnames(ν.units ≡ units(T)[1] ? Spec : UnitSpec)
-    return (; (i=>getfield(ν, i) for i ∈ fields if !ismissing(getfield(ν, i)))...)
-end
-
-bokehconvert(𝑇::Type{<:EnumSpec}, ν::AbstractString) = bokehconvert(𝑇, Symbol(ν))
-function bokehconvert(𝑇::Type{<:EnumSpec}, ν::Symbol)
-    value = longform(𝑇, ν)
-    return value ∈ 𝑇 ? 𝑇(; value) : 𝑇(; field = String(ν))
+    return (; (i=>getproperty(ν, i) for i ∈ fields if !ismissing(getfield(ν, i)))...)
 end
 
 for cls ∈ (:FontSize, :Size, :Alpha)
     @eval @dataspec struct $(Symbol("$(cls)Spec")) <: iSpec{$cls} end
 end
 
+for 𝑇 ∈ (:LineCap, :LineDash, :LineJoin, :MarkerType, :TextAlign, :TextBaseline, :HatchPatternType, :FontStyle)
+    @eval const $(Symbol(replace("$𝑇", "Type"=>"")*"Spec")) = Spec{$𝑇}
+    @eval Base.show(io::IO, ::Type{Spec{$𝑇}}) = print(io::IO, $("Bokeh.Model.$(replace("$𝑇", "Type"=>""))Spec"))
+end
+
 const NumberSpec       = Spec{Float64}
-const AngleSpec        = UnitSpec{Float64, (:rad, :deg, :grad, :turn)}
-const LineCapSpec      = EnumSpec{(:butt, :round, :square)}
-const LineDashSpec     = EnumSpec{(:solid, :dashed, :dotted, :dotdash, :dashdot)}
-const LineJoinSpec     = EnumSpec{(:miter, :round, :bevel)}
-const MarkerSpec       = EnumSpec{values(MarkerType)}
-const TextAlignSpec    = EnumSpec{(:left, :right, :center)}
-const TextBaselineSpec = EnumSpec{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)}
-const HatchPatternSpec = EnumSpec{values(HatchPatternType)}
-const FontStyleSpec    = EnumSpec{(:normal, :italic, :bold, Symbol("bold italic"))}
+const AngleSpec        = UnitSpec{Float64, AngleUnits}
 const NullDistanceSpec = Nullable{DistanceSpec}
 const NullStringSpec   = Nullable{Spec{String}}
 const ColorSpec        = Spec{Color}
+
+for 𝑇 ∈ (:NumberSpec, :AngleSpec, :NullDistanceSpec, :NullStringSpec, :ColorSpec)
+    @eval Base.show(io::IO, ::Type{$𝑇}) = print(io::IO, $("Bokeh.Model.$𝑇"))
+end
 
 @dataspec struct DashPatternSpec <: iSpec{DashPattern}
     value::Vector{Int64}
@@ -165,7 +165,7 @@ end
 function bokehconvert(::Type{ColorSpec}, ν::Union{AbstractDict{Symbol}, NamedTuple})
     (keys(ν) ⊈ fieldnames(ColorSpec)) && return Unknown()
     value = get(ν, :value, missing)
-    if ismissing(value)
+    if !ismissing(value)
         value = color(value)
         ismissing(value) && return Unknown()
     end

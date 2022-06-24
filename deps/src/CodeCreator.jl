@@ -84,7 +84,7 @@ function structcode_glyphargs(io::IO, name::String)
 end
 
 function structcode(io::IO, name::String, parent; adddoc :: Symbol = :none)
-    props = parseproperties(model(name))
+    props = parseproperties(name)
 
     println(io)
     (adddoc ∈ (:all, :struct)) && doccode(io, props[:__doc__], 0)

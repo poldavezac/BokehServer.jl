@@ -134,11 +134,19 @@ end
 parseproperty(cls::Py, prop::Py) = parseproperty(propertytype(prop), cls, :_, prop)
 parseproperty(c::Symbol, p)      = parseproperty(model("$c"), p)
 
-parseproperties(name) = parseproperties(model(name))
 
 const _END_PATT = r"^end" => "finish"
 const _MODEL_FIELDS = (:js_event_callbacks, :js_property_callbacks, :name, :subscribed_events, :syncable, :tags)
 _fieldname(x) = Symbol(replace(pyconvert(String, x), _END_PATT))
+
+parseproperties(name) = parseproperties(Val(Symbol(name)), model(name))
+parseproperties(x::Val, cls::Py; allprops::Bool = false) = parseproperties(cls; allprops)
+
+function parseproperties(::Val{:GlyphRenderer}, cls::Py; k...)
+    out = parseproperties(cls; k...)
+    out[:view] = merge(out[:view], (; default = Some(:(CDSView(; source = data_source)))))
+    return out
+end
 
 function parseproperties(cls::Py; allprops::Bool = false)
     attrs = Dict{Symbol, Any}(

@@ -42,6 +42,7 @@ serialroot(η::Events.iEvent, 𝑅::iRules) = serialref(η, 𝑅)
 serialref(::Type, η, 𝑅::iRules)         = serialref(η, 𝑅)
 serialref(η::iHasProps, ::iRules)       = (; id = "$(bokehid(η))")
 serialref(::Nothing, ::iRules)          = nothing
+serialref(η::Model.EnumType, ::iRules)  = "$(η.value)"
 
 for cls ∈ (:RootAddedEvent, :RootRemovedEvent)
     @eval function serialref(η::$cls, 𝑅::iRules)

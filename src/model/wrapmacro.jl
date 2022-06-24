@@ -20,28 +20,33 @@ function _👻structure(
         end
             
         val = _👻elseif((field.name, opts...), val) do key
-            κ = Meta.quot(key)
-            :(if haskey(kwa, $κ)
-                kwa[$κ]
+            sκ = Meta.quot(key)
+            :(if haskey(kwa, $sκ)
+                kwa[$sκ]
             end)
         end
 
         return if field.type <: Internal
-            val
+            :($(field.name) = $val)
         else
+            x = gensym()
+            y = gensym()
             quote
-                let x = $val
-                    y = $(@__MODULE__).bokehconvert($(field.type), x)
-                    (y isa $Unknown) && throw(ErrorException(string(
-                        "Could not convert `", x, "` to ",
+                $(field.name) = let $x = $val, $y = $(@__MODULE__).bokehconvert($(field.type), $x)
+                    ($y isa $Unknown) && throw(ErrorException(string(
+                        "Could not convert `", $x, "` to ",
                         $cls, ".", $("$(field.name)"),
                         "::", $(bokehfieldtype(field.type))
                     )))
-                    y
+                    @assert $y isa fieldtype($cls, $κ) string($("$cls.$(field.name) != "), typeof($y))
+                    $y
                 end
             end
         end
     end
+
+    code = map(initcode, _👻filter(fields))
+    fnames = map(x->x.name, _👻filter(fields))
 
     quote
         mutable struct $cls <: $parents
@@ -50,9 +55,10 @@ function _👻structure(
             callbacks :: Vector{Function}
 
             function $cls(; id = $(@__MODULE__).ID(), kwa...)
+                $(code...)
                 new(
                     id isa Int64 ? id : parse(Int64, string(id)),
-                    $(Iterators.map(initcode, _👻filter(fields))...),
+                    $(fnames...),
                     Function[],
                 )
             end
@@ -69,6 +75,7 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
             set  = if i.js
                 quote
                     old = $(@__MODULE__).bokehrawtype(getproperty(μ, $name))
+                    dotrigger && Bokeh.Events.testcantrigger()
                     new = setfield!(μ, $name, ν)
                     dotrigger && Bokeh.Events.trigger(Bokeh.ModelChangedEvent(μ, $name, old, new))
                 end
@@ -212,8 +219,8 @@ function bokehfields end
 function defaultvalue end
 
 function themevalue(𝑇::Type{<:iHasProps}, σ::Symbol)
-    dflt = Bokeh.Themes.theme(𝑇, cols[i])
-    return isnothing(dflt) ? Model.defaultvalue(𝑇, cols[i]) : dflt
+    dflt = Bokeh.Themes.theme(𝑇, σ)
+    return isnothing(dflt) ? Model.defaultvalue(𝑇, σ) : dflt
 end
 
 const ID = bokehidmaker()

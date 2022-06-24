@@ -55,7 +55,7 @@ Model.bokehconvert(::Type{Models.iTool}, x::Union{Models.iTool, AbstractString, 
 
 _toollist(t::AbstractString) = _toollist(split(t, ','))
 function _toollist(
-    tools :: Vector{Union{Symbol, AbstractString, Models.iTool}},
+    tools :: AbstractVector{<:Union{Symbol, AbstractString, Models.iTool}},
 )
     lst = [defaulttool.(i) for i ∈ tools]
     keeps = let keeps = ones(Bool, length(lst))
@@ -70,7 +70,7 @@ function _toollist(
 
         for i ∈ 1:length(lst)-1
             keeps[i] && for j ∈ (i+1) : length(lst)
-                keeps[j] = keeps[j] && _compare(lst[i], lst[j])
+                keeps[j] = keeps[j] && _isdiff(lst[i], lst[j])
             end
         end
         keeps
@@ -79,7 +79,7 @@ function _toollist(
     _arg(x::Union{Models.iTool, Symbol}) = x
     _arg(x::AbstractString)              = Symbol(strip(x))
 
-    return [
+    return Any[
         (; tool, arg = _arg(arg), keep)
         for (tool, arg, keep) ∈ zip(lst, tools, keeps)
     ]
@@ -89,19 +89,19 @@ _tooltips!(::Vector, ::Missing) = nothing
 function _tooltips(lst::Vector, tips)
     found = false
     for (i, tool) ∈ enumerate(lst)
-        if keep[i] && tool isa Models.HoverTool
+        if tool.keep && tool.tool isa Models.HoverTool
             found = true
             setproperty!(
-                tool,
+                tool.tool,
                 :tooltips,
                 tooltips;
-                dotrigger = dotrigger && tools[i] isa Models.iTool
+                dotrigger = dotrigger && tool.arg isa Models.iTool
             )
         end
     end
 
     if !found
-        push!(lst, Models.HoverTool(; tooltips))
+        push!(lst, (; tool = Models.HoverTool(; tooltips), arg = :hover, keep = true))
         push!(keep, true)
     end
 end
@@ -167,7 +167,8 @@ function tools!(
     lst = _toollist(tools)
     _tooltips!(lst, tooltips)
 
-    append!(fig.toolbar.tools, lst[keep]; dotrigger)
+    arr = [i.tool for i ∈ lst if i.keep]
+    append!(fig.toolbar.tools, arr; dotrigger)
 
     _active!(fig.toolbar,  active_drag,     :active_drag,     dotrigger, lst)
     _active!(fig.toolbar,  active_inspect,  :active_inspect,  dotrigger, lst)

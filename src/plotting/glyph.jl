@@ -17,9 +17,10 @@ end
 Create a glyph renderer given a glyph type or its name.
 The kwargs should include all `glyphargs(𝑇)` at a minimum
 """
-function glyph(𝑇::Type{<:Models.iGlyph}; trait_color = missing, kwargs...)
-    out = (; (i => pop!(kwarg, i) for i ∈ _👻RENDERER if i ∈ keys(kwargs))...)
-    out = merge(out, _👻datasource!(kwargs, get(kwa, :source, missing), 𝑇))
+function glyph(𝑇::Type{<:Models.iGlyph}; trait_color = missing, kwa...)
+    kwargs = Dict{Symbol, Any}(kwa...)
+    out = (; (i => pop!(kwargs, i) for i ∈ _👻RENDERER if i ∈ keys(kwargs))...)
+    out = merge(out, _👻datasource!(kwargs, get(kwargs, :source, missing), 𝑇))
 
     defaults = _👻visuals!(kwargs, 𝑇; trait_color)
     nonsel   = _👻visuals!(kwargs, 𝑇; trait_color, prefix = :nonselection_, defaults, override = (; alpha = _👻NSEL_ALPHA))
@@ -27,12 +28,14 @@ function glyph(𝑇::Type{<:Models.iGlyph}; trait_color = missing, kwargs...)
     hover    = _👻visuals!(kwargs, 𝑇; trait_color, prefix = :hover_, defaults, test = true)
     muted    = _👻visuals!(kwargs, 𝑇; trait_color, prefix = :muted_, defaults, override = (; alpha = _👻MUTED_ALPHA))
 
-    GlyphRenderer(
-        glyph              = 𝑇(kwargs..., defaults...),
-        nonselection_glyph = 𝑇(; kwa..., nonsel...),
-        selection_glyph    = ismissing(sel) ? :auto : 𝑇(; kwa..., sel),
-        hover_glyph        = ismissing(hover)     ? :auto : 𝑇(; kwa..., hover),
-        muted_glyph        = 𝑇(; kwa..., muted),
+    create(x) = ismissing(x) ? :auto : 𝑇(; kwargs..., out..., x...)
+
+    return Models.GlyphRenderer(;
+        glyph              = create(defaults),
+        nonselection_glyph = create(nonsel),
+        selection_glyph    = create(sel),
+        hover_glyph        = create(hover),
+        muted_glyph        = create(muted),
         out...,
     )
 end
@@ -45,8 +48,8 @@ Create a glyph renderer given a glyph type or its name and add it to the plot.
 The kwargs should include all `glyphargs(𝑇)` at a minimum
 """
 function glyph!(fig::Models.Plot, rend::Models.GlyphRenderer; dotrigger :: Bool = true, kwa...)
-    push!(plot.renderers, rend; dotrigger)
-    _👻legend!(fig, rend, kwa)
+    push!(fig.renderers, rend; dotrigger)
+    _👻legend!(fig, rend, kwa; dotrigger)
     return rend
 end
 
@@ -84,15 +87,15 @@ const _👻COLORS      = (
 function _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
     out = Pair[]
     for col ∈ Models.glyphargs(𝑇)
-        arg = if haskey(kwarg, col)
+        arg = if haskey(kwargs, col)
             pop!(kwargs, col)
         else
-            val = Model.themevalue(T, col)
+            val = Model.themevalue(𝑇, col)
             isnothing(val) && throw(ErrorException("Missing argument $𝑇.$col"))
             something(val)
         end
 
-        cnv = bokehconvert(bokehproperty(𝑇, col), arg)
+        cnv = Model.bokehconvert(Model.bokehpropertytype(𝑇, col), arg)
         msg = if cnv isa Model.Unknown && !(arg isa AbstractArray)
             "is not a supported type $(typeof(arg)) = $arg"
         else
@@ -100,7 +103,7 @@ function _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
         end
 
         (msg isa Exception) && throw(ErrorException("Argument for $𝑇.$col $(msg.msg)"))
-        push!(col => out)
+        push!(out, col => msg)
     end
     return (; out...)
 end
@@ -152,19 +155,19 @@ function _👻visuals!(
 )
     test && any(startswith("$prefix", "$x") for x ∈ keys(props)) && return missing
 
-    defaults       = merge((; text_color = text, hatch_color = text), default)
+    defaults       = merge((; text_color, hatch_color = text_color), defaults)
     trait_defaults = (; color = (ismissing(trait_color) ? _👻COLORS[1] : trait_color), alpha = trait_alpha)
 
     result = Dict{Symbol, Any}()
     traits = Set{Symbol}()
-    names  = bokehproperties(𝑇)
+    names  = Model.bokehproperties(𝑇)
 
     for name ∈ names
         trait  = let val = "$name"
             if count('_', val) ≢ 1
                 nothing
             else
-                (left, right) = Symbol.(split(val))
+                (left, right) = Symbol.(split(val, '_'))
                 left ∈  _👻VISUALS ? right : nothing
             end
         end
@@ -193,20 +196,24 @@ function _👻visuals!(
     end
 
 
-    foreach(Base.Fix1(pop!, props), names)
+    foreach(x->pop!(props, x, nothing), names)
     return result
 end
 
-function _👻legend!(rend::Models.GlyphRenderer, fig::Models.Plot, kwa; dotrigger :: Bool = true)
-    haskey(:legend, kwa) && throw(ErrorException("Use one of keywords $_👻LEGEND"))
+function _👻legend!(fig::Models.Plot, rend::Models.GlyphRenderer, kwa; dotrigger :: Bool = true)
+    haskey(kwa, :legend) && throw(ErrorException("Use one of keywords $_👻LEGEND"))
     count(∈(_👻LEGEND), keys(kwa)) > 1 && throw(ErrorException("Only one keyword allowed amongst $_👻LEGEND"))
 
     if any(∈(_👻LEGEND), keys(kwa))
-        legend = [i for j ∈ (:center, :above, :bottom, :left, :right) for i ∈ getproperty(fig, j) if i isa Models.iLegend]
-        (length(legend) > 1) && throw(ErrorException("Too many `Legend` objects to use the `legend_` keywords"))
-        if isempty(legend)
-            push!(legend, Legend())
-            push!(fig.center, legend)
+        opts = [i for j ∈ (:center, :above, :below, :left, :right) for i ∈ getproperty(fig, j) if i isa Models.iLegend]
+        (length(opts) > 1) && throw(ErrorException("Too many `Legend` objects to use the `legend_` keywords"))
+
+        if isempty(opts)
+            legend = Models.Legend()
+            push!(fig.center, legend; dotrigger)
+            dotrigger = false
+        else
+            legend = first(legend)
         end
 
         val = only(j for (i, j) ∈ pairs(kwa) if i ∈ _👻LEGEND)
@@ -214,18 +221,18 @@ function _👻legend!(rend::Models.GlyphRenderer, fig::Models.Plot, kwa; dotrigg
 
         if haskey(kwa, :legend_label) || haskey(kwa, :legend_field)
             label = haskey(kwa, :legend_field) ? (; field = "$val") : (; value = "$val")
-            itm   = filter(x->x.label == label, legend[1].items)
+            itm   = filter(x -> x.label == label, legend.items)
             if isempty(itm)
                 push!(legend.items, Models.LegendItem(; label, renderers = [rend]); dotrigger)
             else
                 for x ∈ itm
-                    append!(x.renderers, rend; dotrigger)
+                    push!(x.renderers, rend; dotrigger)
                 end
             end
         else
             src = rend.data_source
             haskey(src.data, val) || throw(ErrorException("Missing columns for :legend_group keyword"))
-            done = Set{Any}()
+            done = Set{String}()
             for (i, j) ∈ enumerate(src.data[val])
                 ("$j" ∈ done) && continue
                 push!(

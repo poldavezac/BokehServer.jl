@@ -8,6 +8,8 @@ struct Container{T, K} <: iContainer{T}
     values::K
 end
 
+containertype(::Type{<:iContainer{T}}) where {T} = T
+
 function bokehread(𝑇::Type{<:CONTAINERS}, µ::iHasProps, α::Symbol, ν::CONTAINERS)
     Container{𝑇, bokehfieldtype(𝑇)}(WeakRef(µ), α, ν)
 end
@@ -49,18 +51,18 @@ end
 bokehconvert(𝑇::Type{<:Pair}, ν::Pair) = bokehconvert(𝑇.parameters[1], first(ν)) => bokehconvert(𝑇.parameters[2], last(ν))
 
 for (𝐹, (𝑇, code)) ∈ (
-        :push!      => Container => :((bokehconvert(eltype(T), i) for i ∈ x)),
-        :setindex!  => Container{<:AbstractDict}   => :((bokehconvert(eltype(T).parameters[2], x[1]), x[2])),
-        :setindex!  => Container{<:AbstractArray}  => :((bokehconvert(eltype(T), x[1]), x[2:end]...)),
+        :push!      => Container => :((bokehconvert(eltype(containertype(T)), i) for i ∈ x)),
+        :setindex!  => Container{<:AbstractDict}   => :((bokehconvert(eltype(containertype(T)).parameters[2], x[1]), x[2])),
+        :setindex!  => Container{<:AbstractArray}  => :((bokehconvert(eltype(containertype(T)), x[1]), x[2:end]...)),
         :pop!       => Container => :x,
         :empty!     => Container => :x,
-        :append!    => iContainer{<:AbstractArray} => :((bokehconvert(T, i) for i ∈ x)),
+        :append!    => iContainer{<:AbstractArray} => :((bokehconvert(containertype(T), i) for i ∈ x)),
         :deleteat!  => iContainer{<:AbstractArray} => :x,
         :popat!     => iContainer{<:AbstractArray} => :x,
         :popfirst!  => iContainer{<:AbstractArray} => :x,
-        :insert!    => iContainer{<:AbstractArray} => :((bokehconvert(eltype(T), i) for i ∈ x)),
+        :insert!    => iContainer{<:AbstractArray} => :((bokehconvert(eltype(containertype(T)), i) for i ∈ x)),
         :delete!    => iContainer{<:Union{AbstractDict, AbstractSet}}  => :x,
-        :merge!     => iContainer{<:AbstractDict} => :((bokehconvert(T, i) for i ∈ x)),
+        :merge!     => iContainer{<:AbstractDict} => :((bokehconvert(containertype(T), i) for i ∈ x)),
 )
     @eval function Base.$𝐹(γ::T, x...; dotrigger::Bool = true) where {T <: $𝑇}
         parent = γ.parent.value
@@ -74,19 +76,34 @@ for (𝐹, (𝑇, code)) ∈ (
     end
 end
 
+Base.filter(𝐹::Function, x::Container) = filter(𝐹, x.values)
+
+function Base.filter!(𝐹::Function, x::Container)
+    parent = γ.parent.value
+    if isnothing(parent) || getfield(parent, γ.attr) ≢ γ.values
+        filter!(𝐹, γ.values)
+    else
+        out = filter!(𝐹, copy(γ.values))
+        setproperty!(parent, γ.attr, out; dotrigger)
+        out ≡ γ.values ? γ : out
+    end
+end
+
 Base.get!(γ::iContainer{<:AbstractDict}, x, y) = haskey(γ, x) ? γ[x] : (γ[x] = y; y)
 Base.get!(𝐹::Function, γ::iContainer{<:AbstractDict}, x) = haskey(γ, x) ? γ[x] : (y = 𝐹(); γ[x] = y; y)
 
 for (𝐹, 𝑇) ∈ (
-        :length    => iContainer,
-        :iterate   => iContainer,
-        :getindex  => iContainer,
-        :size      => iContainer{<:AbstractArray},
-        :eachindex => iContainer{<:AbstractArray},
-        :get       => iContainer{<:AbstractDict},
-        :haskey    => iContainer{<:AbstractDict},
-        :keys      => iContainer{<:AbstractDict},
-        :values    => iContainer{<:AbstractDict},
+        :length     => iContainer,
+        :iterate    => iContainer,
+        :getindex   => iContainer,
+        :size       => iContainer{<:AbstractArray},
+        :eachindex  => iContainer{<:AbstractArray},
+        :lastindex  => iContainer{<:AbstractArray},
+        :firstindex => iContainer{<:AbstractArray},
+        :get        => iContainer{<:AbstractDict},
+        :haskey     => iContainer{<:AbstractDict},
+        :keys       => iContainer{<:AbstractDict},
+        :values     => iContainer{<:AbstractDict},
 )
     @eval Base.$𝐹(γ::$𝑇, x...)  = $𝐹(γ.values, x...)
 end

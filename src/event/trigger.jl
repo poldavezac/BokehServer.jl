@@ -27,4 +27,8 @@ function trigger(args...)
     trigger!(task_eventlist(), args...)
 end
 
+function testcantrigger()
+    isempty(task_hasevents()) && throw(ErrorException("No event list was set: doc is readonly in this task!"))
+end
+
 export trigger

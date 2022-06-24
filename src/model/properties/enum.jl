@@ -6,7 +6,7 @@ longform(𝑇::Type{<:EnumType}, ν::String)     = longform(𝑇, Symbol(ν))
 longform(𝑇::Type{<:EnumType}, ν::Char)       = longform(𝑇, Symbol("$v"))
 longform(::Type{<:EnumType}, ν::Symbol)      = ν
 Base.values(::Type{<:EnumType{𝑇}}) where {𝑇} = 𝑇
-Base.show(io::IO, ν::EnumType) = print(io, "𝑒", ν.value)
+Base.show(io::IO, ν::EnumType) = print(io, ":", ν.value)
 
 Base.in(ν::Symbol, 𝑇::Type{<:EnumType})         = longform(𝑇, ν) ∈ values(𝑇)
 Base.in(ν::AbstractString, 𝑇::Type{<:EnumType}) = Symbol(ν) ∈ 𝑇
@@ -28,14 +28,21 @@ macro enum_str(x)
     EnumType{tuple(Symbol.(strip.(split(x, ',')))...)}
 end
 
-const MarkerType  = EnumType{(
-    :asterisk, :circle, :circle_cross, :circle_dot, :circle_x,
+const SpatialUnits = EnumType{(:data, :screen)}
+const AngleUnits   = EnumType{(:rad, :deg, :grad, :turn)}
+const LineCap      = EnumType{(:butt, :round, :square)}
+const LineDash     = EnumType{(:solid, :dashed, :dotted, :dotdash, :dashdot)}
+const LineJoin     = EnumType{(:miter, :round, :bevel)}
+const TextAlign    = EnumType{(:left, :right, :center)}
+const TextBaseline = EnumType{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)}
+const FontStyle    = EnumType{(:normal, :italic, :bold, Symbol("bold italic"))}
+const MarkerType   = EnumType{(
+    :circle, :asterisk, :circle_cross, :circle_dot, :circle_x,
     :circle_y, :cross, :dash, :diamond, :diamond_cross, :diamond_dot,
     :dot, :hex, :hex_dot, :inverted_triangle, :plus, :square,
     :square_cross, :square_dot, :square_pin, :square_x, :star, :star_dot,
     :triangle, :triangle_dot, :triangle_pin, :x, :y
 )}
-
 const HatchPatternType = EnumType{(
     :blank,
     :dot,
@@ -55,6 +62,10 @@ const HatchPatternType = EnumType{(
     :vertical_wave,
     :criss_cross,
 )}
+
+for 𝑇 ∈ (:LineCap, :LineDash, :LineJoin, :MarkerType, :TextAlign, :TextBaseline, :HatchPatternType, :FontStyle, :AngleUnits, :SpatialUnits)
+    @eval Base.show(io::IO, ::Type{$𝑇}) = print(io::IO, $("Bokeh.Model.$𝑇"))
+end
 
 function longform(::Type{HatchPatternType}, ν::Symbol)
     ν = (

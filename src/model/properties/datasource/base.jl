@@ -83,15 +83,13 @@ end
 
 bokehfieldtype(::Type{DataDict}) = DataDict
 bokehconvert(::Type{DataDict}, x::DataDict) = copy(x)
-function bokehconvert(
-        ::Type{DataDict},
-        x::Union{
-            AbstractDict{<:AbstractString, <:AbstractVector},
-            AbstractVector{<:Pair{<:AbstractString, <:AbstractVector}},
-            DataDictContainer
-        }
+
+for cls ∈ (
+        AbstractDict{<:AbstractString},
+        AbstractVector{<:Pair{<:AbstractString}},
+        DataDictContainer
 )
-    DataDict("$i" => datadictarray(j) for (i, j) ∈ x)
+    @eval bokehconvert(::Type{DataDict}, x::$cls) = DataDict("$i" => datadictarray(j) for (i, j) ∈ x)
 end
 
 bokehchildren(x::DataDict) = Iterators.flatten(Iterators.filter(Base.Fix2(<:, iHasProps) ∘ eltype, values(x)))
