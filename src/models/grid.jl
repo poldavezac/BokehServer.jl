@@ -4,9 +4,9 @@
 
     axis :: Model.Nullable{iAxis} = nothing
 
-    band_fill_alpha :: Model.Percent = 1.0
+    band_fill_alpha :: Model.Percent = 0.0
 
-    band_fill_color :: Model.Nullable{Model.Color} = "rgb(128,128,128)"
+    band_fill_color :: Model.Nullable{Model.Color} = nothing
 
     band_hatch_alpha :: Model.Percent = 1.0
 
@@ -28,33 +28,33 @@
 
     grid_line_alpha :: Model.Percent = 1.0
 
-    grid_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
+    grid_line_cap :: Model.LineCap = :butt
 
-    grid_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    grid_line_color :: Model.Nullable{Model.Color} = "rgb(229,229,229)"
 
     grid_line_dash :: Model.DashPattern = Int64[]
 
     grid_line_dash_offset :: Int64 = 0
 
-    grid_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
+    grid_line_join :: Model.LineJoin = :bevel
 
     grid_line_width :: Float64 = 1.0
 
     group :: Model.Nullable{iRendererGroup} = nothing
 
-    level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
+    level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :underlay
 
     minor_grid_line_alpha :: Model.Percent = 1.0
 
-    minor_grid_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
+    minor_grid_line_cap :: Model.LineCap = :butt
 
-    minor_grid_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    minor_grid_line_color :: Model.Nullable{Model.Color} = nothing
 
     minor_grid_line_dash :: Model.DashPattern = Int64[]
 
     minor_grid_line_dash_offset :: Int64 = 0
 
-    minor_grid_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
+    minor_grid_line_join :: Model.LineJoin = :bevel
 
     minor_grid_line_width :: Float64 = 1.0
 

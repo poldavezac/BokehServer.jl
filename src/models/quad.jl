@@ -2,42 +2,42 @@
 
 @model mutable struct Quad <: iQuad
 
-    bottom :: Model.Spec{Float64} = (field = "bottom",)
+    bottom :: Model.NumberSpec = (field = "bottom",)
 
     fill_alpha :: Model.AlphaSpec = (value = 1.0,)
 
-    fill_color :: Model.Spec{Model.Color} = (value = "rgb(128,128,128)",)
+    fill_color :: Model.ColorSpec = (value = "rgb(128,128,128)",)
 
     hatch_alpha :: Model.AlphaSpec = (value = 1.0,)
 
-    hatch_color :: Model.Spec{Model.Color} = (value = "rgb(0,0,0)",)
+    hatch_color :: Model.ColorSpec = (value = "rgb(0,0,0)",)
 
     hatch_extra :: Dict{String, iTexture} = Dict{String, iTexture}()
 
-    hatch_pattern :: Model.EnumSpec{(:blank, :dot, :ring, :horizontal_line, :vertical_line, :cross, :horizontal_dash, :vertical_dash, :spiral, :right_diagonal_line, :left_diagonal_line, :diagonal_cross, :right_diagonal_dash, :left_diagonal_dash, :horizontal_wave, :vertical_wave, :criss_cross)} = nothing
+    hatch_pattern :: Model.HatchPatternSpec = :blank
 
-    hatch_scale :: Model.Spec{Float64} = (value = 12.0,)
+    hatch_scale :: Model.NumberSpec = (value = 12.0,)
 
-    hatch_weight :: Model.Spec{Float64} = (value = 1.0,)
+    hatch_weight :: Model.NumberSpec = (value = 1.0,)
 
-    left :: Model.Spec{Float64} = (field = "left",)
+    left :: Model.NumberSpec = (field = "left",)
 
     line_alpha :: Model.AlphaSpec = (value = 1.0,)
 
-    line_cap :: Model.EnumSpec{(:butt, :round, :square)} = (value = :butt,)
+    line_cap :: Model.LineCapSpec = (value = :butt,)
 
-    line_color :: Model.Spec{Model.Color} = (value = "rgb(0,0,0)",)
+    line_color :: Model.ColorSpec = (value = "rgb(0,0,0)",)
 
     line_dash :: Model.DashPatternSpec = (value = Int64[],)
 
     line_dash_offset :: Model.Spec{Int64} = (value = 0,)
 
-    line_join :: Model.EnumSpec{(:miter, :round, :bevel)} = (value = :bevel,)
+    line_join :: Model.LineJoinSpec = (value = :bevel,)
 
-    line_width :: Model.Spec{Float64} = (value = 1.0,)
+    line_width :: Model.NumberSpec = (value = 1.0,)
 
-    right :: Model.Spec{Float64} = (field = "right",)
+    right :: Model.NumberSpec = (field = "right",)
 
-    top :: Model.Spec{Float64} = (field = "top",)
+    top :: Model.NumberSpec = (field = "top",)
 end
 glyphargs(::Type{Quad}) = (:left, :right, :top, :bottom)

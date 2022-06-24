@@ -23,10 +23,10 @@ macro property(opt)
         name = types isa Expr ? Union{(Val{i} for i ∈ types.args)...} : Val{types}
     end
     (type isa Symbol) && (type = getfield(Bokeh.Model, type))
-    :(function parseproperty(::$name, cls, prop)
+    :(function parseproperty(::$name, cls, attr::Symbol, prop)
         type    = $type
         doc     = pyis(prop.__doc__, @py(None)) ? nothing : pyconvert(String, prop.__doc__)
-        default = parsedefault(type, cls, prop)
+        default = parsedefault(type, cls, attr, prop)
         ismissing(default) && throw(ErrorException("unknown default $cls.$prop = $(prop._default)"))
         return (; type, default, doc)
     end)
@@ -43,7 +43,7 @@ function _enum(objs...)
     Bokeh.Model.EnumType{tuple(vals...)}
 end
 
-function parseproperty(::Val{T}, cls, prop) where {T}
+function parseproperty(::Val{T}, cls, attr::Symbol, prop) where {T}
     type    = if T ∈ names(Bokeh.Model; all = true)
         getfield(Bokeh.Model, T)
     elseif endswith("$T", "Spec")
@@ -53,7 +53,7 @@ function parseproperty(::Val{T}, cls, prop) where {T}
     end
 
     doc     = pyis(prop.__doc__, @py(None)) ? nothing : pyconvert(String, prop.__doc__)
-    default = parsedefault(type, cls, prop)
+    default = parsedefault(type, cls, attr, prop)
     ismissing(default) && throw(ErrorException("unknown default $cls.$prop = $(prop._default)"))
     return (; type, default, doc)
 end
@@ -115,8 +115,8 @@ end
     parseproperty(cls, prop.values_type).type
 }
 
-parseproperty(::Val{:NonNullable}, cls, prop) = merge(parseproperty(cls, prop.type_param), (; default = nothing))
-parseproperty(::Val{:Alias}, _, prop) = (;
+parseproperty(::Val{:NonNullable}, cls, _::Symbol, prop) = merge(parseproperty(cls, prop.type_param), (; default = nothing))
+parseproperty(::Val{:Alias}, _, __::Symbol, prop) = (;
     type = Bokeh.Model.Alias{pyconvert(Symbol, prop.aliased_name)}, default = nothing, doc = nothing
 )
 
@@ -126,8 +126,13 @@ for name ∈ names(Bokeh.Model; all = true)
     @eval @property $(name)
 end
 
-parseproperty(cls, prop) = parseproperty(Val(pyconvert(Symbol, prop.__class__.__name__)), cls, prop)
-parseproperty(c::Symbol, p::Symbol) = parseproperty(model("$c"), getproperty(model("$c"), p).property)
+propertytype(prop) = Val(pyconvert(Symbol, prop.__class__.__name__))
+function parseproperty(cls::Py, attr::Symbol)
+    prop = getproperty(cls, attr).property
+    parseproperty(propertytype(prop), cls, attr, prop)
+end
+parseproperty(cls::Py, prop::Py) = parseproperty(propertytype(prop), cls, :_, prop)
+parseproperty(c::Symbol, p)      = parseproperty(model("$c"), p)
 
 parseproperties(name) = parseproperties(model(name))
 
@@ -138,7 +143,7 @@ _fieldname(x) = Symbol(replace(pyconvert(String, x), _END_PATT))
 function parseproperties(cls::Py; allprops::Bool = false)
     attrs = Dict{Symbol, Any}(
         _fieldname(attr) => try
-            parseproperty(cls, getproperty(cls, pyconvert(String, attr)).property)
+            parseproperty(cls, pyconvert(Symbol, attr))
         catch exc
             @error(
                 "Could not deal with $cls.$attr => $(getproperty(cls, pyconvert(String, attr)).property)",

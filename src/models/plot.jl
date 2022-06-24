@@ -14,13 +14,13 @@
 
     background_fill_alpha :: Model.Percent = 1.0
 
-    background_fill_color :: Model.Nullable{Model.Color} = "rgb(128,128,128)"
+    background_fill_color :: Model.Nullable{Model.Color} = "rgb(255,255,255)"
 
     below :: Vector{iRenderer} = iRenderer[]
 
     border_fill_alpha :: Model.Percent = 1.0
 
-    border_fill_color :: Model.Nullable{Model.Color} = "rgb(128,128,128)"
+    border_fill_color :: Model.Nullable{Model.Color} = "rgb(255,255,255)"
 
     center :: Vector{iRenderer} = iRenderer[]
 
@@ -40,7 +40,7 @@
 
     frame_width :: Model.Nullable{Int64} = nothing
 
-    height :: Model.Nullable{Model.NonNegativeInt} = nothing
+    height :: Model.Nullable{Model.NonNegativeInt} = 600
 
     height_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 
@@ -88,15 +88,15 @@
 
     outline_line_alpha :: Model.Percent = 1.0
 
-    outline_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
+    outline_line_cap :: Model.LineCap = :butt
 
-    outline_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    outline_line_color :: Model.Nullable{Model.Color} = "rgb(229,229,229)"
 
     outline_line_dash :: Model.DashPattern = Int64[]
 
     outline_line_dash_offset :: Int64 = 0
 
-    outline_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
+    outline_line_join :: Model.LineJoin = :bevel
 
     outline_line_width :: Float64 = 1.0
 
@@ -126,7 +126,7 @@
 
     visible :: Bool = true
 
-    width :: Model.Nullable{Model.NonNegativeInt} = nothing
+    width :: Model.Nullable{Model.NonNegativeInt} = 600
 
     width_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 

@@ -22,7 +22,7 @@
 
     icon :: Model.Nullable{iAbstractIcon} = nothing
 
-    label :: String = "Button"
+    label :: String = "Dropdown"
 
     margin :: Model.Nullable{NTuple{4, Int64}} = (0, 0, 0, 0)
 

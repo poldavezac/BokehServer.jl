@@ -34,7 +34,7 @@
 
     min_width :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    mode :: Model.EnumType{(:int, :float)} = :int
+    mode :: Model.EnumType{(:int, :float)} = :float
 
     page_step_multiplier :: Model.Interval{0.0, Inf} = 10.0
 

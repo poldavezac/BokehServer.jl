@@ -8,5 +8,5 @@
 
     interval :: Float64
 
-    num_minor_ticks :: Int64 = 5
+    num_minor_ticks :: Int64 = 0
 end

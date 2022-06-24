@@ -20,7 +20,7 @@
 
     finish :: Float64
 
-    format :: Union{iTickFormatter, String} = ""
+    format :: Union{iTickFormatter, String} = "0[.]00"
 
     height :: Model.Nullable{Model.NonNegativeInt} = nothing
 

@@ -8,19 +8,19 @@
 
     background_fill_alpha :: Model.Percent = 1.0
 
-    background_fill_color :: Model.Nullable{Model.Color} = "rgb(128,128,128)"
+    background_fill_color :: Model.Nullable{Model.Color} = nothing
 
     border_line_alpha :: Model.Percent = 1.0
 
-    border_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
+    border_line_cap :: Model.LineCap = :butt
 
-    border_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    border_line_color :: Model.Nullable{Model.Color} = nothing
 
     border_line_dash :: Model.DashPattern = Int64[]
 
     border_line_dash_offset :: Int64 = 0
 
-    border_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
+    border_line_join :: Model.LineJoin = :bevel
 
     border_line_width :: Float64 = 1.0
 
@@ -34,11 +34,11 @@
 
     text :: String = ""
 
-    text_align :: Model.EnumType{(:left, :right, :center)} = :left
+    text_align :: Model.TextAlign = :left
 
     text_alpha :: Model.Percent = 1.0
 
-    text_baseline :: Model.EnumType{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)} = :bottom
+    text_baseline :: Model.TextBaseline = :bottom
 
     text_color :: Model.Nullable{Model.Color} = "rgb(68,68,68)"
 
@@ -46,7 +46,7 @@
 
     text_font_size :: Model.FontSize = "16px"
 
-    text_font_style :: Model.EnumType{(:normal, :italic, :bold, Symbol("bold italic"))} = :normal
+    text_font_style :: Model.FontStyle = :normal
 
     text_line_height :: Float64 = 1.2
 

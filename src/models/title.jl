@@ -2,23 +2,23 @@
 
 @model mutable struct Title <: iTitle
 
-    align :: Model.EnumType{(:left, :right, :center)} = :left
+    align :: Model.TextAlign = :left
 
     background_fill_alpha :: Model.Percent = 1.0
 
-    background_fill_color :: Model.Nullable{Model.Color} = "rgb(128,128,128)"
+    background_fill_color :: Model.Nullable{Model.Color} = nothing
 
     border_line_alpha :: Model.Percent = 1.0
 
-    border_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
+    border_line_cap :: Model.LineCap = :butt
 
-    border_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    border_line_color :: Model.Nullable{Model.Color} = nothing
 
     border_line_dash :: Model.DashPattern = Int64[]
 
     border_line_dash_offset :: Int64 = 0
 
-    border_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
+    border_line_join :: Model.LineJoin = :bevel
 
     border_line_width :: Float64 = 1.0
 
@@ -44,7 +44,7 @@
 
     text_font_size :: String = "13px"
 
-    text_font_style :: Model.EnumType{(:normal, :italic, :bold, Symbol("bold italic"))} = :bold
+    text_font_style :: Model.FontStyle = :bold
 
     text_line_height :: Float64 = 1.0
 

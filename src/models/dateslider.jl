@@ -20,7 +20,7 @@
 
     finish :: Dates.DateTime
 
-    format :: Union{iTickFormatter, String} = ""
+    format :: Union{iTickFormatter, String} = "%d %b %Y"
 
     height :: Model.Nullable{Model.NonNegativeInt} = nothing
 

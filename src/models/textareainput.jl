@@ -24,7 +24,7 @@
 
     max_height :: Model.Nullable{Model.NonNegativeInt} = nothing
 
-    max_length :: Model.Nullable{Int64} = nothing
+    max_length :: Model.Nullable{Int64} = 500
 
     max_width :: Model.Nullable{Model.NonNegativeInt} = nothing
 

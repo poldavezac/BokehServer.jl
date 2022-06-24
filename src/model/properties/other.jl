@@ -45,7 +45,7 @@ end
 using JSON
 
 struct JSONString end
-bokehfieldtype(::JSONString) = String
+bokehfieldtype(::Type{JSONString}) = String
 
 function bokehconvert(::Type{JSONString}, ν::AbstractString)
     JSON.parse(ν)  # should thrown an error if not a json string
@@ -53,7 +53,7 @@ function bokehconvert(::Type{JSONString}, ν::AbstractString)
 end
 
 struct DashPattern end
-bokehfieldtype(::DashPattern) = Vector{Int64}
+bokehfieldtype(::Type{DashPattern}) = Vector{Int64}
 
 const _DASH_SPLIT = r"\s+"
 const _DASH_PATTERN = r"^\d+(\s+\d+)*?"

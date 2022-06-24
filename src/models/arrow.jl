@@ -14,17 +14,17 @@
 
     line_alpha :: Model.AlphaSpec = (value = 1.0,)
 
-    line_cap :: Model.EnumSpec{(:butt, :round, :square)} = (value = :butt,)
+    line_cap :: Model.LineCapSpec = (value = :butt,)
 
-    line_color :: Model.Spec{Model.Color} = (value = "rgb(0,0,0)",)
+    line_color :: Model.ColorSpec = (value = "rgb(0,0,0)",)
 
     line_dash :: Model.DashPatternSpec = (value = Int64[],)
 
     line_dash_offset :: Model.Spec{Int64} = (value = 0,)
 
-    line_join :: Model.EnumSpec{(:miter, :round, :bevel)} = (value = :bevel,)
+    line_join :: Model.LineJoinSpec = (value = :bevel,)
 
-    line_width :: Model.Spec{Float64} = (value = 1.0,)
+    line_width :: Model.NumberSpec = (value = 1.0,)
 
     source :: iDataSource = ColumnDataSource()
 
@@ -34,15 +34,15 @@
 
     visible :: Bool = true
 
-    x_end :: Model.Spec{Float64} = (field = "x_end",)
+    x_end :: Model.NumberSpec = (field = "x_end",)
 
     x_range_name :: String = "default"
 
-    x_start :: Model.Spec{Float64} = (field = "x_start",)
+    x_start :: Model.NumberSpec = (field = "x_start",)
 
-    y_end :: Model.Spec{Float64} = (field = "y_end",)
+    y_end :: Model.NumberSpec = (field = "y_end",)
 
     y_range_name :: String = "default"
 
-    y_start :: Model.Spec{Float64} = (field = "y_start",)
+    y_start :: Model.NumberSpec = (field = "y_start",)
 end

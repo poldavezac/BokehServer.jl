@@ -24,7 +24,7 @@
 
     border_fill_alpha :: Model.Percent = 1.0
 
-    border_fill_color :: Model.Nullable{Model.Color} = "rgb(128,128,128)"
+    border_fill_color :: Model.Nullable{Model.Color} = "rgb(255,255,255)"
 
     center :: Vector{iRenderer} = iRenderer[]
 
@@ -94,7 +94,7 @@
 
     outline_line_alpha :: Model.Percent = 1.0
 
-    outline_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
+    outline_line_cap :: Model.LineCap = :butt
 
     outline_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
 
@@ -102,7 +102,7 @@
 
     outline_line_dash_offset :: Int64 = 0
 
-    outline_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
+    outline_line_join :: Model.LineJoin = :bevel
 
     outline_line_width :: Float64 = 1.0
 
@@ -136,11 +136,11 @@
 
     width_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 
-    x_range :: iRange = DataRange1d()
+    x_range :: iRange = Range1d()
 
     x_scale :: iScale = LinearScale()
 
-    y_range :: iRange = DataRange1d()
+    y_range :: iRange = Range1d()
 
     y_scale :: iScale = LinearScale()
 end

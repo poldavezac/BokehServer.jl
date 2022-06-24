@@ -6,7 +6,7 @@
 
     desired_num_ticks :: Int64 = 6
 
-    mantissas :: Vector{Float64} = [1.0, 2.0, 5.0]
+    mantissas :: Vector{Float64} = [1.0, 5.0]
 
     max_interval :: Model.Nullable{Float64} = nothing
 

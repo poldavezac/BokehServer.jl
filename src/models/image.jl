@@ -14,12 +14,12 @@
 
     dw_units :: Model.EnumType{(:screen, :data)} = :data
 
-    global_alpha :: Model.Spec{Float64} = (value = 1.0,)
+    global_alpha :: Model.NumberSpec = (value = 1.0,)
 
-    image :: Model.Spec{Float64} = (field = "image",)
+    image :: Model.NumberSpec = (field = "image",)
 
-    x :: Model.Spec{Float64} = (field = "x",)
+    x :: Model.NumberSpec = (field = "x",)
 
-    y :: Model.Spec{Float64} = (field = "y",)
+    y :: Model.NumberSpec = (field = "y",)
 end
 glyphargs(::Type{Image}) = (:image, :x, :y, :dw, :dh, :dilate)

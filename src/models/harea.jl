@@ -8,20 +8,20 @@
 
     hatch_alpha :: Model.AlphaSpec = (value = 1.0,)
 
-    hatch_color :: Model.Spec{Model.Color} = (value = "rgb(0,0,0)",)
+    hatch_color :: Model.ColorSpec = (value = "rgb(0,0,0)",)
 
     hatch_extra :: Dict{String, iTexture} = Dict{String, iTexture}()
 
-    hatch_pattern :: Model.EnumSpec{(:blank, :dot, :ring, :horizontal_line, :vertical_line, :cross, :horizontal_dash, :vertical_dash, :spiral, :right_diagonal_line, :left_diagonal_line, :diagonal_cross, :right_diagonal_dash, :left_diagonal_dash, :horizontal_wave, :vertical_wave, :criss_cross)} = nothing
+    hatch_pattern :: Model.HatchPatternSpec = :blank
 
-    hatch_scale :: Model.Spec{Float64} = (value = 12.0,)
+    hatch_scale :: Model.NumberSpec = (value = 12.0,)
 
-    hatch_weight :: Model.Spec{Float64} = (value = 1.0,)
+    hatch_weight :: Model.NumberSpec = (value = 1.0,)
 
-    x1 :: Model.Spec{Float64} = (field = "x1",)
+    x1 :: Model.NumberSpec = (field = "x1",)
 
-    x2 :: Model.Spec{Float64} = (field = "x2",)
+    x2 :: Model.NumberSpec = (field = "x2",)
 
-    y :: Model.Spec{Float64} = (field = "y",)
+    y :: Model.NumberSpec = (field = "y",)
 end
 glyphargs(::Type{HArea}) = (:x1, :x2, :y)

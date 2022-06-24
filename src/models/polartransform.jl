@@ -2,11 +2,11 @@
 
 @model mutable struct PolarTransform <: iPolarTransform
 
-    angle :: Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (field = "angle",)
+    angle :: Model.AngleSpec = (field = "angle",)
 
     angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     direction :: Model.EnumType{(:clock, :anticlock)} = :anticlock
 
-    radius :: Model.Spec{Float64} = (field = "radius",)
+    radius :: Model.NumberSpec = (field = "radius",)
 end

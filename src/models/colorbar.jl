@@ -2,35 +2,35 @@
 
 @model mutable struct ColorBar <: iColorBar
 
-    background_fill_alpha :: Model.Percent = 1.0
+    background_fill_alpha :: Model.Percent = 0.95
 
-    background_fill_color :: Model.Nullable{Model.Color} = "rgb(128,128,128)"
+    background_fill_color :: Model.Nullable{Model.Color} = "rgb(255,255,255)"
 
     bar_line_alpha :: Model.Percent = 1.0
 
-    bar_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
+    bar_line_cap :: Model.LineCap = :butt
 
-    bar_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    bar_line_color :: Model.Nullable{Model.Color} = nothing
 
     bar_line_dash :: Model.DashPattern = Int64[]
 
     bar_line_dash_offset :: Int64 = 0
 
-    bar_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
+    bar_line_join :: Model.LineJoin = :bevel
 
     bar_line_width :: Float64 = 1.0
 
     border_line_alpha :: Model.Percent = 1.0
 
-    border_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
+    border_line_cap :: Model.LineCap = :butt
 
-    border_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    border_line_color :: Model.Nullable{Model.Color} = nothing
 
     border_line_dash :: Model.DashPattern = Int64[]
 
     border_line_dash_offset :: Int64 = 0
 
-    border_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
+    border_line_join :: Model.LineJoin = :bevel
 
     border_line_width :: Float64 = 1.0
 
@@ -54,19 +54,19 @@
 
     major_label_policy :: iLabelingPolicy = NoOverlap()
 
-    major_label_text_align :: Model.EnumType{(:left, :right, :center)} = :left
+    major_label_text_align :: Model.TextAlign = :left
 
     major_label_text_alpha :: Model.Percent = 1.0
 
-    major_label_text_baseline :: Model.EnumType{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)} = :bottom
+    major_label_text_baseline :: Model.TextBaseline = :bottom
 
     major_label_text_color :: Model.Nullable{Model.Color} = "rgb(68,68,68)"
 
     major_label_text_font :: String = "helvetica"
 
-    major_label_text_font_size :: Model.FontSize = "16px"
+    major_label_text_font_size :: Model.FontSize = "11px"
 
-    major_label_text_font_style :: Model.EnumType{(:normal, :italic, :bold, Symbol("bold italic"))} = :normal
+    major_label_text_font_style :: Model.FontStyle = :normal
 
     major_label_text_line_height :: Float64 = 1.2
 
@@ -74,15 +74,15 @@
 
     major_tick_line_alpha :: Model.Percent = 1.0
 
-    major_tick_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
+    major_tick_line_cap :: Model.LineCap = :butt
 
-    major_tick_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    major_tick_line_color :: Model.Nullable{Model.Color} = "rgb(255,255,255)"
 
     major_tick_line_dash :: Model.DashPattern = Int64[]
 
     major_tick_line_dash_offset :: Int64 = 0
 
-    major_tick_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
+    major_tick_line_join :: Model.LineJoin = :bevel
 
     major_tick_line_width :: Float64 = 1.0
 
@@ -94,15 +94,15 @@
 
     minor_tick_line_alpha :: Model.Percent = 1.0
 
-    minor_tick_line_cap :: Model.EnumType{(:butt, :round, :square)} = :butt
+    minor_tick_line_cap :: Model.LineCap = :butt
 
-    minor_tick_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    minor_tick_line_color :: Model.Nullable{Model.Color} = nothing
 
     minor_tick_line_dash :: Model.DashPattern = Int64[]
 
     minor_tick_line_dash_offset :: Int64 = 0
 
-    minor_tick_line_join :: Model.EnumType{(:miter, :round, :bevel)} = :bevel
+    minor_tick_line_join :: Model.LineJoin = :bevel
 
     minor_tick_line_width :: Float64 = 1.0
 
@@ -120,19 +120,19 @@
 
     title_standoff :: Int64 = 2
 
-    title_text_align :: Model.EnumType{(:left, :right, :center)} = :left
+    title_text_align :: Model.TextAlign = :left
 
     title_text_alpha :: Model.Percent = 1.0
 
-    title_text_baseline :: Model.EnumType{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)} = :bottom
+    title_text_baseline :: Model.TextBaseline = :bottom
 
     title_text_color :: Model.Nullable{Model.Color} = "rgb(68,68,68)"
 
     title_text_font :: String = "helvetica"
 
-    title_text_font_size :: Model.FontSize = "16px"
+    title_text_font_size :: Model.FontSize = "13px"
 
-    title_text_font_style :: Model.EnumType{(:normal, :italic, :bold, Symbol("bold italic"))} = :normal
+    title_text_font_style :: Model.FontStyle = :italic
 
     title_text_line_height :: Float64 = 1.2
 

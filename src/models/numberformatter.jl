@@ -2,7 +2,7 @@
 
 @model mutable struct NumberFormatter <: iNumberFormatter
 
-    font_style :: Model.EnumType{(:normal, :italic, :bold, Symbol("bold italic"))} = :normal
+    font_style :: Model.FontStyle = :normal
 
     format :: String = "0,0"
 
@@ -12,7 +12,7 @@
 
     rounding :: Model.EnumType{(:round, :nearest, :floor, :rounddown, :ceil, :roundup)} = :round
 
-    text_align :: Model.EnumType{(:left, :right, :center)} = :left
+    text_align :: Model.TextAlign = :left
 
     text_color :: Model.Nullable{Model.Color} = nothing
 end

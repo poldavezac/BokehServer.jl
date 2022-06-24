@@ -30,7 +30,7 @@
 
     header_row :: Bool = true
 
-    height :: Model.Nullable{Model.NonNegativeInt} = nothing
+    height :: Model.Nullable{Model.NonNegativeInt} = 400
 
     height_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 
@@ -68,7 +68,7 @@
 
     visible :: Bool = true
 
-    width :: Model.Nullable{Model.NonNegativeInt} = nothing
+    width :: Model.Nullable{Model.NonNegativeInt} = 600
 
     width_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 end

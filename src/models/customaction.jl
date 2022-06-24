@@ -4,7 +4,7 @@
 
     callback :: Model.Nullable{iCallback} = nothing
 
-    description :: Model.Nullable{String} = nothing
+    description :: Model.Nullable{String} = "Perform a Custom Action"
 
     icon :: Model.Image
 end

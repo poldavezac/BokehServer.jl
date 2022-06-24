@@ -2,34 +2,34 @@
 
 @model mutable struct Text <: iText
 
-    angle :: Model.UnitSpec{Float64, (:rad, :deg, :grad, :turn)} = (value = 0.0,)
+    angle :: Model.AngleSpec = (value = 0.0,)
 
     angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     text :: Model.Spec{String} = (field = "text",)
 
-    text_align :: Model.EnumSpec{(:left, :right, :center)} = (value = :left,)
+    text_align :: Model.TextAlignSpec = (value = :left,)
 
     text_alpha :: Model.AlphaSpec = (value = 1.0,)
 
-    text_baseline :: Model.EnumSpec{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)} = (value = :bottom,)
+    text_baseline :: Model.TextBaselineSpec = (value = :bottom,)
 
-    text_color :: Model.Spec{Model.Color} = (value = "rgb(68,68,68)",)
+    text_color :: Model.ColorSpec = (value = "rgb(68,68,68)",)
 
     text_font :: Model.Spec{String} = (value = "helvetica",)
 
     text_font_size :: Model.FontSizeSpec = (value = "16px",)
 
-    text_font_style :: Model.EnumSpec{(:normal, :italic, :bold, Symbol("bold italic"))} = (value = :normal,)
+    text_font_style :: Model.FontStyleSpec = (value = :normal,)
 
-    text_line_height :: Model.Spec{Float64} = (value = 1.2,)
+    text_line_height :: Model.NumberSpec = (value = 1.2,)
 
-    x :: Model.Spec{Float64} = (field = "x",)
+    x :: Model.NumberSpec = (field = "x",)
 
-    x_offset :: Model.Spec{Float64} = (value = 0.0,)
+    x_offset :: Model.NumberSpec = (value = 0.0,)
 
-    y :: Model.Spec{Float64} = (field = "y",)
+    y :: Model.NumberSpec = (field = "y",)
 
-    y_offset :: Model.Spec{Float64} = (value = 0.0,)
+    y_offset :: Model.NumberSpec = (value = 0.0,)
 end
 glyphargs(::Type{Text}) = (:x, :y, :text, :angle, :x_offset, :y_offset)

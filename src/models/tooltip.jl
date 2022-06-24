@@ -10,7 +10,7 @@
 
     inner_only :: Bool = true
 
-    level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
+    level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :overlay
 
     show_arrow :: Bool = true
 
