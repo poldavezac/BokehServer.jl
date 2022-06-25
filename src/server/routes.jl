@@ -49,10 +49,12 @@ function routeargs(apps::Dict{<:Val, <:Union{Missing,iApplication}}, http)
             "found route",
             target = http.message.target,
             app    = name,
+            method,
+            key,
         )
         (http, method, app, key)
     else
-        @debug "no route found" target = http.message.target
+        @debug "no route found" target = http.message.target method app key
         (http, method, missing, missing)
     end
 end

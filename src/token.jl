@@ -7,12 +7,17 @@ module Tokens
     const WEBSOCKET_PROTOCOL = "Sec-WebSocket-Protocol"
 
     function encode(vals::Union{String, Vector{UInt8}})
-        return rstrip(replace(replace(Base64.base64encode(vals), '-' => '+'), '/' => '_'), '=')
+        tok = Base64.base64encode(vals)
+        @debug "writing token" token = tok len = length(tok)
+        tok = replace(tok, '/' => '_')
+        return rstrip(tok, '=')
     end
 
     function decode(vals::AbstractString)
+        vals  = replace(vals, '_' => '/')
         vals *= '='^((4 - (length(vals) % 4)) % 4) 
-        return Base64.base64decode(replace(replace(vals, '+' => '-'), '_' => '/'))
+        @debug "reading token" token = vals len = length(vals)
+        return Base64.base64decode(vals)
     end
 
     function sessionid(token::AbstractString)

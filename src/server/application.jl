@@ -58,7 +58,7 @@ Populates a brand new document
 function initialize! end
 
 initialize!(σ::SessionContext, 𝐴::Application) = initialize!(σ.doc, 𝐴)
-initialize!(𝑑::iDocument, 𝐴::Application)      = initializer(𝐴)(𝑑)
+initialize!(𝑑::iDocument, 𝐴::Application)      = Documents.curdoc!(initializer(𝐴), 𝑑)
 
 """
     sessionkey(::iApplication, req::HTTP.Request) = SessionContext(request)

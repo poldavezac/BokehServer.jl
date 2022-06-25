@@ -1,1 +1,1 @@
-route(http, ::Any, ::Missing, ::Missing) = HTTP.set_status(http, 404)
+route(http, ::Any, ::Missing, ::Missing) = HTTP.setstatus(http, 404)

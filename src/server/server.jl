@@ -84,22 +84,23 @@ function serve(
 )
     allapps = let cls = typeof(APPS)
         cls(
-            Val(:static) => missing,
+            Val(:static) => StaticApp(),
             (isempty(apps) ? APPS : _topair.(apps))...
         )
     end
 
     @info(
         "serving applications",
+        threads = Threads.nthreads(),
         (let root = "http://$host:$port"
             itr = (typeof(k).parameters[1] for k ∈ keys(allapps) if k ≢ Val(:static))
             (i => joinpath(root, "$i") for i ∈ itr)
          end)...
     )
     HTTP.listen(host, port; kwa...) do http::HTTP.Stream
-        @debug "Opened new stream" target = http.message.target
+        @debug "Opened new stream: $(http.message.target)"
         try
-            http.message.body = read(http)
+            http.message.body = readavailable(http)
             closeread(http)
             route(allapps, http)
         catch exc
@@ -118,3 +119,5 @@ _topair(@nospecialize(f::Pair{<:Val,  <:Function}))     = f[1]           => Appl
 _topair(@nospecialize(f::Pair{Symbol, <:Function}))     = Val(f[1])      => Application(f[2])
 _topair(@nospecialize(f::Pair{Symbol, <:iApplication})) = Val(f[1])      => f[2]
 _topair(@nospecialize(f::Pair{<:Val,  <:iApplication})) = f[1]           => f[2]
+
+export serve

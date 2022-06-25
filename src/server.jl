@@ -1,5 +1,6 @@
 module Server
 using HTTP
+using HTTP.WebSockets: WebSocket
 using ..AbstractTypes
 using ..Tokens
 using ..Events

@@ -7,7 +7,7 @@ httperror(reason :: String, status ::Int = 403) = throw(HTTPError(status, reason
 
 getparams(http::HTTP.Stream) = getparams(http.message)
 function getparams(req::HTTP.Request)
-    merge(HTTP.queryparams(HTTP.URI(HTTP.uri(req))), bodyparams(req))
+    merge(HTTP.queryparams(HTTP.URI(req.target)), bodyparams(req))
 end
 
 function getparam(req::HTTP.Request, key::String, default::Any = nothing)

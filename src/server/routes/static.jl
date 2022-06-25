@@ -5,8 +5,9 @@ using ..Server
 using ..Templates
 
 function route(http::HTTP.Stream, root::String)
-    uri  = HTTP.URI(http.request.target)
-    path = joinpath(root, uri.path)
+    uri  = HTTP.URI(http.message.target)
+    path = joinpath(root, uri.path[9:end])
+    @debug "$(isfile(path) ? "✅" : "❌") requested `$(path)`"
     if isfile(path)
         HTTP.setstatus(http, 200)
         ext = splitext(path)[end]
@@ -22,11 +23,8 @@ function route(http::HTTP.Stream, root::String)
             ext ≡ "txt"   ? "text/plain"      :
             "text/plain"
 
-        HTTP.setheader(
-            http,
-            "Content-Type"   => tpe,
-            "Content-Length" => string(filesize(path))
-        )
+        HTTP.setheader(http, "Content-Type"   => tpe)
+        HTTP.setheader(http, "Content-Length" => string(filesize(path)))
         HTTP.startwrite(http)
         write(http, read(path, String))
     else
@@ -36,4 +34,6 @@ end
 end
 using .StaticRoute
 
-@route GET static StaticRoute.route(http, Server.CONFIG.staticpath)
+struct StaticApp <: iApplication end
+
+route(http::HTTP.Stream, ::Val{:GET}, ::StaticApp, ::Val{:?}) = StaticRoute.route(http, Server.CONFIG.staticpath)

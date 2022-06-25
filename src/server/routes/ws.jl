@@ -1,23 +1,22 @@
 module WSRoute
 using HTTP
 using HTTP.WebSockets
-using HTTP.WebSockets: WebSocket, WebSocketError
 using ...Events
 using ...Protocol
-using ...Protocol.Messages: @msg_str, messageid
+using ...Protocol.Messages: @msg_str, messageid, nodata
 using ...Server
 using ...Server: iApplication, SessionContext
 using ...Tokens
 
 function route(io::HTTP.Stream, 𝐴::Server.iApplication)
-    WebSockets.upgrade(io) do ws::WebSocket
+    WebSockets.upgrade(io) do ws::WebSockets.WebSocket
         waittime = Server.CONFIG.wssleepperiod
         session  = nothing
         try
             session = onopen(ws, 𝐴)
             if !isnothing(session)
-                while isopen(ws)
-                    if iszero(Base.bytesavailable(ws.io))
+                while !WebSockets.isclosed(ws)
+                    if nodata(ws)
                         (waittime ≤ 0) || sleep(waittime)
                     else
                         onmessage(ws, 𝐴, session)
@@ -26,14 +25,7 @@ function route(io::HTTP.Stream, 𝐴::Server.iApplication)
                 end
             end
         catch exc
-            if !(exc isa EmptyMessageError)
-                @error "Server ws error" exception = (exc, Base.catch_backtrace())
-                if exc isa WebSocketError || exc isa Base.IOError
-                    wserror(exc)
-                else
-                    rethrow()
-                end
-            end
+            wserror(exc, 𝐴, session,)
         finally
             onclose(ws, 𝐴, session)
             close(ws)
@@ -51,7 +43,7 @@ macro wsassert(test, msg::String)
 end
 
 macro safely(code)
-    esc(:(if isopen(ω)
+    esc(:(if !WebSockets.isclosed(ω)
         $code
     else
         onclose(ω, 𝐴, σ)
@@ -59,7 +51,7 @@ macro safely(code)
     end))
 end
 
-function onopen(ω::WebSocket, 𝐴::iApplication)
+function onopen(ω::WebSockets.WebSocket, 𝐴::iApplication)
     req                  = ω.request
     (subprotocol, token) = Tokens.subprotocol(HTTP.headers(req))
 
@@ -73,24 +65,24 @@ function onopen(ω::WebSocket, 𝐴::iApplication)
 
     σ = get!(𝐴, Server.SessionKey(Tokens.sessionid(token), token, req))
     push!(σ.clients, ω)
-    @safely Protocol.send(ω, msg"ACK")
+    @safely Protocol.sendmessage(ω, msg"ACK")
     σ
 end
 
-function onmessage(ω::WebSocket, 𝐴::iApplication, σ::SessionContext)
-    @safely msg = Protocol.receive(ω, Server.CONFIG.wstimeout, Server.CONFIG.wssleepperiod)
+function onmessage(ω::WebSockets.WebSocket, 𝐴::iApplication, σ::SessionContext)
+    @safely msg = Protocol.receivemessage(ω, Server.CONFIG.wstimeout, Server.CONFIG.wssleepperiod)
     yield()
     try
         answer = handle(msg, 𝐴, σ)
-        @safely Protocol.send(ω, answer...)
+        @safely Protocol.sendmessage(ω, answer...)
     catch exc
-        @safely Protocol.send(ω, msg"ERROR", messageid(msg), sprint(showerror, exc))
+        @safely Protocol.sendmessage(ω, msg"ERROR", messageid(msg), sprint(showerror, exc))
         rethrow(exc)
     end
 end
 
-onclose(ω::WebSocket, ::iApplication, ::Nothing) = nothing
-function onclose(ω::WebSocket, ::iApplication, σ::SessionContext)
+onclose(ω::WebSockets.WebSocket, ::iApplication, ::Nothing) = nothing
+function onclose(ω::WebSockets.WebSocket, ::iApplication, σ::SessionContext)
     pop!(σ.clients, ω, nothing)
     nothing
 end
@@ -113,9 +105,18 @@ end
 
 wsclose(ω::WebSockets.WebSocket, ::iApplication) = close(ω)
 
-function wserror(::iApplication, ::SessionContext, exc::Exception)
-    @info "Websocket error" exception = exc
+function wserror(exc::Exception, _...)
+    @error "Server ws error" exception = (exc, Base.catch_backtrace())
+    rethrow(exc)
 end
+
+function wserror(exc::WebSockets.WebSocketError, _...)
+    WebSockets.isok(exc) || (@error "Websocket error" exception = (exc, Base.catch_backtrace()))
+end
+
+wserror(exc::Base.IOError, _...) = @error "IO error" exception = (exc, Base.catch_backtrace())
+wserror(::EmptyMessageError, _...) = nothing
+
 end
 using .WSRoute
 

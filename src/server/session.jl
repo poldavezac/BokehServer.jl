@@ -17,17 +17,17 @@ struct SessionContext <: iSessionContext
     token   :: String
     request :: HTTP.Request
     doc     :: iDocument
-    clients :: Set{IO}
+    clients :: Set{WebSocket}
 
     SessionContext(b::SessionKey) = new(
-        b.id, b.token, b.request, Document(), Set{IO}()
+        b.id, b.token, b.request, Document(), Set{WebSocket}()
     )
-    SessionContext(a...) = new(a..., Document(), Set{IO}())
+    SessionContext(a...) = new(a..., Document(), Set{WebSocket}())
 end
 
-Base.push!(σ::SessionContext, ws::IO) = push!(σ.clients, ws)
-Base.pop!(σ::SessionContext, ws::IO) = pop!(σ.clients, ws, nothing)
-Base.in(ws::IO, σ::SessionContext) = ws ∈ σ.clients
+Base.push!(σ::SessionContext, ws::WebSocket) = push!(σ.clients, ws)
+Base.pop!(σ::SessionContext, ws::WebSocket) = pop!(σ.clients, ws, nothing)
+Base.in(ws::WebSocket, σ::SessionContext) = ws ∈ σ.clients
 
 """
     SessionKey(request::HTTP.Request)

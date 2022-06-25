@@ -1,3 +1,5 @@
+using HTTP.WebSockets
+
 function patchdoc(
         λ      :: AbstractVector{<:Events.iEvent},
         doc    :: iDocument,
@@ -32,8 +34,8 @@ function patchdoc(
     return patchdoc(lst, 𝐷, oldids, 𝑅)
 end
 
-function patchdoc(𝐹::Function, 𝐷::iDocument, λ::Events.iEventList, ios::Vararg{IO})
+function patchdoc(𝐹::Function, 𝐷::iDocument, λ::Events.iEventList, ios::Vararg{WebSockets.WebSocket})
     𝑅    = Serialize.BufferedRules()
     outp = patchdoc(𝐹, 𝐷, λ, 𝑅)
-    return isnothing(outp) ? missing : send(ios, msg"PATCH-DOC", outp, 𝑅.buffers)
+    return isnothing(outp) ? missing : sendmessage(ios, msg"PATCH-DOC", outp, 𝑅.buffers)
 end

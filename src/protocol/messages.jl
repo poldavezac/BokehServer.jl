@@ -1,6 +1,6 @@
 module Messages
 using JSON
-using HTTP.WebSockets: WebSocket, WS_BINARY, WS_TEXT
+using HTTP.WebSockets
 using ..AbstractTypes
 using ..Protocol: Buffers
 
@@ -142,49 +142,39 @@ message(hdr::_h"SERVER-INFO-REPLY", reqid::String; meta...)               = Prot
     reqid
 )
 
-function send(@nospecialize(ios::Union{AbstractVector, AbstractSet, Tuple}), 𝑇::msg"PATCH-DOC", args...; kwa...) :: String
+function sendmessage(@nospecialize(ios::Union{AbstractVector, AbstractSet, Tuple}), 𝑇::msg"PATCH-DOC", args...; kwa...) :: String
     @assert !isempty(io)
     msgid = string(ID())
     for io ∈ ios
-        send(io, 𝑇, args...; msgid, kwa...)
+        sendmessage(io, 𝑇, args...; msgid, kwa...)
     end
     return get(kwa, :msgid, msgid)
 end
 
-frametype!(io::WebSocket, ::Vector{UInt8}) = (io.frame_type = WS_BINARY)
-frametype!(io::WebSocket, ::String)        = (io.frame_type = WS_TEXT)
-frametype!(_...) = nothing
-
-function send(io::IO, T::Type{<:iMessage}, args...; kwa...) :: Union{Missing, String}
+function sendmessage(io::WebSockets.WebSocket, T::Type{<:iMessage}, args...; kwa...) :: Union{Missing, String}
     itr = message(T, args...; kwa...)
     for line ∈ collect(itr)
-        if isopen(io)
-            frametype!(io, line)
-            write(io, line)
-        else
-            return missing
-        end
+        WebSockets.isclosed(io) && (return missing)
+        WebSockets.send(io, line)
     end
     return messageid(itr)
 end
 
 const _PATT = r"\"num_buffers\"\s*:\s*(\d*)"
 
-function _read(ws, (timeout, sleepperiod))
+nodata(ws) = (WebSockets.isclosed(ws) || iszero(Base.bytesavailable(ws.io))) && !isreadable(ws.io.io)
+
+function _read(𝑇::Type, ws, (timeout, sleepperiod))
     timedout = timeout + time()
-    while isopen(ws) && iszero(Base.bytesavailable(ws.io)) && time() < timedout
+    while nodata(ws) && time() < timedout
          (sleepperiod ≤ 0.) || sleep(sleepperiod)
          yield()
     end
     
-    readavailable(ws)
+    return nodata(ws) ? (𝑇 ≡ Char ? "" : 𝑇[]) : WebSockets.receive(ws)
 end
 
-_read(::Type{Char},  ws, t) = isopen(ws) ? String(_read(ws, t))  : ""
-_read(::Type{UInt8}, ws, t) = isopen(ws) ? collect(_read(ws, t)) : UInt8[]
-        
 function RawMessage(ws, timeout :: Pair{<:Real, <:Real})
-    # @assert !iszero(Base.bytesavailable(ws.io))
     header   = _read(Char, ws, timeout)
     contents = _read(Char, ws, timeout)
     meta     = _read(Char, ws, timeout)
@@ -223,11 +213,11 @@ function Message(raw::RawMessage)
     )
 end
 
-function receive(ws, timeout :: Real, sleepperiod::Real)
+function receivemessage(ws, timeout :: Real, sleepperiod::Real)
     return Message(RawMessage(ws, timeout => sleepperiod))
 end
 
-export send, receive, Message, @msg_str
+export sendmessage, Message, @msg_str, receivemessage
 end
 
 using .Messages

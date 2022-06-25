@@ -49,17 +49,17 @@ function open(
     WebSockets.open(url; kwa..., retry, headers) do ws :: WebSockets.WebSocket
         doc = nothing
         try
-            let msg = Protocol.receive(ws, CONFIG.wstimeout, CONFIG.wssleepperiod)
+            let msg = Protocol.receivemessage(ws, CONFIG.wstimeout, CONFIG.wssleepperiod)
                 @assert msg isa msg"ACK"
             end
 
             doc = Document()
             if dopull
-                msgid    = Protocol.send(ws, msg"PULL-DOC-REQ")
+                msgid    = Protocol.sendmessage(ws, msg"PULL-DOC-REQ")
                 timedout = time() + timeout
                 found    = false
                 while time() < timedout
-                    if handle(Protocol.receive(ws, CONFIG.wstimeout, CONFIG.wssleepperiod), msgid, doc)
+                    if handle(Protocol.receivemessage(ws, CONFIG.wstimeout, CONFIG.wssleepperiod), msgid, doc)
                         found = true
                         break
                     end
