@@ -3,6 +3,8 @@ using ...Model
 using ...Models
 using ...AbstractTypes
 
+const ArrayLike = Union{AbstractArray, AbstractRange}
+
 function glyph(𝑇::Symbol; kwargs...)
     opts = filter((x -> "$x"[1] ∈ 'A':'Z'), names(Models; all = true))
     if 𝑇 ∉ opts
@@ -96,7 +98,7 @@ function _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
         end
 
         cnv = Model.bokehconvert(Model.bokehpropertytype(𝑇, col), arg)
-        msg = if cnv isa Model.Unknown && !(arg isa AbstractArray)
+        msg = if cnv isa Model.Unknown && !(arg isa ArrayLike)
             "is not a supported type $(typeof(arg)) = $arg"
         else
             𝐹(col, arg, cnv)
@@ -113,12 +115,8 @@ function _👻datasource!(kwargs::Dict{Symbol}, ::Missing, 𝑇::Type)
     out  = _👻datasource!(kwargs, 𝑇) do col, arg, cnv
         if cnv isa Model.iSpec && !ismissing(cnv.field)
             ErrorException("is a source field, yet no source was provided")
-        elseif arg isa AbstractArray
-            data["$col"] = if Model.bokehpropertytype(𝑇, col) isa Model.ColorSpec
-                Model.color.(arg)
-            else
-                arg
-            end
+        elseif arg isa ArrayLike
+            data["$col"] = Model.datadictarray(Model.bokehpropertytype(𝑇, col), arg)
             (; field = "$col")
         else
             arg
@@ -131,7 +129,7 @@ end
 function _👻datasource!(kwargs::Dict{Symbol}, src::Models.ColumnDataSource, 𝑇::Type)
     data = src.data
     out  = _👻datasource!(kwargs, 𝑇) do col, arg, cnv
-        if arg isa AbstractArray
+        if arg isa ArrayLike
             ErrorException("is a vector even though a data source has also been provided")
         elseif cnv isa Model.iSpec && !ismissing(cnv.field) && !haskey(data, cnv.field)
             ErrorException("is a missing or miss-spelled column '$(cnv.field)'")

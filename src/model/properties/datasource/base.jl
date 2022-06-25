@@ -62,6 +62,7 @@ end
 
 Convert a `DataDict` array *element* to the correct type `T` or `<:AbstractArray{T}`
 """
+@inline datadictelement(::Type{String},  𝑑::Color) = color(𝑑)
 @inline datadictelement(::Type{Float64}, 𝑑::Union{Date, DateTime, Period}) =  bokehconvert(Float64, 𝑑)
 @inline datadictelement(::Type{T}, y::Union{T, AbstractArray{T}}) where {T} = y
 @inline datadictelement(::Type{T}, y::Number) where {T} = convert(T, y)
@@ -75,6 +76,19 @@ Convert a `DataDict` *array*  to the correct type `Vector{T}`
 @inline datadictarray(::Type{T}, y::AbstractVector) where {T} = datadictelement.(T, y)
 @inline datadictarray(::Type{T}, y::AbstractVector{<:AbstractArray}) where {T} = [datadictelement.(T, i) for i ∈ y]
 @inline datadictarray(::Type{T}, y::Union{AbstractVector{T}, AbstractVector{<:AbstractArray{T}}}) where {T} = y
+
+const ArrayLike = Union{AbstractArray{T}, AbstractRange{T}} where {T}
+"""
+    datadictarray(::Type{ColorSpec},   y::Union{AbstractRange, AbstractArray})
+    datadictarray(::Type{NumberSpec},  y::Union{AbstractRange, AbstractArray})
+
+Convert a `DataDict` *array*  to the correct type `Vector{T}`
+"""
+@inline datadictarray(::Type{ColorSpec},  y::ArrayLike)             = color.(y)
+@inline datadictarray(::Type{NumberSpec}, y::AbstractVector{Int64}) = Int32.(y)
+@inline datadictarray(::Type{NumberSpec}, y::AbstractVector)        = y
+@inline datadictarray(::Type{NumberSpec}, y::AbstractRange{Int64})  = Int32.(y)
+@inline datadictarray(::Type{NumberSpec}, y::AbstractRange)         = collect(y)
 
 for (𝑇1, 𝑇2) ∈ (Union{DateTime, Date, Period} => Float64, Union{Int64} => Int32)
     @eval @inline datadictarray(y::AbstractVector{<:Union{$𝑇1, AbstractArray{<:$𝑇1}}}) = datadictarray($𝑇2, y)
