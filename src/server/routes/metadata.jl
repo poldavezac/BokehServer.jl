@@ -13,4 +13,4 @@ end
 end
 using .MetadataRoute
 
-@route GET metadata MetadataRoute
+route(http::HTTP.Stream, ::Val{:GET}, 𝐴::iApplication, ::Val{:metadata}) = MetadataRoute.route(http, 𝐴)

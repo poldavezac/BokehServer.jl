@@ -120,4 +120,4 @@ wserror(::EmptyMessageError, _...) = nothing
 end
 using .WSRoute
 
-@route GET ws WSRoute
+route(http::HTTP.Stream, ::Val{:GET}, 𝐴::iApplication, ::Val{:ws}) = WSRoute.route(http, 𝐴)

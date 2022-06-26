@@ -1,12 +1,10 @@
-module StaticRoute
-using HTTP
-using ...AbstractTypes
-using ..Server
-using ..Templates
+struct StaticRoute <: iRoute
+    root :: String
+end
 
-function route(http::HTTP.Stream, root::String)
+function route(http::HTTP.Stream, ::Val{:GET}, 𝐴::StaticRoute, ::Val)
     uri  = HTTP.URI(http.message.target)
-    path = joinpath(root, uri.path[9:end])
+    path = joinpath(𝐴.root, uri.path[9:end])
     @debug "$(isfile(path) ? "✅" : "❌") requested `$(path)`"
     if isfile(path)
         HTTP.setstatus(http, 200)
@@ -31,9 +29,3 @@ function route(http::HTTP.Stream, root::String)
         HTTP.setstatus(http, 404)
     end
 end
-end
-using .StaticRoute
-
-struct StaticApp <: iApplication end
-
-route(http::HTTP.Stream, ::Val{:GET}, ::StaticApp, ::Val{:?}) = StaticRoute.route(http, Server.CONFIG.staticpath)

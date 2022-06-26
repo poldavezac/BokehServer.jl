@@ -177,5 +177,5 @@ end
 end
 using .AutoloadRoute
 
-@route OPTIONS "autoload.js" AutoloadRoute.options(http)
-@route GET     "autoload.js" AutoloadRoute
+route(http::HTTP.Stream, ::Val{:OPTIONS}, ::iApplication, ::Val{Symbol("autoload.js")}) = AutoloadRoute.options(http)
+route(http::HTTP.Stream, ::Val{:GET},    𝐴::iApplication, ::Val{Symbol("autoload.js")}) = AutoloadRoute.route(http, 𝐴)

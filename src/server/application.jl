@@ -1,8 +1,5 @@
 using UUIDs
 
-abstract type iApplication end
-abstract type iGenericApplication <: iApplication end
-
 struct SessionList
     sessions :: Dict{String, iSessionContext}
     SessionList() = new(fieldtype(SessionList, :sessions)())
@@ -14,7 +11,7 @@ Base.push!(λ::SessionList, σ::SessionContext) = push!(λ.sessions, σ.id => σ
 Base.pop!(λ::SessionList, σ::iSessionContext) = pop!(λ.sessions, σ.id, nothing)
 Base.in(σ::iSessionContext, λ::SessionList)   = haskey(λ.sessions, σ.id)
 
-struct Application{T} <: iGenericApplication
+struct Application{T} <: iApplication
     sessions :: SessionList
     Application{T}() where {T} = new(fieldtype(Application, :sessions)())
 end

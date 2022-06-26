@@ -1,19 +1,3 @@
-macro route(method, basename, code)
-    cnv(x) = (x ≡ :Any ? Any : x ≡ :missing ? Missing : Val{x})
-    (basename isa String) && (basename = Symbol(basename))
-    params = (
-        :(http::HTTP.Stream),
-        :(::$(cnv(method))),
-        :(app::iApplication),
-        :(key::$(cnv(basename)))
-    )
-    return if code isa Symbol
-        :(route($(params...)) = $code.route(http, app))
-    else
-        :(route($(params...)) = $code)
-    end
-end
-
 include("routes/autoload.jl")
 include("routes/document.jl")
 include("routes/metadata.jl")
@@ -23,7 +7,7 @@ include("routes/redirect.jl")
 include("routes/error.jl")
 include("routes/static.jl")
 
-function routeargs(apps::Dict{<:Val, <:Union{Missing,iApplication}}, http)
+function routeargs(apps::Dict{<:Val, <:iRoute}, http)
     method = Val(Symbol(HTTP.method(http.message)))
     name   = missing
     app    = missing
@@ -44,19 +28,7 @@ function routeargs(apps::Dict{<:Val, <:Union{Missing,iApplication}}, http)
         key  = path[1]
     end
 
-    return if applicable(route, http, method, app, key)
-        @debug(
-            "found route",
-            target = http.message.target,
-            app    = name,
-            method,
-            key,
-        )
-        (http, method, app, key)
-    else
-        @debug "no route found" target = http.message.target method app key
-        (http, method, missing, missing)
-    end
+    return (http, method, app, key)
 end
 
 route(apps, http) = route(routeargs(apps, http)...)

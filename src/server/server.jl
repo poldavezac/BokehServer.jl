@@ -1,22 +1,22 @@
-const APPS = Dict{Val, Union{Missing, iApplication}}()
+const ROUTES = Dict{Val, iRoute}()
 
-register(app::iApplication, name::Symbol) = register(app, Val(name))
-register(func::Function, name)            = register(Application(func), name)
-register(func::Function)                  = register(Application(func), nameof(func))
-function register(app::iApplication, name::Val)
-    if !isgoodappname(name) && !isnothing(getapp(APPS, nothing))
+register(app::iRoute, name::Symbol) = register(app, Val(name))
+register(func::Function, name)      = register(Application(func), name)
+register(func::Function)            = register(Application(func), nameof(func))
+function register(app::iRoute, name::Val)
+    if !isgoodappname(name) && !isnothing(getapp(ROUTES, nothing))
         @assert false, "Only a single anonymous function is allowed"
     end
 
-    push!(APPS, name => app)
+    push!(ROUTES, name => app)
 end
-unregister(name::Val)    = pop!(APPS, name, nothing)
-unregister(name::Symbol) = pop!(APPS, Val(name), nothing)
+unregister(name::Val)    = pop!(ROUTES, name, nothing)
+unregister(name::Symbol) = pop!(ROUTES, Val(name), nothing)
 
 """
     @register(functions...)
 
-Adds one or more apps to default apps in `Bokeh.Server.APPS`. When starting
+Adds one or more apps to default apps in `Bokeh.Server.ROUTES`. When starting
 a server, these will become available. See `Bokeh.Server.serve`
 """
 macro register(funcs...)
@@ -42,12 +42,12 @@ macro register(funcs...)
     expr
 end
 
-const _AppTypes = Union{iApplication, Function, Pair}
+const RouteTypes = Union{iRoute, Function, Pair}
 
 """
     serve([host = CONFIG.host], [port = CONFIG.port], apps...; kwa...)
 
-Starts a Bokeh server. `apps` can be `Bokeh.Server.iApplication` types,
+Starts a Bokeh server. `apps` can be `Bokeh.Server.iRoute` types,
 functions or pairs of `name_of_app => app_or_function`
 
 # Examples
@@ -79,13 +79,13 @@ Bokeh.Server.serve(
 function serve(
         host :: AbstractString,
         port :: Int,
-        apps :: Vararg{<:_AppTypes};
+        apps :: Vararg{<:RouteTypes};
         kwa...
 )
-    allapps = let cls = typeof(APPS)
+    allapps = let cls = typeof(ROUTES)
         cls(
-            Val(:static) => StaticApp(),
-            (isempty(apps) ? APPS : _topair.(apps))...
+            Val(:static) => StaticRoute(CONFIG.staticpath),
+            (isempty(apps) ? ROUTES : _topair.(apps))...
         )
     end
 
@@ -110,14 +110,14 @@ function serve(
     end
 end
 
-serve(host::AbstractString, apps::Vararg{<:_AppTypes}; kwa...) = serve(host, CONFIG.port, apps...; kwa...)
-serve(port::Int, apps::Vararg{<:_AppTypes}; kwa...)            = serve(CONFIG.host, port, apps...; kwa...)
-serve(apps::Vararg{<:_AppTypes}; kwa...)                       = serve(CONFIG.host, CONFIG.port, apps...; kwa...)
+serve(host::AbstractString, apps::Vararg{<:RouteTypes}; kwa...) = serve(host, CONFIG.port, apps...; kwa...)
+serve(port::Int, apps::Vararg{<:RouteTypes}; kwa...)            = serve(CONFIG.host, port, apps...; kwa...)
+serve(apps::Vararg{<:RouteTypes}; kwa...)                       = serve(CONFIG.host, CONFIG.port, apps...; kwa...)
 
-_topair(@nospecialize(f::Function))                     = Val(nameof(f)) => Application(f)
-_topair(@nospecialize(f::Pair{<:Val,  <:Function}))     = f[1]           => Application(f[2])
-_topair(@nospecialize(f::Pair{Symbol, <:Function}))     = Val(f[1])      => Application(f[2])
-_topair(@nospecialize(f::Pair{Symbol, <:iApplication})) = Val(f[1])      => f[2]
-_topair(@nospecialize(f::Pair{<:Val,  <:iApplication})) = f[1]           => f[2]
+_topair(@nospecialize(f::Function))                 = Val(nameof(f)) => Application(f)
+_topair(@nospecialize(f::Pair{<:Val,  <:Function})) = f[1]           => Application(f[2])
+_topair(@nospecialize(f::Pair{Symbol, <:Function})) = Val(f[1])      => Application(f[2])
+_topair(@nospecialize(f::Pair{Symbol, <:iRoute}))   = Val(f[1])      => f[2]
+_topair(@nospecialize(f::Pair{<:Val,  <:iRoute}))   = f[1]           => f[2]
 
 export serve

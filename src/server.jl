@@ -5,6 +5,8 @@ using ..AbstractTypes
 using ..Tokens
 using ..Events
 using ..Documents
+abstract type iRoute end
+abstract type iApplication <: iRoute end
 
 include("server/config.jl")
 include("server/util.jl")

@@ -10,7 +10,9 @@ function route(http::HTTP.Stream{HTTP.Request}, app::Server.iApplication)
     HTTP.setstatus(http, 200)
     HTTP.setheader(http, "Content-Type" => "text/html")
     HTTP.startwrite(http)
-    write(http, body(app, get!(app, http)))
+    session = get!(app, http)
+    msg     = body(app, session)
+    write(http, msg)
 end
 
 Server.staticbundle(app::Server.iApplication) = Server.staticbundle(Val(:server))
@@ -85,4 +87,4 @@ end
 
 using .DocRoute
 
-@route GET "?" DocRoute
+route(http::HTTP.Stream, ::Val{:GET}, 𝐴::iApplication, ::Val{:?}) = DocRoute.route(http, 𝐴)
