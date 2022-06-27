@@ -1,0 +1,6 @@
+[javascript]
+git-tree-sha1 = "eba8fc354482aac0d100cb0268148729156295ef"
+
+    [[javascript.download]]
+    sha256 = "3fbad8b87144ccf6bdb42a47e508a602ce15c8660dbedeffeff29d6946e203dc"
+    url = "https://anaconda.org/bokeh/bokeh/2.4.2/download/noarch/bokeh-2.4.2-py_0.tar.bz2"

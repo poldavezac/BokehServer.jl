@@ -82,15 +82,7 @@ function serve(
         apps :: Vararg{<:RouteTypes};
         kwa...
 )
-    allapps = let cls = typeof(ROUTES)
-        cls(
-            let path = splitpath(CONFIG.staticpath)
-                Val(Symbol(path[end])) => StaticRoute(joinpath(path[1:end-1]...))
-            end,
-            (isempty(apps) ? ROUTES : _topair.(apps))...
-        )
-    end
-
+    allapps = typeof(ROUTES)(staticroute(), (isempty(apps) ? ROUTES : _topair.(apps))...)
     @info(
         "serving applications",
         threads = Threads.nthreads(),

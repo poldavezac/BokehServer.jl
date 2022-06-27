@@ -1,3 +1,6 @@
 [deps]
+CodecBzip2 = "523fee87-0ab8-5b00-afb7-3ecf72e48cfd"
 CondaPkg = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+Tar = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"

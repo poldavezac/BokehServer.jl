@@ -1,6 +1,8 @@
+using Pkg.Artifacts
 """
     struct StaticRoute <: iRoute
-        roots :: Vector{String}
+        route :: Symbol
+        paths :: Vector{String}
     end
 
 Provides acces to static files. We find files by iterating through roots and returning
@@ -22,7 +24,8 @@ Static files can have the following extensions:
 with any other extension defaulting to "text/plain".
 """
 struct StaticRoute <: iRoute
-    roots :: Vector{String}
+    route :: Symbol
+    paths :: Vector{String}
 end
 
 StaticRoute(x::Vararg{AbstractString}) = StaticRoute(collect(String, x))
@@ -33,16 +36,16 @@ end
 
 function routefile(http::HTTP.Stream, ext::AbstractString, data::AbstractString)
     HTTP.setstatus(http, 200)
-    tpe = ext ≡ "css" ? "text/css"        :
-        ext ≡ "gif"   ? "image/gif"       :
-        ext ≡ "ico"   ? "image/x-icon"    :
-        ext ≡ "jpe"   ? "image/jpeg"      :
-        ext ≡ "jpeg"  ? "image/jpeg"      :
-        ext ≡ "jpg"   ? "image/jpeg"      :
-        ext ≡ "js"    ? "text/javascript" :
-        ext ≡ "pdf"   ? "application/pdf" :
-        ext ≡ "svg"   ? "image/svg+xml"   :
-        ext ≡ "txt"   ? "text/plain"      :
+    tpe = ext == ".css" ? "text/css"        :
+        ext == ".gif"   ? "image/gif"       :
+        ext == ".ico"   ? "image/x-icon"    :
+        ext == ".jpe"   ? "image/jpeg"      :
+        ext == ".jpeg"  ? "image/jpeg"      :
+        ext == ".jpg"   ? "image/jpeg"      :
+        ext == ".js"    ? "text/javascript" :
+        ext == ".pdf"   ? "application/pdf" :
+        ext == ".svg"   ? "image/svg+xml"   :
+        ext == ".txt"   ? "text/plain"      :
         "text/plain"
 
     HTTP.setheader(http, "Content-Type"   => tpe)
@@ -52,10 +55,9 @@ function routefile(http::HTTP.Stream, ext::AbstractString, data::AbstractString)
 end
 
 function route(http::HTTP.Stream, 𝐴::StaticRoute, tgt::AbstractString = http.message.target)
-    (tgt[1] ≡ '/') && (tgt = tgt[2:end])
-
-    for root ∈ 𝐴.roots
-        path = joinpath(root, tgt)
+    len = length("/$(𝐴.route)/")+1
+    for root ∈ 𝐴.paths
+        path = joinpath(root, tgt[len:end])
         if isfile(path)
             @debug "✅ requested `$path`"
             routefile(http, path)
@@ -69,6 +71,8 @@ end
 
 route(http::HTTP.Stream, ::Val{:GET}, 𝐴::StaticRoute, ::Val) = route(http, 𝐴)
 
-function route(http::HTTP.Stream, ::Val{:GET}, 𝐴::Dict, ::Val{Symbol("favicon.ico")})
-    routefile(http, "$(Server.CONFIG.staticpath)/favicon.ico")
+function route(http::HTTP.Stream, ::Val{:GET}, ::Dict, ::Val{Symbol("favicon.ico")})
+    routefile(http, joinpath(artifact"javascript", "favicon.ico"))
 end
+
+staticroute(cnf = Server.CONFIG) = (Val(cnf.staticroute) => StaticRoute(cnf.staticroute, cnf.staticpaths))
