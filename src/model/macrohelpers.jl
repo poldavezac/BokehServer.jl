@@ -26,12 +26,13 @@ function _👻fields(mod, code)
     # for both means of defining a struture field
     [
         begin
-            (name, type) = (line.head ≡ :(::) ? line : line.args[1]).args
-            realtype     = mod.eval(type)
+            (name, type)    = (line.head ≡ :(::) ? line : line.args[1]).args
+            realtype        = mod.eval(type)
+            (default, init) = _👻defaultvalue(realtype, line)
             (;
                 index, name,
                 type     = realtype,
-                default  = _👻defaultvalue(realtype, line),
+                default, init,
                 js       = !(realtype <: Internal),
                 alias    = realtype <: Alias,
                 readonly = realtype <: Union{
@@ -78,20 +79,25 @@ function _👻elseif_alias(𝐹::Function, fields::Vector{<:NamedTuple}, elsecod
 end
 
 function _👻defaultvalue(T::Type, line::Expr)
-    return if line.head ≡ :(::)
-        _👻defaultvalue(T)
+    if line.head ≡ :(::)
+        out = _👻defaultvalue(T)
+        return (out, out)
     elseif line.args[2] ≡ :nodefaults
-        nothing
+        return nothing, nothing
     elseif line.args[2] ≡ :zero
         out = _👻defaultvalue(T)
         if isnothing(out)
             R = bokehfieldtype(T)
             throw(ErrorException("Unknown defaults for $R (calls `zero($R)` or `$R()` are unavailable)"))
         end
-        out
-    else
-        Some(line.args[2])
+        return out, out
     end
+     
+    expr = line.args[2]
+    if expr isa Expr && expr.head ≡ :call && expr.args[1] ≡ :new
+        return nothing, expr.args[2]
+    end
+    return Some(expr), Some(expr)
 end
 
 function _👻defaultvalue(T::Type)
@@ -99,3 +105,46 @@ function _👻defaultvalue(T::Type)
     applicable(zero, R) ? Some(:(zero($R))) : applicable(R) ? Some(:($R())) : nothing
 end
 
+function _👻defaultvalue(field::NamedTuple)
+    isnothing(field.default) ? nothing : :(Some($(something(field.default))))
+end
+
+function _👻initcode(cls, fields::Vector{<:NamedTuple}, field::NamedTuple)
+    opts = [j.name for j ∈ fields if j.alias && j.type.parameters[1] ≡ field.name]
+    κ    = Meta.quot(field.name)
+    val  = if isnothing(field.init)
+        :(let val = Bokeh.Themes.theme($cls, $κ)
+            isnothing(val) && throw(ErrorException(($("$cls.$(field.name) is a mandatory argument"))))
+            something(val)
+        end)
+    else
+        :(let val = Bokeh.Themes.theme($cls, $κ)
+            isnothing(val) ? $(something(field.init)) : something(val)
+        end)
+    end
+        
+    val = _👻elseif((field.name, opts...), val) do key
+        sκ = Meta.quot(key)
+        :(if haskey(kwa, $sκ)
+            kwa[$sκ]
+        end)
+    end
+
+    return if field.type <: Internal
+        :($(field.name) = $val)
+    else
+        x = gensym()
+        y = gensym()
+        quote
+            $(field.name) = let $x = $val, $y = $(@__MODULE__).bokehconvert($(field.type), $x)
+                ($y isa $Unknown) && throw(ErrorException(string(
+                    "Could not convert `", $x, "` to ",
+                    $cls, ".", $("$(field.name)"),
+                    "::", $(bokehfieldtype(field.type))
+                )))
+                @assert $y isa fieldtype($cls, $κ) string($("$cls.$(field.name) != "), typeof($y))
+                $y
+            end
+        end
+    end
+end

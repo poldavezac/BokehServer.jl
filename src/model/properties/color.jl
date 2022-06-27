@@ -8,8 +8,6 @@ struct Color <: iProperty
     a::UInt8
 end
 
-Base.show(io::IO, c::Color) = show(io, c.a ≡ 0xff ? "rgb($(c.r),$(c.g),$(c.b))" : "rgba($(c.r),$(c.g),$(c.b),$(c.a))")
-
 const COLOR_PATTERNS = (
     r"^#[0-9a-fA-F]{3}$",
     r"^#[0-9a-fA-F]{4}$",
@@ -74,6 +72,8 @@ function colorhex(ν::Color)
         @sprintf("#%02X%02X%02X%02X", ν.r, ν.g, ν.b, ν.a)
     end
 end
+
+Base.show(io::IO, c::Color) = print(io, colorhex(c))
 
 const COLOR_ARGS = Union{NTuple{4, <:Integer}, NTuple{3, <:Integer}, Symbol, Int32, AbstractString, Color}
 

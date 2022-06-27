@@ -3,51 +3,9 @@ function _👻structure(
         parents :: Union{Symbol, Expr},
         fields  :: Vector{<:NamedTuple},
 )
-    aliases = [i.name => i.type.parameters[1] for i ∈ fields if i.alias]
 
-    function initcode(field)
-        opts = [first(j) for j ∈ aliases if last(j) ≡ field.name]
-        κ    = Meta.quot(field.name)
-        val  = if isnothing(field.default)
-            :(let val = Bokeh.Themes.theme($cls, $κ)
-                isnothing(val) && throw(ErrorException(($("$cls.$(field.name) is a mandatory argument"))))
-                something(val)
-            end)
-        else
-            :(let val = Bokeh.Themes.theme($cls, $κ)
-                isnothing(val) ? $(something(field.default)) : something(val)
-            end)
-        end
-            
-        val = _👻elseif((field.name, opts...), val) do key
-            sκ = Meta.quot(key)
-            :(if haskey(kwa, $sκ)
-                kwa[$sκ]
-            end)
-        end
-
-        return if field.type <: Internal
-            :($(field.name) = $val)
-        else
-            x = gensym()
-            y = gensym()
-            quote
-                $(field.name) = let $x = $val, $y = $(@__MODULE__).bokehconvert($(field.type), $x)
-                    ($y isa $Unknown) && throw(ErrorException(string(
-                        "Could not convert `", $x, "` to ",
-                        $cls, ".", $("$(field.name)"),
-                        "::", $(bokehfieldtype(field.type))
-                    )))
-                    @assert $y isa fieldtype($cls, $κ) string($("$cls.$(field.name) != "), typeof($y))
-                    $y
-                end
-            end
-        end
-    end
-
-    code = map(initcode, _👻filter(fields))
+    code   = [_👻initcode(cls, fields, i) for i ∈ _👻filter(fields)]
     fnames = map(x->x.name, _👻filter(fields))
-
     quote
         mutable struct $cls <: $parents
             id        :: Int64
@@ -165,9 +123,7 @@ function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
         end
 
         function $(@__MODULE__).defaultvalue(::Type{$cls}, α::Symbol) :: Union{Some, Nothing}
-            $(_👻elseif_alias(fields, nothing) do field
-                isnothing(field.default) ? nothing : :(Some($(something(field.default))))
-            end)
+            $(_👻elseif_alias(_👻defaultvalue, fields, nothing))
         end
 
         function $(@__MODULE__).bokehfields(::Type{$cls})

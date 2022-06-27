@@ -22,7 +22,7 @@
 
     selection_glyph :: Model.Nullable{Union{iGlyph, Model.EnumType{(:auto,)}}} = :auto
 
-    view :: iCDSView = CDSView(; source = data_source)
+    view :: iCDSView = new(CDSView(; source = data_source))
 
     visible :: Bool = true
 

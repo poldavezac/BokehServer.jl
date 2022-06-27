@@ -48,17 +48,19 @@ end
     end))
     truth        = [
         (;
-            index = 2, name = :a, type = Int32, default = Some(:(zero(Int32))), js = true,
+            index = 2, name = :a, type = Int32, default = Some(:(zero(Int32))),
+            init  = Some(:(zero(Int32))), js = true,
             alias = false, readonly = false, child = false, children = false
         ),
         (; 
-            index = 4, name = :b, type = Float32, default = Some(1f0), js = true,
+            index = 4, name = :b, type = Float32, default = Some(1f0),
+            init = Some(1f0), js = true,
             alias = false, readonly = false, child = false, children = false
         ),
     ]
     @testset for (i, j) ∈ zip(out, truth)
         for x ∈ propertynames(i)
-            if x ≡ :default
+            if x ∈ (:default, :init)
                 @test string(getfield(i, x)) == string(getfield(j, x))
             else
                 @test getfield(i, x) == getfield(j, x)
@@ -74,13 +76,14 @@ end
     end))
     truth = [
         (; 
-            index = 2, name = :b, type = Dummy, default = "Some(:((Dummy)()))", js = true,
+            index = 2, name = :b, type = Dummy, default = "Some(:((Dummy)()))",
+            init = "Some(:((Dummy)()))", js = true,
             alias = false, readonly = false, child = true, children = false
         ),
     ]
     @testset for (i, j) ∈ zip(out, truth)
         for x ∈ propertynames(i)
-            if x ≡ :default
+            if x ∈ (:default, :init)
                 @test replace(string(getfield(i, x)), "Main.anonymous."=> "") == string(getfield(j, x))
             else
                 @test getfield(i, x) == getfield(j, x)
@@ -94,7 +97,7 @@ end
         d:: Dict{Dummy, Int32}  = Dict(Dummy() => 1)
         e:: Set{Dummy}
     end))
-    dflt(x)  = (; default = x, js = true, alias = false, readonly = false, child = false, children = true)
+    dflt(x)  = (; default = x, init = x, js = true, alias = false, readonly = false, child = false, children = true)
     truth = [
         (; index = 2, name = :b, type = Vector{Dummy}, dflt("Some(:((Vector{Dummy})()))")...),
         (; index = 4, name = :c, type = Dict{Int32, Dummy}, dflt(nothing)...),
@@ -103,7 +106,7 @@ end
     ]
     @testset for (i, j) ∈ zip(out, truth)
         for x ∈ propertynames(i)
-            if x ≡ :default
+            if x ∈ (:default, :init)
                 @test replace(string(getfield(i, x)), "Main.anonymous."=> "") == string(getfield(j, x))
             else
                 @test getfield(i, x) == getfield(j, x)

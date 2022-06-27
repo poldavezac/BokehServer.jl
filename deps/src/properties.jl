@@ -144,7 +144,7 @@ parseproperties(x::Val, cls::Py; allprops::Bool = false) = parseproperties(cls; 
 
 function parseproperties(::Val{:GlyphRenderer}, cls::Py; k...)
     out = parseproperties(cls; k...)
-    out[:view] = merge(out[:view], (; default = Some(:(CDSView(; source = data_source)))))
+    out[:view] = merge(out[:view], (; default = Some(:(new(CDSView(; source = data_source))))))
     return out
 end
 
