@@ -5,13 +5,13 @@
     push!(getfield(doc, :roots), obj)
 
     truth = (; doc = (;
-        title   = "A",
-        version = Bokeh.PYTHON_VERSION,
         defs    = [],
         roots   = (;
+            references = [(attributes = (;), id = "1", type = nameof(ProtocolX))],
             root_ids   = ["1"],
-            references = NamedTuple[Bokeh.Protocol.serialize(obj)]
         ),
+        title   = "A",
+        version = Bokeh.PYTHON_VERSION,
     ))
     @test Bokeh.Protocol.pushdoc(doc) == truth
 
@@ -19,13 +19,13 @@
     JSON = Bokeh.Protocol.Messages.JSON
 
     truth = (; doc = (;
+        defs  = [],
+        roots = (;
+            references = [(attributes = (;), id = "10", type = nameof(ProtocolX))],
+            root_ids = ["10"]
+        ),
         title   = "B",
         version = Bokeh.PYTHON_VERSION,
-        defs    = [],
-        roots   = (;
-            root_ids   = ["10"],
-            references = NamedTuple[Bokeh.Protocol.serialize(ProtocolX(; id = 10))]
-        ),
     ))
 
     @test doc.title == "A"

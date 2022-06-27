@@ -73,7 +73,7 @@ function colorhex(ν::Color)
     end
 end
 
-Base.show(io::IO, c::Color) = print(io, colorhex(c))
+Base.show(io::IO, c::Color) = print(io, '"', colorhex(c), '"')
 
 const COLOR_ARGS = Union{NTuple{4, <:Integer}, NTuple{3, <:Integer}, Symbol, Int32, AbstractString, Color}
 

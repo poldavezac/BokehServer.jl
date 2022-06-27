@@ -8,7 +8,7 @@
 
     line_alpha :: Model.Percent = 1.0
 
-    line_color :: Model.Color = "rgb(0,0,0)"
+    line_color :: Model.Color = "#000000"
 
     line_width :: Float64 = 1.0
 

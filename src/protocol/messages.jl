@@ -153,7 +153,9 @@ end
 
 function sendmessage(io::WebSockets.WebSocket, T::Type{<:iMessage}, args...; kwa...) :: Union{Missing, String}
     itr = message(T, args...; kwa...)
+    @show T
     for line ∈ collect(itr)
+        @show line
         WebSockets.isclosed(io) && (return missing)
         WebSockets.send(io, line)
     end

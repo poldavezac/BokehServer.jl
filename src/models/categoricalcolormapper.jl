@@ -6,7 +6,7 @@
 
     finish :: Model.Nullable{Int64} = nothing
 
-    nan_color :: Model.Color = "rgb(128,128,128)"
+    nan_color :: Model.Color = "#808080"
 
     palette :: Vector{Model.Color}
 

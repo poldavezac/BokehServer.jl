@@ -4,13 +4,13 @@
 
     background_fill_alpha :: Model.Percent = 0.95
 
-    background_fill_color :: Model.Nullable{Model.Color} = "rgb(255,255,255)"
+    background_fill_color :: Model.Nullable{Model.Color} = "#FFFFFF"
 
     border_line_alpha :: Model.Percent = 0.5
 
     border_line_cap :: Model.LineCap = :butt
 
-    border_line_color :: Model.Nullable{Model.Color} = "rgb(229,229,229)"
+    border_line_color :: Model.Nullable{Model.Color} = "#E5E5E5"
 
     border_line_dash :: Model.DashPattern = Int64[]
 
@@ -32,7 +32,7 @@
 
     inactive_fill_alpha :: Model.Percent = 0.7
 
-    inactive_fill_color :: Model.Nullable{Model.Color} = "rgb(255,255,255)"
+    inactive_fill_color :: Model.Nullable{Model.Color} = "#FFFFFF"
 
     items :: Vector{iLegendItem} = iLegendItem[]
 
@@ -46,7 +46,7 @@
 
     label_text_baseline :: Model.TextBaseline = :middle
 
-    label_text_color :: Model.Nullable{Model.Color} = "rgb(68,68,68)"
+    label_text_color :: Model.Nullable{Model.Color} = "#444444"
 
     label_text_font :: String = "helvetica"
 
@@ -80,7 +80,7 @@
 
     title_text_baseline :: Model.TextBaseline = :bottom
 
-    title_text_color :: Model.Nullable{Model.Color} = "rgb(68,68,68)"
+    title_text_color :: Model.Nullable{Model.Color} = "#444444"
 
     title_text_font :: String = "helvetica"
 

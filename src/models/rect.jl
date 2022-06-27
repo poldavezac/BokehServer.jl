@@ -10,11 +10,11 @@
 
     fill_alpha :: Model.AlphaSpec = (value = 1.0,)
 
-    fill_color :: Model.ColorSpec = (value = "rgb(128,128,128)",)
+    fill_color :: Model.ColorSpec = (value = "#808080",)
 
     hatch_alpha :: Model.AlphaSpec = (value = 1.0,)
 
-    hatch_color :: Model.ColorSpec = (value = "rgb(0,0,0)",)
+    hatch_color :: Model.ColorSpec = (value = "#000000",)
 
     hatch_extra :: Dict{String, iTexture} = Dict{String, iTexture}()
 
@@ -32,7 +32,7 @@
 
     line_cap :: Model.LineCapSpec = (value = :butt,)
 
-    line_color :: Model.ColorSpec = (value = "rgb(0,0,0)",)
+    line_color :: Model.ColorSpec = (value = "#000000",)
 
     line_dash :: Model.DashPatternSpec = (value = Int64[],)
 

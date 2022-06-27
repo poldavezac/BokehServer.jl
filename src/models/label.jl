@@ -40,7 +40,7 @@
 
     text_baseline :: Model.TextBaseline = :bottom
 
-    text_color :: Model.Nullable{Model.Color} = "rgb(68,68,68)"
+    text_color :: Model.Nullable{Model.Color} = "#444444"
 
     text_font :: String = "helvetica"
 

@@ -38,7 +38,7 @@
 
     text_alpha :: Model.Percent = 1.0
 
-    text_color :: Model.Color = "rgb(68,68,68)"
+    text_color :: Model.Color = "#444444"
 
     text_font :: String = "helvetica"
 

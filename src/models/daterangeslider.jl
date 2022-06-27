@@ -8,7 +8,7 @@
 
     background :: Model.Nullable{Model.Color} = nothing
 
-    bar_color :: Model.Color = "rgb(230,230,230)"
+    bar_color :: Model.Color = "#E6E6E6"
 
     css_classes :: Vector{String} = String[]
 

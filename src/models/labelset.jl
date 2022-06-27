@@ -42,7 +42,7 @@
 
     text_baseline :: Model.TextBaselineSpec = (value = :bottom,)
 
-    text_color :: Model.ColorSpec = (value = "rgb(68,68,68)",)
+    text_color :: Model.ColorSpec = (value = "#444444",)
 
     text_font :: Model.Spec{String} = (value = "helvetica",)
 

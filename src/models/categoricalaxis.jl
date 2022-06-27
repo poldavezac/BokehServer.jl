@@ -12,7 +12,7 @@
 
     axis_label_text_baseline :: Model.TextBaseline = :bottom
 
-    axis_label_text_color :: Model.Nullable{Model.Color} = "rgb(68,68,68)"
+    axis_label_text_color :: Model.Nullable{Model.Color} = "#444444"
 
     axis_label_text_font :: String = "helvetica"
 
@@ -26,7 +26,7 @@
 
     axis_line_cap :: Model.LineCap = :butt
 
-    axis_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    axis_line_color :: Model.Nullable{Model.Color} = "#000000"
 
     axis_line_dash :: Model.DashPattern = Int64[]
 
@@ -54,7 +54,7 @@
 
     group_text_baseline :: Model.TextBaseline = :bottom
 
-    group_text_color :: Model.Nullable{Model.Color} = "rgb(128,128,128)"
+    group_text_color :: Model.Nullable{Model.Color} = "#808080"
 
     group_text_font :: String = "helvetica"
 
@@ -80,7 +80,7 @@
 
     major_label_text_baseline :: Model.TextBaseline = :bottom
 
-    major_label_text_color :: Model.Nullable{Model.Color} = "rgb(68,68,68)"
+    major_label_text_color :: Model.Nullable{Model.Color} = "#444444"
 
     major_label_text_font :: String = "helvetica"
 
@@ -96,7 +96,7 @@
 
     major_tick_line_cap :: Model.LineCap = :butt
 
-    major_tick_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    major_tick_line_color :: Model.Nullable{Model.Color} = "#000000"
 
     major_tick_line_dash :: Model.DashPattern = Int64[]
 
@@ -114,7 +114,7 @@
 
     minor_tick_line_cap :: Model.LineCap = :butt
 
-    minor_tick_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    minor_tick_line_color :: Model.Nullable{Model.Color} = "#000000"
 
     minor_tick_line_dash :: Model.DashPattern = Int64[]
 
@@ -130,7 +130,7 @@
 
     separator_line_cap :: Model.LineCap = :butt
 
-    separator_line_color :: Model.Nullable{Model.Color} = "rgb(211,211,211)"
+    separator_line_color :: Model.Nullable{Model.Color} = "#D3D3D3"
 
     separator_line_dash :: Model.DashPattern = Int64[]
 
@@ -148,7 +148,7 @@
 
     subgroup_text_baseline :: Model.TextBaseline = :bottom
 
-    subgroup_text_color :: Model.Nullable{Model.Color} = "rgb(68,68,68)"
+    subgroup_text_color :: Model.Nullable{Model.Color} = "#444444"
 
     subgroup_text_font :: String = "helvetica"
 

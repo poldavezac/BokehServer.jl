@@ -18,13 +18,13 @@
 
     background_fill_alpha :: Model.Percent = 1.0
 
-    background_fill_color :: Model.Nullable{Model.Color} = "rgb(128,128,128)"
+    background_fill_color :: Model.Nullable{Model.Color} = "#808080"
 
     below :: Vector{iRenderer} = iRenderer[]
 
     border_fill_alpha :: Model.Percent = 1.0
 
-    border_fill_color :: Model.Nullable{Model.Color} = "rgb(255,255,255)"
+    border_fill_color :: Model.Nullable{Model.Color} = "#FFFFFF"
 
     center :: Vector{iRenderer} = iRenderer[]
 
@@ -96,7 +96,7 @@
 
     outline_line_cap :: Model.LineCap = :butt
 
-    outline_line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    outline_line_color :: Model.Nullable{Model.Color} = "#000000"
 
     outline_line_dash :: Model.DashPattern = Int64[]
 

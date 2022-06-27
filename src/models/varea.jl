@@ -4,11 +4,11 @@
 
     fill_alpha :: Model.Percent = 1.0
 
-    fill_color :: Model.Nullable{Model.Color} = "rgb(128,128,128)"
+    fill_color :: Model.Nullable{Model.Color} = "#808080"
 
     hatch_alpha :: Model.AlphaSpec = (value = 1.0,)
 
-    hatch_color :: Model.ColorSpec = (value = "rgb(0,0,0)",)
+    hatch_color :: Model.ColorSpec = (value = "#000000",)
 
     hatch_extra :: Dict{String, iTexture} = Dict{String, iTexture}()
 

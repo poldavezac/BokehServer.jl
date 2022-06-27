@@ -14,7 +14,7 @@
 
     line_cap :: Model.LineCap = :butt
 
-    line_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    line_color :: Model.Nullable{Model.Color} = "#000000"
 
     line_dash :: Model.DashPattern = Int64[]
 

@@ -10,13 +10,13 @@
 
     fill_alpha :: Model.Percent = 0.4
 
-    fill_color :: Model.Nullable{Model.Color} = "rgb(255,249,186)"
+    fill_color :: Model.Nullable{Model.Color} = "#FFF9BA"
 
     group :: Model.Nullable{iRendererGroup} = nothing
 
     hatch_alpha :: Model.Percent = 1.0
 
-    hatch_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    hatch_color :: Model.Nullable{Model.Color} = "#000000"
 
     hatch_extra :: Dict{String, iTexture} = Dict{String, iTexture}()
 
@@ -36,7 +36,7 @@
 
     line_cap :: Model.LineCap = :butt
 
-    line_color :: Model.Nullable{Model.Color} = "rgb(204,204,204)"
+    line_color :: Model.Nullable{Model.Color} = "#CCCCCC"
 
     line_dash :: Model.DashPattern = Int64[]
 

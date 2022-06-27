@@ -4,7 +4,7 @@
 
     background_fill_alpha :: Model.Percent = 0.95
 
-    background_fill_color :: Model.Nullable{Model.Color} = "rgb(255,255,255)"
+    background_fill_color :: Model.Nullable{Model.Color} = "#FFFFFF"
 
     bar_line_alpha :: Model.Percent = 1.0
 
@@ -60,7 +60,7 @@
 
     major_label_text_baseline :: Model.TextBaseline = :bottom
 
-    major_label_text_color :: Model.Nullable{Model.Color} = "rgb(68,68,68)"
+    major_label_text_color :: Model.Nullable{Model.Color} = "#444444"
 
     major_label_text_font :: String = "helvetica"
 
@@ -76,7 +76,7 @@
 
     major_tick_line_cap :: Model.LineCap = :butt
 
-    major_tick_line_color :: Model.Nullable{Model.Color} = "rgb(255,255,255)"
+    major_tick_line_color :: Model.Nullable{Model.Color} = "#FFFFFF"
 
     major_tick_line_dash :: Model.DashPattern = Int64[]
 
@@ -126,7 +126,7 @@
 
     title_text_baseline :: Model.TextBaseline = :bottom
 
-    title_text_color :: Model.Nullable{Model.Color} = "rgb(68,68,68)"
+    title_text_color :: Model.Nullable{Model.Color} = "#444444"
 
     title_text_font :: String = "helvetica"
 

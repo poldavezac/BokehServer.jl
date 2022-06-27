@@ -10,7 +10,7 @@
 
     band_hatch_alpha :: Model.Percent = 1.0
 
-    band_hatch_color :: Model.Nullable{Model.Color} = "rgb(0,0,0)"
+    band_hatch_color :: Model.Nullable{Model.Color} = "#000000"
 
     band_hatch_extra :: Dict{String, iTexture} = Dict{String, iTexture}()
 
@@ -30,7 +30,7 @@
 
     grid_line_cap :: Model.LineCap = :butt
 
-    grid_line_color :: Model.Nullable{Model.Color} = "rgb(229,229,229)"
+    grid_line_color :: Model.Nullable{Model.Color} = "#E5E5E5"
 
     grid_line_dash :: Model.DashPattern = Int64[]
 
