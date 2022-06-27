@@ -84,7 +84,9 @@ function serve(
 )
     allapps = let cls = typeof(ROUTES)
         cls(
-            Val(:static) => StaticRoute(CONFIG.staticpath),
+            let path = splitpath(CONFIG.staticpath)
+                Val(Symbol(path[end])) => StaticRoute(joinpath(path[1:end-1]...))
+            end,
             (isempty(apps) ? ROUTES : _topair.(apps))...
         )
     end

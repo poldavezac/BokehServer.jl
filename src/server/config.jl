@@ -8,6 +8,8 @@
     secretkey      :: Vector{UInt8} = collect(UInt8, get(ENV, "BOKEH_SECRETKEY", ""))
     wstimeout      :: Float64       = 0.1
     wssleepperiod  :: Float64       = 0.01
+    minified       :: Bool          = true
 end
 
 const CONFIG = Configuration(; eval(Meta.parse(get(ENV, "BOKEH_CONFIG", "()")))...)
+@debug("config", config = (; (i => getfield(CONFIG,i) for i ∈ fieldnames(Configuration))...))

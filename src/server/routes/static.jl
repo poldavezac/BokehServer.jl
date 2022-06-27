@@ -2,9 +2,8 @@ struct StaticRoute <: iRoute
     root :: String
 end
 
-function route(http::HTTP.Stream, ::Val{:GET}, 𝐴::StaticRoute, ::Val)
-    uri  = HTTP.URI(http.message.target)
-    path = joinpath(𝐴.root, uri.path[9:end])
+function route(http::HTTP.Stream, 𝐴::StaticRoute)
+    path = joinpath(𝐴.root, http.message.target[2:end])
     @debug "$(isfile(path) ? "✅" : "❌") requested `$(path)`"
     if isfile(path)
         HTTP.setstatus(http, 200)
@@ -26,6 +25,12 @@ function route(http::HTTP.Stream, ::Val{:GET}, 𝐴::StaticRoute, ::Val)
         HTTP.startwrite(http)
         write(http, read(path, String))
     else
-        HTTP.setstatus(http, 404)
+        fourOfour(http)
     end
+end
+
+route(http::HTTP.Stream, ::Val{:GET}, 𝐴::StaticRoute, ::Val) = route(http, 𝐴)
+
+function route(http::HTTP.Stream, ::Val{:GET}, 𝐴::Dict, ::Val{Symbol("favicon.ico")})
+    haskey(𝐴, :static) ? route(http, 𝐴[:static]) : fourOfour(http)
 end

@@ -69,9 +69,10 @@ function staticbundle(
 )
     version = addversion ? "" : ""  # TODO: extract the hex from the files and add a `?v=...`
     root    = "$address/static/js/bokeh"
+    minv    = CONFIG.minified ? ".min" : ""
     return (;
         js_files  = String[
-            "$root$suffix.min.js$version"
+            "$root$suffix$minv.js$version"
             for suffix ∈ ("", "-gl", "-widgets", "-tables", "-mathjax")
         ],
         js_raw    = String["""Bokeh.set_log_level("$clientlog");"""],
