@@ -157,7 +157,7 @@ serialref(η::Union{Date, DateTime, Model.Color}, ::iRules)    = "$η"
 serialref(η::Union{AbstractString, Number, Symbol}, ::iRules) = η
 serialref(η::Union{AbstractVector, AbstractSet}, 𝑅::iRules)   = [serialref(i, 𝑅) for i ∈ η]
 serialref(η::AbstractDict, 𝑅::iRules) = Dict((serialref(i, 𝑅) => serialref(j, 𝑅) for (i,j) ∈ η)...)
-serialref(η::NamedTuple, 𝑅::iRules) = (; (i => serialref(j, 𝑅) for (i,j) ∈ η)...)
+serialref(η::NamedTuple, 𝑅::iRules) = (; (i => serialref(j, 𝑅) for (i,j) ∈ pairs(η))...)
 serialref(η::Tuple, 𝑅::iRules) = tuple((serialref(i, 𝑅) for i ∈ η)...)
 function serialref(η::T, 𝑅::iRules) where {T}
     return (; (
