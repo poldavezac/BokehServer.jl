@@ -53,7 +53,7 @@ for cls ∈ (AbstractDict, NamedTuple)
     @eval function compare(x::$cls, y::$cls)
         isempty(x) && isempty(y) && return true
         x ≡ y && return true
-        return length(x) ≡ length(y) && all(haskey(y, i) && compare(j, y[i]) for (i, j) ∈ x)
+        return length(x) ≡ length(y) && all(haskey(y, i) && compare(j, y[i]) for (i, j) ∈ pairs(x))
     end
 end
 

@@ -1,3 +1,45 @@
+@testset "compare models" begin
+    @test Bokeh.Model.compare((; a = 1), (; a = 1))
+    @test !Bokeh.Model.compare((; a = 1), (; a = 1.))
+    @test !Bokeh.Model.compare((; a = 1), (; b = 1))
+    @test !Bokeh.Model.compare((; a = 1), (; a = 1, b = 1))
+    @test !Bokeh.Model.compare((; a = 1), 2)
+
+    @test Bokeh.Model.compare(Dict(:a => 1), Dict(:a => 1))
+    @test !Bokeh.Model.compare(Dict(:a => 1), Dict(:a => 1.))
+    @test !Bokeh.Model.compare(Dict(:a => 1), Dict(:b => 1))
+    @test !Bokeh.Model.compare(Dict(:a => 1), Dict(:a => 1, :b => 1))
+    @test !Bokeh.Model.compare(Dict(:a => 1), 2)
+
+    @test Bokeh.Model.compare((1,), (1,))
+    @test !Bokeh.Model.compare((1,), (1.,))
+    @test !Bokeh.Model.compare((1,), (1, 1))
+    @test !Bokeh.Model.compare((1,), 2)
+
+    @test Bokeh.Model.compare([1,], [1,])
+    @test !Bokeh.Model.compare([1], [1.,])
+    @test !Bokeh.Model.compare([1], [1, 1])
+    @test !Bokeh.Model.compare([1], 2)
+
+    @test Bokeh.Model.compare(1, 1)
+    @test !Bokeh.Model.compare(1, 1.)
+    @test Bokeh.Model.compare(:a, :a)
+    @test !Bokeh.Model.compare(:a, :ab)
+    @test Bokeh.Model.compare("a", "a")
+    @test !Bokeh.Model.compare("a", "ab")
+
+    X1 = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
+        a:: Int32
+    end
+
+    X2 = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
+        b:: Int32
+    end
+
+    @test Bokeh.Model.compare(X1(; id = 1), X2(; id = 1)) # comparison only uses ID!
+    @test !Bokeh.Model.compare(X1(; id = 1), X1(; id = 2))
+end
+
 @testset "extract fields" begin
     out = Bokeh.Model._👻fields(@__MODULE__, :(mutable struct X <: iModel
         a:: Int32
