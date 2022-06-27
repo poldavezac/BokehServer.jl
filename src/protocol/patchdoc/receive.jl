@@ -58,7 +58,7 @@ function fromjson(::Type{DataDict}, 𝑣::Dict{String})
 end
 
 function setpropertyfromjson!(mdl::T, attr:: Symbol, val; dotrigger ::Bool =true) where {T <: iHasProps}
-    setproperty!(mdl, attr, fromjson(Model.bokehpropertytype(T, attr), val); dotrigger)
+    setproperty!(mdl, attr, fromjson(Model.bokehpropertytype(T, attr), val); dotrigger, patchdoc = true)
 end
 
 function setreferencefromjson!(mdl::iHasProps, 𝐼::Dict{String})

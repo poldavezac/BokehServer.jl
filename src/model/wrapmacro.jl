@@ -26,31 +26,35 @@ end
 
 function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
     code = _👻elseif_alias(fields, :(throw(ErrorException("unknown or read-only property $α")))) do i
-        if i.readonly
-            nothing
-        else
-            name = Meta.quot(i.name)
-            set  = if i.js
-                quote
-                    old = $(@__MODULE__).bokehrawtype(getproperty(μ, $name))
-                    dotrigger && Bokeh.Events.testcantrigger()
-                    new = setfield!(μ, $name, ν)
-                    dotrigger && Bokeh.Events.trigger(Bokeh.ModelChangedEvent(μ, $name, old, new))
-                end
-            else
-                :(setfield!(µ, $name, ν))
-            end
+        name = Meta.quot(i.name)
+        set  = if i.js
             quote
-                ν = $(@__MODULE__).bokehconvert($(i.type), $(@__MODULE__).bokehrawtype(ν))
-                (ν isa $Unknown) && throw(ErrorException("Could not convert `$ν` to $(i.type)"))
-                $set
-                getproperty(µ, $name)
+                old = $(@__MODULE__).bokehrawtype(getproperty(μ, $name))
+                dotrigger && Bokeh.Events.testcantrigger()
+                new = setfield!(μ, $name, ν)
+                dotrigger && Bokeh.Events.trigger(Bokeh.ModelChangedEvent(μ, $name, old, new))
             end
+        else
+            :(setfield!(µ, $name, ν))
+        end
+
+        if i.readonly
+            set = quote
+                patchdoc || throw(ErrorException($("$cls.$(i.name) is readonly")))
+                $set
+            end
+        end
+
+        quote
+            ν = $(@__MODULE__).bokehconvert($(i.type), $(@__MODULE__).bokehrawtype(ν))
+            (ν isa $Unknown) && throw(ErrorException("Could not convert `$ν` to $(i.type)"))
+            $set
+            getproperty(µ, $name)
         end
     end
 
     quote
-        function Base.setproperty!(μ::$cls, α::Symbol, ν; dotrigger :: Bool = true)
+        function Base.setproperty!(μ::$cls, α::Symbol, ν; dotrigger :: Bool = true, patchdoc :: Bool = false)
             $code
         end
     end

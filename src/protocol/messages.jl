@@ -142,8 +142,8 @@ message(hdr::_h"SERVER-INFO-REPLY", reqid::String; meta...)               = Prot
     reqid
 )
 
-function sendmessage(@nospecialize(ios::Union{AbstractVector, AbstractSet, Tuple}), 𝑇::msg"PATCH-DOC", args...; kwa...) :: String
-    @assert !isempty(io)
+function sendmessage(@nospecialize(ios::Union{AbstractVector, AbstractSet, Tuple}), 𝑇::Type{<:iMessage}, args...; kwa...) :: String
+    @assert !isempty(ios)
     msgid = string(ID())
     for io ∈ ios
         sendmessage(io, 𝑇, args...; msgid, kwa...)
@@ -153,9 +153,7 @@ end
 
 function sendmessage(io::WebSockets.WebSocket, T::Type{<:iMessage}, args...; kwa...) :: Union{Missing, String}
     itr = message(T, args...; kwa...)
-    @show T
     for line ∈ collect(itr)
-        @show line
         WebSockets.isclosed(io) && (return missing)
         WebSockets.send(io, line)
     end
