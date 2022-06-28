@@ -2,7 +2,7 @@
 
 @model mutable struct Band <: iBand
 
-    base :: Model.PropertyUnitsSpec = (field = "base", units = :data)
+    base :: Model.PropertyUnitsSpec = (field = "base",)
 
     base_units :: Model.EnumType{(:screen, :data)} = :data
 
@@ -32,13 +32,13 @@
 
     line_width :: Float64 = 1.0
 
-    lower :: Model.PropertyUnitsSpec = (field = "lower", units = :data)
+    lower :: Model.PropertyUnitsSpec = (field = "lower",)
 
     lower_units :: Model.EnumType{(:screen, :data)} = :data
 
     source :: iDataSource = ColumnDataSource()
 
-    upper :: Model.PropertyUnitsSpec = (field = "upper", units = :data)
+    upper :: Model.PropertyUnitsSpec = (field = "upper",)
 
     upper_units :: Model.EnumType{(:screen, :data)} = :data
 

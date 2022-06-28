@@ -18,8 +18,8 @@
 
     mode :: Model.EnumType{(:before, :after, :center)} = :before
 
-    x :: Model.NumberSpec = (field = "x",)
+    x :: Model.NumberSpec = "x"
 
-    y :: Model.NumberSpec = (field = "y",)
+    y :: Model.NumberSpec = "y"
 end
 glyphargs(::Type{Step}) = (:x, :y)

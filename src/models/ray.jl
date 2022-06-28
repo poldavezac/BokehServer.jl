@@ -2,30 +2,30 @@
 
 @model mutable struct Ray <: iRay
 
-    angle :: Model.AngleSpec = (value = 0.0,)
+    angle :: Model.AngleSpec = 0.0
 
     angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
-    length :: Model.DistanceSpec = (value = 0.0,)
+    length :: Model.NullDistanceSpec = 0.0
 
     length_units :: Model.EnumType{(:screen, :data)} = :data
 
-    line_alpha :: Model.AlphaSpec = (value = 1.0,)
+    line_alpha :: Model.AlphaSpec = 1.0
 
-    line_cap :: Model.LineCapSpec = (value = :butt,)
+    line_cap :: Model.LineCapSpec = :butt
 
-    line_color :: Model.ColorSpec = (value = "#000000",)
+    line_color :: Model.ColorSpec = "black"
 
-    line_dash :: Model.DashPatternSpec = (value = Int64[],)
+    line_dash :: Model.DashPatternSpec = Int64[]
 
-    line_dash_offset :: Model.Spec{Int64} = (value = 0,)
+    line_dash_offset :: Model.IntSpec = 0
 
-    line_join :: Model.LineJoinSpec = (value = :bevel,)
+    line_join :: Model.LineJoinSpec = :bevel
 
-    line_width :: Model.NumberSpec = (value = 1.0,)
+    line_width :: Model.NumberSpec = 1.0
 
-    x :: Model.NumberSpec = (field = "x",)
+    x :: Model.NumberSpec = "x"
 
-    y :: Model.NumberSpec = (field = "y",)
+    y :: Model.NumberSpec = "y"
 end
 glyphargs(::Type{Ray}) = (:x, :y, :length, :angle)

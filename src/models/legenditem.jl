@@ -4,7 +4,7 @@
 
     index :: Model.Nullable{Int64} = nothing
 
-    label :: Model.NullStringSpec = nothing
+    label :: Model.Nullable{Model.NullStringSpec} = nothing
 
     renderers :: Vector{iGlyphRenderer} = iGlyphRenderer[]
 

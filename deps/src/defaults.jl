@@ -90,8 +90,8 @@ end
         if !(out isa Bokeh.Model.Unknown)
             return Some(Bokeh.Model.bokehrawtype(Bokeh.Model.bokehread(T, __DUMMY__, :__dummy__, out)))
         end
-    catch 
-        @show T
+    catch exc
+        @error "Could not deal with default" T exception = (exc, Base.catch_backtrace())
     end
 end
 parsedefault(::Symbol, cls, attr::Symbol, prop) = parsedefault(Any, cls, attr, prop)

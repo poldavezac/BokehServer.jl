@@ -123,6 +123,7 @@ function createmainfile(io::IO, deplist)
         println(io, "include(\"models/$(filename(name)).jl\")")
     end
     println(io, "include(\"models/figureoptions.jl\")")
+    println(io, "include(\"models/serialize.jl\")")
     println(io, "end")
 end
 
@@ -139,8 +140,13 @@ function createcode(; adddoc ::Symbol = :none)
 
     cls = file(abstracttypescode, "modeltypes.jl")
     file(Base.Fix2(createmainfile, deplist), "models.jl")
-    Base.Filesystem.rm(joinpath((@__DIR__), "..", "..", "src", "models"); recursive = true)
-    Base.Filesystem.mkdir(joinpath((@__DIR__), "..", "..", "src", "models"))
+    foreach(
+        Base.Filesystem.rm,
+        filter!(
+            !Base.Fix1(occursin, "serialize.jl"),
+            readdir(joinpath((@__DIR__), "..", "..", "src", "models"); join = true)
+        )
+    )
     for name ∈ sort!(collect(keys(deplist)))
         @info "writing $(filename(name)).jl"
         file("models", "$(filename(name)).jl") do io

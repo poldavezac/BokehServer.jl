@@ -522,4 +522,5 @@ include("models/domtext.jl")
 include("models/domtogglegroup.jl")
 include("models/domvalueref.jl")
 include("models/figureoptions.jl")
+include("models/serialize.jl")
 end

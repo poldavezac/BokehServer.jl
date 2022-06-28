@@ -37,14 +37,12 @@ bokehchildren(mdl::AbstractDict) = Iterators.filter(Base.Fix2(isa, iHasProps), I
 
 const _𝑐𝑚𝑝_BIN = Union{Number, Symbol, Missing, Nothing, Function}
 
-compare(::Any, ::Any)                   = false
-compare(x::EnumType, y::Symbol)         = x.value ≡ y
-compare(x::Symbol,   y::EnumType)       = x ≡ y.value
-compare(x::Color,    y::AbstractString) = x ≡ color(y)
-compare(x::AbstractString, y::Color)    = color(x) ≡ y
-compare(x::iHasProps, y::iHasProps)     = x.id ≡ y.id
-compare(x::_𝑐𝑚𝑝_BIN,  y::_𝑐𝑚𝑝_BIN)      = x ≡ y
-compare(x::Pair, y::Pair)               = compare(first(x), first(y)) && compare(last(x), last(y))
+compare(::Any, ::Any)                    = false
+compare(x::EnumType,  y::Symbol)         = x.value ≡ y
+compare(x::Color,     y::AbstractString) = x ≡ color(y)
+compare(x::iHasProps, y::iHasProps)      = x.id ≡ y.id
+compare(x::_𝑐𝑚𝑝_BIN,  y::_𝑐𝑚𝑝_BIN)       = x ≡ y
+compare(x::Pair, y::Pair)                = compare(first(x), first(y)) && compare(last(x), last(y))
 compare(x::AbstractString, y::AbstractString) = x == y
 compare(x::T, y::T) where {T} = (x ≡ y) ||  all(compare(getproperty(x, i), getproperty(y, i)) for i ∈ fieldnames(T))
 compare(x::AbstractSet, y::AbstractSet) = (x ≡ y) || (length(x) ≡ length(y) && all(i ∈ y for i ∈ x))
@@ -61,10 +59,13 @@ for cls ∈ (AbstractDict, NamedTuple)
     end
 end
 
-function isdefaultvalue(η::iHasProps, α::Symbol)
-    dflt = Model.defaultvalue(typeof(η), α)
+function isdefaultvalue(η::𝑇, α::Symbol) where {𝑇 <: iHasProps}
+    dflt  = defaultvalue(typeof(η), α)
     isnothing(dflt) && return false
-    return compare(bokehrawtype(getproperty(η, α)), something(dflt))
+    left  = bokehrawtype(getproperty(η, α))
+    f𝑇    = bokehpropertytype(𝑇, α)
+    right = bokehrawtype(bokehread(f𝑇, η, α, bokehconvert(f𝑇, something(dflt))))
+    return compare(left, right)
 end
 
 export allids, allmodels, bokehchildren

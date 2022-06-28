@@ -4,15 +4,15 @@
 
     anchor :: Model.EnumType{(:top_left, :top_center, :top_right, :center_left, :center_center, :center_right, :bottom_left, :bottom_center, :bottom_right, :top, :left, :center, :right, :bottom)} = :top_left
 
-    angle :: Model.AngleSpec = (value = 0.0,)
+    angle :: Model.AngleSpec = 0.0
 
     angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     dilate :: Bool = false
 
-    global_alpha :: Model.NumberSpec = (value = 1.0,)
+    global_alpha :: Model.NumberSpec = 1.0
 
-    h :: Model.NullDistanceSpec = nothing
+    h :: Model.Nullable{Model.NullDistanceSpec} = nothing
 
     h_units :: Model.EnumType{(:screen, :data)} = :data
 
@@ -20,14 +20,14 @@
 
     retry_timeout :: Int64 = 0
 
-    url :: Model.Spec{String} = (field = "url",)
+    url :: Model.NullStringSpec = (field = "url",)
 
-    w :: Model.NullDistanceSpec = nothing
+    w :: Model.Nullable{Model.NullDistanceSpec} = nothing
 
     w_units :: Model.EnumType{(:screen, :data)} = :data
 
-    x :: Model.NumberSpec = (field = "x",)
+    x :: Model.NumberSpec = "x"
 
-    y :: Model.NumberSpec = (field = "y",)
+    y :: Model.NumberSpec = "y"
 end
 glyphargs(::Type{ImageURL}) = (:url, :x, :y, :w, :h, :angle, :dilate)

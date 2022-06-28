@@ -189,15 +189,15 @@ end
 
 @testset "bokeh dataspec/container" begin
     X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
-        a::Bokeh.Model.Spec{Int32}  = Int32(1)
+        a::Bokeh.Model.IntSpec      = 1
         b::Bokeh.Model.DistanceSpec = 10f0
-        c::Vector{Int64}             = Int64[1, 2]
+        c::Vector{Int64}            = Int64[1, 2]
     end
     @test fieldnames(X) == (:id, :a, :b, :c, :callbacks)
     @test propertynames(X()) == (:a, :b, :c)
     @test X <: Bokeh.iModel
-    @test X().a ≡ (; value = one(Int32))
-    @test X().b ≡ (; value = 10.0)
+    @test X().a ≡ 1
+    @test X().b ≡ 10.0
     @test fieldtype(X, :c) ≡ Vector{Int64}
     @test X().c isa Bokeh.Model.Container{Vector{Int64}}
     @test X().c.values == [1, 2]
@@ -225,14 +225,14 @@ end
 
 @testset "bokeh tuple attribute" begin
     X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
-        a::Bokeh.Model.Tuple{Bokeh.Model.Spec{Int32},Float64}  = (Int32(1), 2.0)
+        a::Bokeh.Model.Tuple{Bokeh.Model.IntSpec, Float64}  = (1, 2.0)
     end
-    @test X().a ≡ ((; value = one(Int32)), 2.0)
-    @test fieldtype(X, :a) ≡ Tuple{Bokeh.Model.Spec{Int32}, Float64}
+    @test X().a ≡ (1, 2.0)
+    @test fieldtype(X, :a) ≡ Tuple{Bokeh.Model.IntSpec, Float64}
     x = X(; a = ("toto", 4))
-    @test x.a == ((; field = "toto"), 4.0)
+    @test x.a == ("toto", 4.0)
     @nullevents x.a = (Dict("value" => 10), -1.0)
-    @test x.a == ((; value = 10), -1.0)
+    @test x.a == (10, -1.0)
 end
 
 𝐸T = Bokeh.Model.EnumType{(:a, :b, :c)}
@@ -293,8 +293,8 @@ end
     X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
         a::Bokeh.Model.MarkerSpec = "x"
     end
-    @test X().a == (; value = :x)
-    @test X(;a = "fff").a == (; field = "fff")
+    @test X().a == :x
+    @test X(;a = "fff").a == "fff"
 end
 
 @testset "bokeh complex field" begin

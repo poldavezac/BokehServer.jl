@@ -4,22 +4,22 @@
 
     color_mapper :: iColorMapper = LinearColorMapper()
 
-    dh :: Model.DistanceSpec = (field = "dh",)
+    dh :: Model.NullDistanceSpec = "dh"
 
     dh_units :: Model.EnumType{(:screen, :data)} = :data
 
     dilate :: Bool = false
 
-    dw :: Model.DistanceSpec = (field = "dw",)
+    dw :: Model.NullDistanceSpec = "dw"
 
     dw_units :: Model.EnumType{(:screen, :data)} = :data
 
-    global_alpha :: Model.NumberSpec = (value = 1.0,)
+    global_alpha :: Model.NumberSpec = 1.0
 
-    image :: Model.NumberSpec = (field = "image",)
+    image :: Model.NumberSpec = "image"
 
-    x :: Model.NumberSpec = (field = "x",)
+    x :: Model.NumberSpec = "x"
 
-    y :: Model.NumberSpec = (field = "y",)
+    y :: Model.NumberSpec = "y"
 end
 glyphargs(::Type{Image}) = (:image, :x, :y, :dw, :dh, :dilate)

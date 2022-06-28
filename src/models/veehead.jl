@@ -2,23 +2,23 @@
 
 @model mutable struct VeeHead <: iVeeHead
 
-    fill_alpha :: Model.AlphaSpec = (value = 1.0,)
+    fill_alpha :: Model.AlphaSpec = 1.0
 
-    fill_color :: Model.ColorSpec = (value = "#000000",)
+    fill_color :: Model.ColorSpec = "black"
 
-    line_alpha :: Model.AlphaSpec = (value = 1.0,)
+    line_alpha :: Model.AlphaSpec = 1.0
 
-    line_cap :: Model.LineCapSpec = (value = :butt,)
+    line_cap :: Model.LineCapSpec = :butt
 
-    line_color :: Model.ColorSpec = (value = "#000000",)
+    line_color :: Model.ColorSpec = "black"
 
-    line_dash :: Model.DashPatternSpec = (value = Int64[],)
+    line_dash :: Model.DashPatternSpec = Int64[]
 
-    line_dash_offset :: Model.Spec{Int64} = (value = 0,)
+    line_dash_offset :: Model.IntSpec = 0
 
-    line_join :: Model.LineJoinSpec = (value = :bevel,)
+    line_join :: Model.LineJoinSpec = :bevel
 
-    line_width :: Model.NumberSpec = (value = 1.0,)
+    line_width :: Model.NumberSpec = 1.0
 
-    size :: Model.NumberSpec = (value = 25.0,)
+    size :: Model.NumberSpec = 25.0
 end

@@ -2,7 +2,7 @@
 
 @model mutable struct Whisker <: iWhisker
 
-    base :: Model.PropertyUnitsSpec = (field = "base", units = :data)
+    base :: Model.PropertyUnitsSpec = (field = "base",)
 
     base_units :: Model.EnumType{(:screen, :data)} = :data
 
@@ -14,21 +14,21 @@
 
     level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :underlay
 
-    line_alpha :: Model.AlphaSpec = (value = 1.0,)
+    line_alpha :: Model.AlphaSpec = 1.0
 
-    line_cap :: Model.LineCapSpec = (value = :butt,)
+    line_cap :: Model.LineCapSpec = :butt
 
-    line_color :: Model.ColorSpec = (value = "#000000",)
+    line_color :: Model.ColorSpec = "black"
 
-    line_dash :: Model.DashPatternSpec = (value = Int64[],)
+    line_dash :: Model.DashPatternSpec = Int64[]
 
-    line_dash_offset :: Model.Spec{Int64} = (value = 0,)
+    line_dash_offset :: Model.IntSpec = 0
 
-    line_join :: Model.LineJoinSpec = (value = :bevel,)
+    line_join :: Model.LineJoinSpec = :bevel
 
-    line_width :: Model.NumberSpec = (value = 1.0,)
+    line_width :: Model.NumberSpec = 1.0
 
-    lower :: Model.PropertyUnitsSpec = (field = "lower", units = :data)
+    lower :: Model.PropertyUnitsSpec = (field = "lower",)
 
     lower_head :: Model.Nullable{iArrowHead} = TeeHead()
 
@@ -36,7 +36,7 @@
 
     source :: iDataSource = ColumnDataSource()
 
-    upper :: Model.PropertyUnitsSpec = (field = "upper", units = :data)
+    upper :: Model.PropertyUnitsSpec = (field = "upper",)
 
     upper_head :: Model.Nullable{iArrowHead} = TeeHead()
 

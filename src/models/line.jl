@@ -16,8 +16,8 @@
 
     line_width :: Float64 = 1.0
 
-    x :: Model.NumberSpec = (field = "x",)
+    x :: Model.NumberSpec = "x"
 
-    y :: Model.NumberSpec = (field = "y",)
+    y :: Model.NumberSpec = "y"
 end
 glyphargs(::Type{Line}) = (:x, :y)

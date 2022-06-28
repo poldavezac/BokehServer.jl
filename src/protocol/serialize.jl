@@ -23,10 +23,14 @@ serialtype(::Type{T}, ::iRules) where {T <: iHasProps} = (; type = nameof(T))
 const _END_PATT = r"^finish" => "end"
 _fieldname(x::Symbol) = Symbol(replace("$x", _END_PATT))
 
-function serialattributes(η::T, 𝑅::iRules) where {T <: iHasProps}
+function serialattribute(η::iHasProps, 𝑅::iRules, σ::Symbol, 𝑇::Type)
+    serialref(𝑇, Model.bokehrawtype(getproperty(η, σ)), 𝑅)
+end
+
+function serialattributes(η::iHasProps, 𝑅::iRules)
     return (;(
-        _fieldname(i) => serialref(j, Model.bokehrawtype(getproperty(η, i)), 𝑅)
-        for (i, j) ∈ Model.bokehfields(T)
+        _fieldname(i) => serialattribute(η, 𝑅, i, j)
+        for (i, j) ∈ Model.bokehfields(typeof(η))
         if !Model.isdefaultvalue(η, i)
     )...)
 end

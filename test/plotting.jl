@@ -32,7 +32,7 @@ end
     @test length(plot.renderers) ≡ 1
     @test plot.renderers[1] isa Bokeh.Models.GlyphRenderer
     @test plot.renderers[1].glyph isa Bokeh.Models.Scatter
-    @test plot.renderers[1].glyph.marker ≡ (; value = :x)
+    @test plot.renderers[1].glyph.marker == :x
     @test plot.renderers[1].data_source.data["x"] == [1, 2, 3]
     @test plot.renderers[1].data_source.data["y"] == [3, 2, 1]
 

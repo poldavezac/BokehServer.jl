@@ -6,22 +6,22 @@
 
     fill_color :: Model.Nullable{Model.Color} = "#808080"
 
-    hatch_alpha :: Model.AlphaSpec = (value = 1.0,)
+    hatch_alpha :: Model.AlphaSpec = 1.0
 
-    hatch_color :: Model.ColorSpec = (value = "#000000",)
+    hatch_color :: Model.ColorSpec = "black"
 
     hatch_extra :: Dict{String, iTexture} = Dict{String, iTexture}()
 
     hatch_pattern :: Model.HatchPatternSpec = :blank
 
-    hatch_scale :: Model.NumberSpec = (value = 12.0,)
+    hatch_scale :: Model.NumberSpec = 12.0
 
-    hatch_weight :: Model.NumberSpec = (value = 1.0,)
+    hatch_weight :: Model.NumberSpec = 1.0
 
-    x :: Model.NumberSpec = (field = "x",)
+    x :: Model.NumberSpec = "x"
 
-    y1 :: Model.NumberSpec = (field = "y1",)
+    y1 :: Model.NumberSpec = "y1"
 
-    y2 :: Model.NumberSpec = (field = "y2",)
+    y2 :: Model.NumberSpec = "y2"
 end
 glyphargs(::Type{VArea}) = (:x, :y1, :y2)

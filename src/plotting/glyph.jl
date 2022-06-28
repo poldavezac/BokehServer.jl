@@ -113,8 +113,8 @@ end
 function _👻datasource!(kwargs::Dict{Symbol}, ::Missing, 𝑇::Type)
     data = Dict{String, AbstractArray}()
     out  = _👻datasource!(kwargs, 𝑇) do col, arg, cnv
-        if cnv isa Model.iSpec && !ismissing(cnv.field)
-            ErrorException("is a source field, yet no source was provided")
+        if cnv isa Model.iSpec && cnv.item isa Model.Column
+            ErrorException("has a source-type entry, yet no source was provided")
         elseif arg isa ArrayLike
             data["$col"] = Model.datadictarray(Model.bokehpropertytype(𝑇, col), arg)
             (; field = "$col")
