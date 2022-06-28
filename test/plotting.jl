@@ -1,5 +1,5 @@
 @testset "create figure" begin
-    plot = Bokeh.figure()
+    plot = Bokeh.Plotting.figure()
     @test plot isa Bokeh.Models.Plot
     @test nameof.(typeof.(plot.toolbar.tools)) == [
         :PanTool, :WheelZoomTool, :BoxZoomTool,:SaveTool,:ResetTool,:HelpTool
@@ -17,10 +17,10 @@
 end
 
 @testset "create glyph" begin
-    plot = Bokeh.figure()
+    plot = Bokeh.Plotting.figure()
     @test isempty(plot.renderers)
     @test !any(i isa Bokeh.Models.Legend for i ∈ plot.center)
-    Bokeh.glyph!(
+    Bokeh.Plotting.glyph!(
         plot, :scatter;
         x            = [1, 2, 3],
         y            = [3, 2, 1],

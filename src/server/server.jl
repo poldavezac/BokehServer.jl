@@ -46,6 +46,7 @@ const RouteTypes = Union{iRoute, Function, Pair}
 
 """
     serve([host = CONFIG.host], [port = CONFIG.port], apps...; kwa...)
+    serve(𝐹::Function, [host = CONFIG.host], [port = CONFIG.port]; name::Symbol = :plot, kwa...)
 
 Starts a Bokeh server. `apps` can be `Bokeh.Server.iRoute` types,
 functions or pairs of `name_of_app => app_or_function`
@@ -107,6 +108,10 @@ end
 serve(host::AbstractString, apps::Vararg{<:RouteTypes}; kwa...) = serve(host, CONFIG.port, apps...; kwa...)
 serve(port::Int, apps::Vararg{<:RouteTypes}; kwa...)            = serve(CONFIG.host, port, apps...; kwa...)
 serve(apps::Vararg{<:RouteTypes}; kwa...)                       = serve(CONFIG.host, CONFIG.port, apps...; kwa...)
+
+function serve(𝐹::Function, args...; name = :plot, kwa...)
+    serve(args..., Val(name) => 𝐹; kwa...)
+end
 
 _topair(@nospecialize(f::Function))                 = Val(nameof(f)) => Application(f)
 _topair(@nospecialize(f::Pair{<:Val,  <:Function})) = f[1]           => Application(f[2])
