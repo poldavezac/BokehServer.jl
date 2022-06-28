@@ -12,7 +12,7 @@ function redirect(http, apps::Dict)
     end
 
     if ismissing(name)
-        route(http, nothing, missing, missing)
+        fourOfour(http)
     else
         uri = HTTP.URI(http.message.target)
         tgt = string(HTTP.URI(;
@@ -22,9 +22,10 @@ function redirect(http, apps::Dict)
             path = joinpath("/", tostr(name), uri.path),
             uri.query
         ))
-        HTTP.set_status(http, 301)
-        HTTP.set_header(http, "Location" => tgt)
+        HTTP.setstatus(http, 301)
+        HTTP.setheader(http, "Location" => tgt)
+        HTTP.startwrite(http)
     end
 end
 
-route(http, ::Any, apps::Dict{Val, iApplication}, ::Val) = redirect(http, apps)
+route(http, ::Any, apps::Dict{Val, iRoute}, ::Val) = redirect(http, apps)

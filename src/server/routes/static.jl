@@ -71,7 +71,7 @@ end
 
 route(http::HTTP.Stream, ::Val{:GET}, 𝐴::StaticRoute, ::Val) = route(http, 𝐴)
 
-function route(http::HTTP.Stream, ::Val{:GET}, ::Dict, ::Val{Symbol("favicon.ico")})
+function route(http::HTTP.Stream, ::Val{:GET}, ::Missing, ::Val{Symbol("favicon.ico")})
     routefile(http, joinpath(artifact"javascript", "favicon.ico"))
 end
 

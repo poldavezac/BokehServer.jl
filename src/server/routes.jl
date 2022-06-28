@@ -15,6 +15,9 @@ function routeargs(apps::Dict{<:Val, <:iRoute}, http)
     path   = Val.(Symbol.(HTTP.URIs.splitpath(HTTP.URI(http.message.target))))
     if isempty(path)
         key  = Val(:?)
+    elseif path[end] ≡ Val(Symbol("favicon.ico"))
+        app  = missing
+        key  = path[end]
     elseif haskey(apps, path[1])
         app  = apps[path[1]]
         key  = length(path) ≡ 2 ? path[2] : Val(:?)

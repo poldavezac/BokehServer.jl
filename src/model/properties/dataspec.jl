@@ -54,7 +54,7 @@ units(::Type{<:iUnitSpec{T, K}})        where {T, K} = values(K)
 
 function bokehconvert(𝑇::Type{<:iSpec}, ν::Union{AbstractDict{Symbol}, NamedTuple})
     (keys(ν) ⊈ (:value, :field, :expr, :transform)) && return Unknown()
-    item = _👻specvalue(speceltype(𝑇), :value, ν, missing)
+    item = _👻specextract(speceltype(𝑇), :value, ν, missing)
     if item isa Unknown
         return item
 
@@ -68,7 +68,7 @@ end
 
 function bokehconvert(𝑇::Type{<:iUnitSpec}, ν::Union{AbstractDict{Symbol}, NamedTuple})
     (keys(ν) ⊈ (:value, :field, :expr, :transform, :units)) && return Unknown()
-    item = _👻specvalue(speceltype(𝑇), :value, ν, missing)
+    item = _👻specextract(speceltype(𝑇), :value, ν, missing)
     if item isa Unknown
         return item
 
@@ -78,7 +78,7 @@ function bokehconvert(𝑇::Type{<:iUnitSpec}, ν::Union{AbstractDict{Symbol}, N
         end
     end
 
-    unt = _👻specvalue(specunittype(𝑇), :units, ν, units(𝑇)[1])
+    unt = _👻specextract(specunittype(𝑇), :units, ν, units(𝑇)[1])
     return if unt isa Unknown
         unt
     else
@@ -102,6 +102,11 @@ function bokehconvert(𝑇::Type{<:iSpec{<:EnumType}}, ν::AbstractString)
     return 𝑇(value isa Unknown ? Column(ν) : value)
 end
 
+function bokehconvert(𝑇::Type{ColorSpec}, ν::AbstractString)
+    value = color(ν)
+    return 𝑇(ismissing(value) ? Column(ν) : value)
+end
+
 function bokehread(::Type{<:iSpec}, ::iHasProps, ::Symbol, ν)
     out = tonamedtuple(ν)
     return length(out) ≡ 1 ? first(out) : out
@@ -111,9 +116,8 @@ bokehread(::Type{<:iSpec{String}}, ::iHasProps, ::Symbol, ν) = tonamedtuple(ν)
 bokehread(::Type{PropertyUnitsSpec}, ::iHasProps, ::Symbol, ν) = tonamedtuple(ν)
 
 function tonamedtuple(ν::iSpec)
-    item      = ν.item
+    out       = _👻specvalue(ν.item)
     transform = ν.transform
-    out       = item isa Column ? (; field = item.item) : item isa iModel ? (; expr = item) : (; value = item)
     return ismissing(transform) ? out : merge(out, (; transform))
 end
 
@@ -123,7 +127,13 @@ function tonamedtuple(ν::iUnitSpec)
     return unts ≡ units(typeof(ν))[1] ? out : merge(out, (; units = unts))
 end
 
-function _👻specvalue(𝑇::Type, α, ν, dflt)
+function _👻specextract(𝑇::Type, α, ν, dflt)
     value = get(ν, α, dflt)
     return ismissing(value) ? dflt : bokehconvert(𝑇, value)
 end
+
+_👻specvalue(val::Column)   = (; field = val.item)
+_👻specvalue(val::iModel)   = (; expr  = val)
+_👻specvalue(val::EnumType) = (; value = val.value)
+_👻specvalue(val::Color)    = (; value = colorhex(val))
+_👻specvalue(val::Any)      = (; value = val)

@@ -272,6 +272,7 @@ end
 @testset "bokeh color" begin
     X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
         a::Bokeh.Model.Color =  :gray
+        b::Bokeh.Model.ColorSpec =  "gray"
     end
     @test X().a.r ≡ X().a.g ≡ X().a.b ≡ 0x80
     @test X().a.a ≡ 0xff
@@ -287,6 +288,9 @@ end
     @test x.a.r ≡ UInt8(1)
     @test x.a.g ≡ UInt8(2)
     @test x.a.b ≡ UInt8(3)
+
+    @test x.b == Bokeh.Model.colorhex(:gray)
+    @test X(; b = "aaa").b == "aaa"
 end
 
 @testset "bokeh marker" begin
