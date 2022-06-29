@@ -58,9 +58,10 @@ end
 """
     filtermodels(𝐹::Function, μ::Vararg{iHasProps})
     filtermodels(𝑇::Type{<:iHasProps}, μ::Vararg{iHasProps})
+    filtermodels(𝐹::Function, 𝑇::Type{<:iHasProps}, μ::Vararg{iHasProps})
 
 Collects models accepted by predicate `𝐹`.
-#
+
 # Examples
 
 ```
@@ -76,11 +77,19 @@ filtermodels(Models.iGlyph, myobj)
 function filtermodels(𝐹::Function, μ::Vararg{iHasProps})
     lst = iHasProps[]
     models((x) -> applicable(𝐹, x) && 𝐹(x) && push!(lst, x), μ...)
+    return lst
 end
 
 function filtermodels(𝑇::Type{<:iHasProps}, μ::Vararg{iHasProps})
-    lst = iHasProps[]
+    lst = 𝑇[]
     models((x) -> (x isa 𝑇) && push!(lst, x), μ...)
+    return lst
+end
+
+function filtermodels(𝐹::Function, 𝑇::Type{<:iHasProps}, μ::Vararg{iHasProps})
+    lst = 𝑇[]
+    models((x) -> (x isa 𝑇) && 𝐹(x) && push!(lst, x), μ...)
+    return lst
 end
 
 function allbokehchildren(μ::T) where {T <: iHasProps}

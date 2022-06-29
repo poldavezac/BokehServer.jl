@@ -5,7 +5,7 @@
         :PanTool, :WheelZoomTool, :BoxZoomTool,:SaveTool,:ResetTool,:HelpTool
     ]
 
-    plot = Bokeh.figure(;
+    plot = Bokeh.Plotting.figure(;
         x_range      = 1:100,
         x_axis_type  = :log,
         x_axis_label = "x axis"
@@ -15,10 +15,17 @@
     @test plot.below[end] isa Bokeh.Models.LogAxis
     @test plot.below[end].axis_label == "x axis"
 
-    items = Plotting.getaxis(fig, true)
-    @test items.range ≡ fig.x_range
-    @test items.scale ≡ fig.x_scale
-    @test items.axes  == [fig.below[end]]
+    items = Bokeh.Plotting.getaxis(plot, true)
+    @test items.range ≡ plot.x_range
+    @test items.scale ≡ plot.x_scale
+    @test items.axes  == [plot.below[end]]
+    @test length(items.grids) == 1
+
+    Bokeh.Plotting.popaxis!(plot, items; dotrigger = false)
+
+    items = Bokeh.Plotting.getaxis(plot, true)
+    @test length(items.axes) == 0
+    @test length(items.grids) == 0
 end
 
 @testset "create glyph" begin

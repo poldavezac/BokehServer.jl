@@ -76,9 +76,7 @@ for (𝐹, (𝑇, code)) ∈ (
     end
 end
 
-Base.filter(𝐹::Function, x::Container) = filter(𝐹, x.values)
-
-function Base.filter!(𝐹::Function, x::Container)
+function Base.filter!(𝐹::Function, γ::Container; dotrigger::Bool = true)
     parent = γ.parent.value
     if isnothing(parent) || getfield(parent, γ.attr) ≢ γ.values
         filter!(𝐹, γ.values)
@@ -108,7 +106,9 @@ for (𝐹, 𝑇) ∈ (
     @eval Base.$𝐹(γ::$𝑇, x...)  = $𝐹(γ.values, x...)
 end
 
-Base.in(ν, γ::iContainer) = in(ν, γ.values)
+for 𝐹 ∈ (:in, :any, :all, :filter)
+    @eval Base.$𝐹(ν, γ::iContainer) = $𝐹(ν, γ.values)
+end
 Base.eltype(::Type{<:iContainer{T}}) where {T}  = eltype(T)
 
 struct RestrictedKey{T} <: iProperty end

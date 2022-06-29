@@ -72,6 +72,12 @@ const _LOCATIONS = (:center, :left, :below, :right, :above)
             grid            :: Bool                                = true,
             dotrigger       :: Bool                                = true,
     )
+    addaxis!(
+            fig       :: Models.Plot,
+            items     :: NamedTuple #= created by createaxis =#;
+            location  :: Union{Nothing, Missing, Symbol} = missing,
+            dotrigger :: Bool                            = true,
+    )
 
 Adds a new axis to the figure. It does not remove old ones!
 
@@ -103,13 +109,13 @@ function addaxis!(
         dotrigger       :: Bool                                         = true,
 )
     items = createaxis(isxaxis; type, range, scale, num_minor_ticks, label, rangename, axisname, grid)
-    addaxis!(fig, items)
+    addaxis!(fig, items; location, dotrigger)
     items
 end
 
 function addaxis!(
         fig       :: Models.Plot,
-        items     :: NamedTuple{(:isxaxis, :range, :scale, :axis, :grids)};
+        items     :: NamedTuple #= created by createaxis =#;
         location  :: Union{Nothing, Missing, Symbol} = missing,
         dotrigger :: Bool                            = true,
 )
@@ -119,9 +125,9 @@ function addaxis!(
     end
     fname(x) = items.isxaxis ? x : Symbol(replace("$x", "x" => "y"))
 
-    isempty(items.grid) || push!(fig.center, items.grids...; dotrigger)
-    isnothing(location) || isempty(items.axes) || push!(getproperty(fig, location), items.axes...; dotrigger)
-    if rangename == "default"
+    isempty(items.grids) || push!(fig.center, items.grids...; dotrigger)
+    isnothing(location)  || isempty(items.axes) || push!(getproperty(fig, location), items.axes...; dotrigger)
+    if items.rangename == "default"
         setproperty!(fig, fname(:x_range), items.range; dotrigger)
         setproperty!(fig, fname(:x_scale), items.scale; dotrigger)
     else
@@ -192,6 +198,8 @@ function createaxis(
         setproperty!(axis, isxaxis ? :x_range_name : :y_range_name, rangename; dotrigger = false)
         grid && return (;
             isxaxis,
+            rangename,
+            axisname,
             range = rng,
             scale = sca,
             axes  = Models.iAxis[axis],
@@ -201,6 +209,8 @@ function createaxis(
 
     return (;
         isxaxis,
+        rangename,
+        axisname,
         range = rng,
         scale = sca,
         axes  = Models.iAxis[],
@@ -229,29 +239,99 @@ function getaxis(
         getproperty(fig, fname(Symbol("x_$x"))) :
         getproperty(fig, fname(Symbol("extra_x_$x")))[rangename]
 
-    rng  = getrngsca(:range)
-    sca  = getrngsca(:scale)
-    axes = if ismissing(axisname)
-        rngfield = fname(:x_range_name)
-        Model.filtermodels(fig) do ax::Models.iAxis
-            getproperty(i, rngfield) = rangename
+    rng   = getrngsca(:range)
+    sca   = getrngsca(:scale)
+    grids = filter(fig.center) do x
+        x isa Models.iGrid && x.dimension ≡ (isxaxis ? 0 : 1)
+    end
+    axes  = let rngfield = fname(:x_range_name)
+        filt(x)  = (
+            x isa Models.iAxis &&
+            getproperty(x, rngfield) == rangename &&
+            (ismissing(axisname) || x.name == axisname)
+        )
+
+        arr = Set{Models.iAxis}()
+        for i ∈ grids
+            push!(arr, i.axis)
         end
-    else
-        Model.filtermodels(fig) do ax::Models.iAxis
-            i.name = axisname
+        for field ∈ (isxaxis ? (:above, :below) : (:left, :right)), i ∈ getproperty(fig, field)
+            filt(i) && push!(arr, i)
         end
+        collect(Models.iAxis, arr)
     end
 
-    grids = if isempt(axes)
-        Models.iGrid[]
-    else
-        filter(fig.center) do x
-            x isa Models.iGrid && x.dimension ≡ (isxaxis ? 0 : 1) && x.axis ∈ axes
-        end
+    filter!(grids) do x
+        x.axis ∈ axes
     end
-    return (; isxaxis, range = rng, scale = sca, axes, grids)
+
+    return (; isxaxis, rangename, axisname, range = rng, scale = sca, axes, grids)
 end
 
+"""
+    popaxis!(
+            fig       :: Models.Plot, items #= NamedTuple created by getaxis =#;
+            dotrigger :: Bool = true
+    )
+
+Removes an axis and its companion objects
+"""
+function popaxis!(
+        fig       :: Models.Plot, items #= NamedTuple created by getaxis =#;
+        dotrigger :: Bool = true
+)
+    fname(x) = items.isxaxis ? x : Symbol(replace("$x", "x" => "y"))
+    for field ∈ (:extra_x_scales, :extra_x_ranges)
+        dic = getproperty(fig, fname(field))
+        haskey(dic, items.rangename) && pop!(dic, items.rangename; dotrigger)
+    end
+    isempty(items.axes) && isempty(items.grids) && return
+
+    filt = ∈(Int64[bokehid.(items.axes)..., bokehid.(items.grids)...]) ∘ bokehid
+    for field ∈ (:center, :left, :right, :above, :below)
+        arr = getproperty(fig, field)
+        any(filt, arr) && filter!(!filt, arr; dotrigger)
+    end
 end
 
-using .AxesPlotting: addaxis!, getaxis, createaxis
+"""
+    resetaxis!(
+            fig             :: Models.Plot,
+            isxaxis         :: Bool;
+            location        :: Union{Nothing, Missing, Symbol} = missing,
+            dotrigger       :: Bool                            = true,
+            kwa...
+    )
+
+    resetaxis!(
+            fig       :: Models.Plot,
+            items     :: Any #= NamedTuple created by createaxis =#;
+            location  :: Union{Nothing, Missing, Symbol} = missing,
+            dotrigger :: Bool                            = true,
+    )
+
+Removes an axis adds it again with new properties
+"""
+function resetaxis!(
+        fig       :: Models.Plot,
+        isxaxis   :: Bool;
+        location  :: Union{Nothing, Missing, Symbol} = missing,
+        dotrigger :: Bool                            = true,
+        kwa...
+)
+    resetaxis!(fig, createaxis(isxaxis; kwa...); location, dotrigger)
+end
+
+function resetaxis!(
+        fig       :: Models.Plot,
+        items     :: Any #= NamedTuple created by createaxis =#;
+        location  :: Union{Nothing, Missing, Symbol} = missing,
+        dotrigger :: Bool                            = true,
+)
+    old = getaxis(fig, items.isaxis; items.rangename, items.axisname)
+    popaxis!(fig, old; dotrigger)
+    addaxis!(fig, items; location, dotrigger)
+end
+end
+
+using .AxesPlotting: addaxis!, getaxis, createaxis, popaxis!, resetaxis!
