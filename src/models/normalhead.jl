@@ -4,13 +4,13 @@
 
     fill_alpha :: Model.AlphaSpec = 1.0
 
-    fill_color :: Model.ColorSpec = "black"
+    fill_color :: Model.ColorSpec = "#000000"
 
     line_alpha :: Model.AlphaSpec = 1.0
 
     line_cap :: Model.LineCapSpec = :butt
 
-    line_color :: Model.ColorSpec = "black"
+    line_color :: Model.ColorSpec = "#000000"
 
     line_dash :: Model.DashPatternSpec = Int64[]
 

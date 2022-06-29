@@ -6,7 +6,7 @@
 
     fill_alpha :: Model.AlphaSpec = 1.0
 
-    fill_color :: Model.ColorSpec = "gray"
+    fill_color :: Model.ColorSpec = "#808080"
 
     finish_angle :: Model.AngleSpec = "end_angle"
 
@@ -14,7 +14,7 @@
 
     hatch_alpha :: Model.AlphaSpec = 1.0
 
-    hatch_color :: Model.ColorSpec = "black"
+    hatch_color :: Model.ColorSpec = "#000000"
 
     hatch_extra :: Dict{String, iTexture} = Dict{String, iTexture}()
 
@@ -28,7 +28,7 @@
 
     line_cap :: Model.LineCapSpec = :butt
 
-    line_color :: Model.ColorSpec = "black"
+    line_color :: Model.ColorSpec = "#000000"
 
     line_dash :: Model.DashPatternSpec = Int64[]
 
@@ -50,4 +50,4 @@
 
     y :: Model.NumberSpec = "y"
 end
-glyphargs(::Type{Wedge}) = (:x, :y, :radius, :start_angle, :end_angle, :direction)
+glyphargs(::Type{Wedge}) = (:x, :y, :radius, :start_angle, :finish_angle, :direction)

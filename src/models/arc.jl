@@ -12,7 +12,7 @@
 
     line_cap :: Model.LineCapSpec = :butt
 
-    line_color :: Model.ColorSpec = "black"
+    line_color :: Model.ColorSpec = "#000000"
 
     line_dash :: Model.DashPatternSpec = Int64[]
 
@@ -34,4 +34,4 @@
 
     y :: Model.NumberSpec = "y"
 end
-glyphargs(::Type{Arc}) = (:x, :y, :radius, :start_angle, :end_angle, :direction)
+glyphargs(::Type{Arc}) = (:x, :y, :radius, :start_angle, :finish_angle, :direction)

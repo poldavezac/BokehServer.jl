@@ -170,7 +170,7 @@ function parseproperties(cls::Py; allprops::Bool = false)
 end
 
 parseproperties() = Dict(i => parseproperties(i) for i ∈ modelnames())
-export parseproperty, parseproperties
+export parseproperty, parseproperties, _fieldname
 end
 
 using .Properties

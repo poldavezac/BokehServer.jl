@@ -8,7 +8,7 @@
 
     hatch_alpha :: Model.AlphaSpec = 1.0
 
-    hatch_color :: Model.ColorSpec = "black"
+    hatch_color :: Model.ColorSpec = "#000000"
 
     hatch_extra :: Dict{String, iTexture} = Dict{String, iTexture}()
 

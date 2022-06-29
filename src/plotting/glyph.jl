@@ -3,8 +3,6 @@ using ...Model
 using ...Models
 using ...AbstractTypes
 
-const ArrayLike = Union{AbstractArray, AbstractRange}
-
 function glyph(𝑇::Symbol; kwargs...)
     opts = filter((x -> "$x"[1] ∈ 'A':'Z'), names(Models; all = true))
     if 𝑇 ∉ opts
@@ -86,19 +84,29 @@ const _👻COLORS      = (
     "#17becf", "#9edae5"
 )
 
+"""
+    _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
+
+iterate over all iSpec properties and see what to do with the data_source
+"""
 function _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
     out = Pair[]
-    for col ∈ Models.glyphargs(𝑇)
-        arg = if haskey(kwargs, col)
-            pop!(kwargs, col)
-        else
+    for col ∈ Model.bokehproperties(𝑇)
+        p𝑇  = Model.bokehpropertytype(𝑇, col)
+        (p𝑇 <: Model.iSpec) || continue
+
+        if haskey(kwargs, col)
+            arg = pop!(kwargs, col)
+        elseif col ∈ Models.glyphargs(𝑇)
             val = Model.themevalue(𝑇, col)
             isnothing(val) && throw(ErrorException("Missing argument $𝑇.$col"))
-            something(val)
+            arg = something(val)
+        else
+            continue
         end
 
-        cnv = Model.bokehconvert(Model.bokehpropertytype(𝑇, col), arg)
-        msg = if cnv isa Model.Unknown && !(arg isa ArrayLike)
+        cnv = Model.bokehconvert(p𝑇, arg)
+        msg = if cnv isa Model.Unknown && !(arg isa AbstractArray)
             "is not a supported type $(typeof(arg)) = $arg"
         else
             𝐹(col, arg, cnv)
@@ -110,12 +118,17 @@ function _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
     return (; out...)
 end
 
+"""
+    _👻datasource!(kwargs::Dict{Symbol}, ::Missing, 𝑇::Type)
+
+iterate over all iSpec properties and create a data_source
+"""
 function _👻datasource!(kwargs::Dict{Symbol}, ::Missing, 𝑇::Type)
     data = Dict{String, AbstractArray}()
     out  = _👻datasource!(kwargs, 𝑇) do col, arg, cnv
-        if cnv isa Model.iSpec && cnv.item isa Model.Column
+        if cnv isa Model.iSpec && !ismissing(cnv.field)
             ErrorException("has a source-type entry, yet no source was provided")
-        elseif arg isa ArrayLike
+        elseif cnv isa Model.Unknown && arg isa AbstractArray
             data["$col"] = Model.datadictarray(Model.bokehpropertytype(𝑇, col), arg)
             (; field = "$col")
         else
@@ -126,10 +139,15 @@ function _👻datasource!(kwargs::Dict{Symbol}, ::Missing, 𝑇::Type)
     return merge(out, (; data_source = Models.ColumnDataSource(; data)))
 end
 
+"""
+    _👻datasource!(kwargs::Dict{Symbol}, src::Models.ColumnDataSource, 𝑇::Type)
+
+iterate over all iSpec properties and check that the provided fields are in the data_source
+"""
 function _👻datasource!(kwargs::Dict{Symbol}, src::Models.ColumnDataSource, 𝑇::Type)
     data = src.data
     out  = _👻datasource!(kwargs, 𝑇) do col, arg, cnv
-        if arg isa ArrayLike
+        if arg isa AbstractArray
             ErrorException("is a vector even though a data source has also been provided")
         elseif cnv isa Model.iSpec && !ismissing(cnv.field) && !haskey(data, cnv.field)
             ErrorException("is a missing or miss-spelled column '$(cnv.field)'")
@@ -247,4 +265,48 @@ function _👻legend!(fig::Models.Plot, rend::Models.GlyphRenderer, kwa; dotrigg
 end
 
 end
+
 using .GlyphPlotting: glyph!, glyph
+
+using Printf
+for meth ∈ methods(Models.glyphargs)
+    cls = meth.sig.parameters[2].parameters[1]
+    (cls <: Models.iGlyph) || continue
+
+    let 𝐹 = Symbol(lowercase("$(nameof(cls))")), 𝐹! = Symbol("$(𝐹)!")
+        fargs = Model.bokehproperties(Models.FigureOptions)
+        @eval $𝐹!(fig::Models.Plot; kwa...) = glyph!(fig, $cls; kwa...)
+        @eval function $𝐹(; kwa...)
+            fig = figure(; (i for i ∈ kwa if first(i) ∈ $fargs)...)
+            glyph!(fig, $cls; (i for i ∈ kwa if first(i) ∉ $fargs)...)
+            fig
+        end
+
+        for n ∈ (𝐹, 𝐹!)
+            doc = let io = IOBuffer()
+                println(io)
+                if ("$n")[end] ≡ '!'
+                    println(io, "    $n(")
+                    println(io, "        $(@sprintf "%-10s" :plot) :: Models.Plot;")
+                else
+                    println(io, "    $n(;")
+                end
+                for i ∈ Models.glyphargs(cls)
+                    p𝑇 = @sprintf "%-50s" Union{AbstractArray, Model.bokehpropertytype(cls, i)}
+                    println(io, "        $(@sprintf "%-10s" i) :: $p𝑇 = $(repr(something(Model.themevalue(cls, i)))),")
+                end
+                println(io, "        kwa...")
+                println(io, "    )")
+                println(io, "")
+                if ("$n")[end] ≡ '!'
+                    println(io, "Adds a `$(nameof(cls))` glyph to the `Plot`")
+                else
+                    println(io, "Creates a `Plot` with a `$(nameof(cls))` glyph")
+                end
+                String(take!(io))
+            end
+
+            eval(:(@doc($doc, $n)))
+        end
+    end
+end

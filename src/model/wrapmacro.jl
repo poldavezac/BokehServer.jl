@@ -121,7 +121,7 @@ function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
         end
 
         @inline function $(@__MODULE__).bokehpropertytype(T::Type{$cls}, α::Symbol)
-            $(_👻elseif_alias(fields, :(throw("$T.$attr does not exist"))) do field
+            $(_👻elseif_alias(fields, :(throw("$T.$α does not exist"))) do field
                 field.js ? field.type : nothing
             end)
         end

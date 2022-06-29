@@ -78,8 +78,7 @@ end
 function structcode_glyphargs(io::IO, name::String)
     obj = model(name)
     if pyhasattr(obj, "_args")
-        args = [pyconvert(Symbol, i) for i ∈ obj._args]
-        println(io, "glyphargs(::Type{$(structname(name))}) = $(tuple(args...))")
+        println(io, "glyphargs(::Type{$(structname(name))}) = $(tuple(_fieldname.(obj._args)...))")
     end
 end
 

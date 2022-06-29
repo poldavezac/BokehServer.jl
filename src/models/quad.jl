@@ -6,11 +6,11 @@
 
     fill_alpha :: Model.AlphaSpec = 1.0
 
-    fill_color :: Model.ColorSpec = "gray"
+    fill_color :: Model.ColorSpec = "#808080"
 
     hatch_alpha :: Model.AlphaSpec = 1.0
 
-    hatch_color :: Model.ColorSpec = "black"
+    hatch_color :: Model.ColorSpec = "#000000"
 
     hatch_extra :: Dict{String, iTexture} = Dict{String, iTexture}()
 
@@ -26,7 +26,7 @@
 
     line_cap :: Model.LineCapSpec = :butt
 
-    line_color :: Model.ColorSpec = "black"
+    line_color :: Model.ColorSpec = "#000000"
 
     line_dash :: Model.DashPatternSpec = Int64[]
 

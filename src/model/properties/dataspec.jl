@@ -48,6 +48,28 @@ for 𝑇 ∈ (:DistanceSpec, :StringSpec)
     @eval Base.show(io::IO, ::Type{$𝑇}) = print(io::IO, $("Bokeh.Model.Null$𝑇"))
 end
 
+function Base.propertynames(μ::iSpec; private :: Bool = false)
+    return (:value, :expr, :field, :transform, (private ? (:item,) : ())...)
+end
+
+function Base.propertynames(μ::iUnitSpec; private :: Bool = false)
+    return (:value, :expr, :field, :transform, :units, (private ? (:item,) : ())...)
+end
+
+function Base.getproperty(μ::iSpec, σ::Symbol)
+    if σ ∈ (:units, :transform, :item)
+        return getfield(μ, σ)
+    end
+    item = getfield(μ, :item)
+    return if item isa Column
+        σ ≡ :field ? item.item : missing
+    elseif item isa iModel
+        σ ≡ :expr  ? item : missing
+    else
+        σ ≡ :value ? item : missing
+    end
+end
+
 speceltype(::Type{<:iSpec{T}})          where {T}    = T
 specunittype(::Type{<:iUnitSpec{T, K}}) where {T, K} = K
 units(::Type{<:iUnitSpec{T, K}})        where {T, K} = values(K)
