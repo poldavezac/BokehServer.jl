@@ -58,7 +58,7 @@ end
 const _LOCATIONS = (:center, :left, :below, :right, :above)
 
 """
-    axis!(
+    addaxis!(
             fig             :: Models.Plot,
             isxaxis         :: Bool;
             type            :: Union{Symbol, Nothing}              = :auto,
@@ -88,7 +88,7 @@ Adds a new axis to the figure. It does not remove old ones!
 * axisname: a name provided to the axis
 * grid: whether to add a grid
 """
-function axis!(
+function addaxis!(
         fig             :: Models.Plot,
         isxaxis         :: Bool;
         type            :: Union{Symbol, Nothing}                       = :auto,
@@ -102,11 +102,62 @@ function axis!(
         grid            :: Bool                                         = true,
         dotrigger       :: Bool                                         = true,
 )
-    ismissing(location) && (location = isxaxis ? :below : :left)
+    items = createaxis(isxaxis; type, range, scale, num_minor_ticks, label, rangename, axisname, grid)
+    addaxis!(fig, items)
+    items
+end
+
+function addaxis!(
+        fig       :: Models.Plot,
+        items     :: NamedTuple{(:isxaxis, :range, :scale, :axis, :grids)};
+        location  :: Union{Nothing, Missing, Symbol} = missing,
+        dotrigger :: Bool                            = true,
+)
+    ismissing(location) && (location = items.isxaxis ? :below : :left)
     if !isnothing(location) && (location ∉ _LOCATIONS)
         throw(ErrorException("Location should be Nothing or $_LOCATIONS"))
     end
+    fname(x) = items.isxaxis ? x : Symbol(replace("$x", "x" => "y"))
 
+    isempty(items.grid) || push!(fig.center, items.grids...; dotrigger)
+    isnothing(location) || isempty(items.axes) || push!(getproperty(fig, location), items.axes...; dotrigger)
+    if rangename == "default"
+        setproperty!(fig, fname(:x_range), items.range; dotrigger)
+        setproperty!(fig, fname(:x_scale), items.scale; dotrigger)
+    else
+        push!(getproperty!(fig, fname(:extra_x_ranges)), rangename => items.range; dotrigger)
+        push!(getproperty!(fig, fname(:extra_x_scales)), rangename => items.scale; dotrigger)
+    end
+
+    items
+end
+
+"""
+    createaxis(
+        isxaxis         :: Bool;
+        type            :: Union{Symbol, Nothing}                       = :auto,
+        range           :: Union{Symbol, Tuple, AbstractRange, Nothing} = :data,
+        scale           :: Symbol                                       = :linear,
+        num_minor_ticks :: Union{Missing, Int, Nothing}                 = missing,
+        label           :: Union{Models.iBaseText, String, Missing}     = missing,
+        rangename       :: String                                       = "default",
+        axisname        :: Union{Missing, String}                       = missing,
+        grid            :: Bool                                         = true,
+    )
+
+Creates a new axis and its companion models.
+"""
+function createaxis(
+        isxaxis         :: Bool;
+        type            :: Union{Symbol, Nothing}                       = :auto,
+        range           :: Union{Symbol, Tuple, AbstractRange, Nothing} = :data,
+        scale           :: Symbol                                       = :linear,
+        num_minor_ticks :: Union{Missing, Int, Nothing}                 = missing,
+        label           :: Union{Models.iBaseText, String, Missing}     = missing,
+        rangename       :: String                                       = "default",
+        axisname        :: Union{Missing, String}                       = missing,
+        grid            :: Bool                                         = true,
+)
     rng  = Model.bokehconvert(Models.iRange, something(range, :data))
     sca  = newscale(rng, scale)
     axis = if isnothing(type)
@@ -138,29 +189,69 @@ function axis!(
             setproperty!(axis.ticker, :num_minor_ticks, num_minor_ticks; dotrigger = false)
         end
 
-        grid && push!(fig.center, Models.Grid(; dimension = isxaxis ? 0 : 1, axis); dotrigger)
-        isnothing(location) || push!(getproperty(fig, location), axis; dotrigger)
+        setproperty!(axis, isxaxis ? :x_range_name : :y_range_name, rangename; dotrigger = false)
+        grid && return (;
+            isxaxis,
+            range = rng,
+            scale = sca,
+            axes  = Models.iAxis[axis],
+            grids = [Models.Grid(; dimension = isxaxis ? 0 : 1, axis)]
+        )
     end
 
-    if rangename == "default"
-        if isxaxis
-            setproperty!(fig, :x_range, rng; dotrigger)
-            setproperty!(fig, :x_scale, sca; dotrigger)
-        else
-            setproperty!(fig, :y_range, rng; dotrigger)
-            setproperty!(fig, :y_scale, sca; dotrigger)
+    return (;
+        isxaxis,
+        range = rng,
+        scale = sca,
+        axes  = Models.iAxis[],
+        grids = Models.iGrid[],
+    )
+end
+
+"""
+    getaxis(
+        fig             :: Models.Plot,
+        isxaxis         :: Bool;
+        rangename       :: String = "default",
+        axisname        :: Union{String, Missing} = missing
+    )
+
+Gets an axis and its companions
+"""
+function getaxis(
+        fig             :: Models.Plot,
+        isxaxis         :: Bool;
+        rangename       :: String = "default",
+        axisname        :: Union{String, Missing} = missing
+)
+    fname(x)     = isxaxis ? x : Symbol(replace("$x", "x" => "y"))
+    getrngsca(x) = rangename == "default"       ?
+        getproperty(fig, fname(Symbol("x_$x"))) :
+        getproperty(fig, fname(Symbol("extra_x_$x")))[rangename]
+
+    rng  = getrngsca(:range)
+    sca  = getrngsca(:scale)
+    axes = if ismissing(axisname)
+        rngfield = fname(:x_range_name)
+        Model.filtermodels(fig) do ax::Models.iAxis
+            getproperty(i, rngfield) = rangename
         end
-    elseif isxaxis
-        setproperty!(axis, :x_range_name, rangename; dotrigger)
-        push!(getproperty!(fig, :extra_x_ranges), rangename => rng ; dotrigger)
-        push!(getproperty!(fig, :extra_x_scales), rangename => sca ; dotrigger)
     else
-        setproperty!(axis, :y_range_name, rangename; dotrigger)
-        push!(getproperty!(fig, :extra_y_ranges), rangename => rng ; dotrigger)
-        push!(getproperty!(fig, :extra_y_scales), rangename => sca ; dotrigger)
+        Model.filtermodels(fig) do ax::Models.iAxis
+            i.name = axisname
+        end
     end
-    axis
-end
+
+    grids = if isempt(axes)
+        Models.iGrid[]
+    else
+        filter(fig.center) do x
+            x isa Models.iGrid && x.dimension ≡ (isxaxis ? 0 : 1) && x.axis ∈ axes
+        end
+    end
+    return (; isxaxis, range = rng, scale = sca, axes, grids)
 end
 
-using .AxesPlotting: axis!
+end
+
+using .AxesPlotting: addaxis!, getaxis, createaxis

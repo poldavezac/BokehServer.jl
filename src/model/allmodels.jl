@@ -19,6 +19,70 @@ for (name, tpe, checkkey, pushkey) ∈ (
     end
 end
 
+"""
+    models(𝐹::Function, μ::Vararg{iHasProps})
+
+Iterate through all models and lets the user do
+something about it.
+
+# Examples
+
+```
+# get all models (same as `allmodels`)
+mylist = Any[]
+models((x)->push!(mylist, x), myobj)
+```
+
+```
+# get all glyphs
+mylist = Models.iGlyph[]
+models((x::Models.iGlyph)->push!(mylist, x), myobj)
+```
+"""
+function models(𝐹::Function, μ::Vararg{iHasProps})
+    found = Set{Int64}()
+    todos = collect(iHasProps, μ)
+    while !isempty(todos)
+        cur = pop!(todos)
+        key = bokehid(cur)
+        (key ∈ found)  && continue
+        push!(found, key)
+        applicable(𝐹, cur) && 𝐹(cur)
+
+        for child ∈ allbokehchildren(cur)
+            (bokehid(child) ∈ found) || push!(todos, child) 
+        end
+    end
+end
+
+"""
+    filtermodels(𝐹::Function, μ::Vararg{iHasProps})
+    filtermodels(𝑇::Type{<:iHasProps}, μ::Vararg{iHasProps})
+
+Collects models accepted by predicate `𝐹`.
+#
+# Examples
+
+```
+# get all models (same as `allmodels`)
+filtermodels((x)-> true, myobj)
+```
+
+```
+filtermodels((x)-> x isa Models.iGlyph, myobj)
+filtermodels(Models.iGlyph, myobj)
+```
+"""
+function filtermodels(𝐹::Function, μ::Vararg{iHasProps})
+    lst = iHasProps[]
+    models((x) -> applicable(𝐹, x) && 𝐹(x) && push!(lst, x), μ...)
+end
+
+function filtermodels(𝑇::Type{<:iHasProps}, μ::Vararg{iHasProps})
+    lst = iHasProps[]
+    models((x) -> (x isa 𝑇) && push!(lst, x), μ...)
+end
+
 function allbokehchildren(μ::T) where {T <: iHasProps}
     return Iterators.flatten(
         bokehchildren(bokehrawtype(getproperty(μ, field)))

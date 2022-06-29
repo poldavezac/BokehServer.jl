@@ -4,7 +4,7 @@ function figure(; k...)
     )
 
     plot = Models.Plot()
-    axis!(
+    addaxis!(
         plot, true;
         type            = opts.x_axis_type.value,
         range           = opts.x_range,
@@ -13,7 +13,7 @@ function figure(; k...)
         label           = opts.x_axis_label,
         dotrigger       = false # no need to trigger when creating a brand new plot!
     )
-    axis!(
+    addaxis!(
         plot, false;
         type            = opts.y_axis_type.value,
         range           = opts.y_range,

@@ -14,6 +14,11 @@
     @test plot.x_range.finish ≡ 100.
     @test plot.below[end] isa Bokeh.Models.LogAxis
     @test plot.below[end].axis_label == "x axis"
+
+    items = Plotting.getaxis(fig, true)
+    @test items.range ≡ fig.x_range
+    @test items.scale ≡ fig.x_scale
+    @test items.axes  == [fig.below[end]]
 end
 
 @testset "create glyph" begin
