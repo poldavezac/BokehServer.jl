@@ -11,19 +11,19 @@ end
 containertype(::Type{<:iContainer{T}}) where {T} = T
 
 function bokehread(𝑇::Type{<:CONTAINERS}, µ::iHasProps, α::Symbol, ν::CONTAINERS)
-    Container{𝑇, bokehfieldtype(𝑇)}(WeakRef(µ), α, ν)
+    Container{𝑇, bokehstoragetype(𝑇)}(WeakRef(µ), α, ν)
 end
 
-bokehrawtype(ν::iContainer) = ν.values
+bokehunwrap(ν::iContainer) = ν.values
 
-# WARNING: we need explicit template args to make sure `bokehfieldtype(::Union)` will be called when needed
-bokehfieldtype(𝑇::Type{<:AbstractDict{K, V}})  where {K, V} = 𝑇.name.wrapper{bokehfieldtype(K), bokehfieldtype(V)}
-bokehfieldtype(𝑇::Type{<:AbstractSet{T}})      where {T}    = 𝑇.name.wrapper{bokehfieldtype(T)}
-bokehfieldtype(𝑇::Type{<:AbstractArray{T, N}}) where {T, N} = 𝑇.name.wrapper{bokehfieldtype(T), N}
+# WARNING: we need explicit template args to make sure `bokehstoragetype(::Union)` will be called when needed
+bokehstoragetype(𝑇::Type{<:AbstractDict{K, V}})  where {K, V} = 𝑇.name.wrapper{bokehstoragetype(K), bokehstoragetype(V)}
+bokehstoragetype(𝑇::Type{<:AbstractSet{T}})      where {T}    = 𝑇.name.wrapper{bokehstoragetype(T)}
+bokehstoragetype(𝑇::Type{<:AbstractArray{T, N}}) where {T, N} = 𝑇.name.wrapper{bokehstoragetype(T), N}
 
 function bokehconvert(𝑇::Type{<:AbstractDict{𝐾, 𝑉}}, ν::AbstractDict) where {𝐾, 𝑉}
     params = 𝑇.parameters
-    outp   = bokehfieldtype(𝑇)()
+    outp   = bokehstoragetype(𝑇)()
     for (i,j) ∈ ν
         iv = bokehconvert(𝐾, i)
         (iv isa Unknown) && return Unknown()
@@ -38,7 +38,7 @@ end
 
 for cls ∈ (AbstractSet, AbstractVector)
     @eval function bokehconvert(𝑇::Type{<:$cls{𝐼}}, ν::$cls) where {𝐼}
-        outp = bokehfieldtype(𝑇)()
+        outp = bokehstoragetype(𝑇)()
         for i ∈ ν
             iv = bokehconvert(𝐼, i)
             (iv isa Unknown) && return Unknown()
@@ -113,7 +113,7 @@ Base.eltype(::Type{<:iContainer{T}}) where {T}  = eltype(T)
 
 struct RestrictedKey{T} <: iProperty end
 
-bokehfieldtype(::Type{<:RestrictedKey}) = Symbol
+bokehstoragetype(::Type{<:RestrictedKey}) = Symbol
 bokehconvert(𝑇::Type{<:RestrictedKey}, ν::AbstractString) = bokehconvert(𝑇, Symbol(ν))
 function bokehconvert(::Type{RestrictedKey{T}}, ν::Symbol) where {T}
     (ν ∈ T) && throw(KeyError("Key $ν is not allowed"))

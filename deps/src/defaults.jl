@@ -88,7 +88,7 @@ end
         js  = JSON.parse(pyconvert(String, pyimport("json").dumps(dflt)))
         out = Bokeh.Model.bokehconvert(T, js)
         if !(out isa Bokeh.Model.Unknown)
-            return Some(Bokeh.Model.bokehrawtype(Bokeh.Model.bokehread(T, __DUMMY__, :__dummy__, out)))
+            return Some(Bokeh.Model.bokehunwrap(Bokeh.Model.bokehread(T, __DUMMY__, :__dummy__, out)))
         end
     catch exc
         @error "Could not deal with default" T exception = (exc, Base.catch_backtrace())

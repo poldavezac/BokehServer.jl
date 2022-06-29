@@ -94,7 +94,7 @@ end
 
 function allbokehchildren(μ::T) where {T <: iHasProps}
     return Iterators.flatten(
-        bokehchildren(bokehrawtype(getproperty(μ, field)))
+        bokehchildren(bokehunwrap(getproperty(μ, field)))
         for field ∈ bokehproperties(T)
     )
 end
@@ -135,9 +135,9 @@ end
 function isdefaultvalue(η::𝑇, α::Symbol) where {𝑇 <: iHasProps}
     dflt  = defaultvalue(typeof(η), α)
     isnothing(dflt) && return false
-    left  = bokehrawtype(getproperty(η, α))
-    f𝑇    = bokehpropertytype(𝑇, α)
-    right = bokehrawtype(bokehread(f𝑇, η, α, bokehconvert(f𝑇, something(dflt))))
+    left  = bokehunwrap(getproperty(η, α))
+    f𝑇    = bokehfieldtype(𝑇, α)
+    right = bokehunwrap(bokehread(f𝑇, η, α, bokehconvert(f𝑇, something(dflt))))
     return compare(left, right)
 end
 

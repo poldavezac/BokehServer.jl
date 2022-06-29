@@ -1,7 +1,7 @@
-for i = 1:24 # we need specific implementations per tuple size. Otherwise `bokehfieldtype(::Union)` doesn't get called
+for i = 1:24 # we need specific implementations per tuple size. Otherwise `bokehstoragetype(::Union)` doesn't get called
     let 𝑇s = tuple((Symbol("T$j") for j ∈ 1:i)...)
-        @eval function bokehfieldtype(::Type{Tuple{$(𝑇s...)}}) where {$(𝑇s...)}
-            return Tuple{$((:(bokehfieldtype($𝑉)) for 𝑉 ∈ 𝑇s)...)}
+        @eval function bokehstoragetype(::Type{Tuple{$(𝑇s...)}}) where {$(𝑇s...)}
+            return Tuple{$((:(bokehstoragetype($𝑉)) for 𝑉 ∈ 𝑇s)...)}
         end
 
         @eval function bokehconvert(::Type{Tuple{$(𝑇s...)}}, ν::Union{Vector, Tuple}) where {$(𝑇s...)}
@@ -14,7 +14,7 @@ for i = 1:24 # we need specific implementations per tuple size. Otherwise `bokeh
     end
 end
 
-bokehfieldtype(::Type{NamedTuple{K, V}}) where {K, V} = NamedTuple{K, bokehfieldtype(V)}
+bokehstoragetype(::Type{NamedTuple{K, V}}) where {K, V} = NamedTuple{K, bokehstoragetype(V)}
 
 function bokehconvert(::Type{NamedTuple{K, V}}, ν::NamedTuple) where {K, V}
     ((length(keys(ν)) ≡ length(K)) && all(k ∈ K for k ∈ keys(ν))) || return Unknown()

@@ -55,7 +55,7 @@ end
 
 function glyph!(
         fig       :: Models.Plot,
-        𝑇         :: Union{Symbol, Type{Models.iGlyph}};
+        𝑇         :: Union{Symbol, Type{<:Models.iGlyph}};
         dotrigger :: Bool = true,
         kwa...
 )
@@ -92,7 +92,7 @@ iterate over all iSpec properties and see what to do with the data_source
 function _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
     out = Pair[]
     for col ∈ Model.bokehproperties(𝑇)
-        p𝑇  = Model.bokehpropertytype(𝑇, col)
+        p𝑇  = Model.bokehfieldtype(𝑇, col)
         (p𝑇 <: Model.iSpec) || continue
 
         if haskey(kwargs, col)
@@ -129,7 +129,7 @@ function _👻datasource!(kwargs::Dict{Symbol}, ::Missing, 𝑇::Type)
         if cnv isa Model.iSpec && !ismissing(cnv.field)
             ErrorException("has a source-type entry, yet no source was provided")
         elseif cnv isa Model.Unknown && arg isa AbstractArray
-            data["$col"] = Model.datadictarray(Model.bokehpropertytype(𝑇, col), arg)
+            data["$col"] = Model.datadictarray(Model.bokehfieldtype(𝑇, col), arg)
             (; field = "$col")
         else
             arg
@@ -292,7 +292,7 @@ for meth ∈ methods(Models.glyphargs)
                     println(io, "    $n(;")
                 end
                 for i ∈ Models.glyphargs(cls)
-                    p𝑇 = @sprintf "%-50s" Union{AbstractArray, Model.bokehpropertytype(cls, i)}
+                    p𝑇 = @sprintf "%-50s" Union{AbstractArray, Model.bokehfieldtype(cls, i)}
                     println(io, "        $(@sprintf "%-10s" i) :: $p𝑇 = $(repr(something(Model.themevalue(cls, i)))),")
                 end
                 println(io, "        kwa...")

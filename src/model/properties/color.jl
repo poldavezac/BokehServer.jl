@@ -87,4 +87,4 @@ function bokehconvert(::Type{ColorHex}, ν::COLOR_ARGS)
     ismissing(clr) ? Unknown() : clr
 end
 
-bokehfieldtype(::ColorHex) = String
+bokehstoragetype(::ColorHex) = String

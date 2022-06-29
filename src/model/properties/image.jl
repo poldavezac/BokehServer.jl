@@ -1,6 +1,6 @@
 struct Image <: iProperty end
 
-bokehfieldtype(::Type{Image}) = String
+bokehstoragetype(::Type{Image}) = String
 
 const IMAGE_PATTERN = r"^data:image/(PNG|JPG);base64,[a-zA-Z0-9+_/=]*$"
 

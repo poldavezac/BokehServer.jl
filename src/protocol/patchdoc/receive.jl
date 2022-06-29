@@ -31,21 +31,7 @@ function fromjson(
         𝑇 :: Type{<:Union{AbstractDict, AbstractSet, AbstractVector}},
         𝑣 :: Union{Dict, Vector},
 )
-    elT = eltype(𝑇)
-    return 𝑇([fromjson(elT, i) for i ∈ 𝑣])
-end
-
-function fromjson(𝑇::Type{<:Model.iContainer{<:AbstractVector}}, 𝑣::Vector)
-    fT  = Model.bokehfieldtype(𝑇)
-    elT = eltype(fT)
-    return elT[fromjson(elT, i) for i ∈ 𝑣]
-end
-
-function fromjson(𝑇::Type{<:Model.iContainer{<:AbstractDict}}, 𝑣::Dict)
-    fT  = Model.bokehfieldtype(𝑇)
-    elK = eltype(fT).parameters[1]
-    elV = eltype(fT).parameters[2]
-    return fT((fromjson(elK, i) => fromjson(elV, j) for (i, j) ∈ 𝑣)...)
+    return 𝑇([fromjson(eltype(𝑇), i) for i ∈ 𝑣])
 end
 
 function fromjson(::Type{DataDict}, 𝑣::Dict{String})
@@ -58,7 +44,7 @@ function fromjson(::Type{DataDict}, 𝑣::Dict{String})
 end
 
 function setpropertyfromjson!(mdl::T, attr:: Symbol, val; dotrigger ::Bool =true) where {T <: iHasProps}
-    setproperty!(mdl, attr, fromjson(Model.bokehpropertytype(T, attr), val); dotrigger, patchdoc = true)
+    setproperty!(mdl, attr, fromjson(Model.bokehfieldtype(T, attr), val); dotrigger, patchdoc = true)
 end
 
 function setreferencefromjson!(mdl::iHasProps, 𝐼::Dict{String})

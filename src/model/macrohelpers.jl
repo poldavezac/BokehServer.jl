@@ -87,7 +87,7 @@ function _👻defaultvalue(T::Type, line::Expr)
     elseif line.args[2] ≡ :zero
         out = _👻defaultvalue(T)
         if isnothing(out)
-            R = bokehfieldtype(T)
+            R = bokehstoragetype(T)
             throw(ErrorException("Unknown defaults for $R (calls `zero($R)` or `$R()` are unavailable)"))
         end
         return out, out
@@ -101,7 +101,7 @@ function _👻defaultvalue(T::Type, line::Expr)
 end
 
 function _👻defaultvalue(T::Type)
-    R = bokehfieldtype(T)
+    R = bokehstoragetype(T)
     applicable(zero, R) ? Some(:(zero($R))) : applicable(R) ? Some(:($R())) : nothing
 end
 
@@ -140,7 +140,7 @@ function _👻initcode(cls, fields::Vector{<:NamedTuple}, field::NamedTuple)
                 ($y isa $Unknown) && throw(ErrorException(string(
                     "Could not convert `", $x, "` to ",
                     $cls, ".", $("$(field.name)"),
-                    "::", $(bokehfieldtype(field.type))
+                    "::", $(bokehstoragetype(field.type))
                 )))
                 @assert $y isa fieldtype($cls, $κ) string($("$cls.$(field.name) != "), typeof($y))
                 $y

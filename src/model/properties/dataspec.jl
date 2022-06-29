@@ -23,7 +23,7 @@ for (cls, 𝑇) ∈ (
     )...,
 )
     @eval struct $cls <: iSpec{$𝑇}
-        item      :: SpecItemType{$(bokehfieldtype(𝑇))}
+        item      :: SpecItemType{$(bokehstoragetype(𝑇))}
         transform :: SpecTransformType
         $cls(item, transform = missing) = new(item, transform)
     end
@@ -35,7 +35,7 @@ for (cls, (𝑇, 𝑈)) ∈ (
     :AngleSpec         => Float64  => AngleUnits,
 )
     @eval struct $cls <: iUnitSpec{$𝑇, $𝑈}
-        item      :: SpecItemType{$(bokehfieldtype(𝑇))}
+        item      :: SpecItemType{$(bokehstoragetype(𝑇))}
         transform :: SpecTransformType
         units     :: $𝑈
         $cls(item, transform = missing, units = $(Meta.quot(values(𝑈)[1]))) =

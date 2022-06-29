@@ -32,7 +32,7 @@ macro _𝑑𝑠_merge_args(code)
             first(𝑑s)
         else
             out = Dict{String, Vector}()
-            for 𝑑 ∈ 𝑑s, (i, j) ∈ (𝑑 isa Pair ? (𝑑,) : bokehrawtype(𝑑))
+            for 𝑑 ∈ 𝑑s, (i, j) ∈ (𝑑 isa Pair ? (𝑑,) : bokehunwrap(𝑑))
                 out[i] = $code
             end
             out
@@ -95,7 +95,7 @@ for (𝑇1, 𝑇2) ∈ (Union{DateTime, Date, Period} => Float64, Union{Int64} =
 end
 @inline datadictarray(y::AbstractVector{<:Union{T, AbstractArray{<:T}}}) where {T <: Union{iHasProps, AbstractTypes.ElTypeDataDict...}} = y
 
-bokehfieldtype(::Type{DataDict}) = DataDict
+bokehstoragetype(::Type{DataDict}) = DataDict
 bokehconvert(::Type{DataDict}, x::DataDict) = copy(x)
 
 for cls ∈ (

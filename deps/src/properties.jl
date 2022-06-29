@@ -148,6 +148,14 @@ function parseproperties(::Val{:GlyphRenderer}, cls::Py; k...)
     return out
 end
 
+function parseproperties(::Val{:BoxAnnotation}, cls::Py; k...)
+    out = parseproperties(cls; k...)
+    for i ∈ (:left, :right, :top, :bottom)
+        out[i] = merge(out[i], (; type = Union{Nothing, Float64}, default = Some(nothing)))
+    end
+    return out
+end
+
 function parseproperties(cls::Py; allprops::Bool = false)
     attrs = Dict{Symbol, Any}(
         _fieldname(attr) => try

@@ -23,13 +23,9 @@ serialtype(::Type{T}, ::iRules) where {T <: iHasProps} = (; type = nameof(T))
 const _END_PATT = r"^finish" => "end"
 _fieldname(x::Symbol) = Symbol(replace("$x", _END_PATT))
 
-function serialattribute(η::iHasProps, 𝑅::iRules, σ::Symbol, 𝑇::Type)
-    serialref(𝑇, Model.bokehrawtype(getproperty(η, σ)), 𝑅)
-end
-
 function serialattributes(η::iHasProps, 𝑅::iRules)
     return (;(
-        _fieldname(i) => serialattribute(η, 𝑅, i, j)
+        _fieldname(i) => serialref(j, Model.bokehunwrap(getproperty(η, i)), 𝑅)
         for (i, j) ∈ Model.bokehfields(typeof(η))
         if !Model.isdefaultvalue(η, i)
     )...)
@@ -42,11 +38,14 @@ function serialroot(η::iHasProps, 𝑅::iRules)
         serialtype(η, 𝑅)...
     )
 end
-serialroot(η::Events.iEvent, 𝑅::iRules) = serialref(η, 𝑅)
-serialref(::Type, η, 𝑅::iRules)         = serialref(η, 𝑅)
-serialref(η::iHasProps, ::iRules)       = (; id = "$(bokehid(η))")
-serialref(::Nothing, ::iRules)          = nothing
-serialref(η::Model.EnumType, ::iRules)  = "$(η.value)"
+serialroot(η::Events.iEvent, 𝑅::iRules)   = serialref(η, 𝑅)
+function serialref(p𝑇::Type{<:Model.iSpec}, η, 𝑅::iRules)
+    serialref(Model.tonamedtuple(Model.bokehconvert(p𝑇, η)), 𝑅)
+end
+serialref(::Type, η, 𝑅::iRules)           = serialref(η, 𝑅)
+serialref(η::iHasProps, ::iRules)         = (; id = "$(bokehid(η))")
+serialref(::Nothing, ::iRules)            = nothing
+serialref(η::Model.EnumType, ::iRules)    = "$(η.value)"
 
 for cls ∈ (:RootAddedEvent, :RootRemovedEvent)
     @eval function serialref(η::$cls, 𝑅::iRules)
@@ -63,7 +62,11 @@ function serialref(η::Events.ModelChangedEvent, 𝑅::iRules)
         hint  = nothing,
         kind  = :ModelChanged,
         model = serialref(η.model, 𝑅),
-        new   = serialref(η.new, 𝑅),
+        new   = serialref(
+            Model.bokehfieldtype(typeof(η.model), η.attr),
+            Model.bokehunwrap(η.new),
+            𝑅
+        ),
     )
 end
 
@@ -166,7 +169,7 @@ serialref(η::NamedTuple, 𝑅::iRules)                           = (; (i => ser
 serialref(η::Tuple, 𝑅::iRules)                                = tuple((serialref(i, 𝑅) for i ∈ η)...)
 function serialref(η::T, 𝑅::iRules) where {T}
     return (; (
-        i => serialref(Model.bokehrawtype(getproperty(η, i)), 𝑅)
+        i => serialref(Model.bokehunwrap(getproperty(η, i)), 𝑅)
         for i ∈ propertynames(η)
     )...)
 end

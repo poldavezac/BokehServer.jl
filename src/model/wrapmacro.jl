@@ -9,7 +9,7 @@ function _👻structure(
     quote
         mutable struct $cls <: $parents
             id        :: Int64
-            $((:($(i.name)::$(bokehfieldtype(i.type))) for i ∈ _👻filter(fields) if !i.alias)...)
+            $((:($(i.name)::$(bokehstoragetype(i.type))) for i ∈ _👻filter(fields) if !i.alias)...)
             callbacks :: Vector{Function}
 
             function $cls(; id = $(@__MODULE__).ID(), kwa...)
@@ -29,7 +29,7 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
         name = Meta.quot(i.name)
         set  = if i.js
             quote
-                old = $(@__MODULE__).bokehrawtype(getproperty(μ, $name))
+                old = $(@__MODULE__).bokehunwrap(getproperty(μ, $name))
                 dotrigger && Bokeh.Events.testcantrigger()
                 new = setfield!(μ, $name, ν)
                 dotrigger && Bokeh.Events.trigger(Bokeh.ModelChangedEvent(μ, $name, old, new))
@@ -46,7 +46,7 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
         end
 
         quote
-            ν = $(@__MODULE__).bokehconvert($(i.type), $(@__MODULE__).bokehrawtype(ν))
+            ν = $(@__MODULE__).bokehconvert($(i.type), $(@__MODULE__).bokehunwrap(ν))
             (ν isa $Unknown) && throw(ErrorException("Could not convert `$ν` to $(i.type)"))
             $set
             getproperty(µ, $name)
@@ -120,7 +120,7 @@ function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
             end)
         end
 
-        @inline function $(@__MODULE__).bokehpropertytype(T::Type{$cls}, α::Symbol)
+        @inline function $(@__MODULE__).bokehfieldtype(T::Type{$cls}, α::Symbol)
             $(_👻elseif_alias(fields, :(throw("$T.$α does not exist"))) do field
                 field.js ? field.type : nothing
             end)
@@ -174,7 +174,7 @@ end
 
 function bokehproperties end
 function hasbokehproperty end
-function bokehpropertytype end
+function bokehfieldtype end
 function bokehfields end
 function defaultvalue end
 

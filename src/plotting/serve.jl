@@ -34,7 +34,7 @@ end
 ```
 """
 function serve(𝐹::Function, a...; k...)
-    Server.serve(a...; k...) do doc::iDocument
+    function plot(doc::iDocument)
         out = if applicable(𝐹)
             𝐹()
         elseif applicable(𝐹, Union{Document, iDocument})
@@ -51,6 +51,6 @@ function serve(𝐹::Function, a...; k...)
             push!(doc, filter(Base.Fix2(isa, iModel), out)...)
         end
     end
-end
 
-serve(a...; k...) = Server.serve(a...; k...)
+    Server.serve(plot, a...; k...)
+end

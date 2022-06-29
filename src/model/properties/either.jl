@@ -30,8 +30,8 @@ function Base.iterate(itr::UnionIterator, state = nothing)
     return nothing
 end
 
-function bokehfieldtype(𝑇::Union)
-    types = [bokehfieldtype(T) for T ∈ UnionIterator(𝑇)]
+function bokehstoragetype(𝑇::Union)
+    types = [bokehstoragetype(T) for T ∈ UnionIterator(𝑇)]
     for i ∈ 1:length(types)-1, j ∈ i+1:length(types)
         if types[i] <: types[j] || types[j] <: types[i]
             throw(ErrorException("`$𝑇` has non-orthogonal types $(types[i]) and $(types[j])"))
@@ -54,7 +54,7 @@ function bokehread(𝑇::Union, μ::iHasProps, σ::Symbol, ν)
     return first(
         bokehread(T, μ, σ, ν)
         for T ∈ UnionIterator(𝑇)
-        if ν isa bokehfieldtype(T)
+        if ν isa bokehstoragetype(T)
     )
 end
 
