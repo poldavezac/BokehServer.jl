@@ -70,3 +70,33 @@ end
         @test val[]
     end
 end
+
+@Bokeh.wrap mutable struct ServerTestDOM <: Bokeh.Models.iLayoutDOM
+    a::Int = 1
+end
+
+@testset "autolaunch" begin
+    with_logger(Logging.NullLogger()) do
+        @test isnothing(Bokeh.AutoLaunch.SERVER[])
+        io = IOBuffer()
+        show(io, MIME("text/html"), ServerTestDOM(; a = 100))
+        @test !isempty(String(take!(io)))
+
+        sleep(0.01)
+        @test !isnothing(Bokeh.AutoLaunch.SERVER[])
+        @test !isempty(Bokeh.AutoLaunch.SERVER[][2].lastid[])
+        @test !isempty(Bokeh.AutoLaunch.SERVER[][2].routes)
+
+        val = Ref(false)
+        Bokeh.Client.open(Bokeh.AutoLaunch.lastws()) do _, doc
+            @test length(doc) == 1
+            val[] = true
+        end
+        yield()
+        @test val[]
+
+        Bokeh.AutoLaunch.stopserver()
+        sleep(0.01)
+        @test isnothing(Bokeh.AutoLaunch.SERVER[])
+    end
+end

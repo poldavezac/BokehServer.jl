@@ -17,27 +17,13 @@ end
 
 Server.staticbundle(app::Server.iApplication) = Server.staticbundle(Val(:server))
 
-function script(app::Server.iApplication, token::String, roots::Dict{String, String})
-    id   = Server.makeid(app)
-    json = Templates.scripttag(JSON.json([]); type = "application/json", id)
-    return json * Templates.scripttag(
-        Templates.onload(Templates.safely(Templates.docjs(
-            "document.getElementById('$id').textContent",
-            (; token, roots, root_ids = collect(keys(roots)), use_for_title = true)
-        )));
-        id = Server.makeid(app)
-    )
-end
-
 div(::Server.iApplication, roots::Dict{String, String}) = Templates.embed(roots)
 
 function body(app::Server.iApplication, session::Server.SessionContext)
     bundle = Server.staticbundle(app)
-    roots  = Dict{String, String}((
-        "$(bokehid(r))" => "$(Server.makeid(app))" for r ∈ session.doc
-    )...)
+    roots  = Server.makerootids(app, session.doc...)
     return filetemplate(
-        script(app, session.token, roots),
+        Templates.docjsscripts(app, session.token, roots),
         div(app, roots),
         session.doc.title,
         bundle.js_files,

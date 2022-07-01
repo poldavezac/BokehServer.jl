@@ -44,16 +44,16 @@ end
     end
 end
 
-struct TestApp <: Bokeh.Server.iApplication end
+struct TestApp <: Bokeh.Server.iApplication
+    sessions :: Bokeh.Server.SessionList
+    call     :: Function
+    TestApp() = new(Bokeh.Server.SessionList(), identity)
+end
+
 Bokeh.Server.makeid(::TestApp) = "a"
+Base.get!(x::TestApp, ::Bokeh.Server.HTTP.Stream) = last(first(x.sessions.sessions))
 
-_dummy_test(doc) = nothing
-Base.get!(
-    x::Bokeh.Server.Application{_dummy_test},
-    ::Bokeh.Server.HTTP.Stream
-) = last(first(x.sessions.sessions))
-
-app = Bokeh.Server.Application(_dummy_test)
+app = TestApp()
 push!(app.sessions.sessions,  "1"=>Bokeh.Server.SessionContext("1", "2"))
 
 @testset "autoload body" begin

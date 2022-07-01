@@ -3,8 +3,8 @@ using HTTP
 using JSON
 using ..Server
 
-geturl(𝐴::Server.Application{T}) where {T} = "$(nameof(T))"
-metadata(::Server.iApplication)            = "{}"
+geturl(𝐴::Server.iApplication)  = "$(nameof(𝐴.call))"
+metadata(::Server.iApplication) = "{}"
 
 function route(http::HTTP.Stream{HTTP.Request}, app::Server.iApplication)
     HTTP.setstatus(http, 200)

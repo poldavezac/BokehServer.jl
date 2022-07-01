@@ -13,4 +13,6 @@ include("modeltypes.jl")
 include("action.jl")
 include("models.jl")
 include("plotting.jl")
+include("embedding.jl")
+include("autolaunch.jl")
 end # module

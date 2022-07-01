@@ -33,25 +33,23 @@ Bokeh.Server.serve(
 )
 ```
 """
-function serve(
-        host :: AbstractString,
-        port :: Int,
-        apps :: Vararg{<:RouteTypes};
-        kwa...
-)
-    routes = RouteDict(_topair.(apps)...)
+function serve!(routes :: RouteDict, host :: AbstractString, port :: Int; kwa...)
     @info(
         "serving applications",
         threads = Threads.nthreads(),
         (i => joinpath("http://$host:$port", "$i") for i ∈ keys(routes))...
     )
-    push!(routes, staticroutes(CONFIG)...)
+    haskey(routes, :static) || push!(routes, staticroutes(CONFIG)...)
 
     try
         HTTP.listen(route(routes), host, port; kwa...)
     finally
         foreach(close, values(routes))
     end
+end
+
+function serve(host :: AbstractString, port :: Int, apps :: Vararg{<:RouteTypes}; kwa...)
+    serve!(RouteDict(_topair.(apps)...), host, port; kwa...)
 end
 
 serve(host::AbstractString, apps::Vararg{<:RouteTypes}; kwa...) = serve(host, CONFIG.port, apps...; kwa...)

@@ -16,12 +16,11 @@ function Base.close(λ::SessionList)
     empty!(λ.sessions)
 end
 
-struct Application{T} <: iApplication
+struct Application <: iApplication
     sessions :: SessionList
-    Application{T}() where {T} = new(fieldtype(Application, :sessions)())
+    call     :: Function
+    Application(call::Function) = new(SessionList(), call)
 end
-
-Application(func::Function) = Application{func}()
 
 Base.close(𝐴::iApplication) = close(sessions(𝐴))
 
@@ -57,8 +56,8 @@ Populates a brand new document
 """
 function initialize! end
 
-initialize!(σ::SessionContext, 𝐴::iApplication)        = initialize!(σ.doc, 𝐴)
-initialize!(𝑑::iDocument, ::Application{T}) where {T} = Documents.curdoc!(T, 𝑑)
+initialize!(σ::SessionContext, 𝐴::iApplication) = initialize!(σ.doc, 𝐴)
+initialize!(𝑑::iDocument,      𝐴::iApplication) = Documents.curdoc!(𝐴.call, 𝑑)
 
 """
     sessionkey(::iApplication, args...)
@@ -74,3 +73,7 @@ end
 sessions(𝐴::iApplication) = 𝐴.sessions
 
 makeid(_...) = "$(UUIDs.uuid4())"
+
+function makerootids(app::iApplication, rs::Vararg{iModel})
+    Dict{String, String}(("$(bokehid(r))" => makeid(app) for r ∈ rs)...)
+end

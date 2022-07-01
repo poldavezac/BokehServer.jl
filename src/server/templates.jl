@@ -1,5 +1,7 @@
 module Templates
 using JSON
+using ...AbstractTypes
+using ..Server
 
 function scripttag(
         code :: String;
@@ -60,7 +62,26 @@ function onload(code::String)
     })();"""
 end
 
-embed(roots::AbstractDict{<:AbstractString, <:AbstractString}) = join((embed(r) for r ∈ roots), "\n    ")
+function docjsscripts(
+        app,
+        token::String,
+        roots::Dict{String, String};
+        id            :: String = Server.makeid(app),
+        use_for_title :: Bool   = true,
+        kwa...
+)
+    json = Templates.scripttag(JSON.json([]); type = "application/json", id)
+    return json * Templates.scripttag(
+        Templates.onload(Templates.safely(Templates.docjs(
+            "document.getElementById('$id').textContent",
+            (; token, roots, root_ids = collect(keys(roots)), use_for_title);
+            kwa...
+        )));
+        id = Server.makeid(app)
+    )
+end
+
+embed(rs::AbstractDict{<:AbstractString, <:AbstractString}) = join((embed(r) for r ∈ rs), "\n    ")
 embed(pair::Pair{<:AbstractString, <:AbstractString}) = embed(pair...)
 function embed(rootid::String, elementid::String)
     if isempty(rootid)
@@ -69,4 +90,8 @@ function embed(rootid::String, elementid::String)
     return """<div class="bk-root" id="$elementid" data-root-id="$rootid"></div>"""
 end
 
+function headers(tpe::Val = Val(:server); kwa...)
+    vals = Server.staticbundle(tpe; kwa...).js_files
+    return join((string("<script src=\"", i, "\">") for i ∈ vals), "\n")
+end
 end

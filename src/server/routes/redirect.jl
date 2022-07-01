@@ -1,13 +1,12 @@
 function redirect(http, apps)
-    tostr(x::Val) = "$(typeof(x).parameters[1])"
     name = missing
     for (i, j) ∈ apps
-        if i ≡ Val(:static)
+        if j isa iStaticRoute
             continue
-        elseif tostr(i)[1] ≡ '#'
-            name = i
         elseif ismissing(name)
-            name = i
+            name = "$i"
+        elseif "$i"[1] ≢ '#' && name[1] ≡ '#'
+            name = "$i"
         end
     end
 
@@ -19,7 +18,7 @@ function redirect(http, apps)
             uri.scheme,
             uri.host,
             uri.port,
-            path = joinpath("/", tostr(name), uri.path),
+            path = joinpath("/", name, uri.path),
             uri.query
         ))
         HTTP.setstatus(http, 301)
