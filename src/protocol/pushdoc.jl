@@ -1,14 +1,16 @@
-function pushdoc(self::iDocument, 𝑅::Serialize.iRules = Serialize.Rules())
-    return (; doc = (;
+function pushdoc(title :: AbstractString, roots, 𝑅::Serialize.iRules = Serialize.Rules())
+    return (;
         defs    = [],
         roots   = (;
-            references = NamedTuple[serialize(i, 𝑅) for i ∈ values(allmodels(self))],
-            root_ids   = string.(bokehid.(self)),
+            references = NamedTuple[serialize(i, 𝑅) for i ∈ values(allmodels(roots))],
+            root_ids   = string.(bokehid.(roots)),
         ),
-        title   = self.title,
+        title,
         version = Bokeh.PYTHON_VERSION,
-    ))
+    )
 end
+
+pushdoc(self::iDocument, 𝑅::Serialize.iRules = Serialize.Rules()) = (; doc = pushdoc(self.title, self, 𝑅))
 
 function pushdoc!(self::iDocument, μ::Dict{String}, 𝐵::Buffers)
     docmsg   = μ["doc"]

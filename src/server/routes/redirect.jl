@@ -1,4 +1,4 @@
-function redirect(http, apps::Dict)
+function redirect(http, apps)
     tostr(x::Val) = "$(typeof(x).parameters[1])"
     name = missing
     for (i, j) ∈ apps
@@ -28,4 +28,4 @@ function redirect(http, apps::Dict)
     end
 end
 
-route(http, ::Any, apps::Dict{Val, iRoute}, ::Val) = redirect(http, apps)
+route(http::HTTP.Stream, apps::RouteDict, ::Val) = redirect(http, apps)

@@ -63,7 +63,7 @@ function onopen(ω::WebSockets.WebSocket, 𝐴::iApplication)
     @wsassert (time() < payload["session_expiry"]) "Token is expired"
     @wsassert Server.checktokensignature(𝐴, token) "Invalid token signature"
 
-    σ = get!(𝐴, Server.SessionKey(Tokens.sessionid(token), token, req))
+    σ = get!(𝐴, Server.SessionKey(Tokens.sessionid(token), token))
     push!(σ.clients, ω)
     @safely Protocol.sendmessage(ω, msg"ACK")
     σ

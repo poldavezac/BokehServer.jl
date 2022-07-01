@@ -44,9 +44,9 @@ function payload(token::AbstractString)
     return decoded
 end
 
-function token(sessionid; expiration = 300, secretkey::Vector{UInt8} = UInt8[], extra...)
+function token(sessionid::String; expiration = 300, secretkey::Vector{UInt8} = UInt8[], extra...)
     now     = time()
-    payload = (; session_id = sessionid, session_expiry= now + expiration)
+    payload = (; session_id = sessionid, session_expiry = now + expiration)
     if !isempty(extra)
         msg        = IOBuffer(collect(UInt8, JSON.json(extra)))
         compressed = read(CodecZlib.ZlibCompressorStream(msg; level = 9))

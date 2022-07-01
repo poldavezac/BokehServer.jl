@@ -1,4 +1,4 @@
-function _👻elseif(func::Function, itr, elsecode = :(@assert false "unknown condition"))
+function _👻elseif(func::Function, @nospecialize(itr), @nospecialize(elsecode = :(@assert false "unknown condition")))
     last = expr = Expr(:if)
     for args ∈ itr
         val = func(args)
@@ -56,10 +56,11 @@ end
 _👻filter(fields, attr = :alias)  = (i for i ∈ fields if !getfield(i, attr))
 
 function _👻aliases(f, fields)
+    @nospecialize f fields
     return (f.name, (i.name for i ∈ fields if i.alias && f.name ≡ i.type.parameters[1])...)
 end
 
-function _👻elseif_alias(𝐹::Function, fields::Vector{<:NamedTuple}, elsecode)
+function _👻elseif_alias(𝐹::Function, @nospecialize(fields::Vector{<:NamedTuple}), @nospecialize(elsecode))
     return _👻elseif(fields, elsecode) do cur
         if cur.alias
             nothing
@@ -78,7 +79,7 @@ function _👻elseif_alias(𝐹::Function, fields::Vector{<:NamedTuple}, elsecod
     end
 end
 
-function _👻defaultvalue(T::Type, line::Expr)
+function _👻defaultvalue(@nospecialize(T::Type), line::Expr)
     if line.head ≡ :(::)
         out = _👻defaultvalue(T)
         return (out, out)
@@ -101,15 +102,18 @@ function _👻defaultvalue(T::Type, line::Expr)
 end
 
 function _👻defaultvalue(T::Type)
+    @nospecialize cls fields field
     R = bokehstoragetype(T)
     applicable(zero, R) ? Some(:(zero($R))) : applicable(R) ? Some(:($R())) : nothing
 end
 
 function _👻defaultvalue(field::NamedTuple)
+    @nospecialize cls fields field
     isnothing(field.default) ? nothing : :(Some($(something(field.default))))
 end
 
 function _👻initcode(cls, fields::Vector{<:NamedTuple}, field::NamedTuple)
+    @nospecialize cls fields field
     opts = [j.name for j ∈ fields if j.alias && j.type.parameters[1] ≡ field.name]
     κ    = Meta.quot(field.name)
     val  = if isnothing(field.init)

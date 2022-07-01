@@ -54,7 +54,7 @@ Base.get!(
 ) = last(first(x.sessions.sessions))
 
 app = Bokeh.Server.Application(_dummy_test)
-push!(app.sessions.sessions,  "1"=>Bokeh.Server.SessionContext("1", "2", Bokeh.Server.HTTP.Request()))
+push!(app.sessions.sessions,  "1"=>Bokeh.Server.SessionContext("1", "2"))
 
 @testset "autoload body" begin
     value   = Bokeh.Server.AutoloadRoute.body(
@@ -88,7 +88,7 @@ end
 end
 
 @testset "document body" begin
-    session = Bokeh.Server.SessionContext("a", "b", Bokeh.Server.HTTP.Request())
+    session = Bokeh.Server.SessionContext("a", "b")
     value   = Bokeh.Server.DocRoute.body(TestApp(), session)
     truth   = read(joinpath(@__DIR__, "document.html"), String)
     @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(value)))
@@ -98,7 +98,7 @@ end
 
 @testset "document" begin
     stream = Bokeh.Server.HTTP.Stream(Bokeh.Server.HTTP.Request(), IOBuffer())
-    Bokeh.Server.route(stream, Val(:GET), app, Val(:?))
+    Bokeh.Server.route(stream, Val(:GET), app)
     resp = stream.message.response
     @test resp.status ≡ Int16(200)
     @test string.(resp.headers[1]) == string.("Content-Type" => "text/html")

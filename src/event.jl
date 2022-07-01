@@ -9,11 +9,12 @@ include("event/trigger.jl")
 include("event/flush.jl")
 include("event/callbacks.jl")
 
-task_hasevents() = :DOC_EVENTS ∈ keys(task_local_storage())
-task_eventlist() = task_local_storage(:DOC_EVENTS)
+const TASK_EVENTS = :BOKEH_EVENTS
+task_hasevents() = TASK_EVENTS ∈ keys(task_local_storage())
+task_eventlist() = task_local_storage(TASK_EVENTS)
 
 function eventlist!(func::Function, λ = EventList(); flush :: Bool = true)
-    task_local_storage(:DOC_EVENTS, λ) do
+    task_local_storage(TASK_EVENTS, λ) do
         out = nothing
         try
             out = applicable(func) ? func() : func(λ)

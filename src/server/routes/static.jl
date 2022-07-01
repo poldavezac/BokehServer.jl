@@ -1,4 +1,6 @@
 using Pkg.Artifacts
+abstract type iStaticRoute <: iRoute end
+
 """
     struct StaticRoute <: iRoute
         route :: Symbol
@@ -23,7 +25,7 @@ Static files can have the following extensions:
 
 with any other extension defaulting to "text/plain".
 """
-struct StaticRoute <: iRoute
+struct StaticRoute <: iStaticRoute
     route :: Symbol
     paths :: Vector{String}
 end
@@ -54,7 +56,8 @@ function routefile(http::HTTP.Stream, ext::AbstractString, data::AbstractString)
     write(http, data)
 end
 
-function route(http::HTTP.Stream, 𝐴::StaticRoute, tgt::AbstractString = http.message.target)
+function route(http::HTTP.Stream, ::Val{:GET}, 𝐴::StaticRoute, @nospecialize(_...))
+    tgt = http.message.target
     len = length("/$(𝐴.route)/")+1
     for root ∈ 𝐴.paths
         path = joinpath(root, tgt[len:end])
@@ -69,10 +72,16 @@ function route(http::HTTP.Stream, 𝐴::StaticRoute, tgt::AbstractString = http.
     fourOfour(http)
 end
 
-route(http::HTTP.Stream, ::Val{:GET}, 𝐴::StaticRoute, ::Val) = route(http, 𝐴)
-
-function route(http::HTTP.Stream, ::Val{:GET}, ::Missing, ::Val{Symbol("favicon.ico")})
-    routefile(http, joinpath(artifact"javascript", "favicon.ico"))
+struct FaviconRoute <: iStaticRoute
+    path :: String
+    FaviconRoute() = new(joinpath(artifact"javascript", "favicon.ico"))
 end
 
-staticroute(cnf = Server.CONFIG) = (Val(cnf.staticroute) => StaticRoute(cnf.staticroute, cnf.staticpaths))
+route(http::HTTP.Stream, ::Val{:GET}, ::FaviconRoute) = routefile(http, 𝐴.path)
+
+staticroutes(cnf = Server.CONFIG) = (
+    cnf.staticroute       => StaticRoute(cnf.staticroute, cnf.staticpaths),
+    Symbol("favicon.ico") => FaviconRoute()
+)
+
+Base.close(::iStaticRoute) = nothing

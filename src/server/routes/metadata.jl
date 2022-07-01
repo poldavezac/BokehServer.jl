@@ -3,11 +3,14 @@ using HTTP
 using JSON
 using ..Server
 
+geturl(𝐴::Server.Application{T}) where {T} = "$(nameof(T))"
+metadata(::Server.iApplication)            = "{}"
+
 function route(http::HTTP.Stream{HTTP.Request}, app::Server.iApplication)
     HTTP.setstatus(http, 200)
     HTTP.setheader(http, "Content-Type" => "application/json")
     HTTP.startwrite(http)
-    obj = (; url = Server.url(app), data = Server.metadata(app))
+    obj = (; url = geturl(app), data = metadata(app))
     write(http, JSON.json(obj))
 end
 end

@@ -18,13 +18,15 @@ end
 Server.staticbundle(app::Server.iApplication) = Server.staticbundle(Val(:server))
 
 function script(app::Server.iApplication, token::String, roots::Dict{String, String})
-    id         = Server.makeid(app)
-    plotscript = let json = Templates.scripttag(JSON.json([]); type = "application/json", id)
-        json * Templates.scripttag(Templates.onload(Templates.safely(Templates.docjs(
+    id   = Server.makeid(app)
+    json = Templates.scripttag(JSON.json([]); type = "application/json", id)
+    return json * Templates.scripttag(
+        Templates.onload(Templates.safely(Templates.docjs(
             "document.getElementById('$id').textContent",
             (; token, roots, root_ids = collect(keys(roots)), use_for_title = true)
-           ))); id = Server.makeid(app))
-    end
+        )));
+        id = Server.makeid(app)
+    )
 end
 
 div(::Server.iApplication, roots::Dict{String, String}) = Templates.embed(roots)
@@ -87,4 +89,4 @@ end
 
 using .DocRoute
 
-route(http::HTTP.Stream, ::Val{:GET}, 𝐴::iApplication, ::Val{:?}) = DocRoute.route(http, 𝐴)
+route(http::HTTP.Stream, ::Val{:GET}, 𝐴::iApplication) = DocRoute.route(http, 𝐴)

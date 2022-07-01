@@ -28,6 +28,8 @@ function route(http::HTTP.Stream, app::Server.iApplication)
     write(http, bdy)
 end
 
+urlprefix(::Server.iApplication) = ""
+
 function body(app::Server.iApplication, token::String, params::Dict{String, String})
     elementid = get(params, "bokeh-autoload-element", nothing)
     if isnothing(elementid)

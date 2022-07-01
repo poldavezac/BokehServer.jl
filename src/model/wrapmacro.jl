@@ -3,6 +3,7 @@ function _👻structure(
         parents :: Union{Symbol, Expr},
         fields  :: Vector{<:NamedTuple},
 )
+    @nospecialize cls parents fields
 
     code   = [_👻initcode(cls, fields, i) for i ∈ _👻filter(fields)]
     fnames = map(x->x.name, _👻filter(fields))
@@ -25,6 +26,7 @@ function _👻structure(
 end
 
 function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
+    @nospecialize cls fields
     code = _👻elseif_alias(fields, :(throw(ErrorException("unknown or read-only property $α")))) do i
         name = Meta.quot(i.name)
         set  = if i.js
@@ -61,6 +63,7 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
 end
 
 function _👻getter(cls::Symbol, fields::Vector{<:NamedTuple})
+    @nospecialize cls fields
     expr = _👻elseif_alias(fields, :(throw(ErrorException("unknown property $α")))) do field
         name = Meta.quot(field.name)
         :($(@__MODULE__).bokehread($(field.type), μ, $name, getfield(µ, $name)))
@@ -79,6 +82,7 @@ function _👻getter(cls::Symbol, fields::Vector{<:NamedTuple})
 end
 
 function _👻propnames(cls::Symbol, fields::Vector{<:NamedTuple})
+    @nospecialize cls fields
     quote
         function Base.propertynames(μ::$cls; private::Bool = false)
             return if private
@@ -91,6 +95,8 @@ function _👻propnames(cls::Symbol, fields::Vector{<:NamedTuple})
 end
 
 function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
+    @nospecialize cls fields
+
     function items(select::Symbol, sort::Bool)
         vals = if select ≡ :children
             [i.name for i ∈ fields if i.js && i.children]

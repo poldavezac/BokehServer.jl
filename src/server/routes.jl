@@ -7,24 +7,30 @@ include("routes/redirect.jl")
 include("routes/error.jl")
 include("routes/static.jl")
 
-function routeargs(apps::Dict{<:Val, <:iRoute}, http)
-    method = Val(Symbol(HTTP.method(http.message)))
-    app    = apps
-    key    = missing
+function route(http::HTTP.Stream, routes::RouteDict)
+    @debug "Opened new stream: $(http.message.target)"
+    try
+        http.message.body = readavailable(http)
+        closeread(http)
 
-    path   = Val.(Symbol.(HTTP.URIs.splitpath(HTTP.URI(http.message.target))))
-    if isempty(path)
-        key  = Val(:?)
-    elseif path[end] ≡ Val(Symbol("favicon.ico"))
-        app  = missing
-        key  = path[end]
-    elseif haskey(apps, path[1])
-        app  = apps[path[1]]
-        key  = length(path) ≡ 2 ? path[2] : Val(:?)
-    elseif length(path) ≡ 1
-        key  = path[1]
+        path   = Symbol.(HTTP.URIs.splitpath(HTTP.URI(http.message.target)))
+        if isempty(path)
+            # Redirect to main app ?
+            # Hijack the route by adding a `Server.route(::HTTP.Stream, :RouteDict, ::Val{:redirect})`
+            route(http, routes, Val(:redirect))
+        elseif haskey(routes, path[1])
+            # found an app, we deal with it
+            method = Val(Symbol(HTTP.method(http.message)))
+            @time route(http, method, routes[path[1]], Val.(path[2:end])...)
+        else
+            # Unknonw path
+            # Hijack the route by adding a `Server.route(::HTTP.Stream, ::Val{:404})`
+            route(http, Val(:404))
+        end
+    catch exc
+        route(http, Base.current_exceptions())
+        CONFIG.throwonerror && rethrow()
     end
-    return (http, method, app, key)
 end
 
-route(apps, http) = route(routeargs(apps, http)...)
+route(routes::RouteDict) = Base.Fix2(route, routes)

@@ -9,18 +9,27 @@ store anything but a complete SessionContext
 struct SessionKey <: iSessionContext
     id      :: String
     token   :: String
-    request :: HTTP.Request
+
+    function SessionKey(id, token; extra...)
+        if isnothing(token)
+            isnothing(id) && (id = Tokens.sessionid())
+            token = Tokens.token(id; extra...)
+        else
+            id = Tokens.sessionid(token)
+        end
+
+        return new(id, token)
+    end
 end
 
 struct SessionContext <: iSessionContext
     id      :: String
     token   :: String
-    request :: HTTP.Request
     doc     :: iDocument
     clients :: Set{WebSocket}
 
     SessionContext(b::SessionKey) = new(
-        b.id, b.token, b.request, Document(), Set{WebSocket}()
+        b.id, b.token, Document(), Set{WebSocket}()
     )
     SessionContext(a...) = new(a..., Document(), Set{WebSocket}())
 end
@@ -28,6 +37,11 @@ end
 Base.push!(σ::SessionContext, ws::WebSocket) = push!(σ.clients, ws)
 Base.pop!(σ::SessionContext, ws::WebSocket) = pop!(σ.clients, ws, nothing)
 Base.in(ws::WebSocket, σ::SessionContext) = ws ∈ σ.clients
+
+function Base.close(σ::SessionContext)
+    foreach(close, σ.clients)
+    empty(σ.clients)
+end
 
 """
     SessionKey(request::HTTP.Request)
@@ -47,19 +61,16 @@ function SessionKey(request::HTTP.Request)
     token = get(arguments, "bokeh-token", nothing)
     if !isnothing(token)
         isnothing(id) || httperror("Both token and session ID were provided")
-        id = Tokens.sessionid(token)
-    elseif isnothing(id)
-        id = Tokens.sessionid()
     end
 
-    if isnothing(token)
+    return if isnothing(token)
         cookies = Dict(HTTP.cookies(request)...)
         headers = Dict(HTTP.headers(request)...)
         if !isempty(cookies) &&  "Cookie" ∈ keys(headers)
             pop!(headers, "Cookie")
         end
-
-        token = Tokens.token(id; headers, cookies)
+        SessionKey(id, token; headers, cookies)
+    else
+        SessionKey(id, token)
     end
-    return SessionKey(id, token, request)
 end
