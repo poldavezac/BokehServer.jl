@@ -11,7 +11,7 @@
             root_ids   = ["1"],
         ),
         title   = "A",
-        version = Bokeh.PYTHON_VERSION,
+        version = "$(Bokeh.Protocol.PROTOCOL_VERSION)",
     ))
     @test Bokeh.Protocol.pushdoc(doc) == truth
 
@@ -25,7 +25,7 @@
             root_ids = ["10"]
         ),
         title   = "B",
-        version = Bokeh.PYTHON_VERSION,
+        version = "$(Bokeh.Protocol.PROTOCOL_VERSION)",
     ))
 
     @test doc.title == "A"

@@ -174,7 +174,7 @@ end
                 
             cnt = Dict(
                 "references" => [],
-                "events" =>  [js(Bokeh.Actions.ButtonClick(; model = btn))],
+                "events" =>  [js(Bokeh.Models.Actions.ButtonClick(; model = btn))],
             )
             Bokeh.Protocol.patchdoc!(doc, cnt, buf)
             @test called[]

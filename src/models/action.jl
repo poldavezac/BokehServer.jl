@@ -1,9 +1,10 @@
 module Actions
-using ..AbstractTypes
-using ..Model
-using ..Events
-using ..Events: iDocActionEvent, iModelActionEvent, iActionEvent
-using ..ModelTypes: iAbstractButton, iPlot, iModel, iDropdown
+using ...AbstractTypes
+using ...Model
+using ...Events
+using ...Events: iDocActionEvent, iModelActionEvent, iActionEvent
+using ...Protocol.PatchDocReceive
+using ..Models: iAbstractButton, iPlot, iModel, iDropdown
 abstract type iPlotActionEvent <: iModelActionEvent end
 
 """Announce when a Document is fully idle."""
@@ -244,6 +245,16 @@ function action!(𝐷::iDocument, ::Val{T}; model::iModel, k...) where {T}
     Events.executecallbacks(getfield(_EVENT_TYPES, T)(; model, k...))
 end
 
-export action!
+function PatchDocReceive.apply(::Val{:MessageSent}, 𝐷::iDocument, 𝐼::Dict{String})
+    if 𝐼["msg_type"] == "bokeh_event"
+        data = 𝐼["msg_data"]
+        action!(
+            𝐷,
+            Val(Symbol(data["event_name"]));
+            (Symbol(i) => j for (i, j) ∈ data["event_values"])...
+        )
+    end
+end
+
 end
 using .Actions

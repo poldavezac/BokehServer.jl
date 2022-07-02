@@ -2,7 +2,7 @@ module Messages
 using JSON
 using HTTP.WebSockets
 using ..AbstractTypes
-using ..Protocol: Buffers
+using ..Protocol: Buffers, PROTOCOL_VERSION
 
 const ID      = bokehidmaker()
 
@@ -137,7 +137,7 @@ message(hdr::_h"PATCH-DOC", evts::NamedTuple, buffers::Buffers; meta...)  = Prot
 message(hdr::_h"PULL-DOC-REPLY", reqid::String, doc::NamedTuple; meta...) = ProtocolIterator(hdr, doc, meta; reqid)
 message(hdr::_h"SERVER-INFO-REPLY", reqid::String; meta...)               = ProtocolIterator(
     hdr,
-    (; version_info = (; bokeh = Bokeh.PYTHON_VERSION, server = Bokeh.PYTHON_VERSION)),
+    (; version_info = (; bokeh = "$(PROTOCOL_VERSION)", server = "$(PROTOCOL_VERSION)")),
     meta;
     reqid
 )

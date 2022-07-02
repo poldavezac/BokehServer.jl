@@ -1,8 +1,8 @@
 module AxesPlotting
 using Dates
+using ...AbstractTypes
 using ...Model
 using ...Models
-using ...AbstractTypes
 
 Model.bokehconvert(::Type{Models.iRange}, ν::Union{Nothing, Missing}) = Models.DataRange1d()
 Model.bokehconvert(::Type{Models.iRange}, ν::Model.FactorSeq) = Models.FactorRange(; factors = ν)

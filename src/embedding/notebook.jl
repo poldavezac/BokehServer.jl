@@ -1,18 +1,17 @@
-module AutoLaunch
+module Notebooks
 using UUIDs
-using ..AbstractTypes
-using ..Server
-using ..Plotting
-using ..Model
-using ..Models
+using ...AbstractTypes
+using ...Server
+using ...Model
+using ...Models
 
-struct AutoLaunchServer
+struct NotebooksServer
     address :: String
     tcp     :: Server.HTTP.Server
     routes  :: Server.RouteDict
     lastid  :: Ref{String}
 
-    function AutoLaunchServer(host::String = Server.CONFIG.host, port::Int = Server.CONFIG.port)
+    function NotebooksServer(host::String = Server.CONFIG.host, port::Int = Server.CONFIG.port)
         routes = Server.RouteDict(Server.staticroutes(Server.CONFIG)...)
         new(
             "$host:$port",
@@ -23,24 +22,24 @@ struct AutoLaunchServer
     end
 end
 
-const SERVER = Ref{Union{AutoLaunchServer, Nothing}}(nothing)
+const SERVER = Ref{Union{NotebooksServer, Nothing}}(nothing)
 
-struct  AutoLaunchApp <: Server.iApplication
+struct  NotebooksApp <: Server.iApplication
     sessions :: Server.SessionList
     name     :: String
     key      :: UUID
     model    :: iModel
 
-    AutoLaunchApp(model::iModel) = new(
+    NotebooksApp(model::iModel) = new(
         Server.SessionList(), Server.makeid(nothing), getplutokey(), model
     )
 end
 
-Server.initialize!(𝐷::iDocument, 𝐴::AutoLaunchApp) = push!(𝐷, 𝐴.model)
+Server.initialize!(𝐷::iDocument, 𝐴::NotebooksApp) = push!(𝐷, 𝐴.model)
 
-function updateserver!(srv::AutoLaunchServer, model::Models.iLayoutDOM)
+function updateserver!(srv::NotebooksServer, model::Models.iLayoutDOM)
     header = Server.Templates.headers()
-    app    = AutoLaunchApp(model)
+    app    = NotebooksApp(model)
     
     foreach(keys(filter(isdeadapp∘last, srv.routes))) do name
         close(pop!(srv.routes, name))
@@ -65,12 +64,12 @@ function updateserver!(srv::AutoLaunchServer, model::Models.iLayoutDOM)
     )
 end
 
-function lastws(srv::AutoLaunchServer)
+function lastws(srv::NotebooksServer)
     isempty(srv.lastid[]) && return nothing 
     return "ws://$(srv.address)/$(srv.lastid[])/ws"
 end
 
-function stopserver!(srv::AutoLaunchServer)
+function stopserver!(srv::NotebooksServer)
     srv.lastid[] = ""
     vals = collect(values(srv.routes))
     empty!(srv.routes)
@@ -91,20 +90,22 @@ lastws() = isnothing(SERVER[]) ? nothing : lastws(SERVER[])
 
 function Base.show(io::IO, 𝑚::MIME"text/html", x::Models.iLayoutDOM)
     if isnothing(SERVER[])
-        if isdefined(Main, :PlutoRunner) && length(methods(Main.PlutoRunner.show_richest)) == 1
-            Main.PlutoRunner.eval(:(show_richest(io::IO, v::$(Model.iContainer)) = show_richest(io, v.values)))
-        end
+        addplutoshow()
 
-        SERVER[] = AutoLaunchServer()
+        SERVER[] = NotebooksServer()
     end
     return show(io, 𝑚, updateserver!(SERVER[], x))
 end
 
-isdeadapp(::Server.iRoute) = false
-
+function addplutoshow()
+    if isdefined(Main, :PlutoRunner) && length(methods(Main.PlutoRunner.show_richest)) == 1
+        Main.PlutoRunner.eval(:(show_richest(io::IO, v::$(Model.iContainer)) = show_richest(io, v.values)))
+    end
+end
 getplutofield(σ::Symbol, dflt) = isdefined(Main, :PlutoRunner) ? getfield(Main.PlutoRunner, σ) : dflt
-isdeadapp(𝐴::AutoLaunchApp)    = haskey(getplutofield(:cell_results, (;)), 𝐴.key)
-getplutokey()                  = getplutofield(:currently_running_cell_id, UUID(0))[]
+isdeadapp(::Server.iRoute)     = false
+isdeadapp(𝐴::NotebooksApp)     = haskey(getplutofield(:cell_results, (;)), 𝐴.key)
+getplutokey()                  = getplutofield(:currently_running_cell_id, Ref(UUID(0)))[]
 end
 
-using .AutoLaunch
+using .Notebooks

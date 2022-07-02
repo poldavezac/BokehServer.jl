@@ -1,7 +1,7 @@
 module GlyphPlotting
+using ...AbstractTypes
 using ...Model
 using ...Models
-using ...AbstractTypes
 
 function glyph(𝑇::Symbol; kwargs...)
     opts = filter((x -> "$x"[1] ∈ 'A':'Z'), names(Models; all = true))

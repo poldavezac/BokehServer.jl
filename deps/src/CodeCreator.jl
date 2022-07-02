@@ -2,9 +2,7 @@
 module CodeCreator
 module Bokeh
 # a very simplified Bokeh for parsing bokeh
-for name ∈ (:abstracttypes, :model, :event, :theme, :document)
-    include(joinpath((@__DIR__), "..", "..", "src", "$name.jl"))
-end
+include(joinpath((@__DIR__), "..", "..", "src", "core.jl"))
 end
 
 using .Bokeh
@@ -29,8 +27,6 @@ end
 function abstracttypescode(io::IO)
     direct = Dict{String, Symbol}()
     done   = Set{Symbol}()
-    println(io, "module ModelTypes")
-    println(io, "using ..AbstractTypes")
     for (name, opts) ∈ sort!(collect(hierarchy()); by = string∘first)
         @assert length(opts) > 1
         for i ∈ (length(opts)-1):-1:1
@@ -41,7 +37,6 @@ function abstracttypescode(io::IO)
         end
         isvirtual(name) || (direct[name] = opts[1])
     end
-    println(io, "end")
     return direct
 end
 
@@ -100,22 +95,11 @@ end
 function createmainfile(io::IO, deplist)
     println(io, "module Models")
     println(io, "using Dates")
+    println(io, "using ..AbstractTypes")
     println(io, "using ..Bokeh")
     println(io, "using ..Model")
-    println(io, "using ..AbstractTypes")
-
-    done   = Set{Symbol}()
-    for (name, opts) ∈ sort!(collect(hierarchy()); by = string∘first)
-        @assert length(opts) > 1
-        for i ∈ (length(opts)-1):-1:1
-            rem = setdiff(opts, done)
-            if !isempty(rem)
-                println(io, "using ..ModelTypes: $(join(rem, ", "))")
-                push!(done, rem...)
-            end
-        end
-    end
-
+    println(io, "include(\"models/modeltypes.jl\")")
+    println(io, "include(\"models/action.jl\")")
     println(io, "const iTemplate = String")
     for name ∈ sort!(collect(keys(deplist)))
         println(io, "include(\"models/$(filename(name)).jl\")")
@@ -135,12 +119,16 @@ function createcode(; adddoc ::Symbol = :none)
         f(io)
     end
 
-    cls = file(abstracttypescode, "modeltypes.jl")
+    foreach(
+        Base.Filesystem.rm,
+        filter!(
+            !Base.Fix1(occursin, "action.jl"),
+            readdir(joinpath((@__DIR__), "..", "..", "src", "models"); join = true)
+        )
+    )
+
+    cls = file(abstracttypescode, "models/modeltypes.jl")
     file(Base.Fix2(createmainfile, deplist), "models.jl")
-    let root = joinpath((@__DIR__), "..", "..", "src", "models")
-        Base.Filesystem.rm(root; recursive = true)
-        Base.Filesystem.mkdir(root)
-    end
     for name ∈ sort!(collect(keys(deplist)))
         @info "writing $(filename(name)).jl"
         file("models", "$(filename(name)).jl") do io

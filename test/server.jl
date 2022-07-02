@@ -75,28 +75,28 @@ end
     a::Int = 1
 end
 
-@testset "autolaunch" begin
+@testset "notebook" begin
     with_logger(Logging.NullLogger()) do
-        @test isnothing(Bokeh.AutoLaunch.SERVER[])
+        @test isnothing(Bokeh.Embeddings.Notebooks.SERVER[])
         io = IOBuffer()
         show(io, MIME("text/html"), ServerTestDOM(; a = 100))
         @test !isempty(String(take!(io)))
 
         sleep(0.01)
-        @test !isnothing(Bokeh.AutoLaunch.SERVER[])
-        @test !isempty(Bokeh.AutoLaunch.SERVER[].lastid[])
-        @test !isempty(Bokeh.AutoLaunch.SERVER[].routes)
+        @test !isnothing(Bokeh.Embeddings.Notebooks.SERVER[])
+        @test !isempty(Bokeh.Embeddings.Notebooks.SERVER[].lastid[])
+        @test !isempty(Bokeh.Embeddings.Notebooks.SERVER[].routes)
 
         val = Ref(false)
-        Bokeh.Client.open(Bokeh.AutoLaunch.lastws()) do _, doc
+        Bokeh.Client.open(Bokeh.Embeddings.Notebooks.lastws()) do _, doc
             @test length(doc) == 1
             val[] = true
         end
         yield()
         @test val[]
 
-        Bokeh.AutoLaunch.stopserver()
+        Bokeh.Embeddings.Notebooks.stopserver()
         sleep(0.01)
-        @test isnothing(Bokeh.AutoLaunch.SERVER[])
+        @test isnothing(Bokeh.Embeddings.Notebooks.SERVER[])
     end
 end

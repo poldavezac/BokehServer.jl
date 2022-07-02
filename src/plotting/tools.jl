@@ -1,7 +1,7 @@
 module ToolsPlotting
+using ...AbstractTypes
 using ...Model
 using ...Models
-using ...AbstractTypes
 
 function defaulttool(σ::Symbol)
     (σ ≡ :pan)           && return Models.PanTool(dimensions=:both)

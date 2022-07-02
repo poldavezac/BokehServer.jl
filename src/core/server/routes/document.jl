@@ -1,7 +1,6 @@
 module DocRoute
 using HTTP
 using JSON
-using ...Bokeh
 using ...AbstractTypes
 using ..Server
 using ..Server.Templates

@@ -6,7 +6,7 @@ function pushdoc(title :: AbstractString, roots, 𝑅::Serialize.iRules = Serial
             root_ids   = string.(bokehid.(roots)),
         ),
         title,
-        version = Bokeh.PYTHON_VERSION,
+        version = "$(PROTOCOL_VERSION)",
     )
 end
 

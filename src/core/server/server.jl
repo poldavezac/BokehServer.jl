@@ -10,21 +10,6 @@ functions or pairs of `name_of_app => app_or_function`
 # Examples
 
 ```julia
-# add an app which can be accessed using at `http://localhost:5006/myapp`
-@Bokeh.Server.register function myapp(doc::Bokeh.Document)
-    ...  anything such as `push!(doc, myroot)`
-    return nothing # the return is not used and can be anything
-end
-
-# add an app which can be accessed using at `http://localhost:5006/mysecondapp`
-@Bokeh.Server.register mysecondapp(doc::Bokeh.Document) = push!(doc, ...)
-
-Bokeh.Server.serve()
-```
-
-or even
-
-```julia
 Bokeh.Server.serve(
     function myapp(doc::Bokeh.Document)
         ...

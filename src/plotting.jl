@@ -1,10 +1,10 @@
 module Plotting
-using ...Documents
-using ...Model
-using ...Models
-using ...Models: Plot
-using ...AbstractTypes
-using ...Server
+using ..AbstractTypes
+using ..Documents
+using ..Model
+using ..Server
+using ..Models
+using ..Models: Plot
 include("plotting/axis.jl")
 include("plotting/tools.jl")
 include("plotting/glyph.jl")
