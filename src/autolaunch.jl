@@ -3,6 +3,7 @@ using UUIDs
 using ..AbstractTypes
 using ..Server
 using ..Plotting
+using ..Model
 using ..Models
 
 struct AutoLaunchServer
@@ -24,22 +25,22 @@ end
 
 const SERVER = Ref{Union{AutoLaunchServer, Nothing}}(nothing)
 
-struct  PlutoApplication <: Server.iApplication
+struct  AutoLaunchApp <: Server.iApplication
     sessions :: Server.SessionList
     name     :: String
     key      :: UUID
     model    :: iModel
 
-    PlutoApplication(model::iModel) = new(
+    AutoLaunchApp(model::iModel) = new(
         Server.SessionList(), Server.makeid(nothing), getplutokey(), model
     )
 end
 
-Server.initialize!(𝐷::iDocument, 𝐴::PlutoApplication) = push!(𝐷, 𝐴.model)
+Server.initialize!(𝐷::iDocument, 𝐴::AutoLaunchApp) = push!(𝐷, 𝐴.model)
 
 function updateserver!(srv::AutoLaunchServer, model::Models.iLayoutDOM)
     header = Server.Templates.headers()
-    app    = PlutoApplication(model)
+    app    = AutoLaunchApp(model)
     
     foreach(keys(filter(isdeadapp∘last, srv.routes))) do name
         close(pop!(srv.routes, name))
@@ -89,14 +90,20 @@ end
 lastws() = isnothing(SERVER[]) ? nothing : lastws(SERVER[])
 
 function Base.show(io::IO, 𝑚::MIME"text/html", x::Models.iLayoutDOM)
-    isnothing(SERVER[]) && (SERVER[] = AutoLaunchServer())
+    if isnothing(SERVER[])
+        if isdefined(Main, :PlutoRunner) && length(methods(Main.PlutoRunner.show_richest)) == 1
+            Main.PlutoRunner.eval(:(show_richest(io::IO, v::$(Model.iContainer)) = show_richest(io, v.values)))
+        end
+
+        SERVER[] = AutoLaunchServer()
+    end
     return show(io, 𝑚, updateserver!(SERVER[], x))
 end
 
 isdeadapp(::Server.iRoute) = false
 
 getplutofield(σ::Symbol, dflt) = isdefined(Main, :PlutoRunner) ? getfield(Main.PlutoRunner, σ) : dflt
-isdeadapp(𝐴::PlutoApplication) = haskey(getplutofield(:cell_results, (;)), 𝐴.key)
+isdeadapp(𝐴::AutoLaunchApp)    = haskey(getplutofield(:cell_results, (;)), 𝐴.key)
 getplutokey()                  = getplutofield(:currently_running_cell_id, UUID(0))[]
 end
 
