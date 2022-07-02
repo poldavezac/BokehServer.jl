@@ -84,8 +84,8 @@ end
 
         sleep(0.01)
         @test !isnothing(Bokeh.AutoLaunch.SERVER[])
-        @test !isempty(Bokeh.AutoLaunch.SERVER[][2].lastid[])
-        @test !isempty(Bokeh.AutoLaunch.SERVER[][2].routes)
+        @test !isempty(Bokeh.AutoLaunch.SERVER[].lastid[])
+        @test !isempty(Bokeh.AutoLaunch.SERVER[].routes)
 
         val = Ref(false)
         Bokeh.Client.open(Bokeh.AutoLaunch.lastws()) do _, doc

@@ -13,7 +13,7 @@ function route(http::HTTP.Stream, routes::RouteDict)
         http.message.body = readavailable(http)
         closeread(http)
 
-        path   = Symbol.(HTTP.URIs.splitpath(HTTP.URI(http.message.target)))
+        path = Symbol.(HTTP.URIs.splitpath(HTTP.URI(http.message.target)))
         if isempty(path)
             # Redirect to main app ?
             # Hijack the route by adding a `Server.route(::HTTP.Stream, :RouteDict, ::Val{:redirect})`

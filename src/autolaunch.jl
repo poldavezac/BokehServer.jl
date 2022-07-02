@@ -1,4 +1,5 @@
 module AutoLaunch
+using UUIDs
 using ..AbstractTypes
 using ..Server
 using ..Plotting
@@ -6,94 +7,97 @@ using ..Models
 
 struct AutoLaunchServer
     address :: String
-    tcp     :: Server.HTTP.Sockets.TCPServer
+    tcp     :: Server.HTTP.Server
     routes  :: Server.RouteDict
     lastid  :: Ref{String}
 
-end
-
-const SERVER = Ref{Union{Tuple{Task, AutoLaunchServer}, Nothing}}(nothing)
-
-function startserver(host::String = Server.CONFIG.host, port::Int = Server.CONFIG.port)
-    srv = AutoLaunchServer(
-        "$host:$port",
-        Server.HTTP.Sockets.listen(Server.HTTP.Sockets.InetAddr(host, port)),
-        Server.RouteDict(),
-        Ref("")
-    )
-    task = @async try
-        Server.serve!(srv.routes, host, port; server = srv.tcp)
-    catch exc
-        @error "AutolaunchServer error" exception = (exc, Base.catch_backtrace())
+    function AutoLaunchServer(host::String = Server.CONFIG.host, port::Int = Server.CONFIG.port)
+        routes = Server.RouteDict(Server.staticroutes(Server.CONFIG)...)
+        new(
+            "$host:$port",
+            Server.HTTP.listen!(Server.route(routes), host, port),
+            routes,
+            Ref(""),
+        )
     end
-    sleep(.01) # launch the server please!
-    @assert istaskstarted(task)
-    @assert !istaskdone(task)
-    return (task, srv)
 end
+
+const SERVER = Ref{Union{AutoLaunchServer, Nothing}}(nothing)
+
+struct  PlutoApplication <: Server.iApplication
+    sessions :: Server.SessionList
+    name     :: String
+    key      :: UUID
+    model    :: iModel
+
+    PlutoApplication(model::iModel) = new(
+        Server.SessionList(), Server.makeid(nothing), getplutokey(), model
+    )
+end
+
+Server.initialize!(𝐷::iDocument, 𝐴::PlutoApplication) = push!(𝐷, 𝐴.model)
 
 function updateserver!(srv::AutoLaunchServer, model::Models.iLayoutDOM)
     header = Server.Templates.headers()
-    app    = Server.Application(Base.Fix2(push!, model))
-    id     = makedocid(app)
-    token  = srv.lastid[] = Server.SessionKey(id, nothing).token
+    app    = PlutoApplication(model)
     
-    foreach(filter(iskeyalive, keys(srv.routes))) do key::Symbol
-        close(pop!(srv.routes, key))
+    foreach(keys(filter(isdeadapp∘last, srv.routes))) do name
+        close(pop!(srv.routes, name))
     end
 
-    push!(srv.routes, Symbol(id) => app)
+    push!(srv.routes, Symbol(app.name) => app)
+    srv.lastid[] = app.name
 
     roots = Server.makerootids(app, model)
     return HTML(
         header
         * Server.Templates.embed(roots)
         * Server.Templates.docjsscripts(
-            app, token, roots;
+            app,
+            Server.Tokens.token(app.name),
+            roots;
             use_for_title = false,
             absolute_url  = "http://$(srv.address)",
-            app_path      = "/$id",
-            id,
+            app_path      = "/$(app.name)",
+            id            = app.name,
         )
     )
 end
 
 function lastws(srv::AutoLaunchServer)
     isempty(srv.lastid[]) && return nothing 
-    return "ws://$(srv.address)/$(Server.Tokens.sessionid(srv.lastid[]))/ws"
+    return "ws://$(srv.address)/$(srv.lastid[])/ws"
 end
 
 function stopserver!(srv::AutoLaunchServer)
-    foreach(close, values(srv.routes))
-    empty!(srv.routes)
-    close(srv.tcp)
     srv.lastid[] = ""
+    vals = collect(values(srv.routes))
+    empty!(srv.routes)
+
+    foreach(close, vals)
+    close(srv.tcp)
     return nothing
 end
 
 function stopserver()
     isnothing(SERVER[]) && return
-    (task, srv) = SERVER[]
-    SERVER[]    = nothing
+    srv      = SERVER[]
+    SERVER[] = nothing
     stopserver!(srv)
-    wait(task)
 end
 
-lastws() = isnothing(SERVER[]) ? nothing : lastws(SERVER[][2])
-
-if isdefined(Main, :PlutoRunner)
-    iskeyalive(key::Symbol) = haskey(Main.PlutoRunner.cell_results, "$key"[6:end]) 
-    makedocid(_)            = "bokeh$(Main.PlutoRunner.currently_running_cell_id[])"
-else
-    iskeyalive(_)  = true
-    makedocid(app) = Server.makeid(app)
-end
+lastws() = isnothing(SERVER[]) ? nothing : lastws(SERVER[])
 
 function Base.show(io::IO, 𝑚::MIME"text/html", x::Models.iLayoutDOM)
-    (isnothing(SERVER[]) || istaskdone(SERVER[][1])) && (SERVER[] = startserver())
-    return show(io, 𝑚, updateserver!(SERVER[][2], x))
+    isnothing(SERVER[]) && (SERVER[] = AutoLaunchServer())
+    return show(io, 𝑚, updateserver!(SERVER[], x))
 end
 
+isdeadapp(::Server.iRoute) = false
+
+getplutofield(σ::Symbol, dflt) = isdefined(Main, :PlutoRunner) ? getfield(Main.PlutoRunner, σ) : dflt
+isdeadapp(𝐴::PlutoApplication) = haskey(getplutofield(:cell_results, (;)), 𝐴.key)
+getplutokey()                  = getplutofield(:currently_running_cell_id, UUID(0))[]
 end
 
 using .AutoLaunch

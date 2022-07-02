@@ -34,9 +34,8 @@ Bokeh.Server.serve(
 ```
 """
 function serve!(routes :: RouteDict, host :: AbstractString, port :: Int; kwa...)
-    @info(
+    isempty(routes) || @info(
         "serving applications",
-        threads = Threads.nthreads(),
         (i => joinpath("http://$host:$port", "$i") for i ∈ keys(routes))...
     )
     haskey(routes, :static) || push!(routes, staticroutes(CONFIG)...)
