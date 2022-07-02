@@ -12,6 +12,8 @@ struct AutoLaunchServer
 
 end
 
+const SERVER = Ref{Union{Tuple{Task, AutoLaunchServer}, Nothing}}(nothing)
+
 function startserver(host::String = Server.CONFIG.host, port::Int = Server.CONFIG.port)
     srv = AutoLaunchServer(
         "$host:$port",
@@ -31,7 +33,7 @@ function startserver(host::String = Server.CONFIG.host, port::Int = Server.CONFI
 end
 
 function updateserver!(srv::AutoLaunchServer, model::Models.iLayoutDOM)
-    header = isempty(srv.lastid) ? Server.Templates.headers() : "" 
+    header = Server.Templates.headers()
     app    = Server.Application(Base.Fix2(push!, model))
     id     = makedocid(app)
     token  = srv.lastid[] = Server.SessionKey(id, nothing).token
@@ -69,18 +71,6 @@ function stopserver!(srv::AutoLaunchServer)
     return nothing
 end
 
-const SERVER = Ref{Any}(nothing)
-
-function Base.show(io::IO, 𝑚::MIME"text/html", children::AbstractArray)
-    obj = Plotting.layout(children)
-    return isnothing(obj) ? show(io, MIME("text/plain"), children) : show(io, m, obj)
-end
-
-function Base.show(io::IO, 𝑚::MIME"text/html", x::Models.iLayoutDOM)
-    (isnothing(SERVER[]) || istaskdone(SERVER[])) && (SERVER[] = startserver())
-    return show(io, 𝑚, updateserver!(SERVER[][2], x))
-end
-
 function stopserver()
     isnothing(SERVER[]) && return
     (task, srv) = SERVER[]
@@ -98,6 +88,12 @@ else
     iskeyalive(_)  = true
     makedocid(app) = Server.makeid(app)
 end
+
+function Base.show(io::IO, 𝑚::MIME"text/html", x::Models.iLayoutDOM)
+    (isnothing(SERVER[]) || istaskdone(SERVER[][1])) && (SERVER[] = startserver())
+    return show(io, 𝑚, updateserver!(SERVER[][2], x))
+end
+
 end
 
 using .AutoLaunch

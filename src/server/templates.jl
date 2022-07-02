@@ -92,6 +92,6 @@ end
 
 function headers(tpe::Val = Val(:server); kwa...)
     vals = Server.staticbundle(tpe; kwa...).js_files
-    return join((string("<script src=\"", i, "\">") for i ∈ vals), "\n")
+    return join(("<script type=\"text/javascript\" src=\"$i\"></script>" for i ∈ vals), "\n")
 end
 end

@@ -278,7 +278,7 @@ for meth ∈ methods(Models.glyphargs)
         @eval $𝐹!(fig::Models.Plot; kwa...) = glyph!(fig, $cls; kwa...)
         @eval function $𝐹(; kwa...)
             fig = figure(; (i for i ∈ kwa if first(i) ∈ $fargs)...)
-            glyph!(fig, $cls; (i for i ∈ kwa if first(i) ∉ $fargs)...)
+            glyph!(fig, $cls; (i for i ∈ kwa if first(i) ∉ $fargs)..., dotrigger = false)
             fig
         end
 
