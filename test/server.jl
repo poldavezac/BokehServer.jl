@@ -92,7 +92,7 @@ end
             @test length(doc) == 1
             val[] = true
         end
-        yield()
+        sleep(0.01)
         @test val[]
 
         Bokeh.Embeddings.Notebooks.stopserver()
