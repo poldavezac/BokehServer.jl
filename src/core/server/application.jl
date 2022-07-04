@@ -10,6 +10,7 @@ Base.get!(λ::SessionList, σ::SessionContext)  = get!(λ.sessions, σ.id, σ)
 Base.push!(λ::SessionList, σ::SessionContext) = push!(λ.sessions, σ.id => σ)
 Base.pop!(λ::SessionList, σ::iSessionContext) = pop!(λ.sessions, σ.id, nothing)
 Base.in(σ::iSessionContext, λ::SessionList)   = haskey(λ.sessions, σ.id)
+Base.values(λ::SessionList)                   = values(λ.sessions)
 
 function Base.close(λ::SessionList)
     foreach(close, values(λ.sessions))

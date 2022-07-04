@@ -10,8 +10,11 @@ include("event/flush.jl")
 include("event/callbacks.jl")
 
 const TASK_EVENTS = :BOKEH_EVENTS
-task_hasevents() = TASK_EVENTS ∈ keys(task_local_storage())
-task_eventlist() = task_local_storage(TASK_EVENTS)
+"A global task list, to be used *sparringly* when we can't control task creation, say in Pluto notebooks"
+const EVENTS      = Ref{Union{Nothing, iEventList}}(nothing)
+
+task_hasevents() = !isnothing(EVENTS[]) || haskey(task_local_storage(), TASK_EVENTS)
+task_eventlist() = get(task_local_storage(), TASK_EVENTS, EVENTS[])
 
 function eventlist!(func::Function, λ = EventList(); flush :: Bool = true)
     task_local_storage(TASK_EVENTS, λ) do

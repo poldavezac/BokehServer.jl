@@ -76,10 +76,11 @@ end
 end
 
 @testset "notebook" begin
-    with_logger(Logging.NullLogger()) do
+    # with_logger(Logging.NullLogger()) do
         @test isnothing(Bokeh.Embeddings.Notebooks.SERVER[])
-        io = IOBuffer()
-        show(io, MIME("text/html"), ServerTestDOM(; a = 100))
+        io  = IOBuffer()
+        dom = ServerTestDOM(; a = 100)
+        show(io, MIME("text/html"), dom)
         @test !isempty(String(take!(io)))
 
         sleep(0.01)
@@ -88,8 +89,22 @@ end
         @test !isempty(Bokeh.Embeddings.Notebooks.SERVER[].routes)
 
         val = Ref(false)
-        Bokeh.Client.open(Bokeh.Embeddings.Notebooks.lastws()) do _, doc
+        Bokeh.Client.open(Bokeh.Embeddings.Notebooks.lastws()) do hdl::Bokeh.Client.MessageHandler
+            doc = hdl.doc
+
             @test length(doc) == 1
+            task_local_storage(Bokeh.Events.TASK_EVENTS, Bokeh.Events.EVENTS[]) do
+                # by default, the bokeh client has its own event list
+                # we impose the notebook one here
+                dom.a = 10
+            end
+            @test doc.roots[1].a ≡ 100
+            @test !isnothing(Bokeh.Events.EVENTS[].task)
+            wait(Bokeh.Events.EVENTS[].task)
+            @test isnothing(Bokeh.Events.EVENTS[].task)
+            
+            Bokeh.Client.receivemessage(hdl)  # need to handle the patchdoc
+            @test doc.roots[1].a ≡ 10
             val[] = true
         end
         sleep(0.01)
@@ -98,5 +113,5 @@ end
         Bokeh.Embeddings.Notebooks.stopserver()
         sleep(0.01)
         @test isnothing(Bokeh.Embeddings.Notebooks.SERVER[])
-    end
+    # end
 end

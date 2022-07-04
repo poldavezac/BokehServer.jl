@@ -1,9 +1,11 @@
 module Notebooks
 using UUIDs
 using ...AbstractTypes
-using ...Server
+using ...Events
 using ...Model
 using ...Models
+using ...Protocol
+using ...Server
 
 struct NotebooksServer
     address :: String
@@ -27,15 +29,21 @@ const SERVER = Ref{Union{NotebooksServer, Nothing}}(nothing)
 struct  NotebooksApp <: Server.iApplication
     sessions :: Server.SessionList
     name     :: String
-    key      :: UUID
+    key      :: Union{Nothing, UUID}
     model    :: iModel
+    modelids :: Set{Int64}
 
     NotebooksApp(model::iModel) = new(
-        Server.SessionList(), Server.makeid(nothing), getplutokey(), model
+        Server.SessionList(), Server.makeid(nothing), getplutokey(),
+        model, Model.allids(model)
     )
 end
 
-Server.initialize!(𝐷::iDocument, 𝐴::NotebooksApp) = push!(𝐷, 𝐴.model)
+struct NotebooksEventList <: Events.iEventList
+    events::Vector{Events.iEvent}
+end
+
+Server.initialize!(𝐷::iDocument, 𝐴::NotebooksApp) = push!(𝐷, 𝐴.model; dotrigger = false)
 
 function updateserver!(srv::NotebooksServer, model::Models.iLayoutDOM)
     header = Server.Templates.headers()
@@ -81,31 +89,58 @@ end
 
 function stopserver()
     isnothing(SERVER[]) && return
-    srv      = SERVER[]
-    SERVER[] = nothing
+    srv             = SERVER[]
+    SERVER[]        = nothing
+    Events.EVENTS[] = nothing
     stopserver!(srv)
 end
 
 lastws() = isnothing(SERVER[]) ? nothing : lastws(SERVER[])
 
+function Events.flushevents!(λ::NotebooksEventList)
+    lst = invoke(Events.flushevents!, Tuple{Events.iEventList}, λ)
+    isempty(lst) || patchdoc(lst, values(SERVER[].routes))
+end
+
+function patchdoc(lst, routes)
+    for app ∈ routes
+        iscurrentapp(app) && continue
+
+        cpy = copy(app.modelids)
+
+        empty!(app.modelids)
+        union!(app.modelids, Model.allids(app.model))
+
+        for sess ∈ values(Server.sessions(app))
+            Protocol.patchdoc(lst, sess.doc, cpy, sess.clients...)
+        end
+    end
+end
+
 function Base.show(io::IO, 𝑚::MIME"text/html", x::Models.iLayoutDOM)
     if isnothing(SERVER[])
-        addplutoshow()
+        SERVER[]        = NotebooksServer()
+        Events.EVENTS[] = Events.Deferred{NotebooksEventList}()
 
-        SERVER[] = NotebooksServer()
+        addplutocode()
     end
     return show(io, 𝑚, updateserver!(SERVER[], x))
 end
 
-function addplutoshow()
+function addplutocode()
     if isdefined(Main, :PlutoRunner) && length(methods(Main.PlutoRunner.show_richest)) == 1
-        Main.PlutoRunner.eval(:(show_richest(io::IO, v::$(Model.iContainer)) = show_richest(io, v.values)))
+        Main.PlutoRunner.eval(quote
+            show_richest(io::IO, v::$(Model.iContainer)) = show_richest(io, v.values)
+        end)
     end
 end
+
 getplutofield(σ::Symbol, dflt) = isdefined(Main, :PlutoRunner) ? getfield(Main.PlutoRunner, σ) : dflt
-isdeadapp(::Server.iRoute)     = false
+isdeadapp(::Server.iRoute)     = (@assert !(Server.iRoute isa NotebooksApp); false)
 isdeadapp(𝐴::NotebooksApp)     = haskey(getplutofield(:cell_results, (;)), 𝐴.key)
-getplutokey()                  = getplutofield(:currently_running_cell_id, Ref(UUID(0)))[]
+iscurrentapp(𝐴::Server.iRoute) = (@assert !(Server.iRoute isa NotebooksApp); true)
+iscurrentapp(𝐴::NotebooksApp)  = !isnothing(𝐴.key) && getplutokey() == 𝐴.key 
+getplutokey()                  = getplutofield(:currently_running_cell_id, Ref(nothing))[]
 end
 
 using .Notebooks

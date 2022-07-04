@@ -217,6 +217,8 @@ function receivemessage(ws, timeout :: Real, sleepperiod::Real)
     return Message(RawMessage(ws, timeout => sleepperiod))
 end
 
+Base.isempty(::Message{:EMPTY}) = true
+Base.isempty(::Message) = false
 export sendmessage, Message, @msg_str, receivemessage
 end
 

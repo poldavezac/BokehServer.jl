@@ -9,6 +9,12 @@ using ..Server: CONFIG
 
 struct ServerError <: Exception end
 
+@Base.kwdef struct MessageHandler
+    ws            :: WebSockets.WebSocket
+    events        :: Events.iEventList
+    doc           :: Document
+end
+
 handle(msg, _...) = begin
     @info "Receive a message" msg.header
     false
@@ -23,14 +29,22 @@ function handle(msg::msg"ERROR", _)
     throw(ServerError())
 end
 
-function handle(msg::msg"PULL-DOC-REPLY", msgid, doc)
+function handle(msg::msg"PULL-DOC-REPLY", msgid, ω::MessageHandler)
     @debug "Receive a reply" msg.header
     if requestid(msg) ≡ msgid
-        Protocol.onreceive!(msg, doc, Events.NullEventList())
+        Protocol.onreceive!(msg, ω.doc, ω.events)
         return true
     end
     return false
 end
+
+handle(μ::msg"PUSH-DOC,PATCH-DOC", ω::MessageHandler) = Protocol.onreceive!(μ, ω.doc, ω.events, ω.ws)
+
+function receivemessage(ω::MessageHandler, args...)
+    handle(Protocol.receivemessage(ω.ws, CONFIG.wstimeout, CONFIG.wssleepperiod), args..., ω)
+end
+
+sendmessage(ω::MessageHandler) = Protocol.receivemessage(ω.ws, CONFIG.wstimeout, CONFIG.wssleepperiod)
 
 function open(
         𝐹::Function,
@@ -47,19 +61,18 @@ function open(
     push!(headers, Tokens.WEBSOCKET_PROTOCOL => "bokeh,$token")
 
     WebSockets.open(url; kwa..., retry, headers) do ws :: WebSockets.WebSocket
-        doc = nothing
-        try
+        return try
+            hdl = MessageHandler(; ws, events, doc = Document())
             let msg = Protocol.receivemessage(ws, CONFIG.wstimeout, CONFIG.wssleepperiod)
                 @assert msg isa msg"ACK"
             end
 
-            doc = Document()
             if dopull
                 msgid    = Protocol.sendmessage(ws, msg"PULL-DOC-REQ")
                 timedout = time() + timeout
                 found    = false
                 while time() < timedout
-                    if handle(Protocol.receivemessage(ws, CONFIG.wstimeout, CONFIG.wssleepperiod), msgid, doc)
+                    if receivemessage(hdl, msgid)
                         found = true
                         break
                     end
@@ -71,14 +84,18 @@ function open(
                 end
             end
 
-            Protocol.patchdoc(()->𝐹(ws, doc), doc, events, ws)
+            Protocol.patchdoc(hdl.doc, hdl.events, hdl.ws) do
+                applicable(𝐹, hdl.ws, hdl.doc) ? 𝐹(hdl.ws, hdl.doc) : 𝐹(hdl)
+            end
+
+            hdl.doc
         catch exc
             exc isa ServerError || (@error "Client error" exception = (exc, Base.catch_backtrace()))
+            exc
         finally
             close(ws)
             yield()
         end
-        return doc
     end
 end
 
