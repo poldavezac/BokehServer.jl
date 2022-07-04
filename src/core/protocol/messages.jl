@@ -217,9 +217,13 @@ function receivemessage(ws, timeout :: Real, sleepperiod::Real)
     return Message(RawMessage(ws, timeout => sleepperiod))
 end
 
+isreply(::Type{msg"PULL-DOC-REQ"}, msgid::String, outp::msg"PULL-DOC-REPLY") = requestid(outp) ≡ msgid
+isreply(::Type{msg"SERVER-INFO-REQ"}, msgid::String, outp::msg"SERVER-INFO-REPLY") = requestid(outp) ≡ msgid
+isreply(::Type{<:Message}, _...) = false
+
 Base.isempty(::Message{:EMPTY}) = true
 Base.isempty(::Message) = false
-export sendmessage, Message, @msg_str, receivemessage
+export sendmessage, Message, @msg_str, receivemessage, isreply
 end
 
 using .Messages

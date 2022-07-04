@@ -9,16 +9,18 @@ using ..Server: CONFIG
 
 struct ServerError <: Exception end
 
-@Base.kwdef struct MessageHandler
-    ws            :: WebSockets.WebSocket
-    events        :: Events.iEventList
-    doc           :: Document
+struct MessageHandler
+    ws      :: WebSockets.WebSocket
+    events  :: Events.iEventList
+    doc     :: Document
+    timeout :: Int
 end
 
 handle(msg, _...) = begin
     @info "Receive a message" msg.header
-    false
+    msg
 end
+handle(msg::msg"ACK,EMPTY", _) = msg
 
 function handle(msg::msg"ERROR", _)
     @error(
@@ -31,20 +33,30 @@ end
 
 function handle(msg::msg"PULL-DOC-REPLY", msgid, ω::MessageHandler)
     @debug "Receive a reply" msg.header
-    if requestid(msg) ≡ msgid
-        Protocol.onreceive!(msg, ω.doc, ω.events)
-        return true
-    end
-    return false
+    Protocol.isreply(msg"PULL-DOC-REQ", msgid, msg) && Protocol.onreceive!(msg, ω.doc, ω.events)
 end
 
-handle(μ::msg"PUSH-DOC,PATCH-DOC", ω::MessageHandler) = Protocol.onreceive!(μ, ω.doc, ω.events, ω.ws)
+function handle(μ::msg"PUSH-DOC,PATCH-DOC", ω::MessageHandler)
+    Protocol.onreceive!(μ, ω.doc, ω.events, ω.ws)
+end
 
 function receivemessage(ω::MessageHandler, args...)
-    handle(Protocol.receivemessage(ω.ws, CONFIG.wstimeout, CONFIG.wssleepperiod), args..., ω)
+    msg = Protocol.receivemessage(ω.ws, CONFIG.wstimeout, CONFIG.wssleepperiod)
+    handle(msg, args..., ω)
+    msg
 end
 
-sendmessage(ω::MessageHandler) = Protocol.receivemessage(ω.ws, CONFIG.wstimeout, CONFIG.wssleepperiod)
+sendmessage(ω::MessageHandler, msg) = Protocol.sendmessage(ω.ws, msg)
+
+function sendmessage(ω::MessageHandler, inpt::Type{msg"PULL-DOC-REQ"})
+    msgid    = Protocol.sendmessage(ω.ws, inpt)
+    timedout = time() + ω.timeout
+    while time() < timedout
+        msg = receivemessage(ω, msgid)
+        Protocol.isreply(inpt, msgid, msg) && return msg
+    end
+    return msg"EMPTY"()
+end
 
 function open(
         𝐹::Function,
@@ -62,26 +74,14 @@ function open(
 
     WebSockets.open(url; kwa..., retry, headers) do ws :: WebSockets.WebSocket
         return try
-            hdl = MessageHandler(; ws, events, doc = Document())
-            let msg = Protocol.receivemessage(ws, CONFIG.wstimeout, CONFIG.wssleepperiod)
+            hdl = MessageHandler(ws, events, Document(), timeout)
+            let msg = receivemessage(hdl)
                 @assert msg isa msg"ACK"
             end
 
-            if dopull
-                msgid    = Protocol.sendmessage(ws, msg"PULL-DOC-REQ")
-                timedout = time() + timeout
-                found    = false
-                while time() < timedout
-                    if receivemessage(hdl, msgid)
-                        found = true
-                        break
-                    end
-                end
-
-                if !found
-                    @error "Timed-out"
-                    return nothing
-                end
+            if dopull && isempty(sendmessage(hdl, msg"PULL-DOC-REQ"))
+                @error "Timed-out"
+                return nothing
             end
 
             Protocol.patchdoc(hdl.doc, hdl.events, hdl.ws) do
