@@ -144,3 +144,14 @@ getcurrentcellkey()            = getplutofield(:currently_running_cell_id, Ref(n
 end
 
 using .Notebooks
+
+"""
+    notebook()
+
+Provides the headers needed for a notebook to display the plots.
+Should be returned - and displayed - by a cell prior to displaying plots.
+
+*Note* Needed by `IJulia`, not `Pluto`.
+"""
+notebook() = HTML(Server.Templates.headers())
+export notebook
