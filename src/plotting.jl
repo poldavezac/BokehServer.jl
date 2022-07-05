@@ -10,4 +10,6 @@ include("plotting/tools.jl")
 include("plotting/glyph.jl")
 include("plotting/figure.jl")
 include("plotting/serve.jl")
+include("plotting/layout.jl")
 end
+using .Plotting

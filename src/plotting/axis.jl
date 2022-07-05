@@ -335,3 +335,4 @@ end
 end
 
 using .AxesPlotting: addaxis!, getaxis, createaxis, popaxis!, resetaxis!
+export addaxis!, getaxis, createaxis, popaxis!, resetaxis!

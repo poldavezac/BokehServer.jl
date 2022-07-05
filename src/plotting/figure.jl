@@ -35,32 +35,4 @@ function figure(; k...)
     return plot
 end
 
-"""
-    layout(obj::AbstractArray{<:Models.iLayoutDOM, 2})
-    layout(obj::AbstractVector{<:Models.iLayoutDOM})
-
-create a layout
-"""
-function layout(children::AbstractVector{<:Models.iLayoutDOM})
-    return if isempty(children)
-        nothing
-    elseif length(children) ≡ 1
-        children[1]
-    else
-        Models.Row(; children = collect(Models.iLayoutDOM, children))
-    end
-end
-
-function layout(children::AbstractArray{<:Models.iLayoutDOM, 2})
-    return if isempty(children)
-        nothing
-    elseif length(children) ≡ 1
-        children[1]
-    elseif size(x, 1) ≡ 1
-        Models.Row(; children = collect(Models.iLayoutDOM, children))
-    elseif size(x, 2) ≡ 1
-        Models.Column(; children = collect(Models.iLayoutDOM, children))
-    else
-        Models.Row(; children = [layout(@view children[i,:]) for i ∈ axes(x,1)])
-    end
-end
+export figure

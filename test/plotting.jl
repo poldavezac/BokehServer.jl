@@ -28,6 +28,31 @@
     @test length(items.grids) == 0
 end
 
+@testset "create layout" begin
+    plt = Bokeh.Models.Plot()
+    @assert plt isa Bokeh.Models.iLayoutDOM
+    obj = Bokeh.Plotting.layout([plt, plt]; toolbar_location = nothing, dotrigger = false)
+    @test [i[2:end] for i ∈ obj.children] == [(0,0,1,1), (1,0,1,1)]
+
+    obj = Bokeh.Plotting.layout([plt, plt]'; toolbar_location = nothing, dotrigger = false)
+    @test [i[2:end] for i ∈ obj.children] == [(0,0,1,1), (0,1,1,1)]
+
+    obj = Bokeh.Plotting.layout([[plt, plt]', plt]; toolbar_location = nothing, dotrigger = false)
+    @test [i[2:end] for i ∈ obj.children] == [(0,0,1,1), (0,1,1,1), (1, 0, 1, 2)]
+
+
+    obj = Bokeh.Plotting.layout([plt plt; plt plt]; toolbar_location = nothing, dotrigger = false)
+    @test [i[2:end] for i ∈ obj.children] == [(0,0,1,1), (0,1,1,1), (1, 0, 1, 1), (1, 1, 1, 1)]
+
+    obj = Bokeh.Plotting.layout([plt plt]; toolbar_location = :above, dotrigger = false)
+    @test obj isa Bokeh.Models.Column
+    @test obj.children[2] isa Bokeh.Models.GridBox
+
+    obj = Bokeh.Plotting.layout([plt plt]; toolbar_location = :right, dotrigger = false)
+    @test obj isa Bokeh.Models.Row
+    @test obj.children[1] isa Bokeh.Models.GridBox
+end
+
 @testset "create glyph" begin
     plot = Bokeh.Plotting.figure()
     @test isempty(plot.renderers)

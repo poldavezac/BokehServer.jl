@@ -281,6 +281,7 @@ for meth ∈ methods(Models.glyphargs)
             glyph!(fig, $cls; (i for i ∈ kwa if first(i) ∉ $fargs)..., dotrigger = false)
             fig
         end
+        @eval export $𝐹!, $𝐹
 
         for n ∈ (𝐹, 𝐹!)
             doc = let io = IOBuffer()
