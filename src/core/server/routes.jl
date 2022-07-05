@@ -21,15 +21,20 @@ function route(http::HTTP.Stream, routes::RouteDict)
         elseif haskey(routes, path[1])
             # found an app, we deal with it
             method = Val(Symbol(HTTP.method(http.message)))
-            route(http, method, routes[path[1]], Val.(path[2:end])...)
+            @time route(http, method, routes[path[1]], Val.(path[2:end])...)
         else
             # Unknonw path
             # Hijack the route by adding a `Server.route(::HTTP.Stream, ::Val{:404})`
             route(http, Val(:404))
         end
     catch exc
-        route(http, Base.current_exceptions())
-        CONFIG.throwonerror && rethrow()
+        if exc isa InterruptException
+            # leave the handling to someone else
+            rethrow()
+        else
+            route(http, Base.current_exceptions())
+            CONFIG.throwonerror && rethrow()
+        end
     end
 end
 

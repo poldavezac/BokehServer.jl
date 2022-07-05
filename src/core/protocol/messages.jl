@@ -69,9 +69,11 @@ struct ProtocolIterator
         dhdr  = Dict{Symbol, Any}(kwa...)
 
         if :msgid ∈ keys(dmeta)
-            dhdr[:msgid] = pop!(dmeta, :msgid)
+            dhdr[:msgid] = "$(pop!(dmeta, :msgid))"
         elseif isnothing(get(dhdr, :msgid, nothing))
             dhdr[:msgid] = string(ID())
+        else
+            dhdr[:msgid] = "$(dhrd[:msgid])"
         end
 
         buffers = if :buffers ∈ keys(dmeta)
@@ -86,9 +88,9 @@ struct ProtocolIterator
     end
 end
 
-messageid(itr::ProtocolIterator) = itr.hdrkeywords[:msgid]
-messageid(msg::Message)          = msg.header["msgid"]
-requestid(msg::Message)          = msg.header["reqid"]
+messageid(itr::ProtocolIterator) :: String = itr.hdrkeywords[:msgid]
+messageid(msg::Message)          :: String = msg.header["msgid"]
+requestid(msg::Message)          :: String = msg.header["reqid"]
 
 ProtocolIterator(hdr, meta; kwa...) = ProtocolIterator(hdr, (;), meta; kwa...)
 
@@ -213,12 +215,12 @@ function Message(raw::RawMessage)
     )
 end
 
-function receivemessage(ws, timeout :: Real, sleepperiod::Real)
+function receivemessage(ws, timeout :: Real, sleepperiod::Real) :: Message
     return Message(RawMessage(ws, timeout => sleepperiod))
 end
 
-isreply(::Type{msg"PULL-DOC-REQ"}, msgid::String, outp::msg"PULL-DOC-REPLY") = requestid(outp) ≡ msgid
-isreply(::Type{msg"SERVER-INFO-REQ"}, msgid::String, outp::msg"SERVER-INFO-REPLY") = requestid(outp) ≡ msgid
+isreply(::Type{msg"PULL-DOC-REQ"}, msgid::String, outp::msg"PULL-DOC-REPLY") :: Bool = requestid(outp) ≡ msgid
+isreply(::Type{msg"SERVER-INFO-REQ"}, msgid::String, outp::msg"SERVER-INFO-REPLY") :: Bool = requestid(outp) ≡ msgid
 isreply(::Type{<:Message}, _...) = false
 
 Base.isempty(::Message{:EMPTY}) = true

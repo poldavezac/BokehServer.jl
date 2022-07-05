@@ -9,7 +9,7 @@ function route(http::HTTP.Stream{HTTP.Request}, app::Server.iApplication)
     HTTP.setstatus(http, 200)
     HTTP.setheader(http, "Content-Type" => "text/html")
     HTTP.startwrite(http)
-    session = get!(app, http)
+    session = get!(app, http) :: Server.SessionContext
     msg     = body(app, session)
     write(http, msg)
 end
@@ -70,6 +70,7 @@ function filetemplate(
         """
 end
 
+precompile(route, (HTTP.Stream{HTTP.Request}, Server.Application))
 end
 
 using .DocRoute

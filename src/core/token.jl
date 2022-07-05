@@ -8,13 +8,13 @@ const WEBSOCKET_PROTOCOL = "Sec-WebSocket-Protocol"
 
 encode(vals::Union{String, Vector{UInt8}}) = rstrip(replace(base64encode(vals), '/' => '_'), '=')
 
-function decode(vals::AbstractString)
+function decode(vals::AbstractString) :: Vector{UInt8}
     vals  = replace(vals, '_' => '/')
     vals *= '='^((4 - (length(vals) % 4)) % 4) 
     return Base64.base64decode(vals)
 end
 
-function sessionid(token::AbstractString)
+function sessionid(token::AbstractString) :: String
     ind = findfirst('.', token)
     val = isnothing(ind) ? token : token[1:ind-1]
     return JSON.parse(String(decode(val)))["session_id"]
@@ -24,11 +24,11 @@ function sessionid(;
         len   :: Int    = 44,
         chars :: String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         secretkey :: Vector{UInt8} = UInt8[]
-)
+) :: String
     return signature(join(rand(chars, len), ""), secretkey)
 end
 
-function payload(token::AbstractString)
+function payload(token::AbstractString) :: Dict{String, Any}
     decoded = let ind = findfirst('.', token)
         val = isnothing(ind) ? token : token[1:ind-1]
         JSON.parse(String(decode(val)))
@@ -44,7 +44,7 @@ function payload(token::AbstractString)
     return decoded
 end
 
-function token(sessionid::String; expiration = 300, secretkey::Vector{UInt8} = UInt8[], extra...)
+function token(sessionid::String; expiration = 300, secretkey::Vector{UInt8} = UInt8[], extra...) :: String
     now     = time()
     payload = (; session_id = sessionid, session_expiry = now + expiration)
     if !isempty(extra)
@@ -56,7 +56,7 @@ function token(sessionid::String; expiration = 300, secretkey::Vector{UInt8} = U
     return signature(encode(JSON.json(payload)), secretkey)
 end
 
-function check(token::AbstractString, secretkey::Vector{UInt8})
+function check(token::AbstractString, secretkey::Vector{UInt8}) :: Bool
     isempty(secretkey) && return true
     # make a sum so as to avoid timing attacks by have a constant-time comparison
     cmp(x) = let ind = findfirst('.', x)
@@ -65,13 +65,15 @@ function check(token::AbstractString, secretkey::Vector{UInt8})
     return cmp(sessionid(token)) + cmp(token) ==2
 end
 
-function subprotocol(hdrs::AbstractVector{<:Pair})
+function subprotocol(
+        hdrs::AbstractVector{<:Pair}
+) :: @NamedTuple{subprotocol::Union{Nothing, String}, token::Union{Nothing, String}}
     header = filter(==(WEBSOCKET_PROTOCOL)∘first, hdrs)
     outp   = (; subprotocol = nothing, token = nothing)
     if length(header) == 1
         val = last(first(header))
         ind = findfirst(',', val)
-        isnothing(ind) || (outp = (; subprotocol = strip(val[1:ind-1]), token = strip(val[ind+1:end])))
+        isnothing(ind) || (outp = (; subprotocol = string(strip(val[1:ind-1])), token = string(strip(val[ind+1:end]))))
     end
     outp
 end

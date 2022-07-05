@@ -64,8 +64,8 @@ function SessionKey(request::HTTP.Request)
     end
 
     return if isnothing(token)
-        cookies = Dict(HTTP.cookies(request)...)
-        headers = Dict(HTTP.headers(request)...)
+        cookies = HTTP.cookies(request)
+        headers = HTTP.headers(request)
         if !isempty(cookies) &&  "Cookie" ∈ keys(headers)
             pop!(headers, "Cookie")
         end

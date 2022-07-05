@@ -24,9 +24,11 @@ function serve!(routes :: RouteDict, host :: AbstractString, port :: Int; kwa...
         (i => joinpath("http://$host:$port", "$i") for i ∈ keys(routes))...
     )
     haskey(routes, :static) || push!(routes, staticroutes(CONFIG)...)
-
+    Base.exit_on_sigint(!CONFIG.catchsigint)
     try
         HTTP.listen(route(routes), host, port; kwa...)
+    catch exc
+        (exc isa InterruptException) || rethrow()
     finally
         foreach(close, values(routes))
     end

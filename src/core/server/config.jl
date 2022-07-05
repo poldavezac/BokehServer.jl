@@ -11,6 +11,7 @@ using Pkg.Artifacts
         joinpath(artifact"javascript", "site-packages", "bokeh", "server", "static"),
         artifact"javascript"
     ]
+    catchsigint    :: Bool           = true
     throwonerror   :: Bool           = false
     secretkey      :: Vector{UInt8}  = collect(UInt8, get(ENV, "BOKEH_SECRETKEY", ""))
     wstimeout      :: Float64        = 0.1

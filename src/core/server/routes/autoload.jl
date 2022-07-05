@@ -16,7 +16,7 @@ end
 
 function route(http::HTTP.Stream, app::Server.iApplication)
     params = Server.getparams(http)
-    token  = get!(app, http).token
+    token  = (get!(app, http) :: Server.SessionContext).token
     bdy    = body(app, token, params)
 
     HTTP.setstatus(http, 200)
@@ -176,6 +176,7 @@ function template(
         }
     }(window));"""
 end
+precompile(route, (HTTP.Stream{HTTP.Request}, Server.Application))
 end
 using .AutoloadRoute
 

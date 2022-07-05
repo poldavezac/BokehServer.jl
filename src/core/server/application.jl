@@ -5,8 +5,8 @@ struct SessionList
     SessionList() = new(fieldtype(SessionList, :sessions)())
 end
 
-Base.get(λ::SessionList, σ::iSessionContext)  = get(λ.sessions, σ.id, missing)
-Base.get!(λ::SessionList, σ::SessionContext)  = get!(λ.sessions, σ.id, σ)
+Base.get(λ::SessionList, σ::iSessionContext) :: Union{iSessionContext, Missing} = get(λ.sessions, σ.id, missing)
+Base.get!(λ::SessionList, σ::SessionContext) :: SessionContext = get!(λ.sessions, σ.id, σ)
 Base.push!(λ::SessionList, σ::SessionContext) = push!(λ.sessions, σ.id => σ)
 Base.pop!(λ::SessionList, σ::iSessionContext) = pop!(λ.sessions, σ.id, nothing)
 Base.in(σ::iSessionContext, λ::SessionList)   = haskey(λ.sessions, σ.id)
@@ -30,12 +30,12 @@ for fcn ∈ (:get, :pop!)
 end
 
 Base.in(σ::iSessionContext, 𝐴::iApplication)  = σ ∈ sessions(𝐴)
-Base.get!(𝐴::iApplication, http::HTTP.Stream) = get!(𝐴, http.message)
-Base.get!(𝐴::iApplication, args...)           = get!(𝐴, sessionkey(𝐴, args...))
+Base.get!(𝐴::iApplication, http::HTTP.Stream) :: iSessionContext = get!(𝐴, http.message)
+Base.get!(𝐴::iApplication, args...)           :: iSessionContext = get!(𝐴, sessionkey(𝐴, args...))
 
-function Base.get!(𝐴::iApplication, 𝑘::iSessionContext; doinit :: Bool = true)
+function Base.get!(𝐴::iApplication, 𝑘::iSessionContext; doinit :: Bool = true) :: SessionContext
     lst     = sessions(𝐴)
-    session = get(lst, 𝑘)
+    session = get(lst, 𝑘) :: Union{iSessionContext, Missing}
     if ismissing(session)
         session = SessionContext(𝑘)
         doinit && Events.eventlist!(𝐴) do

@@ -77,7 +77,7 @@ struct FaviconRoute <: iStaticRoute
     FaviconRoute() = new(joinpath(artifact"javascript", "favicon.ico"))
 end
 
-route(http::HTTP.Stream, ::Val{:GET}, ::FaviconRoute) = routefile(http, 𝐴.path)
+route(http::HTTP.Stream, ::Val{:GET}, 𝐴::FaviconRoute, @nospecialize(_...)) = routefile(http, 𝐴.path)
 
 staticroutes(cnf = Server.CONFIG) = (
     cnf.staticroute       => StaticRoute(cnf.staticroute, cnf.staticpaths),
@@ -85,3 +85,6 @@ staticroutes(cnf = Server.CONFIG) = (
 )
 
 Base.close(::iStaticRoute) = nothing
+
+precompile(routefile, (HTTP.Stream{HTTP.Request}, String))
+precompile(routefile, (HTTP.Stream{HTTP.Request}, String, String))

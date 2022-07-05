@@ -34,7 +34,7 @@ struct  NotebooksApp <: Server.iApplication
     modelids :: Set{Int64}
 
     NotebooksApp(model::iModel) = new(
-        Server.SessionList(), Server.makeid(nothing), getplutokey(),
+        Server.SessionList(), Server.makeid(nothing), getcurrentcellkey(),
         model, Model.allids(model)
     )
 end
@@ -137,10 +137,10 @@ end
 
 getplutofield(σ::Symbol, dflt) = isdefined(Main, :PlutoRunner) ? getfield(Main.PlutoRunner, σ) : dflt
 isdeadapp(::Server.iRoute)     = (@assert !(Server.iRoute isa NotebooksApp); false)
-isdeadapp(𝐴::NotebooksApp)     = haskey(getplutofield(:cell_results, (;)), 𝐴.key)
+isdeadapp(𝐴::NotebooksApp)     = !(isnothing(𝐴.key) || haskey(getplutofield(:cell_results, (;)), 𝐴.key))
 iscurrentapp(𝐴::Server.iRoute) = (@assert !(Server.iRoute isa NotebooksApp); true)
 iscurrentapp(𝐴::NotebooksApp)  = !isnothing(𝐴.key) && getplutokey() == 𝐴.key 
-getplutokey()                  = getplutofield(:currently_running_cell_id, Ref(nothing))[]
+getcurrentcellkey()            = getplutofield(:currently_running_cell_id, Ref(nothing))[]
 end
 
 using .Notebooks

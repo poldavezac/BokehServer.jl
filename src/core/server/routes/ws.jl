@@ -13,7 +13,7 @@ function route(io::HTTP.Stream, 𝐴::Server.iApplication)
         waittime = Server.CONFIG.wssleepperiod
         session  = nothing
         try
-            session = onopen(ws, 𝐴)
+            session = onopen(ws, 𝐴) :: SessionContext
             if !isnothing(session)
                 while !WebSockets.isclosed(ws)
                     if nodata(ws)
@@ -51,7 +51,7 @@ macro safely(code)
     end))
 end
 
-function onopen(ω::WebSockets.WebSocket, 𝐴::iApplication)
+function onopen(ω::WebSockets.WebSocket, 𝐴::iApplication) :: SessionContext
     req                  = ω.request
     (subprotocol, token) = Tokens.subprotocol(HTTP.headers(req))
 
@@ -60,10 +60,10 @@ function onopen(ω::WebSockets.WebSocket, 𝐴::iApplication)
 
     payload = Server.Tokens.payload(token)
     @wsassert ("session_expiry" ∈ keys(payload)) "Session expiry has not been provided"
-    @wsassert (time() < payload["session_expiry"]) "Token is expired"
+    @wsassert (time() < (payload["session_expiry"])::Float64) "Token is expired"
     @wsassert Server.checktokensignature(𝐴, token) "Invalid token signature"
 
-    σ = get!(𝐴, Server.SessionKey(Tokens.sessionid(token), token))
+    σ = get!(𝐴, Server.SessionKey(Tokens.sessionid(token), token)) :: SessionContext
     push!(σ.clients, ω)
     @safely Protocol.sendmessage(ω, msg"ACK")
     σ
@@ -117,6 +117,9 @@ end
 wserror(exc::Base.IOError, _...) = @error "IO error" exception = (exc, Base.catch_backtrace())
 wserror(::EmptyMessageError, _...) = nothing
 
+precompile(route, (HTTP.Stream{HTTP.Request}, Server.Application))
+precompile(onopen, (WebSockets.WebSocket, Server.Application))
+precompile(onmessage, (WebSockets.WebSocket, Server.Application, Server.SessionContext))
 end
 using .WSRoute
 
