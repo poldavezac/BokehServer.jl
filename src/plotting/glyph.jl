@@ -125,6 +125,16 @@ iterate over all iSpec properties and create a data_source
 """
 function _👻datasource!(kwargs::Dict{Symbol}, ::Missing, 𝑇::Type)
     data = Dict{String, AbstractArray}()
+
+    # add missing :x or :y
+    if (:x, :y) ⊆ Models.glyphargs(𝑇)
+        if !haskey(kwargs, :x) && get(kwargs, :y, nothing) isa AbstractArray
+            kwargs[:x] = 1:length(kwargs[:y])
+        elseif !haskey(kwargs, :y) && get(kwargs, :x, nothing) isa AbstractArray
+            kwargs[:y] = 1:length(kwargs[:x])
+        end
+    end
+
     out  = _👻datasource!(kwargs, 𝑇) do col, arg, cnv
         if cnv isa Model.iSpec && !ismissing(cnv.field)
             ErrorException("has a source-type entry, yet no source was provided")
