@@ -6,7 +6,7 @@ module AbstractTypes
     abstract type iProperty end
 
     """
-    The Bokeh protocol only allows limited element types in a DataDict.
+    The BokehJL protocol only allows limited element types in a DataDict.
     Other types such as dates are automatically converted.
     """
     const NumberElTypeDataDict = (

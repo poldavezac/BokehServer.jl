@@ -1,9 +1,9 @@
-ProtocolX = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
+ProtocolX = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
     a::Int = 1
     b::Int = 1
     c::Int = 1
 end
 
-ProtocolY = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
+ProtocolY = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
     a::ProtocolX = ProtocolX(; a = -1)
 end

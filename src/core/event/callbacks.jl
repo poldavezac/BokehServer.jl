@@ -29,19 +29,19 @@ Adds a callback to the document.
 # Examples
 ```julia
 julia > begin
-        doc = Bokeh.Document
+        doc = BokehJL.Document
 
         onchange(doc) do evt
-            @assert evt isa Bokeh.Events.iDocEvent
+            @assert evt isa BokehJL.Events.iDocEvent
             println("callback 1: any doc events")
         end
 
-        onchange(doc) do evt::Bokeh.RootAddedEvent
-            @assert evt isa Bokeh.RootAddedEvent
+        onchange(doc) do evt::BokehJL.RootAddedEvent
+            @assert evt isa BokehJL.RootAddedEvent
             println("callback 2: only RootAddedEvent")
         end
 
-        Bokeh.Events.eventlist!() do
+        BokehJL.Events.eventlist!() do
             push!(doc, Model1())
             delete!(doc, Model2())
         end
@@ -69,7 +69,7 @@ Adds a callback to the model.
 julia > begin
         obj = Model()
         onchange(obj) do evt
-            @assert evt isa Bokeh.Events.iDocModelEvent
+            @assert evt isa BokehJL.Events.iDocModelEvent
             println("callback 1: receive events")
         end
 
@@ -84,7 +84,7 @@ julia > begin
             println("callback 3: a specific type for `new`")
         end
 
-        Bokeh.Events.eventlist!() do
+        BokehJL.Events.eventlist!() do
             obj.a = 1
             obj.a = 10.
         end

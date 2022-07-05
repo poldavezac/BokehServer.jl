@@ -4,17 +4,17 @@ const RouteTypes = Union{iRoute, Function, Pair}
 """
     serve([host = CONFIG.host], [port = CONFIG.port], apps...; kwa...)
 
-Starts a Bokeh server. `apps` can be `Bokeh.Server.iRoute` types,
+Starts a BokehJL server. `apps` can be `BokehJL.Server.iRoute` types,
 functions or pairs of `name_of_app => app_or_function`
 
 # Examples
 
 ```julia
-Bokeh.Server.serve(
-    function myapp(doc::Bokeh.Document)
+BokehJL.Server.serve(
+    function myapp(doc::BokehJL.Document)
         ...
     end,
-    :mysecondapp => (doc::Bokeh.Document) -> push!(doc, ...)
+    :mysecondapp => (doc::BokehJL.Document) -> push!(doc, ...)
 )
 ```
 """

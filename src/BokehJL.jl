@@ -1,4 +1,4 @@
-module Bokeh
+module BokehJL
 include("core.jl")
 include("models.jl")
 include("plotting.jl")

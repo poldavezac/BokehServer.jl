@@ -1,6 +1,6 @@
 module Themes
 using JSON
-using ..Bokeh
+using ..BokehJL
 using ..AbstractTypes
 using ..Model
 
@@ -12,7 +12,7 @@ end
 const THEME = Theme()
 
 function theme(T::Type, a...)
-    doc = Bokeh.curdoc()
+    doc = BokehJL.curdoc()
     return theme((isnothing(doc) ? THEME : doc.theme), T, a...)
 end
 

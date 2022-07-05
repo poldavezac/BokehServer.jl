@@ -45,7 +45,7 @@ end
 
 for 𝑇 ∈ (:DistanceSpec, :StringSpec)
     @eval const $(Symbol("Null$𝑇")) = Nullable{$𝑇}
-    @eval Base.show(io::IO, ::Type{$𝑇}) = print(io::IO, $("Bokeh.Model.Null$𝑇"))
+    @eval Base.show(io::IO, ::Type{$𝑇}) = print(io::IO, $("BokehJL.Model.Null$𝑇"))
 end
 
 function Base.propertynames(μ::iSpec; private :: Bool = false)

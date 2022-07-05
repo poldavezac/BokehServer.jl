@@ -12,12 +12,12 @@ abstract type iPlotActionEvent <: iModelActionEvent end
     doc::iDocument
 end
 
-"""Announce a button click event on a Bokeh button widget."""
+"""Announce a button click event on a BokehJL button widget."""
 @Base.kwdef struct ButtonClick <: iModelActionEvent
     model::iAbstractButton
 end
 
-"""Announce a button click event on a Bokeh menu item."""
+"""Announce a button click event on a BokehJL menu item."""
 @Base.kwdef struct MenuItemClick <: iModelActionEvent
     model::iAbstractButton
     item ::String
@@ -25,7 +25,7 @@ end
 
 """ Announce the start of "interactive level-of-detail" mode on a plot.
 
-During interactive actions such as panning or zooming, Bokeh can
+During interactive actions such as panning or zooming, BokehJL can
 optionally, temporarily draw a reduced set of the data, in order to
 maintain high interactive rates. This is referred to as interactive
 Level-of-Detail (LOD) mode. This event fires whenever a LOD mode
@@ -38,7 +38,7 @@ end
 
 """ Announce the end of "interactive level-of-detail" mode on a plot.
 
-During interactive actions such as panning or zooming, Bokeh can
+During interactive actions such as panning or zooming, BokehJL can
 optionally, temporarily draw a reduced set of the data, in order to
 maintain high interactive rates. This is referred to as interactive
 Level-of-Detail (LOD) mode. This event fires whenever a LOD mode
@@ -128,7 +128,7 @@ for cls ∈ (
     end
 end
 
-""" Announce a mouse wheel event on a Bokeh plot.
+""" Announce a mouse wheel event on a BokehJL plot.
 
 Attributes:
     delta (float) : the (signed) scroll speed
@@ -139,7 +139,7 @@ Attributes:
 
 
 .. note::
-    By default, Bokeh plots do not prevent default scroll events unless a
+    By default, BokehJL plots do not prevent default scroll events unless a
     ``WheelZoomTool`` or ``WheelPanTool`` is active. This may change in
     future releases.
 
@@ -153,7 +153,7 @@ Attributes:
     y     :: Union{Missing, Float64} = missing
 end
 
-""" Announce a pan event on a Bokeh plot.
+""" Announce a pan event on a BokehJL plot.
 
 Attributes:
     delta_x (float) : the amount of scroll in the x direction
@@ -176,7 +176,7 @@ Attributes:
     y         :: Union{Missing, Float64} = missing
 end
 
-""" Announce a pinch event on a Bokeh plot.
+""" Announce a pinch event on a BokehJL plot.
 
 Attributes:
     scale (float) : the (signed) amount of scaling

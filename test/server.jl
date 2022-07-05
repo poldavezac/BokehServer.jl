@@ -1,8 +1,8 @@
-HTTP = Bokeh.Server.HTTP
+HTTP = BokehJL.Server.HTTP
 const TEST_PORT = rand(1:9999)
 
 @testset "tokens" begin
-    Tokens = Bokeh.Server.Tokens
+    Tokens = BokehJL.Server.Tokens
     sid   = [Tokens.sessionid() for _ = 1:10]
     @test all(length.(sid) .== 44)
 
@@ -17,7 +17,7 @@ function testserve(𝐹::Function, args...; kwa...)
     server = HTTP.Sockets.listen(HTTP.Sockets.InetAddr(HTTP.Sockets.ip"127.0.0.1", TEST_PORT))
     task   = @async nothing
     try
-        task = @async Bokeh.Server.serve(TEST_PORT, args...; kwa..., server)
+        task = @async BokehJL.Server.serve(TEST_PORT, args...; kwa..., server)
         yield()
         @test istaskstarted(task)
         @test !istaskdone(task)
@@ -51,7 +51,7 @@ end
     end
 end
 
-@Bokeh.wrap mutable struct ServerTestObj <: Bokeh.iModel
+@BokehJL.wrap mutable struct ServerTestObj <: BokehJL.iModel
     a::Int = 1
 end
 
@@ -59,7 +59,7 @@ end
     with_logger(Logging.NullLogger()) do
         val = Ref{Bool}(false)
         testserve(:app => (doc) -> push!(doc, ServerTestObj(; a = 1), ServerTestObj(; a = 2))) do
-            Bokeh.Client.open("ws://localhost:$TEST_PORT/app/ws") do _, doc
+            BokehJL.Client.open("ws://localhost:$TEST_PORT/app/ws") do _, doc
                 val[] = true
                 @test length(doc) == 2
                 @test all(i isa ServerTestObj for i ∈ doc)
@@ -71,47 +71,47 @@ end
     end
 end
 
-@Bokeh.wrap mutable struct ServerTestDOM <: Bokeh.Models.iLayoutDOM
+@BokehJL.wrap mutable struct ServerTestDOM <: BokehJL.Models.iLayoutDOM
     a::Int = 1
 end
 
 @testset "notebook" begin
     # with_logger(Logging.NullLogger()) do
-        @test isnothing(Bokeh.Embeddings.Notebooks.SERVER[])
+        @test isnothing(BokehJL.Embeddings.Notebooks.SERVER[])
         io  = IOBuffer()
         dom = ServerTestDOM(; a = 100)
         show(io, MIME("text/html"), dom)
         @test !isempty(String(take!(io)))
 
         sleep(0.01)
-        @test !isnothing(Bokeh.Embeddings.Notebooks.SERVER[])
-        @test !isempty(Bokeh.Embeddings.Notebooks.SERVER[].lastid[])
-        @test !isempty(Bokeh.Embeddings.Notebooks.SERVER[].routes)
+        @test !isnothing(BokehJL.Embeddings.Notebooks.SERVER[])
+        @test !isempty(BokehJL.Embeddings.Notebooks.SERVER[].lastid[])
+        @test !isempty(BokehJL.Embeddings.Notebooks.SERVER[].routes)
 
         val = Ref(false)
-        Bokeh.Client.open(Bokeh.Embeddings.Notebooks.lastws()) do hdl::Bokeh.Client.MessageHandler
+        BokehJL.Client.open(BokehJL.Embeddings.Notebooks.lastws()) do hdl::BokehJL.Client.MessageHandler
             doc = hdl.doc
 
             @test length(doc) == 1
-            task_local_storage(Bokeh.Events.TASK_EVENTS, Bokeh.Events.EVENTS[]) do
+            task_local_storage(BokehJL.Events.TASK_EVENTS, BokehJL.Events.EVENTS[]) do
                 # by default, the bokeh client has its own event list
                 # we impose the notebook one here
                 dom.a = 10
             end
             @test doc.roots[1].a ≡ 100
-            @test !isnothing(Bokeh.Events.EVENTS[].task)
-            wait(Bokeh.Events.EVENTS[].task)
-            @test isnothing(Bokeh.Events.EVENTS[].task)
+            @test !isnothing(BokehJL.Events.EVENTS[].task)
+            wait(BokehJL.Events.EVENTS[].task)
+            @test isnothing(BokehJL.Events.EVENTS[].task)
             
-            Bokeh.Client.receivemessage(hdl)  # need to handle the patchdoc
+            BokehJL.Client.receivemessage(hdl)  # need to handle the patchdoc
             @test doc.roots[1].a ≡ 10
             val[] = true
         end
         sleep(0.01)
         @test val[]
 
-        Bokeh.Embeddings.Notebooks.stopserver()
+        BokehJL.Embeddings.Notebooks.stopserver()
         sleep(0.01)
-        @test isnothing(Bokeh.Embeddings.Notebooks.SERVER[])
+        @test isnothing(BokehJL.Embeddings.Notebooks.SERVER[])
     # end
 end

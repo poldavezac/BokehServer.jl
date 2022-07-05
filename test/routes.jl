@@ -5,7 +5,7 @@
         try
             baa*1
         catch
-            Bokeh.Server.ExceptionRoute.body(Base.current_exceptions())
+            BokehJL.Server.ExceptionRoute.body(Base.current_exceptions())
         end
     end
 
@@ -29,7 +29,7 @@ end
         css_raw = String[],
         hashes = Dict{String, String}()
     )
-    val = Bokeh.Server.staticbundle(:server) 
+    val = BokehJL.Server.staticbundle(:server) 
     for field ∈ propertynames(truth)
         @test getfield(val, field) == getfield(truth, field)
     end
@@ -38,26 +38,26 @@ end
         replace(i, "http://127.0.0.1:5006" => "x")
         for i ∈ truth.js_files
     ]
-    val = Bokeh.Server.staticbundle(Val(:server); address = "x")
+    val = BokehJL.Server.staticbundle(Val(:server); address = "x")
     for field ∈ propertynames(truth)
         @test getfield(val, field) == getfield(truth, field)
     end
 end
 
-struct TestApp <: Bokeh.Server.iApplication
-    sessions :: Bokeh.Server.SessionList
+struct TestApp <: BokehJL.Server.iApplication
+    sessions :: BokehJL.Server.SessionList
     call     :: Function
-    TestApp() = new(Bokeh.Server.SessionList(), identity)
+    TestApp() = new(BokehJL.Server.SessionList(), identity)
 end
 
-Bokeh.Server.makeid(::TestApp) = "a"
-Base.get!(x::TestApp, ::Bokeh.Server.HTTP.Stream) = last(first(x.sessions.sessions))
+BokehJL.Server.makeid(::TestApp) = "a"
+Base.get!(x::TestApp, ::BokehJL.Server.HTTP.Stream) = last(first(x.sessions.sessions))
 
 app = TestApp()
-push!(app.sessions.sessions,  "1"=>Bokeh.Server.SessionContext("1", "2"))
+push!(app.sessions.sessions,  "1"=>BokehJL.Server.SessionContext("1", "2"))
 
 @testset "autoload body" begin
-    value   = Bokeh.Server.AutoloadRoute.body(
+    value   = BokehJL.Server.AutoloadRoute.body(
         TestApp(), "b", Dict("bokeh-autoload-element" => "aaa")
     )
     truth   = read(joinpath(@__DIR__, "autoload.html"), String)
@@ -67,18 +67,18 @@ push!(app.sessions.sessions,  "1"=>Bokeh.Server.SessionContext("1", "2"))
 end
 
 @testset "autoload" begin
-    let stream = Bokeh.Server.HTTP.Stream(Bokeh.Server.HTTP.Request(), IOBuffer())
-        Bokeh.Server.route(stream, Val(:OPTIONS), app, Val(Symbol("autoload.js")))
+    let stream = BokehJL.Server.HTTP.Stream(BokehJL.Server.HTTP.Request(), IOBuffer())
+        BokehJL.Server.route(stream, Val(:OPTIONS), app, Val(Symbol("autoload.js")))
         resp = stream.message.response
         @test resp.status ≡ Int16(200)
         @test string.(resp.headers[1]) == string.("Content-Type" => "text/html")
         @test !isempty(String(take!(stream.stream)))
     end
 
-    let stream = Bokeh.Server.HTTP.Stream(Bokeh.Server.HTTP.Request(), IOBuffer())
+    let stream = BokehJL.Server.HTTP.Stream(BokehJL.Server.HTTP.Request(), IOBuffer())
         push!(stream.message.headers, "Content-Type" => "application/x-www-form-urlencoded")
         stream.message.body = collect(UInt8, "bokeh-autoload-element=1")
-        Bokeh.Server.route(stream, Val(:GET), app, Val(Symbol("autoload.js")))
+        BokehJL.Server.route(stream, Val(:GET), app, Val(Symbol("autoload.js")))
 
         resp = stream.message.response
         @test resp.status ≡ Int16(200)
@@ -88,8 +88,8 @@ end
 end
 
 @testset "document body" begin
-    session = Bokeh.Server.SessionContext("a", "b")
-    value   = Bokeh.Server.DocRoute.body(TestApp(), session)
+    session = BokehJL.Server.SessionContext("a", "b")
+    value   = BokehJL.Server.DocRoute.body(TestApp(), session)
     truth   = read(joinpath(@__DIR__, "document.html"), String)
     @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(value)))
         @test i == j
@@ -97,8 +97,8 @@ end
 end
 
 @testset "document" begin
-    stream = Bokeh.Server.HTTP.Stream(Bokeh.Server.HTTP.Request(), IOBuffer())
-    Bokeh.Server.route(stream, Val(:GET), app)
+    stream = BokehJL.Server.HTTP.Stream(BokehJL.Server.HTTP.Request(), IOBuffer())
+    BokehJL.Server.route(stream, Val(:GET), app)
     resp = stream.message.response
     @test resp.status ≡ Int16(200)
     @test string.(resp.headers[1]) == string.("Content-Type" => "text/html")
@@ -106,8 +106,8 @@ end
 end
 
 @testset "metadata" begin
-    stream = Bokeh.Server.HTTP.Stream(Bokeh.Server.HTTP.Request(), IOBuffer())
-    Bokeh.Server.route(stream, Val(:GET), app, Val(:metadata))
+    stream = BokehJL.Server.HTTP.Stream(BokehJL.Server.HTTP.Request(), IOBuffer())
+    BokehJL.Server.route(stream, Val(:GET), app, Val(:metadata))
     resp = stream.message.response
     @test resp.status ≡ Int16(200)
     @test string.(resp.headers[1]) == string.("Content-Type" => "application/json")

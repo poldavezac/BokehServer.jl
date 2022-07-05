@@ -1,12 +1,12 @@
-E    = Bokeh.Events
-ser  = Bokeh.Protocol.Serialize.serialize
+E    = BokehJL.Events
+ser  = BokehJL.Protocol.Serialize.serialize
 
-CDS  = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
-    data :: Bokeh.Model.DataDict
+CDS  = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
+    data :: BokehJL.Model.DataDict
 end
 
 @testset "basic events" begin
-    doc  = Bokeh.Document()
+    doc  = BokehJL.Document()
     mdl  = ProtocolX(; id = 1)
 
     val   = ser(E.ModelChangedEvent(mdl, :a, 10, 20))
@@ -25,7 +25,7 @@ end
     E.eventlist!() do
         push!(doc, mdl)
         mdl.a = 100
-        val   = Bokeh.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}())
+        val   = BokehJL.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}())
         truth = (;
             events = [(; kind = :RootAdded, model = (; id = "1"))],
             references = [(; attributes = (; a = 100), id = "1", type = nameof(ProtocolX))]
@@ -35,7 +35,7 @@ end
 
     E.eventlist!() do
         mdl.a = 10
-        val   = Bokeh.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([mdl.id]))
+        val   = BokehJL.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([mdl.id]))
         truth = (;
             events = [(; attr = :a, hint = nothing, kind = :ModelChanged, model = (; id = "1"), new = 10)],
             references = []
@@ -46,7 +46,7 @@ end
 
 @testset "ColumnDataChanged" begin
     mdl   = CDS(; id = 1)
-    𝑅     = Bokeh.Protocol.Serialize.BufferedRules()
+    𝑅     = BokehJL.Protocol.Serialize.BufferedRules()
     val   = ser(E.ColumnDataChangedEvent(mdl, :data, Dict{String, Vector}("a" => Int32[1])), 𝑅)
     truth = (;
         cols = ["a"],

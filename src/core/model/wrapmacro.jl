@@ -32,9 +32,9 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
         set  = if i.js
             quote
                 old = $(@__MODULE__).bokehunwrap(getproperty(μ, $name))
-                dotrigger && Bokeh.Events.testcantrigger()
+                dotrigger && BokehJL.Events.testcantrigger()
                 new = setfield!(μ, $name, ν)
-                dotrigger && Bokeh.Events.trigger(Bokeh.ModelChangedEvent(μ, $name, old, new))
+                dotrigger && BokehJL.Events.trigger(BokehJL.ModelChangedEvent(μ, $name, old, new))
             end
         else
             :(setfield!(µ, $name, ν))
@@ -149,11 +149,11 @@ end
 function _👻code(src, mod::Module, code::Expr)
     @assert code.head ≡ :struct
     if !code.args[1]
-        @warn """Bokeh structure $mod.$(code.args[2]) is set to mutable.
+        @warn """BokehJL structure $mod.$(code.args[2]) is set to mutable.
         Add `mutable` to disable this warning""" _module = mod _file = string(src.file) _line = src.line
     end
-    @assert code.args[2] isa Expr "$(code.args[2]): Bokeh structure must have a parent (iHasProps, iModel?)"
-    @assert code.args[2].head ≡ :(<:) "$(code.args[2]): Bokeh structure cannot be templated"
+    @assert code.args[2] isa Expr "$(code.args[2]): BokehJL structure must have a parent (iHasProps, iModel?)"
+    @assert code.args[2].head ≡ :(<:) "$(code.args[2]): BokehJL structure cannot be templated"
 
     code.args[1] = true
     fields  = _👻fields(mod, code)
@@ -185,7 +185,7 @@ function bokehfields end
 function defaultvalue end
 
 function themevalue(𝑇::Type{<:iHasProps}, σ::Symbol)
-    dflt = Bokeh.Themes.theme(𝑇, σ)
+    dflt = BokehJL.Themes.theme(𝑇, σ)
     return isnothing(dflt) ? Model.defaultvalue(𝑇, σ) : dflt
 end
 
