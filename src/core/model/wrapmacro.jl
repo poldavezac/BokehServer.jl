@@ -1,10 +1,8 @@
 function _👻structure(
         cls     :: Symbol,
         parents :: Union{Symbol, Expr},
-        fields  :: Vector{<:NamedTuple},
-)
-    @nospecialize cls parents fields
-
+        fields  :: _👻Fields,
+) :: Expr
     code   = [_👻initcode(cls, fields, i) for i ∈ _👻filter(fields)]
     fnames = map(x->x.name, _👻filter(fields))
     quote
@@ -25,8 +23,7 @@ function _👻structure(
     end
 end
 
-function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
-    @nospecialize cls fields
+function _👻setter(cls::Symbol, fields::_👻Fields) :: Expr
     code = _👻elseif_alias(fields, :(throw(ErrorException("unknown or read-only property $α")))) do i
         name = Meta.quot(i.name)
         set  = if i.js
@@ -62,8 +59,7 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function _👻getter(cls::Symbol, fields::Vector{<:NamedTuple})
-    @nospecialize cls fields
+function _👻getter(cls::Symbol, fields::_👻Fields) :: Expr
     expr = _👻elseif_alias(fields, :(throw(ErrorException("unknown property $α")))) do field
         name = Meta.quot(field.name)
         :($(@__MODULE__).bokehread($(field.type), μ, $name, getfield(µ, $name)))
@@ -81,8 +77,7 @@ function _👻getter(cls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function _👻propnames(cls::Symbol, fields::Vector{<:NamedTuple})
-    @nospecialize cls fields
+function _👻propnames(cls::Symbol, fields::_👻Fields) :: Expr
     quote
         function Base.propertynames(μ::$cls; private::Bool = false)
             return if private
@@ -94,31 +89,17 @@ function _👻propnames(cls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
-    @nospecialize cls fields
+function items(select::Symbol, sort::Bool)
+end
 
-    function items(select::Symbol, sort::Bool)
-        vals = if select ≡ :children
-            [i.name for i ∈ fields if i.js && i.children]
-        elseif select ≡ :child
-            [i.name for i ∈ fields if i.js && i.child]
-        else
-            [i.name for i ∈ fields if i.js]
-        end
-        sort && sort!(vals)
-        return Meta.quot.(vals)
-    end
 
+function _👻funcs(cls::Symbol, fields::_👻Fields) :: Expr
     quote
-        @inline function $(@__MODULE__).bokehproperties(::Type{$cls}; select::Symbol = :all, sorted::Bool = false)
-            $(_👻elseif(Iterators.product((false, true), (:all, :children, :child))) do (sort, select)
-                :(if sorted ≡ $sort && select ≡ $(Meta.quot(select))
-                    tuple($(items(select, sort)...))
-                end)
-            end)
+        @inline function $(@__MODULE__).bokehproperties(::Type{$cls})
+            return $(tuple((i.name for i ∈ fields if i.js)...))
         end
 
-        @inline function $(@__MODULE__).hasbokehproperty(T::Type{$cls}, attr::Symbol)
+        @inline function $(@__MODULE__).hasbokehproperty(T::Type{$cls}, attr::Symbol) :: Bool
             $(_👻elseif((i for i ∈ fields if i.js), false) do field
                 :(if attr ≡ $(Meta.quot(field.name))
                     true
@@ -126,7 +107,7 @@ function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
             end)
         end
 
-        @inline function $(@__MODULE__).bokehfieldtype(T::Type{$cls}, α::Symbol)
+        @inline function $(@__MODULE__).bokehfieldtype(T::Type{$cls}, α::Symbol) :: Union{Nothing, Type}
             $(_👻elseif_alias(fields, :(throw("$T.$α does not exist"))) do field
                 field.js ? field.type : nothing
             end)
@@ -139,14 +120,14 @@ function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
         function $(@__MODULE__).bokehfields(::Type{$cls})
             return tuple($((
                 Expr(:call, :(=>), Meta.quot(i.name), i.type)
-                for i ∈ sort(fields; by = string∘first)
+                for i ∈ sort(fields; by = (x)->"$(x.name)")
                 if i.js && !i.alias
             )...))
         end
     end
 end
 
-function _👻code(src, mod::Module, code::Expr)
+function _👻code(src, mod::Module, code::Expr) :: Expr
     @assert code.head ≡ :struct
     if !code.args[1]
         @warn """BokehJL structure $mod.$(code.args[2]) is set to mutable.
@@ -177,6 +158,7 @@ end
 macro wrap(expr::Expr)
     _👻code(__source__, __module__, expr)
 end
+precompile(_👻code, (LineNumberNode, Module, Expr))
 
 function bokehproperties end
 function hasbokehproperty end
@@ -184,13 +166,13 @@ function bokehfieldtype end
 function bokehfields end
 function defaultvalue end
 
-function themevalue(𝑇::Type{<:iHasProps}, σ::Symbol)
+function themevalue(@nospecialize(𝑇::Type{<:iHasProps}), σ::Symbol) :: Union{Some, Nothing}
     dflt = BokehJL.Themes.theme(𝑇, σ)
     return isnothing(dflt) ? Model.defaultvalue(𝑇, σ) : dflt
 end
 
 const ID = bokehidmaker()
 
-Base.repr(mdl::T) where {T <: iHasProps} = "$T(id = $(bokehid(mdl)))" 
+Base.repr(@nospecialize(mdl::iHasProps)) = "$T(id = $(bokehid(nameof(mdl))))" 
 
 export @wrap

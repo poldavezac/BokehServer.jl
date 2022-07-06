@@ -1,5 +1,6 @@
 HTTP = BokehJL.Server.HTTP
 const TEST_PORT = rand(1:9999)
+BokehJL.Server.CONFIG.port = TEST_PORT
 
 @testset "tokens" begin
     Tokens = BokehJL.Server.Tokens

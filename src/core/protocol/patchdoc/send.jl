@@ -9,16 +9,23 @@ function patchdoc(
     isempty(λ) && return nothing
 
     all = allmodels(doc)
-    filt(k::Events.iDocActionEvent)   = false
-    function filt(k::Union{Events.iDocModelEvent, Events.iModelActionEvent})
-        # only keep mutation events which refer to a model not in the references
-        id = bokehid(k.model)
-        (id ∈ oldids) && haskey(all, id)
-    end
-    filt(k::Events.iDocEvent)         = k.doc ≡ doc
-
     return (;
-        events     = serialize([i for i ∈ λ if filt(i)], 𝑅),
+        events     = serialize(
+            [
+                i for i ∈ λ if begin
+                    if i isa Events.iDocEvent
+                        i.doc ≡ doc
+                    elseif i isa Union{Events.iDocModelEvent, Events.iModelActionEvent}
+                        # only keep mutation events which refer to a model not in the references
+                        id = bokehid(i.model)
+                        (id ∈ oldids) && haskey(all, id)
+                    elseif i isa Events.iDocActionEvent
+                        false
+                    end
+                end
+            ],
+            𝑅
+        ),
         references = serialize([j for (i, j) ∈ all if i ∉ oldids], 𝑅)
     )
 end

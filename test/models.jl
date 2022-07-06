@@ -50,12 +50,12 @@ end
         (;
             index = 2, name = :a, type = Int32, default = Some(:(zero(Int32))),
             init  = Some(:(zero(Int32))), js = true,
-            alias = false, readonly = false, child = false, children = false
+            alias = false, readonly = false,
         ),
         (; 
             index = 4, name = :b, type = Float32, default = Some(1f0),
             init = Some(1f0), js = true,
-            alias = false, readonly = false, child = false, children = false
+            alias = false, readonly = false,
         ),
     ]
     @testset for (i, j) ∈ zip(out, truth)
@@ -78,7 +78,7 @@ end
         (; 
             index = 2, name = :b, type = Dummy, default = "Some(:((Dummy)()))",
             init = "Some(:((Dummy)()))", js = true,
-            alias = false, readonly = false, child = true, children = false
+            alias = false, readonly = false,
         ),
     ]
     @testset for (i, j) ∈ zip(out, truth)
@@ -97,7 +97,7 @@ end
         d:: Dict{Dummy, Int32}  = Dict(Dummy() => 1)
         e:: Set{Dummy}
     end))
-    dflt(x)  = (; default = x, init = x, js = true, alias = false, readonly = false, child = false, children = true)
+    dflt(x)  = (; default = x, init = x, js = true, alias = false, readonly = false)
     truth = [
         (; index = 2, name = :b, type = Vector{Dummy}, dflt("Some(:((Vector{Dummy})()))")...),
         (; index = 4, name = :c, type = Dict{Int32, Dummy}, dflt(nothing)...),
@@ -175,8 +175,6 @@ end
 
     @test propertynames(Y1()) == (:a, :b, :c, :d, :e)
     @test BokehJL.Model.bokehproperties(Y1) == propertynames(Y1())
-    @test BokehJL.Model.bokehproperties(Y1; select = :child) == (:e,)
-    @test BokehJL.Model.bokehproperties(Y1; select = :children) == (:a, :b, :c, :d)
 
     y1  = Y1()
     all = BokehJL.allmodels(y1)

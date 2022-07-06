@@ -42,11 +42,13 @@ function fromjson(::Type{DataDict}, 𝑣::Dict{String})
     out
 end
 
-function setpropertyfromjson!(mdl::T, attr:: Symbol, val; dotrigger ::Bool =true) where {T <: iHasProps}
-    setproperty!(mdl, attr, fromjson(Model.bokehfieldtype(T, attr), val); dotrigger, patchdoc = true)
+function setpropertyfromjson!(mdl::iHasProps, attr:: Symbol, val; dotrigger ::Bool =true)
+    @nospecialize mdl attr val
+    setproperty!(mdl, attr, fromjson(Model.bokehfieldtype(typeof(mdl), attr), val); dotrigger, patchdoc = true)
 end
 
 function setreferencefromjson!(mdl::iHasProps, 𝐼::Dict{String})
+    @nospecialize mdl 𝐼
     for (key, val) ∈ 𝐼["attributes"]
         setpropertyfromjson!(mdl, _fieldname(key), val; dotrigger = false)
     end
@@ -204,6 +206,7 @@ function _𝑐𝑝_value(x::Vector{Any})
 end
 
 
+precompile(setpropertyfromjson!, (iHasProps, Symbol, Any))
 export patchdoc!, parsereferences
 end
 using .PatchDocReceive

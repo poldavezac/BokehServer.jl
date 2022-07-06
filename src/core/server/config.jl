@@ -1,6 +1,6 @@
 using Pkg.Artifacts
 
-@Base.kwdef struct Configuration
+@Base.kwdef mutable struct Configuration
     host           :: String         = "127.0.0.1"
     port           :: Int            = 5006
     clientloglevel :: Symbol         = :info
