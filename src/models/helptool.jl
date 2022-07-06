@@ -2,7 +2,7 @@
 
 @model mutable struct HelpTool <: iHelpTool
 
-    description :: Model.Nullable{String} = "Click the question mark to learn more about BokehJL plot tools."
+    description :: Model.Nullable{String} = "Click the question mark to learn more about Bokeh plot tools."
 
     redirect :: String = "https://docs.bokeh.org/en/latest/docs/user_guide/tools.html"
 end

@@ -5,16 +5,46 @@ using ...AbstractTypes
 using ..Serialize
 using ..Protocol: Buffers
 
+const JSDict       = Dict{String, Any}
 const ModelDict    = Dict{Int64, iHasProps}
 const _MODEL_TYPES = Dict{Symbol, DataType}()
 const _LOCK        = Threads.SpinLock()
-const _𝑏_OPTS      = Union{Dict{String}, Vector}
+const _𝑏_OPTS      = Union{JSDict, Vector}
 const _END_PATT    = r"^end" => "finish"
+
 _fieldname(x::String) = Symbol(replace(x, _END_PATT))
 
-getid(𝐼::Dict{String}) :: Int64 = parse(Int64, 𝐼["id"])
+getid(𝐼::JSDict) :: Int64 = parse(Int64, 𝐼["id"])
 
-createreference(::Type{T}, 𝐼::Dict{String}) where {T<:iHasProps} = T(; id = getid(𝐼))
+function createreference!(𝑀::ModelDict, 𝐶::Vector, id::Int, 𝐼::JSDict)
+    get!(𝑀, id) do
+        createreference(_MODEL_TYPES[Symbol(𝐼["type"])], id, 𝐼, 𝑀, 𝐶)
+    end
+end
+
+function createreference(
+        @nospecialize(𝑇::Type{<:iHasProps}),
+        id::Int,
+        𝐼::Dict{String, Any},
+        𝑀::ModelDict,
+        𝐶::Vector
+)
+    return 𝑇(;
+        id,
+        ((
+            Symbol(i) => let key = j["id"], bkid = parse(Int64, key)
+                itm = get(𝑀, bkid, nothing)
+                if isnothing(itm)
+                    createreference!(𝑀, 𝐶, bkid, only(j for j ∈ 𝐶 if j["id"] == key))
+                else
+                    itm
+                end
+            end
+            for (i, j) ∈ get(𝐼, "attributes", ())
+            if _𝑐𝑝_isamodel(j)
+        )...)
+    )
+end
 
 fromjson(::Type, val) = val
 
@@ -33,7 +63,7 @@ function fromjson(
     return 𝑇([fromjson(eltype(𝑇), i) for i ∈ 𝑣])
 end
 
-function fromjson(::Type{DataDict}, 𝑣::Dict{String})
+function fromjson(::Type{DataDict}, 𝑣::JSDict)
     out = DataDict()
     for (i, j) ∈ 𝑣
         arr = _𝑐𝑝_value(j)
@@ -47,7 +77,7 @@ function setpropertyfromjson!(mdl::iHasProps, attr:: Symbol, val; dotrigger ::Bo
     setproperty!(mdl, attr, fromjson(Model.bokehfieldtype(typeof(mdl), attr), val); dotrigger, patchdoc = true)
 end
 
-function setreferencefromjson!(mdl::iHasProps, 𝐼::Dict{String})
+function setreferencefromjson!(mdl::iHasProps, 𝐼::JSDict)
     @nospecialize mdl 𝐼
     for (key, val) ∈ 𝐼["attributes"]
         setpropertyfromjson!(mdl, _fieldname(key), val; dotrigger = false)
@@ -55,28 +85,28 @@ function setreferencefromjson!(mdl::iHasProps, 𝐼::Dict{String})
 end
 
 for (name, action) ∈ (:RootAdded => :push!, :RootRemoved => :delete!)
-    @eval function apply(::Val{$(Meta.quot(name))}, 𝐷::iDocument, 𝐼::Dict{String})
+    @eval function apply(::Val{$(Meta.quot(name))}, 𝐷::iDocument, 𝐼::JSDict)
         $action(𝐷, 𝐼["model"])
     end
 end
 
-function apply(::Val{:TitleChanged}, 𝐷::iDocument, 𝐼 :: Dict{String})
+function apply(::Val{:TitleChanged}, 𝐷::iDocument, 𝐼 :: JSDict)
     𝐷.title = 𝐼["title"]
 end
 
-function apply(::Val{:ModelChanged}, 𝐷::iDocument, 𝐼::Dict{String})
+function apply(::Val{:ModelChanged}, 𝐷::iDocument, 𝐼::JSDict)
     setpropertyfromjson!(𝐼["model"], _fieldname(𝐼["attr"]), 𝐼["new"])
 end
 
-function apply(::Val{:ColumnDataChanged}, 𝐷::iDocument, 𝐼::Dict{String})
+function apply(::Val{:ColumnDataChanged}, 𝐷::iDocument, 𝐼::JSDict)
     Model.update!(𝐼["column_source"].data, fromjson(DataDict, 𝐼["new"]))
 end
 
-function apply(::Val{:ColumnsStreamed}, 𝐷::iDocument, 𝐼::Dict{String})
+function apply(::Val{:ColumnsStreamed}, 𝐷::iDocument, 𝐼::JSDict)
     Model.stream!(𝐼["column_source"].data, fromjson(DataDict, 𝐼["data"]); rollover = 𝐼["rollover"])
 end
 
-function apply(::Val{:ColumnsPatched}, 𝐷::iDocument, 𝐼::Dict{String})
+function apply(::Val{:ColumnsPatched}, 𝐷::iDocument, 𝐼::JSDict)
     Model.patch!(
         𝐼["column_source"].data,
         Dict{String, Vector{Pair}}(
@@ -86,9 +116,9 @@ function apply(::Val{:ColumnsPatched}, 𝐷::iDocument, 𝐼::Dict{String})
     )
 end
 
-parsereferences(𝐶::_𝑏_OPTS, 𝐵::Buffers = Buffers()) = parsereferences!(ModelDict(), 𝐶, 𝐵)
+parsereferences(𝐶::Vector, 𝐵::Buffers = Buffers()) = parsereferences!(ModelDict(), 𝐶, 𝐵)
 
-function parsereferences!(𝑀::ModelDict, 𝐶::_𝑏_OPTS, 𝐵::Buffers)
+function parsereferences!(𝑀::ModelDict, 𝐶::Vector, 𝐵::Buffers)
     if length(Model.MODEL_TYPES) ≢ length(_MODEL_TYPES)
         𝑅 = Serialize.Rules()
         lock(_LOCK) do
@@ -99,10 +129,7 @@ function parsereferences!(𝑀::ModelDict, 𝐶::_𝑏_OPTS, 𝐵::Buffers)
     end
 
     for new ∈ 𝐶
-        (getid(new) ∈ keys(𝑀)) && continue
-
-        mdl = createreference(_MODEL_TYPES[Symbol(new["type"])], new)
-        isnothing(mdl) || (𝑀[bokehid(mdl)] = mdl)
+        createreference!(𝑀, 𝐶, getid(new), new)
     end
     _dereference!(𝐶, 𝑀, 𝐵)
 
@@ -138,13 +165,13 @@ function _reshape(data::Union{Vector{Int8}, Vector{UInt8}}, dtype::String, shape
     end
 end
 
-function _dereference!(𝐶::_𝑏_OPTS, 𝑀::ModelDict, 𝐵::Buffers)
+function _dereference!(𝐶::Vector, 𝑀::ModelDict, 𝐵::Buffers)
     isempty(𝐶) && return
     todos = _𝑏_OPTS[𝐶]
     while !isempty(todos)
         cur = pop!(todos)
         for (k, v) ∈ pairs(cur)
-            if v isa Dict{String} && !isempty(v)
+            if v isa JSDict && !isempty(v)
                 if length(v) == 1 && haskey(v, "id")
                     cur[k] = 𝑀[getid(v)]
                 elseif haskey(v, _𝐵𝐾)
@@ -161,7 +188,7 @@ function _dereference!(𝐶::_𝑏_OPTS, 𝑀::ModelDict, 𝐵::Buffers)
     end
 end
 
-function patchdoc!(𝐷::iDocument, 𝐶::Dict{String}, 𝐵::Buffers)
+function patchdoc!(𝐷::iDocument, 𝐶::JSDict, 𝐵::Buffers)
     𝑀 = parsereferences!(allmodels(𝐷), 𝐶["references"], 𝐵)
     _dereference!(𝐶["events"], 𝑀, 𝐵)
     for msg ∈ 𝐶["events"]
@@ -186,16 +213,17 @@ _𝑐𝑝_key(𝑥::_𝑐𝑝_SLICE) =  (;
     stop = get(𝑥, "stop", nothing)
 )
 
-_𝑐𝑝_isamodel(x::Dict{String, String}) = length(x) == 1 && first(keys(x)) == "id"
-_𝑐𝑝_isamodel(x) = false
-_𝑐𝑝_value(x::Union{Number, String, iHasProps, AbstractVector{<:Number}}) = x
+_𝑐𝑝_isamodel(x::JSDict) = length(x) == 1 && first(keys(x)) == "id"
+_𝑐𝑝_isamodel(@nospecialize(x)) = false
+_𝑐𝑝_value(@nospecialize(x::Union{Number, String, iHasProps, AbstractVector{<:Number}})) = x
+_𝑐𝑝_value(@nospecialize(x::AbstractVector{Int64})) = collect(Int32, x)
 
 function _𝑐𝑝_value(x::Vector{Any})
     elT = Union{typeof.(x)...}
     return if elT <: String
         collect(String, x)
     elseif elT <: Int64
-        collect(Int64, x)
+        collect(Int32, x)
     elseif elT <: Union{Float64, Nothing}
         Float64[something(i, NaN64) for i ∈ x]
     elseif elT <: iHasProps

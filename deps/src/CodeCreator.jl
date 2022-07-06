@@ -105,6 +105,7 @@ function createmainfile(io::IO, deplist)
         println(io, "include(\"models/$(filename(name)).jl\")")
     end
     println(io, "include(\"models/figureoptions.jl\")")
+    println(io, "include(\"models/specifics.jl\")")
     println(io, "end")
 end
 
@@ -122,7 +123,7 @@ function createcode(; adddoc ::Symbol = :none)
     foreach(
         Base.Filesystem.rm,
         filter!(
-            !Base.Fix1(occursin, "action.jl"),
+            !endswith(Regex(joinpath("models", "(action|specifics)\\.jl"))),
             readdir(joinpath((@__DIR__), "..", "..", "src", "models"); join = true)
         )
     )

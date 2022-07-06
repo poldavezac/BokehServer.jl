@@ -58,7 +58,7 @@ end
         )],
         "references" => Any[]
     )
-    BokehJL.Protocol.PatchDocReceive._dereference!(𝐶, Dict{Int, BokehJL.iHasProps}(14001 => cds), BokehJL.Protocol.Buffers())
+    BokehJL.Protocol.PatchDocReceive._dereference!(𝐶["events"], Dict{Int, BokehJL.iHasProps}(14001 => cds), BokehJL.Protocol.Buffers())
 
     @test 𝐶 == truth
 end
@@ -74,9 +74,9 @@ end
     js(x)    = JSON.parse(json2(x))
     @testset "add first root" begin
         E.eventlist!() do
-            cnt = Dict(
-                "references" => [jsref(mdl)],
-                "events" =>  [js(E.RootAddedEvent(doc, mdl, 1))],
+            cnt = Dict{String, Any}(
+                "references" => Any[jsref(mdl)],
+                "events" =>  Any[js(E.RootAddedEvent(doc, mdl, 1))],
             )
 
             @test isempty(doc)
@@ -90,9 +90,9 @@ end
 
     @testset "add root again" begin
         E.eventlist!() do
-            cnt = Dict(
-                "references" => [],
-                "events" =>  [js(E.RootAddedEvent(doc, mdl, 1))],
+            cnt = Dict{String, Any}(
+                "references" => Any[],
+                "events" =>  Any[js(E.RootAddedEvent(doc, mdl, 1))],
             )
 
             @test length(doc) == 1
@@ -103,9 +103,9 @@ end
 
     @testset "remove root" begin
         E.eventlist!() do
-            cnt = Dict(
-                "references" => [],
-                "events" =>  [js(E.RootRemovedEvent(doc, mdl, 1))],
+            cnt = Dict{String, Any}(
+                "references" => Any[],
+                "events" =>  Any[js(E.RootRemovedEvent(doc, mdl, 1))],
             )
 
             @test length(doc) == 1
@@ -116,9 +116,9 @@ end
 
     @testset "change title" begin
         E.eventlist!() do
-            cnt = Dict(
-                "references" => [],
-                "events" =>  [js(E.TitleChangedEvent(doc, "A"))],
+            cnt = Dict{String, Any}(
+                "references" => Any[],
+                "events" => Any[js(E.TitleChangedEvent(doc, "A"))],
             )
 
             setfield!(doc, :title, "----")
@@ -130,9 +130,9 @@ end
     ymdl  = ProtocolY()
     @testset "add y root" begin
         E.eventlist!() do
-            cnt = Dict(
-                "references" => [jsref(ymdl), jsref(ymdl.a), jsref(mdl)],
-                "events" =>  [
+            cnt = Dict{String, Any}(
+                "references" => Any[jsref(ymdl), jsref(ymdl.a), jsref(mdl)],
+                "events" => Any[
                     js(E.RootAddedEvent(doc, mdl, 1)),
                     js(E.RootAddedEvent(doc, ymdl, 1))
                 ],
@@ -150,9 +150,9 @@ end
     @testset "change attribute" begin
         E.eventlist!() do
             other = ProtocolX()
-            cnt = Dict(
-                "references" => [jsref(other)],
-                "events" =>  [js(E.ModelChangedEvent(ymdl, :a, nothing, other))],
+            cnt = Dict{String, Any}(
+                "references" => Any[jsref(other)],
+                "events" => Any[js(E.ModelChangedEvent(ymdl, :a, nothing, other))],
             )
 
             @test length(doc) == 2
@@ -173,9 +173,9 @@ end
                 called[] = true
             end
                 
-            cnt = Dict(
-                "references" => [],
-                "events" =>  [js(BokehJL.Models.Actions.ButtonClick(; model = btn))],
+            cnt = Dict{String, Any}(
+                "references" => Any[],
+                "events" => Any[js(BokehJL.Models.Actions.ButtonClick(; model = btn))],
             )
             BokehJL.Protocol.patchdoc!(doc, cnt, buf)
             @test called[]

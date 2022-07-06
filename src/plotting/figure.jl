@@ -34,6 +34,4 @@ function figure(; k...)
     )
     return plot
 end
-
-precompile(Models.Plot, ())
 export figure
