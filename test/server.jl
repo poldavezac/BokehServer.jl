@@ -118,3 +118,31 @@ end
     sleep(0.01)
     @test isnothing(BokehJL.Embeddings.Notebooks.SERVER[])
 end
+
+@testset "figure" begin
+    with_logger(Logging.NullLogger()) do
+        val = Ref{Bool}(false)
+        fig = BokehJL.figure(x_axis_label = "time", y_axis_label = "energy")
+        testserve(
+            :app => (doc) -> begin
+                y   = rand(1:100, 100)
+                BokehJL.line!(fig; y, color = :blue)
+                BokehJL.scatter!(fig; y, color = :red)
+                push!(doc, fig)
+            end
+        ) do
+            BokehJL.Client.open("ws://localhost:$TEST_PORT/app/ws") do _, doc
+                @test length(doc) == 1
+                @test all(i isa BokehJL.Models.Plot for i ∈ doc)
+                clfig = doc.roots[1]
+                @test clfig ≢ fig
+                for attr ∈ (:left, :right, :above, :below, :renderers)
+                    @test [i.id for i ∈ getproperty(fig, attr)] == [i.id for i ∈ getproperty(clfig, attr)]
+                end
+                val[] = true
+            end
+            yield()
+        end
+        @test val[]
+    end
+end
