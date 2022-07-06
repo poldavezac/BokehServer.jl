@@ -47,6 +47,9 @@ function serve!(routes :: RouteDict, host :: AbstractString, port :: Int; kwa...
 end
 
 function stop!(routes::RouteDict, server::HTTP.Sockets.TCPServer)
+    if !isopen(server) && isempty(routes)
+        return
+    end
     @info "stopping the server"
     cpy = collect(values(routes))
     empty!(routes)
