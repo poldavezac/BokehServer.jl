@@ -9,7 +9,7 @@ using ...Server: iApplication, SessionContext
 using ...Tokens
 
 function route(io::HTTP.Stream, 𝐴::Server.iApplication)
-    WebSockets.upgrade(io) do ws::WebSockets.WebSocket
+    out = WebSockets.upgrade(io) do ws::WebSockets.WebSocket
         waittime = Server.CONFIG.wssleepperiod
         session  = nothing
         try
@@ -24,13 +24,21 @@ function route(io::HTTP.Stream, 𝐴::Server.iApplication)
                     yield()
                 end
             end
+            nothing
         catch exc
-            wserror(exc, 𝐴, session,)
+            if (exc isa InterruptException)
+                exc
+            else
+                wserror(exc, 𝐴, session,)
+                nothing
+            end
         finally
             onclose(ws, 𝐴, session)
             close(ws)
         end
     end
+    # rethrow here to escape a try-catch within the `WebSockets` module
+    (out isa InterruptException) && throw(out)
 end
 
 macro wsassert(test, msg::String)

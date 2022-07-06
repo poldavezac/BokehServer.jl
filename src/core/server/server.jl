@@ -25,13 +25,33 @@ function serve!(routes :: RouteDict, host :: AbstractString, port :: Int; kwa...
     )
     haskey(routes, :static) || push!(routes, staticroutes(CONFIG)...)
     Base.exit_on_sigint(!CONFIG.catchsigint)
+    server = HTTP.Sockets.listen(HTTP.Sockets.InetAddr(host, port))
     try
-        HTTP.listen(route(routes), host, port; kwa...)
+        HTTP.listen(host, port; kwa..., server) do http::HTTP.Stream
+            try
+                route(http, routes)
+            catch exc
+                if exc isa InterruptException
+                    stop!(routes, server)
+                    return
+                elseif CONFIG.throwonerror
+                    rethrow()
+                end
+            end
+        end
     catch exc
         (exc isa InterruptException) || rethrow()
     finally
-        foreach(close, values(routes))
+        stop!(routes, server)
     end
+end
+
+function stop!(routes::RouteDict, server::HTTP.Sockets.TCPServer)
+    @info "stopping the server"
+    cpy = collect(values(routes))
+    empty!(routes)
+    close(server)
+    foreach(close, cpy)
 end
 
 function serve(host :: AbstractString, port :: Int, apps :: Vararg{<:RouteTypes}; kwa...)

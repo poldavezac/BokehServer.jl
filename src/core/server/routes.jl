@@ -28,14 +28,7 @@ function route(http::HTTP.Stream, routes::RouteDict)
             route(http, Val(:404))
         end
     catch exc
-        if exc isa InterruptException
-            # leave the handling to someone else
-            rethrow()
-        else
-            route(http, Base.current_exceptions())
-            CONFIG.throwonerror && rethrow()
-        end
+        (exc isa InterruptException) || route(http, Base.current_exceptions())
+        rethrow()
     end
 end
-
-route(routes::RouteDict) = Base.Fix2(route, routes)
