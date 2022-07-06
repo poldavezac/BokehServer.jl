@@ -2,7 +2,25 @@ const RouteDict  = Dict{Symbol, iRoute}
 const RouteTypes = Union{iRoute, Function, Pair}
 
 """
-    serve([host = CONFIG.host], [port = CONFIG.port], apps...; kwa...)
+    listener(server::HTTP.Sockets.TCPServer, routes::RouteDict)
+
+Return an anonymous function for use with `HTTP.listen`
+"""
+function listener(server::HTTP.Sockets.TCPServer, routes::RouteDict) :: Function
+    (http::HTTP.Stream) -> try
+        route(http, routes)
+    catch exc
+        if exc isa InterruptException
+            stop!(routes, server)
+            return
+        elseif CONFIG.throwonerror
+            rethrow()
+        end
+    end
+end
+
+"""
+    serve!([host = CONFIG.host], [port = CONFIG.port], apps...; kwa...)
 
 Starts a BokehJL server. `apps` can be `BokehJL.Server.iRoute` types,
 functions or pairs of `name_of_app => app_or_function`
@@ -25,20 +43,11 @@ function serve!(routes :: RouteDict, host :: AbstractString, port :: Int; kwa...
     )
     haskey(routes, :static) || push!(routes, staticroutes(CONFIG)...)
     Base.exit_on_sigint(!CONFIG.catchsigint)
-    server = HTTP.Sockets.listen(HTTP.Sockets.InetAddr(host, port))
+    server = get(kwa, :server) do
+        HTTP.Sockets.listen(HTTP.Sockets.InetAddr(host, port))
+    end
     try
-        HTTP.listen(host, port; kwa..., server) do http::HTTP.Stream
-            try
-                route(http, routes)
-            catch exc
-                if exc isa InterruptException
-                    stop!(routes, server)
-                    return
-                elseif CONFIG.throwonerror
-                    rethrow()
-                end
-            end
-        end
+        HTTP.listen(listener(server, routes), host, port; kwa..., server)
     catch exc
         (exc isa InterruptException) || rethrow()
     finally

@@ -17,8 +17,12 @@ function testserve(𝐹::Function, args...; kwa...)
     server = HTTP.Sockets.listen(HTTP.Sockets.InetAddr(HTTP.Sockets.ip"127.0.0.1", TEST_PORT))
     task   = @async nothing
     try
-        task = @async BokehJL.Server.serve(TEST_PORT, args...; kwa..., server)
-        yield()
+        task = @async try
+            BokehJL.Server.serve(TEST_PORT, args...; kwa..., server)
+        catch exc
+            @error "Failed serve" exception = (exc, Base.catch_backtrace())
+        end
+        sleep(0.01)
         @test istaskstarted(task)
         @test !istaskdone(task)
         val[] = true
@@ -76,42 +80,40 @@ end
 end
 
 @testset "notebook" begin
-    # with_logger(Logging.NullLogger()) do
-        @test isnothing(BokehJL.Embeddings.Notebooks.SERVER[])
-        io  = IOBuffer()
-        dom = ServerTestDOM(; a = 100)
-        show(io, MIME("text/html"), dom)
-        @test !isempty(String(take!(io)))
+    @test isnothing(BokehJL.Embeddings.Notebooks.SERVER[])
+    io  = IOBuffer()
+    dom = ServerTestDOM(; a = 100)
+    show(io, MIME("text/html"), dom)
+    @test !isempty(String(take!(io)))
 
-        sleep(0.01)
-        @test !isnothing(BokehJL.Embeddings.Notebooks.SERVER[])
-        @test !isempty(BokehJL.Embeddings.Notebooks.SERVER[].lastid[])
-        @test !isempty(BokehJL.Embeddings.Notebooks.SERVER[].routes)
+    sleep(0.01)
+    @test !isnothing(BokehJL.Embeddings.Notebooks.SERVER[])
+    @test !isempty(BokehJL.Embeddings.Notebooks.SERVER[].lastid[])
+    @test !isempty(BokehJL.Embeddings.Notebooks.SERVER[].routes)
 
-        val = Ref(false)
-        BokehJL.Client.open(BokehJL.Embeddings.Notebooks.lastws()) do hdl::BokehJL.Client.MessageHandler
-            doc = hdl.doc
+    val = Ref(false)
+    BokehJL.Client.open(BokehJL.Embeddings.Notebooks.lastws()) do hdl::BokehJL.Client.MessageHandler
+        doc = hdl.doc
 
-            @test length(doc) == 1
-            task_local_storage(BokehJL.Events.TASK_EVENTS, BokehJL.Events.EVENTS[]) do
-                # by default, the bokeh client has its own event list
-                # we impose the notebook one here
-                dom.a = 10
-            end
-            @test doc.roots[1].a ≡ 100
-            @test !isnothing(BokehJL.Events.EVENTS[].task)
-            wait(BokehJL.Events.EVENTS[].task)
-            @test isnothing(BokehJL.Events.EVENTS[].task)
-            
-            BokehJL.Client.receivemessage(hdl)  # need to handle the patchdoc
-            @test doc.roots[1].a ≡ 10
-            val[] = true
+        @test length(doc) == 1
+        task_local_storage(BokehJL.Events.TASK_EVENTS, BokehJL.Events.EVENTS[]) do
+            # by default, the bokeh client has its own event list
+            # we impose the notebook one here
+            dom.a = 10
         end
-        sleep(0.01)
-        @test val[]
+        @test doc.roots[1].a ≡ 100
+        @test !isnothing(BokehJL.Events.EVENTS[].task)
+        wait(BokehJL.Events.EVENTS[].task)
+        @test isnothing(BokehJL.Events.EVENTS[].task)
+        
+        BokehJL.Client.receivemessage(hdl)  # need to handle the patchdoc
+        @test doc.roots[1].a ≡ 10
+        val[] = true
+    end
+    sleep(0.01)
+    @test val[]
 
-        BokehJL.Embeddings.Notebooks.stopserver()
-        sleep(0.01)
-        @test isnothing(BokehJL.Embeddings.Notebooks.SERVER[])
-    # end
+    BokehJL.Embeddings.Notebooks.stopserver()
+    sleep(0.01)
+    @test isnothing(BokehJL.Embeddings.Notebooks.SERVER[])
 end

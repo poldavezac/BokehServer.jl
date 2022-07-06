@@ -1,5 +1,6 @@
 module Notebooks
 using UUIDs
+using HTTP
 using ...AbstractTypes
 using ...Events
 using ...Model
@@ -9,7 +10,7 @@ using ...Server
 
 struct NotebooksServer
     address :: String
-    tcp     :: Server.HTTP.Server
+    tcp     :: HTTP.Server
     routes  :: Server.RouteDict
     lastid  :: Ref{String}
 
@@ -17,7 +18,9 @@ struct NotebooksServer
         routes = Server.RouteDict(Server.staticroutes(Server.CONFIG)...)
         new(
             "$host:$port",
-            Server.HTTP.listen!(Server.route(routes), host, port),
+            let server = HTTP.Sockets.listen(HTTP.Sockets.InetAddr(host, port))
+                HTTP.listen!(Server.listener(server, routes), host, port; server)
+            end,
             routes,
             Ref(""),
         )

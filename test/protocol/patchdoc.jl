@@ -1,36 +1,38 @@
+JSON = BokehJL.Protocol.Messages.JSON
+
 @testset "send" begin
     doc  = BokehJL.Document()
     mdl  = ProtocolX(; id = 1)
     E    = BokehJL.Events
-    json(x) = BokehJL.Protocol.Messages.JSON.json(BokehJL.Protocol.serialize(x))
+    json(x) = JSON.json(BokehJL.Protocol.serialize(x))
 
     val   = json(E.ModelChangedEvent(mdl, :a, 10, 20))
     truth = """{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"new":20}"""
-    @test val == truth
+    @test JSON.parse(val) == JSON.parse(truth)
 
     val   = json(E.RootAddedEvent(doc, mdl, 1))
     truth = """{"kind":"RootAdded","model":{"id":"1"}}"""
-    @test val == truth
+    @test JSON.parse(val) == JSON.parse(truth)
 
     val   = json(E.RootRemovedEvent(doc, mdl, 1))
     truth = """{"kind":"RootRemoved","model":{"id":"1"}}"""
-    @test val == truth
+    @test JSON.parse(val) == JSON.parse(truth)
 
     E.eventlist!() do
         push!(doc, mdl)
         # next change should not be sent to the client as the model is brand new
         mdl.a = 100
-        val   = BokehJL.Protocol.Messages.JSON.json(BokehJL.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}()))
+        val   = JSON.json(BokehJL.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}()))
         truth = """{"events":[{"kind":"RootAdded","model":{"id":"1"}}],"""*
             """"references":[{"attributes":{"a":100},"id":"1","type":"$(nameof(ProtocolX))"}]}"""
-        @test val == truth
+        @test JSON.parse(val) == JSON.parse(truth)
     end
 
     E.eventlist!() do
         mdl.a = 10
-        val   = BokehJL.Protocol.Messages.JSON.json(BokehJL.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([mdl.id])))
+        val   = JSON.json(BokehJL.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([mdl.id])))
         truth = """{"events":[{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"new":10}],"references":[]}"""
-        @test val == truth
+        @test JSON.parse(val) == JSON.parse(truth)
     end
 end
 
@@ -66,7 +68,6 @@ end
     mdl  = ProtocolX(; id = 100,a  = 10)
     E    = BokehJL.Events
     buf  = BokehJL.Protocol.Buffers()
-    JSON = BokehJL.Protocol.Messages.JSON
     json1(x) = JSON.json(BokehJL.Protocol.serialize(x))
     json2(x) = JSON.json(BokehJL.Protocol.Serialize.serialref(x, BokehJL.Protocol.Serialize.Rules()))
     jsref(x) = JSON.parse(json1(x))

@@ -143,10 +143,24 @@ function tonamedtuple(ν::iSpec)
     return ismissing(transform) ? out : merge(out, (; transform))
 end
 
+function todict(ν::iSpec) :: Dict{Symbol, Any}
+    out       = _👻specdict(ν.item)
+    transform = ν.transform
+    ismissing(transform) || (out[:transform] = transform)
+    return out
+end
+
 function tonamedtuple(ν::iUnitSpec)
     out  = invoke(tonamedtuple, Tuple{iSpec}, ν)
     unts = ν.units.value
     return unts ≡ units(typeof(ν))[1] ? out : merge(out, (; units = unts))
+end
+
+function todict(ν::iUnitSpec)
+    out  = invoke(todict, Tuple{iSpec}, ν)
+    unts = ν.units.value
+    (unts ≡ units(typeof(ν))[1]) || (out[:units] = units)
+    return out
 end
 
 function _👻specextract(𝑇::Type, α, ν, dflt)
@@ -159,3 +173,9 @@ _👻specvalue(val::iModel)   = (; expr  = val)
 _👻specvalue(val::EnumType) = (; value = val.value)
 _👻specvalue(val::Color)    = (; value = colorhex(val))
 _👻specvalue(val::Any)      = (; value = val)
+
+_👻specdict(val::Column)   :: Dict{Symbol, Any} = Dict{Symbol, Any}(:field => val.item)
+_👻specdict(val::iModel)   :: Dict{Symbol, Any} = Dict{Symbol, Any}(:expr  => val)
+_👻specdict(val::EnumType) :: Dict{Symbol, Any} = Dict{Symbol, Any}(:value => val.value)
+_👻specdict(val::Color)    :: Dict{Symbol, Any} = Dict{Symbol, Any}(:value => colorhex(val))
+_👻specdict(val::Any)      :: Dict{Symbol, Any} = Dict{Symbol, Any}(:value => val)

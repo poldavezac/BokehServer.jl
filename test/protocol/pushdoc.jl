@@ -4,15 +4,16 @@
     setfield!(doc, :title, "A")
     push!(getfield(doc, :roots), obj)
 
-    truth = (; doc = (;
-        defs    = [],
-        roots   = (;
-            references = [(attributes = (;), id = "1", type = nameof(ProtocolX))],
-            root_ids   = ["1"],
+    truth = (; doc = Dict{Symbol, Any}(
+        :defs    => Nothing[],
+        :roots   => Dict{Symbol, Any}(
+            :references => [Dict{Symbol, Any}(:attributes => Dict{Symbol, Any}(), :id => "1", :type => nameof(ProtocolX))],
+            :root_ids   => ["1"],
         ),
-        title   = "A",
-        version = "$(BokehJL.Protocol.PROTOCOL_VERSION)",
+        :title   => "A",
+        :version => "$(BokehJL.Protocol.PROTOCOL_VERSION)",
     ))
+
     @test BokehJL.Protocol.pushdoc(doc) == truth
 
 

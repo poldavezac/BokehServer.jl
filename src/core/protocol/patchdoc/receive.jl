@@ -6,7 +6,7 @@ using ..Serialize
 using ..Protocol: Buffers
 
 const ModelDict    = Dict{Int64, iHasProps}
-const _MODEL_TYPES = Dict{NTuple{N, Symbol} where {N}, DataType}()
+const _MODEL_TYPES = Dict{Symbol, DataType}()
 const _LOCK        = Threads.SpinLock()
 const _𝑏_OPTS      = Union{Dict{String}, Vector}
 const _END_PATT    = r"^end" => "finish"
@@ -91,7 +91,7 @@ function parsereferences!(𝑀::ModelDict, 𝐶::_𝑏_OPTS, 𝐵::Buffers)
         𝑅 = Serialize.Rules()
         lock(_LOCK) do
             for cls ∈ Model.MODEL_TYPES
-                _MODEL_TYPES[tuple(values(Serialize.serialtype(cls, 𝑅))...)] = cls
+                _MODEL_TYPES[nameof(cls)] = cls
             end
         end
     end
@@ -99,8 +99,7 @@ function parsereferences!(𝑀::ModelDict, 𝐶::_𝑏_OPTS, 𝐵::Buffers)
     for new ∈ 𝐶
         (getid(new) ∈ keys(𝑀)) && continue
 
-        key = tuple((Symbol(new[i]) for i ∈ ("type", "subtype") if i ∈ keys(new))...)
-        mdl = createreference(_MODEL_TYPES[key], new)
+        mdl = createreference(_MODEL_TYPES[Symbol(new["type"])], new)
         isnothing(mdl) || (𝑀[bokehid(mdl)] = mdl)
     end
     _dereference!(𝐶, 𝑀, 𝐵)
