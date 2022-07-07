@@ -93,7 +93,6 @@ Base.get!(𝐹::Function, γ::iContainer{<:AbstractDict}, x) = haskey(γ, x) ? �
 for (𝐹, 𝑇) ∈ (
         :length     => iContainer,
         :iterate    => iContainer,
-        :getindex   => iContainer,
         :size       => iContainer{<:AbstractArray},
         :eachindex  => iContainer{<:AbstractArray},
         :lastindex  => iContainer{<:AbstractArray},
@@ -105,6 +104,9 @@ for (𝐹, 𝑇) ∈ (
 )
     @eval Base.$𝐹(γ::$𝑇, x...)  = $𝐹(γ.values, x...)
 end
+
+Base.getindex(γ::iContainer, x) = γ.values[x]
+Base.getindex(γ::iContainer)    = γ.values[]
 
 for 𝐹 ∈ (:in, :any, :all, :filter)
     @eval Base.$𝐹(ν, γ::iContainer) = $𝐹(ν, γ.values)

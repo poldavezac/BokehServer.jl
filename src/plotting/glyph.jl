@@ -19,8 +19,10 @@ The kwargs should include all `glyphargs(𝑇)` at a minimum
 """
 function glyph(𝑇::Type{<:Models.iGlyph}; trait_color = missing, kwa...)
     kwargs = Dict{Symbol, Any}(kwa...)
-    out = (; (i => pop!(kwargs, i) for i ∈ _👻RENDERER if i ∈ keys(kwargs))...)
-    out = merge(out, _👻datasource!(kwargs, get(kwargs, :source, missing), 𝑇))
+    out    = Dict{Symbol, Any}(
+       (i => pop!(kwargs, i) for i ∈ _👻RENDERER if i ∈ keys(kwargs))...,
+       :data_source =>  _👻datasource!(kwargs, get(kwargs, :source, missing), 𝑇)
+    )
 
     defaults = _👻visuals!(kwargs, 𝑇; trait_color)
     nonsel   = _👻visuals!(kwargs, 𝑇; trait_color, prefix = :nonselection_, defaults, override = (; alpha = _👻NSEL_ALPHA))
@@ -34,7 +36,7 @@ function glyph(𝑇::Type{<:Models.iGlyph}; trait_color = missing, kwa...)
         glyph              = create(defaults),
         nonselection_glyph = create(nonsel),
         selection_glyph    = create(sel),
-        hover_glyph        = create(hover),
+        hover_glyph        = ismissing(hover) ? nothing : hover,
         muted_glyph        = create(muted),
         out...,
     )
@@ -70,6 +72,7 @@ const _👻NSEL_ALPHA  = .1
 const _👻TEXT_COLOR  = :black
 const _👻LEGEND      = (:legend_field, :legend_group, :legend_label)
 const _👻VISUALS     = (:line, :hatch, :fill, :text, :global)
+const _👻PREFIXES    = (:nonselection, :hover, :muted, :selection)
 const _👻RENDERER    = (:name, :coordinates, :x_range_name, :y_range_name, :level, :view, :visible, :muted)
 const _👻COLORS      = (
     "#1f77b4",
@@ -90,13 +93,15 @@ const _👻COLORS      = (
 iterate over all iSpec properties and see what to do with the data_source
 """
 function _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
-    out = Pair[]
+    pairs = Tuple{Symbol, Any, Type}[]
+
+    # look through iSpec properties, deal with arrays
     for col ∈ Model.bokehproperties(𝑇)
         p𝑇  = Model.bokehfieldtype(𝑇, col)
         (p𝑇 <: Model.iSpec) || continue
 
         if haskey(kwargs, col)
-            arg = pop!(kwargs, col)
+            arg = kwargs[col]
         elseif col ∈ Models.glyphargs(𝑇)
             val = Model.themevalue(𝑇, col)
             isnothing(val) && throw(ErrorException("Missing argument $𝑇.$col"))
@@ -104,18 +109,44 @@ function _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
         else
             continue
         end
+        push!(pairs, (col, arg, p𝑇))
+    end
 
+    # deal with color & alpha ...
+    for (col, arg) ∈ collect(kwargs)
+        (arg isa AbstractVector) || continue
+        Model.hasbokehproperty(𝑇, col) && continue
+
+        # check whether col is trait (color, alpha, ...)
+        opts = [Symbol("$(i)_$col") for i ∈ _👻VISUALS if Model.hasbokehproperty(𝑇, Symbol("$(i)_$col"))]
+        if isempty(opts)
+            # check whether col is specification (muted_line_color, ...)
+            val  = "$col"
+            if count(val, '_') ≡ 2
+                elems  = split(val, '_')
+                newcol = Symbol("$(elems[2])_$(elems[3])")
+                if Symbol(elems[1]) ∈ _👻PREFIXES && Model.hasbokehproperty(𝑇, newcol)
+                    opts = [opts]
+                end
+            end
+        end
+        types = Set{Type}(Model.bokehfieldtype(𝑇, i ) for i ∈ opts)
+        (length(types) ≢ 1 || !(first(types) <: Model.iSpec))  && continue
+
+        push!(pairs, (col, arg, first(types)))
+    end
+
+    for (col, arg, p𝑇) ∈ pairs
         cnv = Model.bokehconvert(p𝑇, arg)
         msg = if cnv isa Model.Unknown && !(arg isa AbstractArray)
             "is not a supported type $(typeof(arg)) = $arg"
         else
-            𝐹(col, arg, cnv)
+            𝐹(col, arg, cnv, p𝑇)
         end
 
         (msg isa Exception) && throw(ErrorException("Argument for $𝑇.$col $(msg.msg)"))
-        push!(out, col => msg)
+        (msg ≡ arg) || push!(kwargs, col => msg)
     end
-    return (; out...)
 end
 
 """
@@ -135,18 +166,18 @@ function _👻datasource!(kwargs::Dict{Symbol}, ::Missing, 𝑇::Type)
         end
     end
 
-    out  = _👻datasource!(kwargs, 𝑇) do col, arg, cnv
+    _👻datasource!(kwargs, 𝑇) do col, arg, cnv, p𝑇
         if cnv isa Model.iSpec && !ismissing(cnv.field)
             ErrorException("has a source-type entry, yet no source was provided")
         elseif cnv isa Model.Unknown && arg isa AbstractArray
-            data["$col"] = Model.datadictarray(Model.bokehfieldtype(𝑇, col), arg)
+            data["$col"] = Model.datadictarray(p𝑇, arg)
             (; field = "$col")
         else
             arg
         end
     end
 
-    return merge(out, (; data_source = Models.ColumnDataSource(; data)))
+    return Models.ColumnDataSource(; data)
 end
 
 """
@@ -156,7 +187,7 @@ iterate over all iSpec properties and check that the provided fields are in the 
 """
 function _👻datasource!(kwargs::Dict{Symbol}, src::Models.ColumnDataSource, 𝑇::Type)
     data = src.data
-    out  = _👻datasource!(kwargs, 𝑇) do col, arg, cnv
+    _👻datasource!(kwargs, 𝑇) do col, arg, cnv, _
         if arg isa AbstractArray
             ErrorException("is a vector even though a data source has also been provided")
         elseif cnv isa Model.iSpec && !ismissing(cnv.field) && !haskey(data, cnv.field)
@@ -165,7 +196,11 @@ function _👻datasource!(kwargs::Dict{Symbol}, src::Models.ColumnDataSource, �
             arg
         end
     end
-    return merge(out, (; data_source = src))
+    return src
+end
+
+function _👻datasource!(kwargs::Dict{Symbol}, src::AbstractDict, 𝑇::Type)
+    _👻datasource!(kwargs, Models.ColumnDataSource(; data = Model.bokehconvert(DataDict, src)), 𝑇)
 end
 
 function _👻visuals!(
@@ -179,7 +214,7 @@ function _👻visuals!(
         override         = (;),
         test     :: Bool = false
 )
-    test && any(startswith("$prefix", "$x") for x ∈ keys(props)) && return missing
+    test && !any(startswith("$prefix", "$x") for x ∈ keys(props)) && return missing
 
     defaults       = merge((; text_color, hatch_color = text_color), defaults)
     trait_defaults = (; color = (ismissing(trait_color) ? _👻COLORS[1] : trait_color), alpha = trait_alpha)
@@ -222,7 +257,7 @@ function _👻visuals!(
     end
 
 
-    foreach(x->pop!(props, x, nothing), names)
+    foreach(x->pop!(props, x, nothing), traits)
     return result
 end
 

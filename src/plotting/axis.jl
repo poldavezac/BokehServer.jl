@@ -3,6 +3,7 @@ using Dates
 using ...AbstractTypes
 using ...Model
 using ...Models
+const RangeArguments = Union{Symbol, Tuple, AbstractRange, Model.FactorSeq}
 
 Model.bokehconvert(::Type{Models.iRange}, ν::Union{Nothing, Missing}) = Models.DataRange1d()
 Model.bokehconvert(::Type{Models.iRange}, ν::Model.FactorSeq) = Models.FactorRange(; factors = ν)
@@ -62,7 +63,7 @@ const _LOCATIONS = (:center, :left, :below, :right, :above)
             fig             :: Models.Plot,
             isxaxis         :: Bool;
             type            :: Union{Symbol, Nothing}              = :auto,
-            range           :: Union{Symbol, Tuple, AbstractRange} = :data,
+            range           :: RangeArguments                      = :data,
             scale           :: Symbol                              = :linear,
             location        :: Union{Nothing, Missing, Symbol}     = missing,
             num_minor_ticks :: Union{Missing, Int, Nothing}        = missing,
@@ -98,7 +99,7 @@ function addaxis!(
         fig             :: Models.Plot,
         isxaxis         :: Bool;
         type            :: Union{Symbol, Nothing}                       = :auto,
-        range           :: Union{Symbol, Tuple, AbstractRange, Nothing} = :data,
+        range           :: Union{RangeArguments, Nothing}               = :data,
         scale           :: Symbol                                       = :linear,
         location        :: Union{Nothing, Missing, Symbol}              = missing,
         num_minor_ticks :: Union{Missing, Int, Nothing}                 = missing,
@@ -142,7 +143,7 @@ end
     createaxis(
         isxaxis         :: Bool;
         type            :: Union{Symbol, Nothing}                       = :auto,
-        range           :: Union{Symbol, Tuple, AbstractRange, Nothing} = :data,
+        range           :: Union{RangeArguments, Nothing}               = :data,
         scale           :: Symbol                                       = :linear,
         num_minor_ticks :: Union{Missing, Int, Nothing}                 = missing,
         label           :: Union{Models.iBaseText, String, Missing}     = missing,
@@ -156,7 +157,7 @@ Creates a new axis and its companion models.
 function createaxis(
         isxaxis         :: Bool;
         type            :: Union{Symbol, Nothing}                       = :auto,
-        range           :: Union{Symbol, Tuple, AbstractRange, Nothing} = :data,
+        range           :: Union{RangeArguments, Nothing}               = :data,
         scale           :: Symbol                                       = :linear,
         num_minor_ticks :: Union{Missing, Int, Nothing}                 = missing,
         label           :: Union{Models.iBaseText, String, Missing}     = missing,
@@ -220,20 +221,21 @@ end
 
 """
     getaxis(
-        fig             :: Models.Plot,
-        isxaxis         :: Bool;
-        rangename       :: String = "default",
-        axisname        :: Union{String, Missing} = missing
+        fig       :: Models.Plot,
+        position  :: Symbol #= ∈ (:x, :y) =#;
+        rangename :: String = "default",
+        axisname  :: Union{String, Missing} = missing
     )
 
 Gets an axis and its companions
 """
 function getaxis(
-        fig             :: Models.Plot,
-        isxaxis         :: Bool;
-        rangename       :: String = "default",
-        axisname        :: Union{String, Missing} = missing
+        fig       :: Models.Plot,
+        position  :: Symbol;
+        rangename :: String = "default",
+        axisname  :: Union{String, Missing} = missing
 )
+    isxaxis      = position ≡ :x
     fname(x)     = isxaxis ? x : Symbol(replace("$x", "x" => "y"))
     getrngsca(x) = rangename == "default"       ?
         getproperty(fig, fname(Symbol("x_$x"))) :
@@ -267,6 +269,8 @@ function getaxis(
 
     return (; isxaxis, rangename, axisname, range = rng, scale = sca, axes, grids)
 end
+
+getaxis(fig :: Models.Plot, isxaxis :: Bool; k...) = getaxis(fig, isxaxis ? :x : :y)
 
 """
     popaxis!(

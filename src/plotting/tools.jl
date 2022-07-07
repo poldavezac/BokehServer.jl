@@ -85,8 +85,8 @@ function _toollist(
     ]
 end
 
-_tooltips!(::Vector, ::Missing) = nothing
-function _tooltips(lst::Vector, tips)
+_tooltips!(::Vector, ::Missing, ::Bool) = nothing
+function _tooltips!(lst::Vector, tooltips, dotrigger :: Bool)
     found = false
     for (i, tool) ∈ enumerate(lst)
         if tool.keep && tool.tool isa Models.HoverTool
@@ -165,7 +165,7 @@ function tools!(
         dotrigger      :: Bool                                                                       = false,
 )
     lst = _toollist(tools)
-    _tooltips!(lst, tooltips)
+    _tooltips!(lst, tooltips, dotrigger)
 
     arr = [i.tool for i ∈ lst if i.keep]
     append!(fig.toolbar.tools, arr; dotrigger)

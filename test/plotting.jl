@@ -57,8 +57,8 @@ end
     plot = BokehJL.Plotting.figure()
     @test isempty(plot.renderers)
     @test !any(i isa BokehJL.Models.Legend for i ∈ plot.center)
-    BokehJL.Plotting.glyph!(
-        plot, :scatter;
+    BokehJL.Plotting.scatter!(
+        plot;
         x            = [1, 2, 3],
         y            = [3, 2, 1],
         legend_label = "label",
@@ -77,4 +77,50 @@ end
     @test plot.renderers[1].glyph.id ∈ keys(mdls)
     @test plot.below[end].id ∈ keys(mdls)
     @test plot.left[end].id ∈ keys(mdls)
+end
+
+@testset "create rect" begin
+    plot = BokehJL.Plotting.figure()
+    @test isempty(plot.renderers)
+    @test !any(i isa BokehJL.Models.Legend for i ∈ plot.center)
+    BokehJL.rect!(
+        plot;
+        x            = [1, 2, 3],
+        y            = [3, 2, 1],
+        height       = .5,
+        width        = .8,
+        color        = [:blue, :red, :green],
+        legend_label = "label",
+        dotrigger    = false,
+    )
+
+    @test length(plot.renderers) ≡ 1
+    @test plot.renderers[1] isa BokehJL.Models.GlyphRenderer
+    @test plot.renderers[1].glyph isa BokehJL.Models.Rect
+    @test plot.renderers[1].data_source.data["x"] == [1, 2, 3]
+    @test plot.renderers[1].data_source.data["y"] == [3, 2, 1]
+    @test plot.renderers[1].data_source.data["color"] == ["#0000FF", "#FF0000", "#008000"]
+    @test plot.renderers[1].glyph.fill_color == "color"
+    @test plot.renderers[1].glyph.hatch_color == "color"
+end
+
+@testset "create line" begin
+    plot = BokehJL.Plotting.figure()
+    @test isempty(plot.renderers)
+    @test !any(i isa BokehJL.Models.Legend for i ∈ plot.center)
+    BokehJL.line!(
+        plot;
+        source = Dict(
+            "x" => [1, 2, 3],
+            "y" => [3, 2, 1],
+        ),
+        legend_label = "label",
+        dotrigger    = false,
+    )
+
+    @test length(plot.renderers) ≡ 1
+    @test plot.renderers[1] isa BokehJL.Models.GlyphRenderer
+    @test plot.renderers[1].glyph isa BokehJL.Models.Line
+    @test plot.renderers[1].data_source.data["x"] == [1, 2, 3]
+    @test plot.renderers[1].data_source.data["y"] == [3, 2, 1]
 end

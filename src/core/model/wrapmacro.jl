@@ -173,7 +173,7 @@ end
 
 const ID = bokehidmaker()
 
-Base.repr(@nospecialize(mdl::iHasProps)) = "$T(id = $(bokehid(nameof(mdl))))" 
+Base.repr(@nospecialize(mdl::iHasProps)) = "$(nameof(typeof(mdl)))(id = $(bokehid(mdl)))" 
 
 export @wrap
 precompile(Tuple{var"#@wrap", LineNumberNode, Module, Expr})
