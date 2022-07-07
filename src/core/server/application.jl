@@ -76,7 +76,9 @@ sessions(𝐴::iApplication) = 𝐴.sessions
 makeid(_...) = "$(UUIDs.uuid4())"
 
 function precompilemethods(𝐴::Application)
-    applicable(𝐴.call) ? precompile(𝐴.call, ()) : precompile(𝐴.call, (Documents.Document,))
+    Events.eventlist!(Events.NullEventList()) do
+        initialize!(Documents.Document(), 𝐴)
+    end
 end
 
 function makerootids(app::iApplication, rs::Vararg{iModel})
