@@ -77,7 +77,17 @@ struct FaviconRoute <: iStaticRoute
     FaviconRoute() = new(joinpath(artifact"javascript", "favicon.ico"))
 end
 
-route(http::HTTP.Stream, ::Val{:GET}, 𝐴::FaviconRoute, @nospecialize(_...)) = routefile(http, 𝐴.path)
+function route(http::HTTP.Stream, ::Val{:GET}, 𝐴::FaviconRoute, @nospecialize(_...))
+    try
+        routefile(http, 𝐴.path)
+    catch exc
+        if exc isa IOError && exc.code ≡ Base.Libc.EPIPE
+            @debug "Failed favicon.ico (EPIPE): $exc"
+        else
+            rethrow()
+        end
+    end
+end
 
 staticroutes(cnf = Server.CONFIG) = (
     cnf.staticroute       => StaticRoute(cnf.staticroute, cnf.staticpaths),

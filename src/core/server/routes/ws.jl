@@ -7,8 +7,14 @@ using ...Protocol.Messages: @msg_str, messageid, nodata
 using ...Server
 using ...Server: iApplication, SessionContext
 using ...Tokens
+const SUBPROTOCOL = "bokeh"
 
 function route(io::HTTP.Stream, 𝐴::Server.iApplication)
+    let hdr = Tokens.subprotocol(HTTP.headers(io.message), SUBPROTOCOL)
+        isnothing(hdr) && Server.httperror("Upgrade protocol is missing")
+        HTTP.setheader(io, Tokens.WEBSOCKET_PROTOCOL => SUBPROTOCOL)
+    end
+
     out = WebSockets.upgrade(io) do ws::WebSockets.WebSocket
         waittime = Server.CONFIG.wssleepperiod
         session  = nothing
@@ -60,10 +66,8 @@ macro safely(code)
 end
 
 function onopen(ω::WebSockets.WebSocket, 𝐴::iApplication) :: SessionContext
-    req                  = ω.request
-    (subprotocol, token) = Tokens.subprotocol(HTTP.headers(req))
-
-    @wsassert subprotocol == "bokeh" "Subprotocol header is not 'bokeh'"
+    req   = ω.request
+    token = Tokens.token(HTTP.headers(req), SUBPROTOCOL)
     @wsassert !isnothing(token) "No token received in subprotocol header"
 
     payload = Server.Tokens.payload(token)

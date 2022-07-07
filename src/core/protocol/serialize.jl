@@ -114,9 +114,9 @@ function serialref(η::Events.iActionEvent, 𝑅::iRules) :: RT
     @nospecialize η 𝑅
     return RT(
         :kind     => :MessageSent,
-        :msg_data => (;
-            event_name   = η.event_name,
-            event_values = (; (i => serialref(getfield(η, i), 𝑅) for i ∈ fieldnames(typeof(η)) if i ≢ :doc)...),
+        :msg_data => RT(
+            :event_name   => η.event_name,
+            :event_values => RT((i => serialref(getfield(η, i), 𝑅) for i ∈ fieldnames(typeof(η)) if i ≢ :doc)...),
         ),
         :msg_type => :bokeh_event,
     )

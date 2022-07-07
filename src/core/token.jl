@@ -65,17 +65,19 @@ function check(token::AbstractString, secretkey::Vector{UInt8}) :: Bool
     return cmp(sessionid(token)) + cmp(token) ==2
 end
 
-function subprotocol(
-        hdrs::AbstractVector{<:Pair}
-) :: @NamedTuple{subprotocol::Union{Nothing, String}, token::Union{Nothing, String}}
-    header = filter(==(WEBSOCKET_PROTOCOL)∘first, hdrs)
-    outp   = (; subprotocol = nothing, token = nothing)
-    if length(header) == 1
-        val = last(first(header))
+function token(hdrs::AbstractVector{<:Pair}, protocol::String) :: Union{String, Nothing}
+    hdr = subprotocol(hdrs, protocol)
+    if !isnothing(hdr)
+        val = last(hdr) :: SubString
         ind = findfirst(',', val)
-        isnothing(ind) || (outp = (; subprotocol = string(strip(val[1:ind-1])), token = string(strip(val[ind+1:end]))))
+        isnothing(ind) || return string(strip(val[ind+1:end]))
     end
-    outp
+    return nothing
+end
+
+function subprotocol(hdrs::AbstractVector{<:Pair}, name::String) :: Union{Nothing, Pair}
+    header = filter(startswith(name) ∘ last, filter(==(WEBSOCKET_PROTOCOL)∘first, hdrs))
+    return (length(header) != 1) ? nothing : first(header)
 end
 
 function signature(msg:: AbstractString, secretkey:: Vector{UInt8}) :: String
