@@ -64,7 +64,7 @@
 
     source :: iDataSource = ColumnDataSource()
 
-    view :: iCDSView
+    view :: iCDSView = new(CDSView(; source))
 
     visible :: Bool = true
 

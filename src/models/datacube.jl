@@ -68,7 +68,7 @@
 
     target :: iDataSource
 
-    view :: iCDSView
+    view :: iCDSView = new(CDSView(; source))
 
     visible :: Bool = true
 

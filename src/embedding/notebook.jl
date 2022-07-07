@@ -27,20 +27,23 @@ struct NotebooksServer
     end
 end
 
-const SERVER = Ref{Union{NotebooksServer, Nothing}}(nothing)
+const SERVER    = Ref{Union{NotebooksServer, Nothing}}(nothing)
+const AppModels = Union{Models.iLayoutDOM, Models.ColumnDataSource}
 
 struct  NotebooksApp <: Server.iApplication
     sessions :: Server.SessionList
     name     :: String
     key      :: Union{Nothing, UUID}
-    model    :: iModel
+    model    :: Models.iLayoutDOM
     modelids :: Set{Int64}
 
-    NotebooksApp(model::iModel) = new(
+    NotebooksApp(model::Models.iLayoutDOM) = new(
         Server.SessionList(), Server.makeid(nothing), getcurrentcellkey(),
         model, Model.allids(model)
     )
 end
+
+NotebooksApp(model::Models.ColumnDataSource) = NotebooksApp(Models.DataTable(model))
 
 struct NotebooksEventList <: Events.iEventList
     events::Vector{Events.iEvent}
@@ -48,7 +51,7 @@ end
 
 Server.initialize!(𝐷::iDocument, 𝐴::NotebooksApp) = push!(𝐷, 𝐴.model; dotrigger = false)
 
-function updateserver!(srv::NotebooksServer, model::Models.iLayoutDOM)
+function updateserver!(srv::NotebooksServer, model::AppModels)
     header = Server.Templates.headers()
     app    = NotebooksApp(model)
     
@@ -120,13 +123,8 @@ function patchdoc(lst, routes)
     end
 end
 
-function Base.show(io::IO, 𝑚::MIME"text/html", x::Models.iLayoutDOM)
-    if isnothing(SERVER[])
-        SERVER[]        = NotebooksServer()
-        Events.EVENTS[] = Events.Deferred{NotebooksEventList}()
-
-        addplutocode()
-    end
+function Base.show(io::IO, 𝑚::MIME"text/html", x::AppModels)
+    notebook()
     return show(io, 𝑚, updateserver!(SERVER[], x))
 end
 
@@ -138,16 +136,6 @@ function addplutocode()
     end
 end
 
-getplutofield(σ::Symbol, dflt) = isdefined(Main, :PlutoRunner) ? getfield(Main.PlutoRunner, σ) : dflt
-isdeadapp(::Server.iRoute)     = (@assert !(Server.iRoute isa NotebooksApp); false)
-isdeadapp(𝐴::NotebooksApp)     = !(isnothing(𝐴.key) || haskey(getplutofield(:cell_results, (;)), 𝐴.key))
-iscurrentapp(𝐴::Server.iRoute) = (@assert !(Server.iRoute isa NotebooksApp); true)
-iscurrentapp(𝐴::NotebooksApp)  = !isnothing(𝐴.key) && getplutokey() == 𝐴.key 
-getcurrentcellkey()            = getplutofield(:currently_running_cell_id, Ref(nothing))[]
-end
-
-using .Notebooks
-
 """
     notebook()
 
@@ -156,5 +144,25 @@ Should be returned - and displayed - by a cell prior to displaying plots.
 
 *Note* Needed by `IJulia`, not `Pluto`.
 """
-notebook() = HTML(Server.Templates.headers())
+function notebook()
+    if isnothing(SERVER[])
+        SERVER[]        = NotebooksServer()
+        Events.EVENTS[] = Events.Deferred{NotebooksEventList}()
+
+        addplutocode()
+    end
+
+    return HTML(Server.Templates.headers())
+end
+
+getplutofield(σ::Symbol, dflt) = isdefined(Main, :PlutoRunner) ? getfield(Main.PlutoRunner, σ) : dflt
+isdeadapp(::Server.iRoute)     = (@assert !(Server.iRoute isa NotebooksApp); false)
+isdeadapp(𝐴::NotebooksApp)     = !(isnothing(𝐴.key) || haskey(getplutofield(:cell_results, (;)), 𝐴.key))
+iscurrentapp(𝐴::Server.iRoute) = (@assert !(Server.iRoute isa NotebooksApp); true)
+iscurrentapp(𝐴::NotebooksApp)  = !isnothing(𝐴.key) && getplutokey() == 𝐴.key 
+getcurrentcellkey()            = getplutofield(:currently_running_cell_id, Ref(nothing))[]
+
+end
+
+using .Notebooks: notebook
 export notebook

@@ -148,6 +148,12 @@ function parseproperties(::Val{:GlyphRenderer}, cls::Py; k...)
     return out
 end
 
+function parseproperties(::Union{(Val{i} for i ∈ (:DataCube, :DataTable))...}, cls::Py; k...)
+    out = parseproperties(cls; k...)
+    out[:view] = merge(out[:view], (; default = Some(:(new(CDSView(; source))))))
+    return out
+end
+
 function parseproperties(::Val{:BoxAnnotation}, cls::Py; k...)
     out = parseproperties(cls; k...)
     for i ∈ (:left, :right, :top, :bottom)
