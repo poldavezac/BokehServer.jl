@@ -75,6 +75,10 @@ sessions(𝐴::iApplication) = 𝐴.sessions
 
 makeid(_...) = "$(UUIDs.uuid4())"
 
+function precompilemethods(𝐴::Application)
+    applicable(𝐴.call) ? precompile(𝐴.call, ()) : precompile(𝐴.call, (Documents.Document,))
+end
+
 function makerootids(app::iApplication, rs::Vararg{iModel})
     Dict{String, String}(("$(bokehid(r))" => makeid(app) for r ∈ rs)...)
 end

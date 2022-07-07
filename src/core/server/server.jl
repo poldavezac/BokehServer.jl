@@ -37,6 +37,7 @@ BokehJL.Server.serve(
 ```
 """
 function serve!(routes :: RouteDict, host :: AbstractString, port :: Int; kwa...)
+    foreach(precompilemethods, values(routes))
     isempty(routes) || @info(
         "serving applications",
         (i => joinpath("http://$host:$port", "$i") for i ∈ keys(routes))...
