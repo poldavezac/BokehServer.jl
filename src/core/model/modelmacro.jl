@@ -19,3 +19,4 @@ macro model(expr::Expr)
     _👻code(__source__, __module__, expr)
 end
 export @model
+precompile(Tuple{var"#@model", LineNumberNode, Module, Expr})
