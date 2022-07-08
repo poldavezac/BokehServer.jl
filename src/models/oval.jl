@@ -22,7 +22,7 @@
 
     hatch_weight :: Model.NumberSpec = 1.0
 
-    height :: Model.NullDistanceSpec = "height"
+    height :: Model.DistanceSpec = "height"
 
     height_units :: Model.EnumType{(:screen, :data)} = :data
 
@@ -40,7 +40,7 @@
 
     line_width :: Model.NumberSpec = 1.0
 
-    width :: Model.NullDistanceSpec = "width"
+    width :: Model.DistanceSpec = "width"
 
     width_units :: Model.EnumType{(:screen, :data)} = :data
 

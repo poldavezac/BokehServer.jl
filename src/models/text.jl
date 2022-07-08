@@ -6,7 +6,7 @@
 
     angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
-    text :: Model.NullStringSpec = (field = "text",)
+    text :: Model.StringSpec = (field = "text",)
 
     text_align :: Model.TextAlignSpec = :left
 
@@ -16,7 +16,7 @@
 
     text_color :: Model.ColorSpec = "#444444"
 
-    text_font :: Model.NullStringSpec = (value = "helvetica",)
+    text_font :: Model.StringSpec = (value = "helvetica",)
 
     text_font_size :: Model.FontSizeSpec = "16px"
 

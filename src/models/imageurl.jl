@@ -12,7 +12,7 @@
 
     global_alpha :: Model.NumberSpec = 1.0
 
-    h :: Model.Nullable{Model.NullDistanceSpec} = nothing
+    h :: Model.NullDistanceSpec = nothing
 
     h_units :: Model.EnumType{(:screen, :data)} = :data
 
@@ -20,9 +20,9 @@
 
     retry_timeout :: Int64 = 0
 
-    url :: Model.NullStringSpec = (field = "url",)
+    url :: Model.StringSpec = (field = "url",)
 
-    w :: Model.Nullable{Model.NullDistanceSpec} = nothing
+    w :: Model.NullDistanceSpec = nothing
 
     w_units :: Model.EnumType{(:screen, :data)} = :data
 

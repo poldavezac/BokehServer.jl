@@ -6,7 +6,7 @@
 
     angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
-    length :: Model.NullDistanceSpec = 0.0
+    length :: Model.DistanceSpec = 0.0
 
     length_units :: Model.EnumType{(:screen, :data)} = :data
 

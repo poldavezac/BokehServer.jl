@@ -2,13 +2,13 @@
 
 @model mutable struct ImageRGBA <: iImageRGBA
 
-    dh :: Model.NullDistanceSpec = "dh"
+    dh :: Model.DistanceSpec = "dh"
 
     dh_units :: Model.EnumType{(:screen, :data)} = :data
 
     dilate :: Bool = false
 
-    dw :: Model.NullDistanceSpec = "dw"
+    dw :: Model.DistanceSpec = "dw"
 
     dw_units :: Model.EnumType{(:screen, :data)} = :data
 

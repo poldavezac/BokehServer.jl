@@ -24,7 +24,7 @@
 
     hatch_weight :: Model.NumberSpec = 1.0
 
-    inner_radius :: Model.NullDistanceSpec = "inner_radius"
+    inner_radius :: Model.DistanceSpec = "inner_radius"
 
     inner_radius_units :: Model.EnumType{(:screen, :data)} = :data
 
@@ -42,7 +42,7 @@
 
     line_width :: Model.NumberSpec = 1.0
 
-    outer_radius :: Model.NullDistanceSpec = "outer_radius"
+    outer_radius :: Model.DistanceSpec = "outer_radius"
 
     outer_radius_units :: Model.EnumType{(:screen, :data)} = :data
 

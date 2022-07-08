@@ -22,7 +22,7 @@
 
     line_width :: Model.NumberSpec = 1.0
 
-    radius :: Model.NullDistanceSpec = "radius"
+    radius :: Model.DistanceSpec = "radius"
 
     radius_units :: Model.EnumType{(:screen, :data)} = :data
 

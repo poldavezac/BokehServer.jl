@@ -38,7 +38,7 @@
 
     line_width :: Model.NumberSpec = 1.0
 
-    radius :: Model.Nullable{Model.NullDistanceSpec} = nothing
+    radius :: Model.NullDistanceSpec = nothing
 
     radius_dimension :: Model.EnumType{(:x, :y, :max, :min)} = :x
 
