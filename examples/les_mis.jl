@@ -58,7 +58,7 @@ BokehJL.Plotting.serve() do
         source           = data,
         fill_color       = "colors",
         alpha            = "alphas",
-        line_color       = nothing,
+        line_color       = "#00000000",
         hover_line_color = "black",
         hover_color      = "colors"
     )

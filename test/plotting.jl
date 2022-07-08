@@ -92,6 +92,7 @@ end
         color        = [:blue, :red, :green],
         legend_label = "label",
         dotrigger    = false,
+        hover_color  = "#00FF00FF",
     )
 
     @test length(plot.renderers) ≡ 1
@@ -102,6 +103,8 @@ end
     @test plot.renderers[1].data_source.data["color"] == ["#0000FF", "#FF0000", "#008000"]
     @test plot.renderers[1].glyph.fill_color == "color"
     @test plot.renderers[1].glyph.hatch_color == "color"
+    @test plot.renderers[1].hover_glyph.hatch_color == "#00FF00"
+    @test plot.renderers[1].hover_glyph.fill_color == "#00FF00"
 end
 
 @testset "create line" begin

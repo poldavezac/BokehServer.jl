@@ -17,7 +17,7 @@ end
 Create a glyph renderer given a glyph type or its name.
 The kwargs should include all `glyphargs(𝑇)` at a minimum
 """
-function glyph(𝑇::Type{<:Models.iGlyph}; trait_color = missing, kwa...)
+function glyph(𝑇::Type{<:Models.iGlyph}; trait_color = missing, runchecks::Bool = true, kwa...)
     kwargs = Dict{Symbol, Any}(kwa...)
     out    = Dict{Symbol, Any}(
        (i => pop!(kwargs, i) for i ∈ _👻RENDERER if i ∈ keys(kwargs))...,
@@ -30,16 +30,18 @@ function glyph(𝑇::Type{<:Models.iGlyph}; trait_color = missing, kwa...)
     hover    = _👻visuals!(kwargs, 𝑇; trait_color, prefix = :hover_, defaults, test = true)
     muted    = _👻visuals!(kwargs, 𝑇; trait_color, prefix = :muted_, defaults, override = (; alpha = _👻MUTED_ALPHA))
 
-    create(x) = ismissing(x) ? :auto : 𝑇(; kwargs..., out..., x...)
+    create(x, d = :auto) = ismissing(x) ? d : 𝑇(; kwargs..., out..., x...)
 
-    return Models.GlyphRenderer(;
+    outp = Models.GlyphRenderer(;
         glyph              = create(defaults),
         nonselection_glyph = create(nonsel),
         selection_glyph    = create(sel),
-        hover_glyph        = ismissing(hover) ? nothing : hover,
+        hover_glyph        = create(hover, nothing),
         muted_glyph        = create(muted),
         out...,
     )
+    runchecks && _👻runchecks(outp)
+    return outp
 end
 
 """
@@ -53,6 +55,15 @@ function glyph!(fig::Models.Plot, rend::Models.GlyphRenderer; dotrigger :: Bool 
     push!(fig.renderers, rend; dotrigger)
     _👻legend!(fig, rend, kwa; dotrigger)
     return rend
+end
+
+"""
+    _👻bokehspecs(𝑇::Type{<:Models.iModel})
+
+Iterates over `(field, fieltype)` tuples, only selecting `fieldtype <: iSpec` ones.
+"""
+function _👻bokehspecs(𝑇::Type{<:Models.iModel})
+    return Iterators.filter(Base.Fix2(<:, Model.iSpec)∘last, Model.bokehfields(𝑇))
 end
 
 function glyph!(
@@ -88,18 +99,36 @@ const _👻COLORS      = (
 )
 
 """
+    _👻runchecks(rend::Models.GlyphRenderer)
+
+Checks that the data-source has all required columns
+"""
+function _👻runchecks(rend::Models.GlyphRenderer)
+    cols   = Set{String}()
+    hascol = ∈(keys(rend.data_source.data))
+    errs   = String[]
+    for name ∈ (:glyph, :muted_glyph, :selection_glyph, :nonselection_glyph, :hover_glyph)
+        glyph = getproperty(rend, name)
+        (glyph isa Models.iGlyph) || continue
+        for (col, 𝑃) ∈ _👻bokehspecs(typeof(glyph))
+            field = getfield(glyph, col).field
+            ismissing(field) || hascol(field) || push!(errs, "$name.$col = \"$field\"")
+        end
+    end
+    isempty(errs) || throw(ErrorException("Missing or miss-spelled fields: $(join(errs, ", "))"))
+end
+
+"""
     _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
 
 iterate over all iSpec properties and see what to do with the data_source
 """
 function _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
     pairs = Tuple{Symbol, Any, Type}[]
+    specs = Dict(_👻bokehspecs(𝑇))
 
     # look through iSpec properties, deal with arrays
-    for col ∈ Model.bokehproperties(𝑇)
-        p𝑇  = Model.bokehfieldtype(𝑇, col)
-        (p𝑇 <: Model.iSpec) || continue
-
+    for (col, p𝑇) ∈ specs
         if haskey(kwargs, col)
             arg = kwargs[col]
         elseif col ∈ Models.glyphargs(𝑇)
@@ -113,38 +142,40 @@ function _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
     end
 
     # deal with color & alpha ...
+    isinprops = ∈(Model.bokehproperties(𝑇))
     for (col, arg) ∈ collect(kwargs)
         (arg isa AbstractVector) || continue
-        Model.hasbokehproperty(𝑇, col) && continue
+        isinprops(col) && continue
 
         # check whether col is trait (color, alpha, ...)
-        opts = [Symbol("$(i)_$col") for i ∈ _👻VISUALS if Model.hasbokehproperty(𝑇, Symbol("$(i)_$col"))]
-        if isempty(opts)
-            # check whether col is specification (muted_line_color, ...)
-            val  = "$col"
-            if count(val, '_') ≡ 2
-                elems  = split(val, '_')
-                newcol = Symbol("$(elems[2])_$(elems[3])")
-                if Symbol(elems[1]) ∈ _👻PREFIXES && Model.hasbokehproperty(𝑇, newcol)
-                    opts = [opts]
+        opts = let val = split("$col", '_')
+            filter(
+                isinprops,
+                if length(val) ≡ 1
+                    [Symbol("$(i)_$col") for i ∈ _👻VISUALS]
+                elseif val[1] ∈ _👻PREFIXES && length(val) ≡ 3
+                    [Symbol("$(val[2])_$(val[3])")]
+                else
+                    []
                 end
-            end
+            )
         end
-        types = Set{Type}(Model.bokehfieldtype(𝑇, i ) for i ∈ opts)
-        (length(types) ≢ 1 || !(first(types) <: Model.iSpec))  && continue
 
-        push!(pairs, (col, arg, first(types)))
+        (opts ⊈ keys(specs)) && continue
+        p𝑇 = specs[opts[1]]
+        any(p𝑇 ≢ specs[opts[i]] for i ∈ 2:length(opts)) && continue
+
+        push!(pairs, (col, arg, p𝑇))
     end
 
     for (col, arg, p𝑇) ∈ pairs
         cnv = Model.bokehconvert(p𝑇, arg)
         msg = if cnv isa Model.Unknown && !(arg isa AbstractArray)
-            "is not a supported type $(typeof(arg)) = $arg"
+            throw(ErrorException("Not supported: `$𝑇.$col $(msg.msg)::$(p𝑇) = $arg :: $(typeof(arg))"))
         else
             𝐹(col, arg, cnv, p𝑇)
         end
 
-        (msg isa Exception) && throw(ErrorException("Argument for $𝑇.$col $(msg.msg)"))
         (msg ≡ arg) || push!(kwargs, col => msg)
     end
 end
@@ -168,7 +199,7 @@ function _👻datasource!(kwargs::Dict{Symbol}, ::Missing, 𝑇::Type)
 
     _👻datasource!(kwargs, 𝑇) do col, arg, cnv, p𝑇
         if cnv isa Model.iSpec && !ismissing(cnv.field)
-            ErrorException("has a source-type entry, yet no source was provided")
+            throw(ErrorException("Argument `$col` has a source-type entry, yet no source was provided"))
         elseif cnv isa Model.Unknown && arg isa AbstractArray
             data["$col"] = Model.datadictarray(p𝑇, arg)
             (; field = "$col")
@@ -189,9 +220,7 @@ function _👻datasource!(kwargs::Dict{Symbol}, src::Models.ColumnDataSource, �
     data = src.data
     _👻datasource!(kwargs, 𝑇) do col, arg, cnv, _
         if arg isa AbstractArray
-            ErrorException("is a vector even though a data source has also been provided")
-        elseif cnv isa Model.iSpec && !ismissing(cnv.field) && !haskey(data, cnv.field)
-            ErrorException("is a missing or miss-spelled column '$(cnv.field)'")
+            throw(ErrorException("Argument `$col` is a vector even though a data source has also been provided"))
         else
             arg
         end
@@ -214,7 +243,12 @@ function _👻visuals!(
         override         = (;),
         test     :: Bool = false
 )
-    test && !any(startswith("$prefix", "$x") for x ∈ keys(props)) && return missing
+    if test
+        reg = Regex("$prefix")
+        if !any(startswith("$x", reg) for x ∈ keys(props))
+            return missing
+        end
+    end
 
     defaults       = merge((; text_color, hatch_color = text_color), defaults)
     trait_defaults = (; color = (ismissing(trait_color) ? _👻COLORS[1] : trait_color), alpha = trait_alpha)
