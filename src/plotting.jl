@@ -11,5 +11,7 @@ include("plotting/glyph.jl")
 include("plotting/figure.jl")
 include("plotting/serve.jl")
 include("plotting/layout.jl")
+include("plotting/transform.jl")
 end
 using .Plotting
+using .Plotting.Transforms
