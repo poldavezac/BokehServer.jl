@@ -63,7 +63,7 @@ end
 Convert a `DataDict` array *element* to the correct type `T` or `<:AbstractArray{T}`
 """
 @inline datadictelement(::Type{String},  𝑑::Color) = color(𝑑)
-@inline datadictelement(::Type{Float64}, 𝑑::Union{Date, DateTime, Period}) =  bokehconvert(Float64, 𝑑)
+@inline datadictelement(::Type{Float64}, 𝑑::Union{Date, DateTime, Period, Time}) =  bokehconvert(Float64, 𝑑)
 @inline datadictelement(::Type{T}, y::Union{T, AbstractArray{T}}) where {T} = y
 @inline datadictelement(T::Type, y::Number) = convert(T, y)
 @inline datadictelement(T::Type, y::AbstractArray) = datadictelement.(T, y)
@@ -89,7 +89,7 @@ Convert a `DataDict` *array*  to the correct type `Vector{T}`
 @inline datadictarray(::Type{NumberSpec}, y::AbstractRange{Int64})  = Int32.(y)
 @inline datadictarray(::Type{NumberSpec}, y::AbstractRange)         = collect(y)
 
-for (𝑇1, 𝑇2) ∈ (Union{DateTime, Date, Period} => Float64, Union{Int64} => Int32)
+for (𝑇1, 𝑇2) ∈ (Union{DateTime, Date, Period, Time} => Float64, Union{Int64} => Int32)
     @eval @inline datadictarray(y::AbstractVector{<:Union{$𝑇1, AbstractArray{<:$𝑇1}}}) = datadictarray($𝑇2, y)
 end
 @inline datadictarray(y::AbstractVector{<:Union{T, AbstractArray{<:T}}}) where {T <: Union{iHasProps, AbstractTypes.ElTypeDataDict...}} = y

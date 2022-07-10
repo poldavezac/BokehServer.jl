@@ -29,7 +29,8 @@ struct NonNegativeInt <: iProperty end
 using Dates
 bokehconvert(::Type{Float64}, ν::DateTime) = convert(Float64, Dates.datetime2epochms(ν))
 bokehconvert(::Type{Float64}, ν::Date)     = convert(Float64, Dates.datetime2epochms(DateTime(ν)))
-bokehconvert(::Type{Float64}, ν::Period)   = convert(Float64, round(ν, Dates.Milliseconds).value)
+bokehconvert(::Type{Float64}, ν::Period)   = convert(Float64, Dates.Millisecond(ν).value)
+bokehconvert(::Type{Float64}, ν::Time)     = convert(Float64, Dates.Millisecond(ν.instant).value)
 
 struct MinMaxBounds end
 bokehstoragetype(::Type{MinMaxBounds}) = Union{
