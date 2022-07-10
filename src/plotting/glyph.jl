@@ -171,7 +171,7 @@ function _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
     for (col, arg, p𝑇) ∈ pairs
         cnv = Model.bokehconvert(p𝑇, arg)
         msg = if cnv isa Model.Unknown && !(arg isa AbstractArray)
-            throw(ErrorException("Not supported: `$𝑇.$col $(msg.msg)::$(p𝑇) = $arg :: $(typeof(arg))"))
+            throw(ErrorException("Not supported: `$𝑇.$col::$(p𝑇) = $arg::$(typeof(arg))"))
         else
             𝐹(col, arg, cnv, p𝑇)
         end

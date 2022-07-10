@@ -3,7 +3,7 @@ using Dates
 using ...AbstractTypes
 using ...Model
 using ...Models
-const RangeArguments = Union{Symbol, Tuple, AbstractRange, Model.FactorSeq}
+const RangeArguments = Union{Symbol, Tuple, AbstractRange, Model.FactorSeq, Models.iRange}
 
 Model.bokehconvert(::Type{Models.iRange}, ν::Union{Nothing, Missing}) = Models.DataRange1d()
 Model.bokehconvert(::Type{Models.iRange}, ν::Model.FactorSeq) = Models.FactorRange(; factors = ν)
@@ -61,7 +61,7 @@ const _LOCATIONS = (:center, :left, :below, :right, :above)
 """
     addaxis!(
             fig             :: Models.Plot,
-            isxaxis         :: Bool;
+            position        :: Symbol #= :x or :y =#;
             type            :: Union{Symbol, Nothing}              = :auto,
             range           :: RangeArguments                      = :data,
             scale           :: Symbol                              = :linear,
@@ -84,7 +84,7 @@ Adds a new axis to the figure. It does not remove old ones!
 
 # Arguments
 
-* isxaxis: either true or false.
+* axis: either :x or :y
 * type: any of (:categorical, :linear, :mercator, :log, :datetime)
 * range: any of (:data, :user) or can be a tuple or a range to set fixed limits
 * scale: depends on `range` and `type` when those are specified or should be (:linear, :categorical or :log)
@@ -97,21 +97,40 @@ Adds a new axis to the figure. It does not remove old ones!
 """
 function addaxis!(
         fig             :: Models.Plot,
-        isxaxis         :: Bool;
-        type            :: Union{Symbol, Nothing}                       = :auto,
-        range           :: Union{RangeArguments, Nothing}               = :data,
-        scale           :: Symbol                                       = :linear,
-        location        :: Union{Nothing, Missing, Symbol}              = missing,
-        num_minor_ticks :: Union{Missing, Int, Nothing}                 = missing,
-        label           :: Union{Models.iBaseText, String, Missing}     = missing,
-        rangename       :: String                                       = "default",
-        axisname        :: Union{Missing, String}                       = missing,
-        grid            :: Bool                                         = true,
-        dotrigger       :: Bool                                         = true,
+        axis            :: Symbol;
+        type            :: Union{Symbol, Nothing}                   = :auto,
+        range           :: Union{RangeArguments, Nothing}           = :data,
+        scale           :: Symbol                                   = :linear,
+        location        :: Union{Nothing, Missing, Symbol}          = missing,
+        num_minor_ticks :: Union{Missing, Int, Nothing}             = missing,
+        label           :: Union{Models.iBaseText, String, Missing} = missing,
+        rangename       :: String                                   = "default",
+        axisname        :: Union{Missing, String}                   = missing,
+        grid            :: Bool                                     = true,
+        dotrigger       :: Bool                                     = true,
 )
-    items = createaxis(isxaxis; type, range, scale, num_minor_ticks, label, rangename, axisname, grid)
+    items = createaxis(axis; type, range, scale, num_minor_ticks, label, rangename, axisname, grid)
     addaxis!(fig, items; location, dotrigger)
     items
+end
+
+function addaxis!(plot, opts::Models.FigureOptions, axis::Symbol; dotrigger :: Bool = true)
+    getprop(y) = let x = getproperty(opts, Symbol("$(axis)_$y"))
+        x isa Model.EnumType ? x.value : x
+    end
+
+    addaxis!(
+        plot, 
+        axis;
+        type            = getprop(:axis_type),
+        range           = getprop(:range),
+        location        = getprop(:axis_location),
+        num_minor_ticks = let x = getprop(:minor_ticks)
+            x == :auto ? missing : x
+        end,
+        label           = getprop(:axis_label),
+        dotrigger
+    )
 end
 
 function addaxis!(
@@ -120,11 +139,12 @@ function addaxis!(
         location  :: Union{Nothing, Missing, Symbol} = missing,
         dotrigger :: Bool                            = true,
 )
-    ismissing(location) && (location = items.isxaxis ? :below : :left)
+    isxaxis = items.axis ≡ :x
+    ismissing(location) && (location = isxaxis ? :below : :left)
     if !isnothing(location) && (location ∉ _LOCATIONS)
         throw(ErrorException("Location should be Nothing or $_LOCATIONS"))
     end
-    fname(x) = items.isxaxis ? x : Symbol(replace("$x", "x" => "y"))
+    fname(x) = isxaxis ? x : Symbol(replace("$x", "x" => "y"))
 
     isempty(items.grids) || push!(fig.center, items.grids...; dotrigger)
     isnothing(location)  || isempty(items.axes) || push!(getproperty(fig, location), items.axes...; dotrigger)
@@ -141,7 +161,7 @@ end
 
 """
     createaxis(
-        isxaxis         :: Bool;
+        axis            :: Symbol #= :x or :y =#;
         type            :: Union{Symbol, Nothing}                       = :auto,
         range           :: Union{RangeArguments, Nothing}               = :data,
         scale           :: Symbol                                       = :linear,
@@ -155,7 +175,7 @@ end
 Creates a new axis and its companion models.
 """
 function createaxis(
-        isxaxis         :: Bool;
+        position         :: Symbol;
         type            :: Union{Symbol, Nothing}                       = :auto,
         range           :: Union{RangeArguments, Nothing}               = :data,
         scale           :: Symbol                                       = :linear,
@@ -165,9 +185,10 @@ function createaxis(
         axisname        :: Union{Missing, String}                       = missing,
         grid            :: Bool                                         = true,
 )
-    rng  = Model.bokehconvert(Models.iRange, something(range, :data))
-    sca  = newscale(rng, scale)
-    axis = if isnothing(type)
+    isxaxis = position ≡ :x
+    rng     = Model.bokehconvert(Models.iRange, something(range, :data))
+    sca     = newscale(rng, scale)
+    axis    = if isnothing(type)
         nothing
     elseif rng isa Models.FactorRange
         Models.CategoricalAxis()
@@ -198,7 +219,7 @@ function createaxis(
 
         setproperty!(axis, isxaxis ? :x_range_name : :y_range_name, rangename; dotrigger = false)
         grid && return (;
-            isxaxis,
+            axis = position,
             rangename,
             axisname,
             range = rng,
@@ -209,7 +230,7 @@ function createaxis(
     end
 
     return (;
-        isxaxis,
+        axis = position,
         rangename,
         axisname,
         range = rng,
@@ -267,10 +288,8 @@ function getaxis(
         x.axis ∈ axes
     end
 
-    return (; isxaxis, rangename, axisname, range = rng, scale = sca, axes, grids)
+    return (; axis = position, rangename, axisname, range = rng, scale = sca, axes, grids)
 end
-
-getaxis(fig :: Models.Plot, isxaxis :: Bool; k...) = getaxis(fig, isxaxis ? :x : :y)
 
 """
     popaxis!(
@@ -284,7 +303,7 @@ function popaxis!(
         fig       :: Models.Plot, items #= NamedTuple created by getaxis =#;
         dotrigger :: Bool = true
 )
-    fname(x) = items.isxaxis ? x : Symbol(replace("$x", "x" => "y"))
+    fname(x) = items.axis ≡ :x ? x : Symbol(replace("$x", "x" => "y"))
     for field ∈ (:extra_x_scales, :extra_x_ranges)
         dic = getproperty(fig, fname(field))
         haskey(dic, items.rangename) && pop!(dic, items.rangename; dotrigger)
@@ -301,7 +320,7 @@ end
 """
     resetaxis!(
             fig             :: Models.Plot,
-            isxaxis         :: Bool;
+            axis            :: Symbol #= :x or :y =#;
             location        :: Union{Nothing, Missing, Symbol} = missing,
             dotrigger       :: Bool                            = true,
             kwa...
@@ -318,12 +337,12 @@ Removes an axis adds it again with new properties
 """
 function resetaxis!(
         fig       :: Models.Plot,
-        isxaxis   :: Bool;
+        position  :: Symbol;
         location  :: Union{Nothing, Missing, Symbol} = missing,
         dotrigger :: Bool                            = true,
         kwa...
 )
-    resetaxis!(fig, createaxis(isxaxis; kwa...); location, dotrigger)
+    resetaxis!(fig, createaxis(position; kwa...); location, dotrigger)
 end
 
 function resetaxis!(

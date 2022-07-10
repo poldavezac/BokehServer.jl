@@ -15,7 +15,7 @@
     @test plot.below[end] isa BokehJL.Models.LogAxis
     @test plot.below[end].axis_label == "x axis"
 
-    items = BokehJL.Plotting.getaxis(plot, true)
+    items = BokehJL.Plotting.getaxis(plot, :x)
     @test items.range ≡ plot.x_range
     @test items.scale ≡ plot.x_scale
     @test items.axes  == [plot.below[end]]
@@ -23,7 +23,7 @@
 
     BokehJL.Plotting.popaxis!(plot, items; dotrigger = false)
 
-    items = BokehJL.Plotting.getaxis(plot, true)
+    items = BokehJL.Plotting.getaxis(plot, :x)
     @test length(items.axes) == 0
     @test length(items.grids) == 0
 end
@@ -40,9 +40,20 @@ end
     obj = BokehJL.Plotting.layout([[plt, plt]', plt]; toolbar_location = nothing, dotrigger = false)
     @test [i[2:end] for i ∈ obj.children] == [(0,0,1,1), (0,1,1,1), (1, 0, 1, 2)]
 
-
     obj = BokehJL.Plotting.layout([plt plt; plt plt]; toolbar_location = nothing, dotrigger = false)
     @test [i[2:end] for i ∈ obj.children] == [(0,0,1,1), (0,1,1,1), (1, 0, 1, 1), (1, 1, 1, 1)]
+
+    obj = BokehJL.Plotting.layout([nothing plt; plt plt]; toolbar_location = nothing, dotrigger = false)
+    @test [i[2:end] for i ∈ obj.children] == [(0,1,1,1), (1, 0, 1, 1), (1, 1, 1, 1)]
+
+    obj = BokehJL.Plotting.layout([plt plt; plt nothing]; toolbar_location = nothing, dotrigger = false)
+    @test [i[2:end] for i ∈ obj.children] == [(0,0,1,1), (0,1,1,1), (1, 0, 1, 1)]
+
+    obj = BokehJL.Plotting.layout([plt nothing; plt plt]; toolbar_location = nothing, dotrigger = false)
+    @test [i[2:end] for i ∈ obj.children] == [(0,0,1,1), (1, 0, 1, 1), (1, 1, 1, 1)]
+
+    obj = BokehJL.Plotting.layout([plt plt; nothing plt]; toolbar_location = nothing, dotrigger = false)
+    @test [i[2:end] for i ∈ obj.children] == [(0,0,1,1), (0,1,1,1), (1, 1, 1, 1)]
 
     obj = BokehJL.Plotting.layout([plt plt]; toolbar_location = :above, dotrigger = false)
     @test obj isa BokehJL.Models.Column
