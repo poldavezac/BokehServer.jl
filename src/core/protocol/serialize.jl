@@ -63,7 +63,8 @@ for cls ∈ (:RootAddedEvent, :RootRemovedEvent)
     end
 end
 
-function serialref(η::Events.ModelChangedEvent, 𝑅::iRules) :: RT
+serialref(η::Events.ModelChangedEvent, 𝑅::iRules) :: RT = serialref(typeof(η.model), η, 𝑅)
+function serialref(::Type, η::Events.ModelChangedEvent, 𝑅::iRules) :: RT
     return RT(
         :attr  => _fieldname(η.attr),
         :hint  => nothing,
@@ -104,8 +105,9 @@ function serialref(η::Events.ColumnsStreamedEvent, 𝑅::iRules) :: RT
     )
 end
 
-function serialref(η::Events.ColumnDataChangedEvent, 𝑅::iRules) :: RT
-    new           = serialref(Model.DataDictContainer, η.data, 𝑅)
+function serialref(η::Events.ColumnDataChangedEvent, ::iRules) :: RT
+    𝑅   = Rules()
+    new = serialref(Model.DataDictContainer, η.data, 𝑅)
     return RT(
         :cols          => serialref(collect(keys(η.data)), 𝑅),
         :column_source => serialref(η.model, 𝑅),
@@ -136,7 +138,7 @@ _𝑑𝑠_to(𝑑::AbstractVector, ::BufferedRules) = 𝑑
 for (R, code) ∈ (
         Rules           => :(:__ndarray__ => String(base64encode(𝑑))),
         BufferedRules   => :(:__buffer__  => let id = "$(_𝑑𝑠_ID())"
-            push!(𝑅.buffers, id => reinterpret(Int8, 𝑑))
+            push!(𝑅.buffers, id => reinterpret(UInt8, 𝑑))
             id
         end)
 )

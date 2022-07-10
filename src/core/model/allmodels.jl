@@ -100,14 +100,17 @@ function allbokehchildren(μ::T) where {T <: iHasProps}
     )
 end
 
-const NoGood = Union{AbstractString, Number, Symbol}
+const NoGood = Union{AbstractString, Number, Symbol, Color, MarkerType, Dates.AbstractTime, EnumType, iSpec}
 
 bokehchildren(::Any) = ()
-bokehchildren(mdl::iHasProps) = (mdl,)
-bokehchildren(mdl::Union{AbstractSet{<:iHasProps}, AbstractArray{<:iHasProps}}) = mdl
 bokehchildren(::Union{AbstractSet{<:NoGood}, AbstractArray{<:NoGood}, AbstractDict{<:NoGood, <:NoGood}}) = ()
-bokehchildren(mdl::Union{AbstractSet, AbstractArray}) = Iterators.filter(Base.Fix2(isa, iHasProps), mdl)
-bokehchildren(mdl::AbstractDict) = Iterators.filter(Base.Fix2(isa, iHasProps), Iterators.flatten(pairs(mdl)))
+bokehchildren(::Tuple{Vararg{NoGood}}) = ()
+bokehchildren(@nospecialize(mdl::iHasProps)) = (mdl,)
+bokehchildren(@nospecialize(mdl::Union{AbstractSet{<:iHasProps}, AbstractArray{<:iHasProps}})) = mdl
+bokehchildren(@nospecialize(mdl::AbstractDict{<:NoGood})) = (i for i ∈ values(mdl) if i isa iHasProps)
+bokehchildren(@nospecialize(mdl::Tuple)) = (i for i ∈ mdl if i isa iHasProps)
+bokehchildren(@nospecialize(mdl::Tuple{<:iHasProps, Vararg{NoGood}})) = mdl[1:1]
+bokehchildren(@nospecialize(mdl::Union{AbstractSet, AbstractArray})) = (j for i ∈ mdl for j ∈ bokehchildren(i))
 
 const _𝑐𝑚𝑝_BIN = Union{Number, Symbol, Missing, Nothing, Function}
 

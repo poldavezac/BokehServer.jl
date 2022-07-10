@@ -8,7 +8,7 @@ end
 
 Base.show(io::IO, ::Type{DataDict}) = print(io, "BokehJL.Model.DataDict")
 
-Base.setindex!(γ::DataDictContainer, 𝑘, 𝑣) = (merge!(γ, 𝑘 => 𝑣); 𝑣)
+Base.setindex!(γ::DataDictContainer, 𝑣, 𝑘) = (update!(γ, 𝑘 => 𝑣); 𝑣)
 Base.size(γ::DataDictContainer) = isempty(γ.values) ? (0, 0) : (length(first(values(γ.values))), length(γ.values))
 Base.size(γ::DataDictContainer, i :: Int) = isempty(γ.values) ? 0 : i ≡ 1 ? length(first(values(γ.values))) : length(γ.values)
 
@@ -28,7 +28,7 @@ macro _𝑑𝑠_merge_args(code)
     esc(quote
         isempty(𝑑s) && return γ
 
-        𝑑 = if length(𝑑s) ≡ 1 && first(𝑑s) isa AbstractDict
+        𝑑tmp = if length(𝑑s) ≡ 1 && first(𝑑s) isa AbstractDict
             first(𝑑s)
         else
             out = Dict{String, Vector}()
@@ -37,13 +37,13 @@ macro _𝑑𝑠_merge_args(code)
             end
             out
         end
-        isempty(𝑑) && return γ
+        isempty(𝑑tmp) && return γ
 
         𝑑 = DataDict(
             i => let arr = get(γ.values, i, nothing)
                 isnothing(arr) ? datadictarray(j) : datadictarray(eltype(arr), j)
             end
-            for (i,j) ∈ 𝑑
+            for (i,j) ∈ 𝑑tmp
         )
     end)
 end

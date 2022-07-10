@@ -81,7 +81,7 @@ function route(http::HTTP.Stream, ::Val{:GET}, 𝐴::FaviconRoute, @nospecialize
     try
         routefile(http, 𝐴.path)
     catch exc
-        if exc isa Base.IOError && exc.code ≡ Base.Libc.EPIPE
+        if (exc isa Base.IOError) && (exc.code == -Base.Libc.EPIPE)
             @debug "Failed favicon.ico (EPIPE): $exc"
         else
             rethrow()

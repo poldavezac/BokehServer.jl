@@ -17,5 +17,5 @@ function update!(γ::DataDictContainer, 𝑑s::Vararg{DataDictArg}; dotrigger::B
     return γ
 end
 
-Base.merge!(γ::DataDictContainer, 𝑑s::Vararg{DataDictArg}; dotrigger::Bool = true) = update!(γ, 𝑑s...; dotrigger)
+Base.merge!(γ::DataDictContainer, 𝑑s; dotrigger::Bool = true) = update!(γ, 𝑑s...; dotrigger)
 export update!

@@ -73,8 +73,8 @@ function fromjson(::Type{DataDict}, 𝑣::JSDict)
 end
 
 function setpropertyfromjson!(mdl::iHasProps, attr:: Symbol, val; dotrigger ::Bool =true)
-    @nospecialize mdl attr val
-    setproperty!(mdl, attr, fromjson(Model.bokehfieldtype(typeof(mdl), attr), val); dotrigger, patchdoc = true)
+    val = fromjson(Model.bokehfieldtype(typeof(mdl), attr), val)
+    setproperty!(mdl, attr, val; dotrigger, patchdoc = true)
 end
 
 function setreferencefromjson!(mdl::iHasProps, 𝐼::JSDict)
