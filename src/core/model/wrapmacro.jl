@@ -89,10 +89,6 @@ function _👻propnames(cls::Symbol, fields::_👻Fields) :: Expr
     end
 end
 
-function items(select::Symbol, sort::Bool)
-end
-
-
 function _👻funcs(cls::Symbol, fields::_👻Fields) :: Expr
     quote
         @inline function $(@__MODULE__).bokehproperties(::Type{$cls}) :: Tuple{Vararg{Symbol}}
@@ -166,6 +162,7 @@ precompile(_👻code, (LineNumberNode, Module, Expr))
 Return a list of existing fields, much like `fieldnames`, but only for *javascript* aware fields.
 """
 function bokehproperties end
+
 """
     hasbokehproperty(::Type{iHasProps}) :: Bool
 
