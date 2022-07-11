@@ -184,6 +184,13 @@ end
     @testset for i ∈ (y1.a, values(y1.b), y1.d), j ∈ i
         @test BokehJL.bokehid(j) ∈ keys(all)
     end
+
+    Y2 = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
+        a::BokehJL.Model.IntSpec = 1
+    end
+
+    y2 = Y2(; a = (field = "aaa", transform = X1(; id = 999)))
+    @test collect(BokehJL.bokehchildren(y2)) == [y2.a.transform]
 end
 
 @testset "bokeh dataspec/container" begin

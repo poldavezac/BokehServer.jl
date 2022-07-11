@@ -95,7 +95,7 @@ end
 
 const NoGood = let leaf = Union{
         AbstractString, Number, Symbol, Color, MarkerType, Dates.AbstractTime,
-        EnumType, iSpec, Nothing, iNumeric, Missing
+        EnumType, Nothing, iNumeric, Missing
     }
     leaf = Union{leaf, Tuple{Vararg{leaf}}, NamedTuple{T, <:Tuple{Vararg{leaf}}} where {T}}
     Union{leaf, AbstractSet{<:leaf}, AbstractArray{<:leaf}, AbstractDict{<:leaf, <:leaf}}
