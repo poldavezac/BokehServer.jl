@@ -59,17 +59,14 @@ end
         :column_source => Dict{Symbol, Any}(:id => "1"),
         :kind => :ColumnDataChanged,
         :new => Dict{String, Union{Dict{Symbol, Any}, Vector}}("a" => Dict{Symbol, Any}(
-            :__buffer__ => "1001",
+            :__ndarray__ => String(BokehJL.Protocol.Serialize.base64encode(Int32[1])),
             :dtype      => "int32",
             :order      => Base.ENDIAN_BOM ≡ 0x04030201 ? :little : :big,
             :shape      => (1,),
         ))
     )
-    @test Set([val[:new]["a"][:__buffer__]]) == Set([i for (i, _) ∈ 𝑅.buffers])
-
-    truth[:new]["a"][:__buffer__] = val[:new]["a"][:__buffer__] # we can't predict the buffer id!
     @test truth == val
-    @test reinterpret(Int32, last(𝑅.buffers[1])) == Int32[1]
+    @test isempty(𝑅.buffers)
 end
 
 @testset "ColumnsStreamed" begin

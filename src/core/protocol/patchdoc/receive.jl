@@ -189,7 +189,7 @@ function _dereference!(𝐶::Vector, 𝑀::ModelDict, 𝐵::Buffers)
 end
 
 function patchdoc!(𝐷::iDocument, 𝐶::JSDict, 𝐵::Buffers)
-    𝑀 = parsereferences!(allmodels(𝐷), 𝐶["references"], 𝐵)
+    𝑀 = parsereferences!(bokehmodels(𝐷), 𝐶["references"], 𝐵)
     _dereference!(𝐶["events"], 𝑀, 𝐵)
     for msg ∈ 𝐶["events"]
         apply(Val(Symbol(msg["kind"])), 𝐷, msg)

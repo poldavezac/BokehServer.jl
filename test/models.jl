@@ -168,7 +168,7 @@ end
     Y1 = eval(:(@BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
         a::Vector{$X1}      = [$X1(; a = 1), $X1(; a = 2)]
         b::Dict{Int64, $X1} = Dict(1 => $X1(; a = 3), 2 => $X1(; a = 4))
-        c::Dict{$X1, Int64} = Dict($X1(; a = 5) => 1, $X1(; a = 6) => 2)
+        c::Dict{Int64, Vector{$X1}} = Dict(1=> [$X1(; a = 5)])
         d::Set{$X1}         = Set([$X1(; a = 7), $X1(; a = 8)])
         e::$X1              = $X1(; a = 9)
     end))
@@ -177,10 +177,11 @@ end
     @test BokehJL.Model.bokehproperties(Y1) == propertynames(Y1())
 
     y1  = Y1()
-    all = BokehJL.allmodels(y1)
+    all = BokehJL.bokehmodels(y1)
     @test BokehJL.bokehid(y1) ∈ keys(all)
+    @test BokehJL.bokehid(y1.c[1][1]) ∈ keys(all)
     @test BokehJL.bokehid(y1.e) ∈ keys(all)
-    @testset for i ∈ (y1.a, values(y1.b), keys(y1.c), y1.d), j ∈ i
+    @testset for i ∈ (y1.a, values(y1.b), y1.d), j ∈ i
         @test BokehJL.bokehid(j) ∈ keys(all)
     end
 end

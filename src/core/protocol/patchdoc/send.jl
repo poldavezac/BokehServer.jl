@@ -8,7 +8,7 @@ function patchdoc(
 )
     isempty(λ) && return nothing
 
-    all = allmodels(doc)
+    all = bokehmodels(doc)
     return (;
         events     = serialize(
             [
@@ -36,7 +36,7 @@ function patchdoc(
         λ::Events.iEventList = Events.EventList(),
         𝑅::Serialize.iRules  = Serialize.Rules()
 )
-    oldids = allids(𝐷)
+    oldids = bokehids(𝐷)
     lst    = Events.eventlist!(()->curdoc!(𝐹, 𝐷), λ)
     return patchdoc(lst, 𝐷, oldids, 𝑅)
 end

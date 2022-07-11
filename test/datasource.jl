@@ -9,7 +9,7 @@ end
 @testset "children" begin
     x = X(; source = Dict("a" => [Y(; a = 1), Y(; a = 2)]))
     @test x.source isa BokehJL.Model.DataDictContainer
-    y = [i.a for i ∈ BokehJL.Model.allbokehchildren(x)]
+    y = [i.a for i ∈ BokehJL.Model.bokehchildren(x)]
     @test y == [1, 2]
 end
 

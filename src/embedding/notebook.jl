@@ -39,7 +39,7 @@ struct  NotebooksApp <: Server.iApplication
 
     NotebooksApp(model::Models.iLayoutDOM) = new(
         Server.SessionList(), Server.makeid(nothing), getcurrentcellkey(),
-        model, Model.allids(model)
+        model, Model.bokehids(model)
     )
 end
 
@@ -115,7 +115,7 @@ function patchdoc(lst, routes)
         cpy = copy(app.modelids)
 
         empty!(app.modelids)
-        union!(app.modelids, Model.allids(app.model))
+        union!(app.modelids, Model.bokehids(app.model))
 
         for sess ∈ values(Server.sessions(app))
             Protocol.patchdoc(lst, sess.doc, cpy, sess.clients...)

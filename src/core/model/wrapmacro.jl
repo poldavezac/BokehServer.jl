@@ -95,7 +95,7 @@ end
 
 function _👻funcs(cls::Symbol, fields::_👻Fields) :: Expr
     quote
-        @inline function $(@__MODULE__).bokehproperties(::Type{$cls})
+        @inline function $(@__MODULE__).bokehproperties(::Type{$cls}) :: Tuple{Vararg{Symbol}}
             return $(tuple((i.name for i ∈ fields if i.js)...))
         end
 
@@ -117,9 +117,9 @@ function _👻funcs(cls::Symbol, fields::_👻Fields) :: Expr
             $(_👻elseif_alias(_👻defaultvalue, fields, nothing))
         end
 
-        function $(@__MODULE__).bokehfields(::Type{$cls})
+        function $(@__MODULE__).bokehfields(::Type{$cls}) :: Tuple{Vararg{Pair{Symbol, Type}}}
             return tuple($((
-                Expr(:call, :(=>), Meta.quot(i.name), i.type)
+                :(Pair{Symbol, Type}($(Meta.quot(i.name)), $(i.type)))
                 for i ∈ sort(fields; by = (x)->"$(x.name)")
                 if i.js && !i.alias
             )...))
@@ -160,10 +160,42 @@ macro wrap(expr::Expr)
 end
 precompile(_👻code, (LineNumberNode, Module, Expr))
 
+"""
+    bokehproperties(::Type{iHasProps}) :: Tuple{Vararg{Symbol}}
+
+Return a list of existing fields, much like `fieldnames`, but only for *javascript* aware fields.
+"""
 function bokehproperties end
+"""
+    hasbokehproperty(::Type{iHasProps}) :: Bool
+
+Return whether a field exists, much like `hasfield`, but only for *javascript* aware fields.
+"""
 function hasbokehproperty end
+
+"""
+    bokehfieldtype(::Type{iHasProps}) :: Type
+
+Return the field type, much like `fieldtype`, but only for *javascript* aware fields.
+"""
 function bokehfieldtype end
+
+"""
+    bokehfields(::Type{iHasProps}) :: Tuple{Vararg{Pair{Symbol, Type}}}
+
+Return tuples (symbol, type) for each field in the structure which is known to
+javascript.
+"""
 function bokehfields end
+
+"""
+    defaultvalue(::iHasProps, ::Symbol) :: Union{Nothing, Some}
+
+Return `Some(default value)` for a given field in a given object if a default value was 
+provided with the structure definition. Return `nothing` otherwise.
+
+**Warning** This is *not* necessarily the theme default. See `themevalue` for the latter.
+"""
 function defaultvalue end
 
 function themevalue(@nospecialize(𝑇::Type{<:iHasProps}), σ::Symbol) :: Union{Some, Nothing}

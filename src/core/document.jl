@@ -48,13 +48,13 @@ function Base.getproperty(𝐷::Document, σ::Symbol; dotrigger :: Bool = true)
 end
 
 function Themes.changetheme!(𝐷::Document, theme::Themes.Theme)
-    for mdl ∈ values(allmodels(𝐷))
+    for mdl ∈ values(bokehmodels(𝐷))
         Themes.changetheme!(mdl, value)
         setfield(𝐷, :theme, value)
     end
 end
 
-for 𝐹 ∈ (:allmodels, :allids)
+for 𝐹 ∈ (:bokehmodels, :bokehids)
     @eval Model.$𝐹(𝐷::Document) = $𝐹(getfield(𝐷, :roots)...)
 end
 

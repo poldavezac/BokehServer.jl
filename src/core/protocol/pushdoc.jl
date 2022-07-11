@@ -2,7 +2,7 @@ function pushdoc(title :: AbstractString, roots, 𝑅::Serialize.iRules = Serial
     return Dict{Symbol, Any}(
         :defs  => Nothing[],
         :roots => Dict{Symbol, Any}(
-            :references => Dict{Symbol, Any}[serialize(i, 𝑅) for i ∈ values(allmodels(roots))],
+            :references => Dict{Symbol, Any}[serialize(i, 𝑅) for i ∈ values(bokehmodels(roots))],
             :root_ids   => string.(bokehid.(roots)),
         ),
         :title   => "$title",

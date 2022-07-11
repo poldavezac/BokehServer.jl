@@ -84,7 +84,7 @@ end
     @test plot.renderers[1].data_source.data["x"] == [1, 2, 3]
     @test plot.renderers[1].data_source.data["y"] == [3, 2, 1]
 
-    mdls = BokehJL.Model.allmodels(plot)
+    mdls = BokehJL.Model.bokehmodels(plot)
     @test plot.renderers[1].glyph.id ∈ keys(mdls)
     @test plot.below[end].id ∈ keys(mdls)
     @test plot.left[end].id ∈ keys(mdls)

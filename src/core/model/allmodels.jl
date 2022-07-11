@@ -1,6 +1,6 @@
 for (name, tpe, checkkey, pushkey) ∈ (
-    (:allmodels, Dict{Int64, iHasProps}, (x)->:(haskey(found, $x)), :(push!(found, bokehid(cur) => cur))),
-    (:allids, Set{Int64}, (x) -> :($x ∈ found), :(push!(found, bokehid(cur))))
+    (:bokehmodels, Dict{Int64, iHasProps}, (x)->:(haskey(found, $x)), :(push!(found, bokehid(cur) => cur))),
+    (:bokehids, Set{Int64}, (x) -> :($x ∈ found), :(push!(found, bokehid(cur))))
 )
 @eval function $name(μ::Vararg{iHasProps}) :: $tpe
         found = $tpe()
@@ -11,7 +11,7 @@ for (name, tpe, checkkey, pushkey) ∈ (
             $(checkkey(:key)) && continue
             $pushkey
 
-            for child ∈ allbokehchildren(cur)
+            for child ∈ bokehchildren(cur)
                 $(checkkey(:(bokehid(child)))) || push!(todos, child) 
             end
         end
@@ -29,7 +29,7 @@ something about it.
 # Examples
 
 ```
-# get all models (same as `allmodels`)
+# get all models (same as `bokehmodels`)
 mylist = Any[]
 models((x)->push!(mylist, x), myobj)
 ```
@@ -50,7 +50,7 @@ function models(𝐹::Function, μ::Vararg{iHasProps})
         push!(found, key)
         applicable(𝐹, cur) && 𝐹(cur)
 
-        for child ∈ allbokehchildren(cur)
+        for child ∈ bokehchildren(cur)
             (bokehid(child) ∈ found) || push!(todos, child) 
         end
     end
@@ -66,7 +66,7 @@ Collects models accepted by predicate `𝐹`.
 # Examples
 
 ```
-# get all models (same as `allmodels`)
+# get all models (same as `bokehmodels`)
 filtermodels((x)-> true, myobj)
 ```
 
@@ -93,24 +93,47 @@ function filtermodels(𝐹::Function, 𝑇::Type{<:iHasProps}, μ::Vararg{iHasPr
     return lst
 end
 
-function allbokehchildren(μ::T) where {T <: iHasProps}
-    return Iterators.flatten(
-        bokehchildren(bokehunwrap(getproperty(μ, field)))
-        for field ∈ bokehproperties(T)
-    )
+const NoGood = let leaf = Union{
+        AbstractString, Number, Symbol, Color, MarkerType, Dates.AbstractTime,
+        EnumType, iSpec, Nothing, iNumeric, Missing
+    }
+    leaf = Union{leaf, Tuple{Vararg{leaf}}, NamedTuple{T, <:Tuple{Vararg{leaf}}} where {T}}
+    Union{leaf, AbstractSet{<:leaf}, AbstractArray{<:leaf}, AbstractDict{<:leaf, <:leaf}}
 end
 
-const NoGood = Union{AbstractString, Number, Symbol, Color, MarkerType, Dates.AbstractTime, EnumType, iSpec}
+"""
+    bokehchildfields(T::Type{<:iHasProps})
 
-bokehchildren(::Any) = ()
-bokehchildren(::Union{AbstractSet{<:NoGood}, AbstractArray{<:NoGood}, AbstractDict{<:NoGood, <:NoGood}}) = ()
-bokehchildren(::Tuple{Vararg{NoGood}}) = ()
-bokehchildren(@nospecialize(mdl::iHasProps)) = (mdl,)
-bokehchildren(@nospecialize(mdl::Union{AbstractSet{<:iHasProps}, AbstractArray{<:iHasProps}})) = mdl
-bokehchildren(@nospecialize(mdl::AbstractDict{<:NoGood})) = (i for i ∈ values(mdl) if i isa iHasProps)
-bokehchildren(@nospecialize(mdl::Tuple)) = (i for i ∈ mdl if i isa iHasProps)
-bokehchildren(@nospecialize(mdl::Tuple{<:iHasProps, Vararg{NoGood}})) = mdl[1:1]
-bokehchildren(@nospecialize(mdl::Union{AbstractSet, AbstractArray})) = (j for i ∈ mdl for j ∈ bokehchildren(i))
+Return the fields which *may* store `iHasProps` instances
+"""
+function bokehchildfields(@nospecialize(T::Type{<:iHasProps}))
+    return (field for (field, p𝑇) ∈ bokehfields(T) if _👻hasbokehmodel(p𝑇))
+end
+
+"""
+    bokehchildren([T::Type{<:iHasProps} = iHasProps], μ::iHasProps)
+
+Return all `T` instances stored within the `μ` instance
+"""
+function bokehchildren(@nospecialize(T::Type{<:iHasProps}), @nospecialize(μ::iHasProps))
+    return (j for i ∈ bokehchildfields(typeof(μ)) for j ∈ _👻children(getfield(μ, i)) if j isa T)
+end
+
+bokehchildren(@nospecialize(μ::iHasProps)) = bokehchildren(iHasProps, μ)
+
+_👻hasbokehmodel(::Type) = true
+_👻hasbokehmodel(::Type{<:NoGood}) = false
+_👻hasbokehmodel(@nospecialize(𝑇::Type{<:ReadOnly})) = _👻hasbokehmodel(𝑇.parameters[1])
+
+_👻children(::Any)    = ()
+_👻children(::NoGood) = ()
+_👻children(@nospecialize(mdl::iHasProps)) = (mdl,)
+_👻children(@nospecialize(mdl::Union{Tuple, NamedTuple, AbstractSet{<:iHasProps}, AbstractArray{<:iHasProps}})) = mdl
+_👻children(@nospecialize(mdl::AbstractDict{<:NoGood, <:iHasProps})) = values(mdl)
+_👻children(@nospecialize(mdl::Tuple{<:iHasProps, Vararg{NoGood}})) = mdl[1:1]
+_👻children(@nospecialize(mdl::AbstractDict{<:NoGood})) = (j for i ∈ values(mdl) for j ∈ _👻children(i))
+_👻children(@nospecialize(mdl::Union{AbstractSet, AbstractArray})) = (j for i ∈ mdl for j ∈ _👻children(i))
+_👻children(@nospecialize(mdl::iSpec)) = (mdl.item, mdl.transform)
 
 const _𝑐𝑚𝑝_BIN = Union{Number, Symbol, Missing, Nothing, Function}
 
@@ -145,4 +168,4 @@ function isdefaultvalue(η::𝑇, α::Symbol) where {𝑇 <: iHasProps}
     return compare(left, right)
 end
 
-export allids, allmodels, bokehchildren
+export bokehids, bokehmodels, bokehchildren

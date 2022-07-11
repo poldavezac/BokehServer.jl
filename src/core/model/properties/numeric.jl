@@ -1,27 +1,28 @@
 @inline bokehconvert(T::Type{<:Number}, ν::Number) = convert(T, ν)
 
-struct Size <: iProperty end
+abstract type iNumeric <: iProperty end
+struct Size <: iNumeric end
 const Distance = Size
 @inline bokehconvert(::Type{Size}, ν::Number) = max(convert(Float64, ν), 0.)
 @inline bokehstoragetype(::Type{Size}) = Float64
 
-struct Percent <: iProperty end
+struct Percent <: iNumeric end
 @inline bokehconvert(::Type{Percent}, ν::Number) = clamp(convert(Float64, ν), 0., 1.)
 @inline bokehstoragetype(::Type{Percent}) = Float64
 
-struct Interval{L,H} <: iProperty end
+struct Interval{L,H} <: iNumeric end
 @inline bokehconvert(::Type{Interval{L,H}}, ν::Number) where {L, H} = clamp(convert(Float64, ν), L, H)
 @inline bokehstoragetype(::Type{<:Interval}) = Float64
 
 const Alpha = Percent
 const Angle = Float64
 
-struct PositiveInt <: iProperty end
+struct PositiveInt <: iNumeric end
 
 @inline bokehconvert(::Type{PositiveInt}, ν::Number) = max(convert(Int64, ν), 1)
 @inline bokehstoragetype(::Type{PositiveInt}) = Int64
 
-struct NonNegativeInt <: iProperty end
+struct NonNegativeInt <: iNumeric end
 
 @inline bokehconvert(::Type{NonNegativeInt}, ν::Number) = max(convert(Int64, ν), 0)
 @inline bokehstoragetype(::Type{NonNegativeInt}) = Int64
@@ -32,7 +33,7 @@ bokehconvert(::Type{Float64}, ν::Date)     = convert(Float64, Dates.datetime2ep
 bokehconvert(::Type{Float64}, ν::Period)   = convert(Float64, Dates.Millisecond(ν).value)
 bokehconvert(::Type{Float64}, ν::Time)     = convert(Float64, Dates.Millisecond(ν.instant).value)
 
-struct MinMaxBounds end
+struct MinMaxBounds <: iNumeric end
 bokehstoragetype(::Type{MinMaxBounds}) = Union{
     Symbol,
     Tuple{Float64, Nullable{Float64}},
