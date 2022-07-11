@@ -139,12 +139,17 @@ function _👻code(src, mod::Module, code::Expr) :: Expr
     if cls isa Expr
         cls = mod.eval(cls.head ≡ :($) ? cls.args[1] : cls) 
     end
+
+    # use iXXX instead of XXX when constructing `BokehJL.Models` structures.
+    # This allows overloading the properties
+    parent = nameof(mod) ≡ :Models && nameof(parentmodule(mod)) ≡ :BokehJL ? Symbol("i$cls") : cls
+    (parent ∈ names(mod; all = true)) || (parent = cls)
     esc(quote
         @Base.__doc__ $(_👻structure(cls, parents, fields))
 
-        $(_👻getter(cls, fields))
-        $(_👻setter(cls, fields))
-        $(_👻propnames(cls, fields))
+        $(_👻getter(parent, fields))
+        $(_👻setter(parent, fields))
+        $(_👻propnames(parent, fields))
         $(_👻funcs(cls, fields))
         push!($(@__MODULE__).MODEL_TYPES, $cls)
         $cls

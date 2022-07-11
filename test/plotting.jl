@@ -119,7 +119,13 @@ end
 end
 
 @testset "create line" begin
-    plot = BokehJL.Plotting.figure()
+    @test isempty(BokehJL.Models.Plot().xaxis)
+    plot = BokehJL.figure()
+
+    @test !isempty(plot.xaxis)
+    @test length(plot.xaxis) ≡ 1
+    @test !any(isnothing(i.major_tick_line_color) for i ∈ plot.xaxis)
+
     @test isempty(plot.renderers)
     @test !any(i isa BokehJL.Models.Legend for i ∈ plot.center)
     BokehJL.line!(
@@ -137,4 +143,7 @@ end
     @test plot.renderers[1].glyph isa BokehJL.Models.Line
     @test plot.renderers[1].data_source.data["x"] == [1, 2, 3]
     @test plot.renderers[1].data_source.data["y"] == [3, 2, 1]
+
+    @nullevents plot.xaxis.major_tick_line_color = nothing
+    @test all(isnothing(i.major_tick_line_color) for i ∈ plot.xaxis)
 end

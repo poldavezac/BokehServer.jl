@@ -46,6 +46,7 @@ function Protocol.PatchDocReceive.setpropertyfromjson!(mdl::Selection, attr:: Sy
     end
     invoke(Protocol.PatchDocReceive.setpropertyfromjson!, Tuple{iHasProps, Symbol, Any}, mdl, attr, val; dotrigger)
 end
+
 precompile(Plot, ())
 precompile(ColumnDataSource, ())
 precompile(GlyphRenderer, ())

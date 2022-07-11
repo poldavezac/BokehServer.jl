@@ -105,6 +105,7 @@ for (𝐹, 𝑇) ∈ (
     @eval Base.$𝐹(γ::$𝑇, x...)  = $𝐹(γ.values, x...)
 end
 
+Base.isempty(γ::iContainer)     = isempty(γ.values)
 Base.getindex(γ::iContainer, x) = γ.values[x]
 Base.getindex(γ::iContainer)    = γ.values[]
 

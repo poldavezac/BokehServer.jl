@@ -41,12 +41,8 @@ BokehJL.Plotting.serve() do
 
     ph = BokehJL.figure(toolbar_location=nothing, width=p.width, height=200, x_range=p.x_range,
                 y_range=(-hmax, hmax), min_border=10, min_border_left=50, y_axis_location="right")
-    for grid ∈ BokehJL.getaxis(ph, :x).grids
-        grid.grid_line_color = "#00000000"
-    end
-    for axis ∈ BokehJL.getaxis(ph, :y).axes
-        axis.major_label_orientation = π/4
-    end
+    ph.xgrid.grid_line_color = "#00000000"
+    ph.yaxis.major_label_orientation = π/4
     ph.background_fill_color = "#fafafa"
     BokehJL.quad!(ph; bottom=0, left=hedges[1:end-1], right=hedges[2:end], top=hhist, color="white", line_color="#3A5785")
     hh1 = BokehJL.quad!(ph; bottom=0, left=hedges[1:end-1], right=hedges[2:end], top=hzeros, alpha=0.5, LINE_ARGS...)
@@ -61,12 +57,8 @@ BokehJL.Plotting.serve() do
 
     pv = BokehJL.figure(toolbar_location=nothing, width=200, height=p.height, x_range=(-vmax, vmax),
                 y_range=p.y_range, min_border=10, y_axis_location="right")
-    for grid ∈ BokehJL.getaxis(ph, :y).grids
-        grid.grid_line_color = "#00000000"
-    end
-    for axis ∈ BokehJL.getaxis(ph, :x).axes
-        axis.major_label_orientation = π/4
-    end
+    pv.ygrid_line_color = "#00000000"
+    pv.xaxis.major_label_orientation = π/4
     pv.background_fill_color = "#fafafa"
 
     BokehJL.quad!(pv; left=0, bottom=vedges[1:end-1], top=vedges[2:end], right=vhist, color="white", line_color="#3A5785")

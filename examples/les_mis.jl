@@ -63,20 +63,14 @@ BokehJL.Plotting.serve() do
         hover_color      = "colors"
     )
 
-    xaxis = BokehJL.getaxis(fig, :x)
-    yaxis = BokehJL.getaxis(fig, :y)
-    for grid ∈ Iterators.flatten(i.grids for i ∈ (xaxis, yaxis))
-        grid.grid_line_color = nothing
-    end
+    fig.xgrid.grid_line_color = nothing
+    fig.ygrid.grid_line_color = nothing
 
-    for axis ∈ Iterators.flatten(i.axes for i ∈ (xaxis, yaxis))
-        axis.axis_line_color        = nothing
+    for axis ∈ [fig.xaxis..., fig.yaxis...]
         axis.major_tick_line_color  = nothing
         axis.major_label_text_font_size = "7px"
         axis.major_label_standoff       = 0
     end
-    for axis ∈ xaxis.axes
-        axis.major_label_orientation   = π/3
-    end
+    fig.xaxis.major_label_orientation   = π/3
     fig
 end
