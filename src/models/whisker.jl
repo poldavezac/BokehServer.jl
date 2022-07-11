@@ -6,11 +6,11 @@
 
     base_units :: Model.EnumType{(:screen, :data)} = :data
 
-    coordinates :: Model.Nullable{iCoordinateMapping} = nothing
+    coordinates :: Union{Nothing, iCoordinateMapping} = nothing
 
     dimension :: Model.EnumType{(:width, :height)} = :height
 
-    group :: Model.Nullable{iRendererGroup} = nothing
+    group :: Union{Nothing, iRendererGroup} = nothing
 
     level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :underlay
 
@@ -30,7 +30,7 @@
 
     lower :: Model.PropertyUnitsSpec = (field = "lower",)
 
-    lower_head :: Model.Nullable{iArrowHead} = TeeHead()
+    lower_head :: Union{Nothing, iArrowHead} = TeeHead()
 
     lower_units :: Model.EnumType{(:screen, :data)} = :data
 
@@ -38,7 +38,7 @@
 
     upper :: Model.PropertyUnitsSpec = (field = "upper",)
 
-    upper_head :: Model.Nullable{iArrowHead} = TeeHead()
+    upper_head :: Union{Nothing, iArrowHead} = TeeHead()
 
     upper_units :: Model.EnumType{(:screen, :data)} = :data
 

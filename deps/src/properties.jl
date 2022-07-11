@@ -91,7 +91,7 @@ end
     end
     getfield(BokehJL.Models, cls)
 end
-@property Nullable => BokehJL.Model.Nullable{parseproperty(cls, prop.type_param).type}
+@property Nullable => Union{Nothing, parseproperty(cls, prop.type_param).type}
 @property Readonly => BokehJL.Model.ReadOnly{parseproperty(cls, prop.type_param).type}
 @property Enum     => let vals = tuple(unique!([pyconvert(Symbol, j) for j ∈ prop._enum._values])...)
     BokehJL.Model.EnumType{vals}
@@ -107,7 +107,7 @@ end
         hasnull = any(isnothing(i) for i ∈ types)
         hasnull && filter!(!isnothing, type)
         out = length(types) == 1 ? types[1].type : Union{(i.type for i ∈ types)...}
-        hasnull ? Nullable{out} : out
+        hasnull ? Union{Nothing, out} : out
     end
 end
 @property RestrictedDict => Dict{

@@ -2,5 +2,5 @@
 
 @model mutable struct ResetTool <: iResetTool
 
-    description :: Model.Nullable{String} = nothing
+    description :: Union{Nothing, String} = nothing
 end

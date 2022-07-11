@@ -8,7 +8,7 @@
 
     mantissas :: Vector{Float64} = [1.0, 2.0, 5.0]
 
-    max_interval :: Model.Nullable{Float64} = nothing
+    max_interval :: Union{Nothing, Float64} = nothing
 
     min_interval :: Float64 = 0.0
 

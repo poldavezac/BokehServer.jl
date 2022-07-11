@@ -2,21 +2,21 @@
 
 @model mutable struct PolyAnnotation <: iPolyAnnotation
 
-    coordinates :: Model.Nullable{iCoordinateMapping} = nothing
+    coordinates :: Union{Nothing, iCoordinateMapping} = nothing
 
     fill_alpha :: Model.Percent = 0.4
 
-    fill_color :: Model.Nullable{Model.Color} = "#FFF9BA"
+    fill_color :: Union{Nothing, Model.Color} = "#FFF9BA"
 
-    group :: Model.Nullable{iRendererGroup} = nothing
+    group :: Union{Nothing, iRendererGroup} = nothing
 
     hatch_alpha :: Model.Percent = 1.0
 
-    hatch_color :: Model.Nullable{Model.Color} = "#000000"
+    hatch_color :: Union{Nothing, Model.Color} = "#000000"
 
     hatch_extra :: Dict{String, iTexture} = Dict{String, iTexture}()
 
-    hatch_pattern :: Model.Nullable{String} = nothing
+    hatch_pattern :: Union{Nothing, String} = nothing
 
     hatch_scale :: Model.Size = 12.0
 
@@ -28,7 +28,7 @@
 
     line_cap :: Model.LineCap = :butt
 
-    line_color :: Model.Nullable{Model.Color} = "#CCCCCC"
+    line_color :: Union{Nothing, Model.Color} = "#CCCCCC"
 
     line_dash :: Model.DashPattern = Int64[]
 

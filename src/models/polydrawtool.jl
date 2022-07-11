@@ -2,9 +2,9 @@
 
 @model mutable struct PolyDrawTool <: iPolyDrawTool
 
-    custom_icon :: Model.Nullable{Model.Image} = nothing
+    custom_icon :: Union{Nothing, Model.Image} = nothing
 
-    description :: Model.Nullable{String} = nothing
+    description :: Union{Nothing, String} = nothing
 
     drag :: Bool = true
 
@@ -14,5 +14,5 @@
 
     renderers :: Vector{iGlyphRenderer} = iGlyphRenderer[]
 
-    vertex_renderer :: Model.Nullable{iGlyphRenderer} = nothing
+    vertex_renderer :: Union{Nothing, iGlyphRenderer} = nothing
 end

@@ -2,7 +2,7 @@
 
 @model mutable struct Dodge <: iDodge
 
-    range :: Model.Nullable{iRange} = nothing
+    range :: Union{Nothing, iRange} = nothing
 
     value :: Float64 = 0.0
 end

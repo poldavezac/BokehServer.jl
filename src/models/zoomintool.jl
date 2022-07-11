@@ -2,7 +2,7 @@
 
 @model mutable struct ZoomInTool <: iZoomInTool
 
-    description :: Model.Nullable{String} = nothing
+    description :: Union{Nothing, String} = nothing
 
     dimensions :: Model.EnumType{(:width, :height, :both)} = :both
 

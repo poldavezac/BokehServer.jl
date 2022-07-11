@@ -2,11 +2,11 @@
 
 @model mutable struct Span <: iSpan
 
-    coordinates :: Model.Nullable{iCoordinateMapping} = nothing
+    coordinates :: Union{Nothing, iCoordinateMapping} = nothing
 
     dimension :: Model.EnumType{(:width, :height)} = :width
 
-    group :: Model.Nullable{iRendererGroup} = nothing
+    group :: Union{Nothing, iRendererGroup} = nothing
 
     level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
@@ -14,7 +14,7 @@
 
     line_cap :: Model.LineCap = :butt
 
-    line_color :: Model.Nullable{Model.Color} = "#000000"
+    line_color :: Union{Nothing, Model.Color} = "#000000"
 
     line_dash :: Model.DashPattern = Int64[]
 
@@ -24,7 +24,7 @@
 
     line_width :: Float64 = 1.0
 
-    location :: Model.Nullable{Float64} = nothing
+    location :: Union{Nothing, Float64} = nothing
 
     location_units :: Model.EnumType{(:screen, :data)} = :data
 

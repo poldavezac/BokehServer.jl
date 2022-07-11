@@ -2,13 +2,13 @@
 
 @model mutable struct PolyEditTool <: iPolyEditTool
 
-    custom_icon :: Model.Nullable{Model.Image} = nothing
+    custom_icon :: Union{Nothing, Model.Image} = nothing
 
-    description :: Model.Nullable{String} = nothing
+    description :: Union{Nothing, String} = nothing
 
     empty_value :: Union{Bool, Float64, Int64, Dates.Date, Dates.DateTime, Model.Color, String}
 
     renderers :: Vector{iGlyphRenderer} = iGlyphRenderer[]
 
-    vertex_renderer :: Model.Nullable{iGlyphRenderer} = nothing
+    vertex_renderer :: Union{Nothing, iGlyphRenderer} = nothing
 end

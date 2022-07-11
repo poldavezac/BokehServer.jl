@@ -6,7 +6,7 @@
 
     aspect_ratio :: Union{Nothing, Float64, Model.EnumType{(:auto,)}} = nothing
 
-    background :: Model.Nullable{Model.Color} = nothing
+    background :: Union{Nothing, Model.Color} = nothing
 
     css_classes :: Vector{String} = String[]
 
@@ -18,29 +18,29 @@
 
     enabled_dates :: Vector{Union{Tuple{Dates.Date, Dates.Date}, Dates.Date}} = Union{Tuple{Dates.Date, Dates.Date}, Dates.Date}[]
 
-    height :: Model.Nullable{Model.NonNegativeInt} = nothing
+    height :: Union{Nothing, Model.NonNegativeInt} = nothing
 
     height_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 
     inline :: Bool = false
 
-    margin :: Model.Nullable{NTuple{4, Int64}} = (0, 0, 0, 0)
+    margin :: Union{Nothing, NTuple{4, Int64}} = (0, 0, 0, 0)
 
-    max_date :: Model.Nullable{Dates.Date} = nothing
+    max_date :: Union{Nothing, Dates.Date} = nothing
 
-    max_height :: Model.Nullable{Model.NonNegativeInt} = nothing
+    max_height :: Union{Nothing, Model.NonNegativeInt} = nothing
 
-    max_width :: Model.Nullable{Model.NonNegativeInt} = nothing
+    max_width :: Union{Nothing, Model.NonNegativeInt} = nothing
 
-    min_date :: Model.Nullable{Dates.Date} = nothing
+    min_date :: Union{Nothing, Dates.Date} = nothing
 
-    min_height :: Model.Nullable{Model.NonNegativeInt} = nothing
+    min_height :: Union{Nothing, Model.NonNegativeInt} = nothing
 
-    min_width :: Model.Nullable{Model.NonNegativeInt} = nothing
+    min_width :: Union{Nothing, Model.NonNegativeInt} = nothing
 
     position :: Model.EnumType{(:auto, :above, :below)} = :auto
 
-    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
+    sizing_mode :: Union{Nothing, Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
     title :: String = ""
 
@@ -48,7 +48,7 @@
 
     visible :: Bool = true
 
-    width :: Model.Nullable{Model.NonNegativeInt} = nothing
+    width :: Union{Nothing, Model.NonNegativeInt} = nothing
 
     width_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 end

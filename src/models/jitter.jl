@@ -6,7 +6,7 @@
 
     mean :: Float64 = 0.0
 
-    range :: Model.Nullable{iRange} = nothing
+    range :: Union{Nothing, iRange} = nothing
 
     width :: Float64 = 1.0
 end

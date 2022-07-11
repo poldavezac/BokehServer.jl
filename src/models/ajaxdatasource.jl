@@ -2,7 +2,7 @@
 
 @model mutable struct AjaxDataSource <: iAjaxDataSource
 
-    adapter :: Model.Nullable{iCustomJS} = nothing
+    adapter :: Union{Nothing, iCustomJS} = nothing
 
     content_type :: String = "application/json"
 
@@ -14,13 +14,13 @@
 
     if_modified :: Bool = false
 
-    max_size :: Model.Nullable{Int64} = nothing
+    max_size :: Union{Nothing, Int64} = nothing
 
     method :: Model.EnumType{(:POST, :GET)} = :POST
 
     mode :: Model.EnumType{(:replace, :append)} = :replace
 
-    polling_interval :: Model.Nullable{Int64} = nothing
+    polling_interval :: Union{Nothing, Int64} = nothing
 
     selected :: Model.ReadOnly{iSelection} = Selection()
 

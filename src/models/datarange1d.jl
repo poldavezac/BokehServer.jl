@@ -2,7 +2,7 @@
 
 @model mutable struct DataRange1d <: iDataRange1d
 
-    bounds :: Model.Nullable{Model.MinMaxBounds} = nothing
+    bounds :: Union{Nothing, Model.MinMaxBounds} = nothing
 
     default_span :: Union{Float64, Dates.Period} = 2.0
 
@@ -10,9 +10,9 @@
 
     flipped :: Bool = false
 
-    follow :: Model.Nullable{Model.EnumType{(:start, :end)}} = nothing
+    follow :: Union{Nothing, Model.EnumType{(:start, :end)}} = nothing
 
-    follow_interval :: Model.Nullable{Union{Float64, Dates.Period}} = nothing
+    follow_interval :: Union{Nothing, Float64, Dates.Period} = nothing
 
     max_interval :: Union{Nothing, Float64, Dates.Period} = nothing
 

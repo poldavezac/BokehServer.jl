@@ -2,9 +2,9 @@
 
 @model mutable struct BoxEditTool <: iBoxEditTool
 
-    custom_icon :: Model.Nullable{Model.Image} = nothing
+    custom_icon :: Union{Nothing, Model.Image} = nothing
 
-    description :: Model.Nullable{String} = nothing
+    description :: Union{Nothing, String} = nothing
 
     dimensions :: Model.EnumType{(:width, :height, :both)} = :both
 

@@ -6,9 +6,9 @@
 
     attachment :: Model.EnumType{(:horizontal, :vertical, :left, :right, :above, :below)} = :horizontal
 
-    callback :: Model.Nullable{iCallback} = nothing
+    callback :: Union{Nothing, iCallback} = nothing
 
-    description :: Model.Nullable{String} = nothing
+    description :: Union{Nothing, String} = nothing
 
     formatters :: Dict{String, Union{iCustomJSHover, Model.EnumType{(:numeral, :datetime, :printf)}}} = Dict{String, Union{iCustomJSHover, Model.EnumType{(:numeral, :datetime, :printf)}}}()
 

@@ -2,25 +2,25 @@
 
 @model mutable struct GlyphRenderer <: iGlyphRenderer
 
-    coordinates :: Model.Nullable{iCoordinateMapping} = nothing
+    coordinates :: Union{Nothing, iCoordinateMapping} = nothing
 
     data_source :: iDataSource
 
     glyph :: iGlyph
 
-    group :: Model.Nullable{iRendererGroup} = nothing
+    group :: Union{Nothing, iRendererGroup} = nothing
 
-    hover_glyph :: Model.Nullable{iGlyph} = nothing
+    hover_glyph :: Union{Nothing, iGlyph} = nothing
 
     level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
     muted :: Bool = false
 
-    muted_glyph :: Model.Nullable{Union{iGlyph, Model.EnumType{(:auto,)}}} = :auto
+    muted_glyph :: Union{Nothing, iGlyph, Model.EnumType{(:auto,)}} = :auto
 
-    nonselection_glyph :: Model.Nullable{Union{iGlyph, Model.EnumType{(:auto,)}}} = :auto
+    nonselection_glyph :: Union{Nothing, iGlyph, Model.EnumType{(:auto,)}} = :auto
 
-    selection_glyph :: Model.Nullable{Union{iGlyph, Model.EnumType{(:auto,)}}} = :auto
+    selection_glyph :: Union{Nothing, iGlyph, Model.EnumType{(:auto,)}} = :auto
 
     view :: iCDSView = new(CDSView(; source = data_source))
 

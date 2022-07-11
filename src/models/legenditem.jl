@@ -2,7 +2,7 @@
 
 @model mutable struct LegendItem <: iLegendItem
 
-    index :: Model.Nullable{Int64} = nothing
+    index :: Union{Nothing, Int64} = nothing
 
     label :: Model.NullStringSpec = nothing
 

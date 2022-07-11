@@ -4,7 +4,7 @@
 
     factors :: Union{Vector{String}, Vector{Tuple{String, String}}, Vector{Tuple{String, String, String}}}
 
-    finish :: Model.Nullable{Int64} = nothing
+    finish :: Union{Nothing, Int64} = nothing
 
     nan_color :: Model.Color = "#808080"
 

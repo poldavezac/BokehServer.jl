@@ -2,7 +2,7 @@
 
 @model mutable struct MercatorTickFormatter <: iMercatorTickFormatter
 
-    dimension :: Model.Nullable{Model.EnumType{(:lat, :lon)}} = nothing
+    dimension :: Union{Nothing, Model.EnumType{(:lat, :lon)}} = nothing
 
     power_limit_high :: Int64 = 5
 

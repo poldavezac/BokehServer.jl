@@ -6,7 +6,7 @@
 
     extra_url_vars :: Dict{String, Any} = Dict{String, Any}()
 
-    initial_resolution :: Model.Nullable{Float64} = 156543.03392804097
+    initial_resolution :: Union{Nothing, Float64} = 156543.03392804097
 
     max_zoom :: Int64 = 30
 

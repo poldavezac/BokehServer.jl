@@ -10,7 +10,7 @@
 
     autosize_mode :: Model.EnumType{(:fit_columns, :fit_viewport, :force_fit, :none)} = :force_fit
 
-    background :: Model.Nullable{Model.Color} = nothing
+    background :: Union{Nothing, Model.Color} = nothing
 
     columns :: Vector{iTableColumn} = iTableColumn[]
 
@@ -22,33 +22,33 @@
 
     editable :: Bool = false
 
-    fit_columns :: Model.Nullable{Bool} = nothing
+    fit_columns :: Union{Nothing, Bool} = nothing
 
-    frozen_columns :: Model.Nullable{Int64} = nothing
+    frozen_columns :: Union{Nothing, Int64} = nothing
 
-    frozen_rows :: Model.Nullable{Int64} = nothing
+    frozen_rows :: Union{Nothing, Int64} = nothing
 
     header_row :: Bool = true
 
-    height :: Model.Nullable{Model.NonNegativeInt} = 400
+    height :: Union{Nothing, Model.NonNegativeInt} = 400
 
     height_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 
     index_header :: String = "#"
 
-    index_position :: Model.Nullable{Int64} = 0
+    index_position :: Union{Nothing, Int64} = 0
 
     index_width :: Int64 = 40
 
-    margin :: Model.Nullable{NTuple{4, Int64}} = (0, 0, 0, 0)
+    margin :: Union{Nothing, NTuple{4, Int64}} = (0, 0, 0, 0)
 
-    max_height :: Model.Nullable{Model.NonNegativeInt} = nothing
+    max_height :: Union{Nothing, Model.NonNegativeInt} = nothing
 
-    max_width :: Model.Nullable{Model.NonNegativeInt} = nothing
+    max_width :: Union{Nothing, Model.NonNegativeInt} = nothing
 
-    min_height :: Model.Nullable{Model.NonNegativeInt} = nothing
+    min_height :: Union{Nothing, Model.NonNegativeInt} = nothing
 
-    min_width :: Model.Nullable{Model.NonNegativeInt} = nothing
+    min_width :: Union{Nothing, Model.NonNegativeInt} = nothing
 
     reorderable :: Bool = true
 
@@ -58,7 +58,7 @@
 
     selectable :: Union{Bool, Model.EnumType{(:checkbox,)}} = true
 
-    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
+    sizing_mode :: Union{Nothing, Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
     sortable :: Bool = true
 
@@ -68,7 +68,7 @@
 
     visible :: Bool = true
 
-    width :: Model.Nullable{Model.NonNegativeInt} = 600
+    width :: Union{Nothing, Model.NonNegativeInt} = 600
 
     width_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 end

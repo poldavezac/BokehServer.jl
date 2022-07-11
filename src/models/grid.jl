@@ -2,19 +2,19 @@
 
 @model mutable struct Grid <: iGrid
 
-    axis :: Model.Nullable{iAxis} = nothing
+    axis :: Union{Nothing, iAxis} = nothing
 
     band_fill_alpha :: Model.Percent = 0.0
 
-    band_fill_color :: Model.Nullable{Model.Color} = nothing
+    band_fill_color :: Union{Nothing, Model.Color} = nothing
 
     band_hatch_alpha :: Model.Percent = 1.0
 
-    band_hatch_color :: Model.Nullable{Model.Color} = "#000000"
+    band_hatch_color :: Union{Nothing, Model.Color} = "#000000"
 
     band_hatch_extra :: Dict{String, iTexture} = Dict{String, iTexture}()
 
-    band_hatch_pattern :: Model.Nullable{String} = nothing
+    band_hatch_pattern :: Union{Nothing, String} = nothing
 
     band_hatch_scale :: Model.Size = 12.0
 
@@ -22,7 +22,7 @@
 
     bounds :: Union{Tuple{Float64, Float64}, Model.EnumType{(:auto,)}} = :auto
 
-    coordinates :: Model.Nullable{iCoordinateMapping} = nothing
+    coordinates :: Union{Nothing, iCoordinateMapping} = nothing
 
     dimension :: Int64 = 0
 
@@ -30,7 +30,7 @@
 
     grid_line_cap :: Model.LineCap = :butt
 
-    grid_line_color :: Model.Nullable{Model.Color} = "#E5E5E5"
+    grid_line_color :: Union{Nothing, Model.Color} = "#E5E5E5"
 
     grid_line_dash :: Model.DashPattern = Int64[]
 
@@ -40,7 +40,7 @@
 
     grid_line_width :: Float64 = 1.0
 
-    group :: Model.Nullable{iRendererGroup} = nothing
+    group :: Union{Nothing, iRendererGroup} = nothing
 
     level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :underlay
 
@@ -48,7 +48,7 @@
 
     minor_grid_line_cap :: Model.LineCap = :butt
 
-    minor_grid_line_color :: Model.Nullable{Model.Color} = nothing
+    minor_grid_line_color :: Union{Nothing, Model.Color} = nothing
 
     minor_grid_line_dash :: Model.DashPattern = Int64[]
 
@@ -58,7 +58,7 @@
 
     minor_grid_line_width :: Float64 = 1.0
 
-    ticker :: Model.Nullable{iTicker} = nothing
+    ticker :: Union{Nothing, iTicker} = nothing
 
     visible :: Bool = true
 

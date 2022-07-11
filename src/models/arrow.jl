@@ -2,13 +2,13 @@
 
 @model mutable struct Arrow <: iArrow
 
-    coordinates :: Model.Nullable{iCoordinateMapping} = nothing
+    coordinates :: Union{Nothing, iCoordinateMapping} = nothing
 
-    finish :: Model.Nullable{iArrowHead} = OpenHead()
+    finish :: Union{Nothing, iArrowHead} = OpenHead()
 
     finish_units :: Model.EnumType{(:screen, :data)} = :data
 
-    group :: Model.Nullable{iRendererGroup} = nothing
+    group :: Union{Nothing, iRendererGroup} = nothing
 
     level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
@@ -28,7 +28,7 @@
 
     source :: iDataSource = ColumnDataSource()
 
-    start :: Model.Nullable{iArrowHead} = nothing
+    start :: Union{Nothing, iArrowHead} = nothing
 
     start_units :: Model.EnumType{(:screen, :data)} = :data
 

@@ -14,7 +14,7 @@
 
     autohide :: Bool = false
 
-    logo :: Model.Nullable{Model.EnumType{(:normal, :grey)}} = :normal
+    logo :: Union{Nothing, Model.EnumType{(:normal, :grey)}} = :normal
 
     tools :: Vector{iTool} = iTool[]
 end

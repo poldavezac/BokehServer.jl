@@ -4,5 +4,5 @@
 
     min_exponent :: Int64 = 0
 
-    ticker :: Model.Nullable{iTicker} = nothing
+    ticker :: Union{Nothing, iTicker} = nothing
 end

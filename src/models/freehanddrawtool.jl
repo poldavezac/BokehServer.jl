@@ -2,9 +2,9 @@
 
 @model mutable struct FreehandDrawTool <: iFreehandDrawTool
 
-    custom_icon :: Model.Nullable{Model.Image} = nothing
+    custom_icon :: Union{Nothing, Model.Image} = nothing
 
-    description :: Model.Nullable{String} = nothing
+    description :: Union{Nothing, String} = nothing
 
     empty_value :: Union{Bool, Float64, Int64, Dates.Date, Dates.DateTime, Model.Color, String}
 

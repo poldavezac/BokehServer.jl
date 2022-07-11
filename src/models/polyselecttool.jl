@@ -2,7 +2,7 @@
 
 @model mutable struct PolySelectTool <: iPolySelectTool
 
-    description :: Model.Nullable{String} = nothing
+    description :: Union{Nothing, String} = nothing
 
     mode :: Model.EnumType{(:replace, :append, :intersect, :subtract)} = :replace
 

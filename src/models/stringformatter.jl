@@ -8,5 +8,5 @@
 
     text_align :: Model.TextAlign = :left
 
-    text_color :: Model.Nullable{Model.Color} = nothing
+    text_color :: Union{Nothing, Model.Color} = nothing
 end

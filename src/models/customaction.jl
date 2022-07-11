@@ -2,9 +2,9 @@
 
 @model mutable struct CustomAction <: iCustomAction
 
-    callback :: Model.Nullable{iCallback} = nothing
+    callback :: Union{Nothing, iCallback} = nothing
 
-    description :: Model.Nullable{String} = "Perform a Custom Action"
+    description :: Union{Nothing, String} = "Perform a Custom Action"
 
     icon :: Model.Image
 end

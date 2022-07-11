@@ -36,8 +36,8 @@ bokehconvert(::Type{Float64}, ν::Time)     = convert(Float64, Dates.Millisecond
 struct MinMaxBounds <: iNumeric end
 bokehstoragetype(::Type{MinMaxBounds}) = Union{
     Symbol,
-    Tuple{Float64, Nullable{Float64}},
-    Tuple{Nullable{Float64}, Float64}
+    Tuple{Float64, Union{Nothing, Float64}},
+    Tuple{Union{Nothing, Float64}, Float64}
 }
 
 bokehconvert(::Type{MinMaxBounds}, ν::Symbol) = ν ≡ :auto ? :auto : Unknown()

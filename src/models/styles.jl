@@ -2,631 +2,631 @@
 
 @model mutable struct Styles <: iStyles
 
-    align_content :: Model.Nullable{String} = nothing
+    align_content :: Union{Nothing, String} = nothing
 
-    align_items :: Model.Nullable{String} = nothing
+    align_items :: Union{Nothing, String} = nothing
 
-    align_self :: Model.Nullable{String} = nothing
+    align_self :: Union{Nothing, String} = nothing
 
-    alignment_baseline :: Model.Nullable{String} = nothing
+    alignment_baseline :: Union{Nothing, String} = nothing
 
-    all :: Model.Nullable{String} = nothing
+    all :: Union{Nothing, String} = nothing
 
-    animation :: Model.Nullable{String} = nothing
+    animation :: Union{Nothing, String} = nothing
 
-    animation_delay :: Model.Nullable{String} = nothing
+    animation_delay :: Union{Nothing, String} = nothing
 
-    animation_direction :: Model.Nullable{String} = nothing
+    animation_direction :: Union{Nothing, String} = nothing
 
-    animation_duration :: Model.Nullable{String} = nothing
+    animation_duration :: Union{Nothing, String} = nothing
 
-    animation_fill_mode :: Model.Nullable{String} = nothing
+    animation_fill_mode :: Union{Nothing, String} = nothing
 
-    animation_iteration_count :: Model.Nullable{String} = nothing
+    animation_iteration_count :: Union{Nothing, String} = nothing
 
-    animation_name :: Model.Nullable{String} = nothing
+    animation_name :: Union{Nothing, String} = nothing
 
-    animation_play_state :: Model.Nullable{String} = nothing
+    animation_play_state :: Union{Nothing, String} = nothing
 
-    animation_timing_function :: Model.Nullable{String} = nothing
+    animation_timing_function :: Union{Nothing, String} = nothing
 
-    backface_visibility :: Model.Nullable{String} = nothing
+    backface_visibility :: Union{Nothing, String} = nothing
 
-    background :: Model.Nullable{String} = nothing
+    background :: Union{Nothing, String} = nothing
 
-    background_attachment :: Model.Nullable{String} = nothing
+    background_attachment :: Union{Nothing, String} = nothing
 
-    background_clip :: Model.Nullable{String} = nothing
+    background_clip :: Union{Nothing, String} = nothing
 
-    background_color :: Model.Nullable{String} = nothing
+    background_color :: Union{Nothing, String} = nothing
 
-    background_image :: Model.Nullable{String} = nothing
+    background_image :: Union{Nothing, String} = nothing
 
-    background_origin :: Model.Nullable{String} = nothing
+    background_origin :: Union{Nothing, String} = nothing
 
-    background_position :: Model.Nullable{String} = nothing
+    background_position :: Union{Nothing, String} = nothing
 
-    background_position_x :: Model.Nullable{String} = nothing
+    background_position_x :: Union{Nothing, String} = nothing
 
-    background_position_y :: Model.Nullable{String} = nothing
+    background_position_y :: Union{Nothing, String} = nothing
 
-    background_repeat :: Model.Nullable{String} = nothing
+    background_repeat :: Union{Nothing, String} = nothing
 
-    background_size :: Model.Nullable{String} = nothing
+    background_size :: Union{Nothing, String} = nothing
 
-    baseline_shift :: Model.Nullable{String} = nothing
+    baseline_shift :: Union{Nothing, String} = nothing
 
-    block_size :: Model.Nullable{String} = nothing
+    block_size :: Union{Nothing, String} = nothing
 
-    border :: Model.Nullable{String} = nothing
+    border :: Union{Nothing, String} = nothing
 
-    border_block_end :: Model.Nullable{String} = nothing
+    border_block_end :: Union{Nothing, String} = nothing
 
-    border_block_end_color :: Model.Nullable{String} = nothing
+    border_block_end_color :: Union{Nothing, String} = nothing
 
-    border_block_end_style :: Model.Nullable{String} = nothing
+    border_block_end_style :: Union{Nothing, String} = nothing
 
-    border_block_end_width :: Model.Nullable{String} = nothing
+    border_block_end_width :: Union{Nothing, String} = nothing
 
-    border_block_start :: Model.Nullable{String} = nothing
+    border_block_start :: Union{Nothing, String} = nothing
 
-    border_block_start_color :: Model.Nullable{String} = nothing
+    border_block_start_color :: Union{Nothing, String} = nothing
 
-    border_block_start_style :: Model.Nullable{String} = nothing
+    border_block_start_style :: Union{Nothing, String} = nothing
 
-    border_block_start_width :: Model.Nullable{String} = nothing
+    border_block_start_width :: Union{Nothing, String} = nothing
 
-    border_bottom :: Model.Nullable{String} = nothing
+    border_bottom :: Union{Nothing, String} = nothing
 
-    border_bottom_color :: Model.Nullable{String} = nothing
+    border_bottom_color :: Union{Nothing, String} = nothing
 
-    border_bottom_left_radius :: Model.Nullable{String} = nothing
+    border_bottom_left_radius :: Union{Nothing, String} = nothing
 
-    border_bottom_right_radius :: Model.Nullable{String} = nothing
+    border_bottom_right_radius :: Union{Nothing, String} = nothing
 
-    border_bottom_style :: Model.Nullable{String} = nothing
+    border_bottom_style :: Union{Nothing, String} = nothing
 
-    border_bottom_width :: Model.Nullable{String} = nothing
+    border_bottom_width :: Union{Nothing, String} = nothing
 
-    border_collapse :: Model.Nullable{String} = nothing
+    border_collapse :: Union{Nothing, String} = nothing
 
-    border_color :: Model.Nullable{String} = nothing
+    border_color :: Union{Nothing, String} = nothing
 
-    border_image :: Model.Nullable{String} = nothing
+    border_image :: Union{Nothing, String} = nothing
 
-    border_image_outset :: Model.Nullable{String} = nothing
+    border_image_outset :: Union{Nothing, String} = nothing
 
-    border_image_repeat :: Model.Nullable{String} = nothing
+    border_image_repeat :: Union{Nothing, String} = nothing
 
-    border_image_slice :: Model.Nullable{String} = nothing
+    border_image_slice :: Union{Nothing, String} = nothing
 
-    border_image_source :: Model.Nullable{String} = nothing
+    border_image_source :: Union{Nothing, String} = nothing
 
-    border_image_width :: Model.Nullable{String} = nothing
+    border_image_width :: Union{Nothing, String} = nothing
 
-    border_inline_end :: Model.Nullable{String} = nothing
+    border_inline_end :: Union{Nothing, String} = nothing
 
-    border_inline_end_color :: Model.Nullable{String} = nothing
+    border_inline_end_color :: Union{Nothing, String} = nothing
 
-    border_inline_end_style :: Model.Nullable{String} = nothing
+    border_inline_end_style :: Union{Nothing, String} = nothing
 
-    border_inline_end_width :: Model.Nullable{String} = nothing
+    border_inline_end_width :: Union{Nothing, String} = nothing
 
-    border_inline_start :: Model.Nullable{String} = nothing
+    border_inline_start :: Union{Nothing, String} = nothing
 
-    border_inline_start_color :: Model.Nullable{String} = nothing
+    border_inline_start_color :: Union{Nothing, String} = nothing
 
-    border_inline_start_style :: Model.Nullable{String} = nothing
+    border_inline_start_style :: Union{Nothing, String} = nothing
 
-    border_inline_start_width :: Model.Nullable{String} = nothing
+    border_inline_start_width :: Union{Nothing, String} = nothing
 
-    border_left :: Model.Nullable{String} = nothing
+    border_left :: Union{Nothing, String} = nothing
 
-    border_left_color :: Model.Nullable{String} = nothing
+    border_left_color :: Union{Nothing, String} = nothing
 
-    border_left_style :: Model.Nullable{String} = nothing
+    border_left_style :: Union{Nothing, String} = nothing
 
-    border_left_width :: Model.Nullable{String} = nothing
+    border_left_width :: Union{Nothing, String} = nothing
 
-    border_radius :: Model.Nullable{String} = nothing
+    border_radius :: Union{Nothing, String} = nothing
 
-    border_right :: Model.Nullable{String} = nothing
+    border_right :: Union{Nothing, String} = nothing
 
-    border_right_color :: Model.Nullable{String} = nothing
+    border_right_color :: Union{Nothing, String} = nothing
 
-    border_right_style :: Model.Nullable{String} = nothing
+    border_right_style :: Union{Nothing, String} = nothing
 
-    border_right_width :: Model.Nullable{String} = nothing
+    border_right_width :: Union{Nothing, String} = nothing
 
-    border_spacing :: Model.Nullable{String} = nothing
+    border_spacing :: Union{Nothing, String} = nothing
 
-    border_style :: Model.Nullable{String} = nothing
+    border_style :: Union{Nothing, String} = nothing
 
-    border_top :: Model.Nullable{String} = nothing
+    border_top :: Union{Nothing, String} = nothing
 
-    border_top_color :: Model.Nullable{String} = nothing
+    border_top_color :: Union{Nothing, String} = nothing
 
-    border_top_left_radius :: Model.Nullable{String} = nothing
+    border_top_left_radius :: Union{Nothing, String} = nothing
 
-    border_top_right_radius :: Model.Nullable{String} = nothing
+    border_top_right_radius :: Union{Nothing, String} = nothing
 
-    border_top_style :: Model.Nullable{String} = nothing
+    border_top_style :: Union{Nothing, String} = nothing
 
-    border_top_width :: Model.Nullable{String} = nothing
+    border_top_width :: Union{Nothing, String} = nothing
 
-    border_width :: Model.Nullable{String} = nothing
+    border_width :: Union{Nothing, String} = nothing
 
-    bottom :: Model.Nullable{String} = nothing
+    bottom :: Union{Nothing, String} = nothing
 
-    box_shadow :: Model.Nullable{String} = nothing
+    box_shadow :: Union{Nothing, String} = nothing
 
-    box_sizing :: Model.Nullable{String} = nothing
+    box_sizing :: Union{Nothing, String} = nothing
 
-    break_after :: Model.Nullable{String} = nothing
+    break_after :: Union{Nothing, String} = nothing
 
-    break_before :: Model.Nullable{String} = nothing
+    break_before :: Union{Nothing, String} = nothing
 
-    break_inside :: Model.Nullable{String} = nothing
+    break_inside :: Union{Nothing, String} = nothing
 
-    caption_side :: Model.Nullable{String} = nothing
+    caption_side :: Union{Nothing, String} = nothing
 
-    caret_color :: Model.Nullable{String} = nothing
+    caret_color :: Union{Nothing, String} = nothing
 
-    clear :: Model.Nullable{String} = nothing
+    clear :: Union{Nothing, String} = nothing
 
-    clip :: Model.Nullable{String} = nothing
+    clip :: Union{Nothing, String} = nothing
 
-    clip_path :: Model.Nullable{String} = nothing
+    clip_path :: Union{Nothing, String} = nothing
 
-    clip_rule :: Model.Nullable{String} = nothing
+    clip_rule :: Union{Nothing, String} = nothing
 
-    color :: Model.Nullable{String} = nothing
+    color :: Union{Nothing, String} = nothing
 
-    color_interpolation :: Model.Nullable{String} = nothing
+    color_interpolation :: Union{Nothing, String} = nothing
 
-    color_interpolation_filters :: Model.Nullable{String} = nothing
+    color_interpolation_filters :: Union{Nothing, String} = nothing
 
-    column_count :: Model.Nullable{String} = nothing
+    column_count :: Union{Nothing, String} = nothing
 
-    column_fill :: Model.Nullable{String} = nothing
+    column_fill :: Union{Nothing, String} = nothing
 
-    column_gap :: Model.Nullable{String} = nothing
+    column_gap :: Union{Nothing, String} = nothing
 
-    column_rule :: Model.Nullable{String} = nothing
+    column_rule :: Union{Nothing, String} = nothing
 
-    column_rule_color :: Model.Nullable{String} = nothing
+    column_rule_color :: Union{Nothing, String} = nothing
 
-    column_rule_style :: Model.Nullable{String} = nothing
+    column_rule_style :: Union{Nothing, String} = nothing
 
-    column_rule_width :: Model.Nullable{String} = nothing
+    column_rule_width :: Union{Nothing, String} = nothing
 
-    column_span :: Model.Nullable{String} = nothing
+    column_span :: Union{Nothing, String} = nothing
 
-    column_width :: Model.Nullable{String} = nothing
+    column_width :: Union{Nothing, String} = nothing
 
-    columns :: Model.Nullable{String} = nothing
+    columns :: Union{Nothing, String} = nothing
 
-    content :: Model.Nullable{String} = nothing
+    content :: Union{Nothing, String} = nothing
 
-    counter_increment :: Model.Nullable{String} = nothing
+    counter_increment :: Union{Nothing, String} = nothing
 
-    counter_reset :: Model.Nullable{String} = nothing
+    counter_reset :: Union{Nothing, String} = nothing
 
-    css_float :: Model.Nullable{String} = nothing
+    css_float :: Union{Nothing, String} = nothing
 
-    css_text :: Model.Nullable{String} = nothing
+    css_text :: Union{Nothing, String} = nothing
 
-    cursor :: Model.Nullable{String} = nothing
+    cursor :: Union{Nothing, String} = nothing
 
-    direction :: Model.Nullable{String} = nothing
+    direction :: Union{Nothing, String} = nothing
 
-    display :: Model.Nullable{String} = nothing
+    display :: Union{Nothing, String} = nothing
 
-    dominant_baseline :: Model.Nullable{String} = nothing
+    dominant_baseline :: Union{Nothing, String} = nothing
 
-    empty_cells :: Model.Nullable{String} = nothing
+    empty_cells :: Union{Nothing, String} = nothing
 
-    fill :: Model.Nullable{String} = nothing
+    fill :: Union{Nothing, String} = nothing
 
-    fill_opacity :: Model.Nullable{String} = nothing
+    fill_opacity :: Union{Nothing, String} = nothing
 
-    fill_rule :: Model.Nullable{String} = nothing
+    fill_rule :: Union{Nothing, String} = nothing
 
-    filter :: Model.Nullable{String} = nothing
+    filter :: Union{Nothing, String} = nothing
 
-    flex :: Model.Nullable{String} = nothing
+    flex :: Union{Nothing, String} = nothing
 
-    flex_basis :: Model.Nullable{String} = nothing
+    flex_basis :: Union{Nothing, String} = nothing
 
-    flex_direction :: Model.Nullable{String} = nothing
+    flex_direction :: Union{Nothing, String} = nothing
 
-    flex_flow :: Model.Nullable{String} = nothing
+    flex_flow :: Union{Nothing, String} = nothing
 
-    flex_grow :: Model.Nullable{String} = nothing
+    flex_grow :: Union{Nothing, String} = nothing
 
-    flex_shrink :: Model.Nullable{String} = nothing
+    flex_shrink :: Union{Nothing, String} = nothing
 
-    flex_wrap :: Model.Nullable{String} = nothing
+    flex_wrap :: Union{Nothing, String} = nothing
 
-    float :: Model.Nullable{String} = nothing
+    float :: Union{Nothing, String} = nothing
 
-    flood_color :: Model.Nullable{String} = nothing
+    flood_color :: Union{Nothing, String} = nothing
 
-    flood_opacity :: Model.Nullable{String} = nothing
+    flood_opacity :: Union{Nothing, String} = nothing
 
-    font :: Model.Nullable{String} = nothing
+    font :: Union{Nothing, String} = nothing
 
-    font_family :: Model.Nullable{String} = nothing
+    font_family :: Union{Nothing, String} = nothing
 
-    font_feature_settings :: Model.Nullable{String} = nothing
+    font_feature_settings :: Union{Nothing, String} = nothing
 
-    font_kerning :: Model.Nullable{String} = nothing
+    font_kerning :: Union{Nothing, String} = nothing
 
-    font_size :: Model.Nullable{String} = nothing
+    font_size :: Union{Nothing, String} = nothing
 
-    font_size_adjust :: Model.Nullable{String} = nothing
+    font_size_adjust :: Union{Nothing, String} = nothing
 
-    font_stretch :: Model.Nullable{String} = nothing
+    font_stretch :: Union{Nothing, String} = nothing
 
-    font_style :: Model.Nullable{String} = nothing
+    font_style :: Union{Nothing, String} = nothing
 
-    font_synthesis :: Model.Nullable{String} = nothing
+    font_synthesis :: Union{Nothing, String} = nothing
 
-    font_variant :: Model.Nullable{String} = nothing
+    font_variant :: Union{Nothing, String} = nothing
 
-    font_variant_caps :: Model.Nullable{String} = nothing
+    font_variant_caps :: Union{Nothing, String} = nothing
 
-    font_variant_east_asian :: Model.Nullable{String} = nothing
+    font_variant_east_asian :: Union{Nothing, String} = nothing
 
-    font_variant_ligatures :: Model.Nullable{String} = nothing
+    font_variant_ligatures :: Union{Nothing, String} = nothing
 
-    font_variant_numeric :: Model.Nullable{String} = nothing
+    font_variant_numeric :: Union{Nothing, String} = nothing
 
-    font_variant_position :: Model.Nullable{String} = nothing
+    font_variant_position :: Union{Nothing, String} = nothing
 
-    font_weight :: Model.Nullable{String} = nothing
+    font_weight :: Union{Nothing, String} = nothing
 
-    gap :: Model.Nullable{String} = nothing
+    gap :: Union{Nothing, String} = nothing
 
-    glyph_orientation_vertical :: Model.Nullable{String} = nothing
+    glyph_orientation_vertical :: Union{Nothing, String} = nothing
 
-    grid :: Model.Nullable{String} = nothing
+    grid :: Union{Nothing, String} = nothing
 
-    grid_area :: Model.Nullable{String} = nothing
+    grid_area :: Union{Nothing, String} = nothing
 
-    grid_auto_columns :: Model.Nullable{String} = nothing
+    grid_auto_columns :: Union{Nothing, String} = nothing
 
-    grid_auto_flow :: Model.Nullable{String} = nothing
+    grid_auto_flow :: Union{Nothing, String} = nothing
 
-    grid_auto_rows :: Model.Nullable{String} = nothing
+    grid_auto_rows :: Union{Nothing, String} = nothing
 
-    grid_column :: Model.Nullable{String} = nothing
+    grid_column :: Union{Nothing, String} = nothing
 
-    grid_column_end :: Model.Nullable{String} = nothing
+    grid_column_end :: Union{Nothing, String} = nothing
 
-    grid_column_gap :: Model.Nullable{String} = nothing
+    grid_column_gap :: Union{Nothing, String} = nothing
 
-    grid_column_start :: Model.Nullable{String} = nothing
+    grid_column_start :: Union{Nothing, String} = nothing
 
-    grid_gap :: Model.Nullable{String} = nothing
+    grid_gap :: Union{Nothing, String} = nothing
 
-    grid_row :: Model.Nullable{String} = nothing
+    grid_row :: Union{Nothing, String} = nothing
 
-    grid_row_end :: Model.Nullable{String} = nothing
+    grid_row_end :: Union{Nothing, String} = nothing
 
-    grid_row_gap :: Model.Nullable{String} = nothing
+    grid_row_gap :: Union{Nothing, String} = nothing
 
-    grid_row_start :: Model.Nullable{String} = nothing
+    grid_row_start :: Union{Nothing, String} = nothing
 
-    grid_template :: Model.Nullable{String} = nothing
+    grid_template :: Union{Nothing, String} = nothing
 
-    grid_template_areas :: Model.Nullable{String} = nothing
+    grid_template_areas :: Union{Nothing, String} = nothing
 
-    grid_template_columns :: Model.Nullable{String} = nothing
+    grid_template_columns :: Union{Nothing, String} = nothing
 
-    grid_template_rows :: Model.Nullable{String} = nothing
+    grid_template_rows :: Union{Nothing, String} = nothing
 
-    height :: Model.Nullable{String} = nothing
+    height :: Union{Nothing, String} = nothing
 
-    hyphens :: Model.Nullable{String} = nothing
+    hyphens :: Union{Nothing, String} = nothing
 
-    image_orientation :: Model.Nullable{String} = nothing
+    image_orientation :: Union{Nothing, String} = nothing
 
-    image_rendering :: Model.Nullable{String} = nothing
+    image_rendering :: Union{Nothing, String} = nothing
 
-    inline_size :: Model.Nullable{String} = nothing
+    inline_size :: Union{Nothing, String} = nothing
 
-    justify_content :: Model.Nullable{String} = nothing
+    justify_content :: Union{Nothing, String} = nothing
 
-    justify_items :: Model.Nullable{String} = nothing
+    justify_items :: Union{Nothing, String} = nothing
 
-    justify_self :: Model.Nullable{String} = nothing
+    justify_self :: Union{Nothing, String} = nothing
 
-    left :: Model.Nullable{String} = nothing
+    left :: Union{Nothing, String} = nothing
 
-    letter_spacing :: Model.Nullable{String} = nothing
+    letter_spacing :: Union{Nothing, String} = nothing
 
-    lighting_color :: Model.Nullable{String} = nothing
+    lighting_color :: Union{Nothing, String} = nothing
 
-    line_break :: Model.Nullable{String} = nothing
+    line_break :: Union{Nothing, String} = nothing
 
-    line_height :: Model.Nullable{String} = nothing
+    line_height :: Union{Nothing, String} = nothing
 
-    list_style :: Model.Nullable{String} = nothing
+    list_style :: Union{Nothing, String} = nothing
 
-    list_style_image :: Model.Nullable{String} = nothing
+    list_style_image :: Union{Nothing, String} = nothing
 
-    list_style_position :: Model.Nullable{String} = nothing
+    list_style_position :: Union{Nothing, String} = nothing
 
-    list_style_type :: Model.Nullable{String} = nothing
+    list_style_type :: Union{Nothing, String} = nothing
 
-    margin :: Model.Nullable{String} = nothing
+    margin :: Union{Nothing, String} = nothing
 
-    margin_block_end :: Model.Nullable{String} = nothing
+    margin_block_end :: Union{Nothing, String} = nothing
 
-    margin_block_start :: Model.Nullable{String} = nothing
+    margin_block_start :: Union{Nothing, String} = nothing
 
-    margin_bottom :: Model.Nullable{String} = nothing
+    margin_bottom :: Union{Nothing, String} = nothing
 
-    margin_inline_end :: Model.Nullable{String} = nothing
+    margin_inline_end :: Union{Nothing, String} = nothing
 
-    margin_inline_start :: Model.Nullable{String} = nothing
+    margin_inline_start :: Union{Nothing, String} = nothing
 
-    margin_left :: Model.Nullable{String} = nothing
+    margin_left :: Union{Nothing, String} = nothing
 
-    margin_right :: Model.Nullable{String} = nothing
+    margin_right :: Union{Nothing, String} = nothing
 
-    margin_top :: Model.Nullable{String} = nothing
+    margin_top :: Union{Nothing, String} = nothing
 
-    marker :: Model.Nullable{String} = nothing
+    marker :: Union{Nothing, String} = nothing
 
-    marker_end :: Model.Nullable{String} = nothing
+    marker_end :: Union{Nothing, String} = nothing
 
-    marker_mid :: Model.Nullable{String} = nothing
+    marker_mid :: Union{Nothing, String} = nothing
 
-    marker_start :: Model.Nullable{String} = nothing
+    marker_start :: Union{Nothing, String} = nothing
 
-    mask :: Model.Nullable{String} = nothing
+    mask :: Union{Nothing, String} = nothing
 
-    mask_composite :: Model.Nullable{String} = nothing
+    mask_composite :: Union{Nothing, String} = nothing
 
-    mask_image :: Model.Nullable{String} = nothing
+    mask_image :: Union{Nothing, String} = nothing
 
-    mask_position :: Model.Nullable{String} = nothing
+    mask_position :: Union{Nothing, String} = nothing
 
-    mask_repeat :: Model.Nullable{String} = nothing
+    mask_repeat :: Union{Nothing, String} = nothing
 
-    mask_size :: Model.Nullable{String} = nothing
+    mask_size :: Union{Nothing, String} = nothing
 
-    mask_type :: Model.Nullable{String} = nothing
+    mask_type :: Union{Nothing, String} = nothing
 
-    max_block_size :: Model.Nullable{String} = nothing
+    max_block_size :: Union{Nothing, String} = nothing
 
-    max_height :: Model.Nullable{String} = nothing
+    max_height :: Union{Nothing, String} = nothing
 
-    max_inline_size :: Model.Nullable{String} = nothing
+    max_inline_size :: Union{Nothing, String} = nothing
 
-    max_width :: Model.Nullable{String} = nothing
+    max_width :: Union{Nothing, String} = nothing
 
-    min_block_size :: Model.Nullable{String} = nothing
+    min_block_size :: Union{Nothing, String} = nothing
 
-    min_height :: Model.Nullable{String} = nothing
+    min_height :: Union{Nothing, String} = nothing
 
-    min_inline_size :: Model.Nullable{String} = nothing
+    min_inline_size :: Union{Nothing, String} = nothing
 
-    min_width :: Model.Nullable{String} = nothing
+    min_width :: Union{Nothing, String} = nothing
 
-    object_fit :: Model.Nullable{String} = nothing
+    object_fit :: Union{Nothing, String} = nothing
 
-    object_position :: Model.Nullable{String} = nothing
+    object_position :: Union{Nothing, String} = nothing
 
-    opacity :: Model.Nullable{String} = nothing
+    opacity :: Union{Nothing, String} = nothing
 
-    order :: Model.Nullable{String} = nothing
+    order :: Union{Nothing, String} = nothing
 
-    orphans :: Model.Nullable{String} = nothing
+    orphans :: Union{Nothing, String} = nothing
 
-    outline :: Model.Nullable{String} = nothing
+    outline :: Union{Nothing, String} = nothing
 
-    outline_color :: Model.Nullable{String} = nothing
+    outline_color :: Union{Nothing, String} = nothing
 
-    outline_offset :: Model.Nullable{String} = nothing
+    outline_offset :: Union{Nothing, String} = nothing
 
-    outline_style :: Model.Nullable{String} = nothing
+    outline_style :: Union{Nothing, String} = nothing
 
-    outline_width :: Model.Nullable{String} = nothing
+    outline_width :: Union{Nothing, String} = nothing
 
-    overflow :: Model.Nullable{String} = nothing
+    overflow :: Union{Nothing, String} = nothing
 
-    overflow_anchor :: Model.Nullable{String} = nothing
+    overflow_anchor :: Union{Nothing, String} = nothing
 
-    overflow_wrap :: Model.Nullable{String} = nothing
+    overflow_wrap :: Union{Nothing, String} = nothing
 
-    overflow_x :: Model.Nullable{String} = nothing
+    overflow_x :: Union{Nothing, String} = nothing
 
-    overflow_y :: Model.Nullable{String} = nothing
+    overflow_y :: Union{Nothing, String} = nothing
 
-    overscroll_behavior :: Model.Nullable{String} = nothing
+    overscroll_behavior :: Union{Nothing, String} = nothing
 
-    overscroll_behavior_block :: Model.Nullable{String} = nothing
+    overscroll_behavior_block :: Union{Nothing, String} = nothing
 
-    overscroll_behavior_inline :: Model.Nullable{String} = nothing
+    overscroll_behavior_inline :: Union{Nothing, String} = nothing
 
-    overscroll_behavior_x :: Model.Nullable{String} = nothing
+    overscroll_behavior_x :: Union{Nothing, String} = nothing
 
-    overscroll_behavior_y :: Model.Nullable{String} = nothing
+    overscroll_behavior_y :: Union{Nothing, String} = nothing
 
-    padding :: Model.Nullable{String} = nothing
+    padding :: Union{Nothing, String} = nothing
 
-    padding_block_end :: Model.Nullable{String} = nothing
+    padding_block_end :: Union{Nothing, String} = nothing
 
-    padding_block_start :: Model.Nullable{String} = nothing
+    padding_block_start :: Union{Nothing, String} = nothing
 
-    padding_bottom :: Model.Nullable{String} = nothing
+    padding_bottom :: Union{Nothing, String} = nothing
 
-    padding_inline_end :: Model.Nullable{String} = nothing
+    padding_inline_end :: Union{Nothing, String} = nothing
 
-    padding_inline_start :: Model.Nullable{String} = nothing
+    padding_inline_start :: Union{Nothing, String} = nothing
 
-    padding_left :: Model.Nullable{String} = nothing
+    padding_left :: Union{Nothing, String} = nothing
 
-    padding_right :: Model.Nullable{String} = nothing
+    padding_right :: Union{Nothing, String} = nothing
 
-    padding_top :: Model.Nullable{String} = nothing
+    padding_top :: Union{Nothing, String} = nothing
 
-    page_break_after :: Model.Nullable{String} = nothing
+    page_break_after :: Union{Nothing, String} = nothing
 
-    page_break_before :: Model.Nullable{String} = nothing
+    page_break_before :: Union{Nothing, String} = nothing
 
-    page_break_inside :: Model.Nullable{String} = nothing
+    page_break_inside :: Union{Nothing, String} = nothing
 
-    paint_order :: Model.Nullable{String} = nothing
+    paint_order :: Union{Nothing, String} = nothing
 
-    perspective :: Model.Nullable{String} = nothing
+    perspective :: Union{Nothing, String} = nothing
 
-    perspective_origin :: Model.Nullable{String} = nothing
+    perspective_origin :: Union{Nothing, String} = nothing
 
-    place_content :: Model.Nullable{String} = nothing
+    place_content :: Union{Nothing, String} = nothing
 
-    place_items :: Model.Nullable{String} = nothing
+    place_items :: Union{Nothing, String} = nothing
 
-    place_self :: Model.Nullable{String} = nothing
+    place_self :: Union{Nothing, String} = nothing
 
-    pointer_events :: Model.Nullable{String} = nothing
+    pointer_events :: Union{Nothing, String} = nothing
 
-    position :: Model.Nullable{String} = nothing
+    position :: Union{Nothing, String} = nothing
 
-    quotes :: Model.Nullable{String} = nothing
+    quotes :: Union{Nothing, String} = nothing
 
-    resize :: Model.Nullable{String} = nothing
+    resize :: Union{Nothing, String} = nothing
 
-    right :: Model.Nullable{String} = nothing
+    right :: Union{Nothing, String} = nothing
 
-    rotate :: Model.Nullable{String} = nothing
+    rotate :: Union{Nothing, String} = nothing
 
-    row_gap :: Model.Nullable{String} = nothing
+    row_gap :: Union{Nothing, String} = nothing
 
-    ruby_align :: Model.Nullable{String} = nothing
+    ruby_align :: Union{Nothing, String} = nothing
 
-    ruby_position :: Model.Nullable{String} = nothing
+    ruby_position :: Union{Nothing, String} = nothing
 
-    scale :: Model.Nullable{String} = nothing
+    scale :: Union{Nothing, String} = nothing
 
-    scroll_behavior :: Model.Nullable{String} = nothing
+    scroll_behavior :: Union{Nothing, String} = nothing
 
-    shape_rendering :: Model.Nullable{String} = nothing
+    shape_rendering :: Union{Nothing, String} = nothing
 
-    stop_color :: Model.Nullable{String} = nothing
+    stop_color :: Union{Nothing, String} = nothing
 
-    stop_opacity :: Model.Nullable{String} = nothing
+    stop_opacity :: Union{Nothing, String} = nothing
 
-    stroke :: Model.Nullable{String} = nothing
+    stroke :: Union{Nothing, String} = nothing
 
-    stroke_dasharray :: Model.Nullable{String} = nothing
+    stroke_dasharray :: Union{Nothing, String} = nothing
 
-    stroke_dashoffset :: Model.Nullable{String} = nothing
+    stroke_dashoffset :: Union{Nothing, String} = nothing
 
-    stroke_linecap :: Model.Nullable{String} = nothing
+    stroke_linecap :: Union{Nothing, String} = nothing
 
-    stroke_linejoin :: Model.Nullable{String} = nothing
+    stroke_linejoin :: Union{Nothing, String} = nothing
 
-    stroke_miterlimit :: Model.Nullable{String} = nothing
+    stroke_miterlimit :: Union{Nothing, String} = nothing
 
-    stroke_opacity :: Model.Nullable{String} = nothing
+    stroke_opacity :: Union{Nothing, String} = nothing
 
-    stroke_width :: Model.Nullable{String} = nothing
+    stroke_width :: Union{Nothing, String} = nothing
 
-    tab_size :: Model.Nullable{String} = nothing
+    tab_size :: Union{Nothing, String} = nothing
 
-    table_layout :: Model.Nullable{String} = nothing
+    table_layout :: Union{Nothing, String} = nothing
 
-    text_align :: Model.Nullable{String} = nothing
+    text_align :: Union{Nothing, String} = nothing
 
-    text_align_last :: Model.Nullable{String} = nothing
+    text_align_last :: Union{Nothing, String} = nothing
 
-    text_anchor :: Model.Nullable{String} = nothing
+    text_anchor :: Union{Nothing, String} = nothing
 
-    text_combine_upright :: Model.Nullable{String} = nothing
+    text_combine_upright :: Union{Nothing, String} = nothing
 
-    text_decoration :: Model.Nullable{String} = nothing
+    text_decoration :: Union{Nothing, String} = nothing
 
-    text_decoration_color :: Model.Nullable{String} = nothing
+    text_decoration_color :: Union{Nothing, String} = nothing
 
-    text_decoration_line :: Model.Nullable{String} = nothing
+    text_decoration_line :: Union{Nothing, String} = nothing
 
-    text_decoration_style :: Model.Nullable{String} = nothing
+    text_decoration_style :: Union{Nothing, String} = nothing
 
-    text_emphasis :: Model.Nullable{String} = nothing
+    text_emphasis :: Union{Nothing, String} = nothing
 
-    text_emphasis_color :: Model.Nullable{String} = nothing
+    text_emphasis_color :: Union{Nothing, String} = nothing
 
-    text_emphasis_position :: Model.Nullable{String} = nothing
+    text_emphasis_position :: Union{Nothing, String} = nothing
 
-    text_emphasis_style :: Model.Nullable{String} = nothing
+    text_emphasis_style :: Union{Nothing, String} = nothing
 
-    text_indent :: Model.Nullable{String} = nothing
+    text_indent :: Union{Nothing, String} = nothing
 
-    text_justify :: Model.Nullable{String} = nothing
+    text_justify :: Union{Nothing, String} = nothing
 
-    text_orientation :: Model.Nullable{String} = nothing
+    text_orientation :: Union{Nothing, String} = nothing
 
-    text_overflow :: Model.Nullable{String} = nothing
+    text_overflow :: Union{Nothing, String} = nothing
 
-    text_rendering :: Model.Nullable{String} = nothing
+    text_rendering :: Union{Nothing, String} = nothing
 
-    text_shadow :: Model.Nullable{String} = nothing
+    text_shadow :: Union{Nothing, String} = nothing
 
-    text_transform :: Model.Nullable{String} = nothing
+    text_transform :: Union{Nothing, String} = nothing
 
-    text_underline_position :: Model.Nullable{String} = nothing
+    text_underline_position :: Union{Nothing, String} = nothing
 
-    top :: Model.Nullable{String} = nothing
+    top :: Union{Nothing, String} = nothing
 
-    touch_action :: Model.Nullable{String} = nothing
+    touch_action :: Union{Nothing, String} = nothing
 
-    transform :: Model.Nullable{String} = nothing
+    transform :: Union{Nothing, String} = nothing
 
-    transform_box :: Model.Nullable{String} = nothing
+    transform_box :: Union{Nothing, String} = nothing
 
-    transform_origin :: Model.Nullable{String} = nothing
+    transform_origin :: Union{Nothing, String} = nothing
 
-    transform_style :: Model.Nullable{String} = nothing
+    transform_style :: Union{Nothing, String} = nothing
 
-    transition :: Model.Nullable{String} = nothing
+    transition :: Union{Nothing, String} = nothing
 
-    transition_delay :: Model.Nullable{String} = nothing
+    transition_delay :: Union{Nothing, String} = nothing
 
-    transition_duration :: Model.Nullable{String} = nothing
+    transition_duration :: Union{Nothing, String} = nothing
 
-    transition_property :: Model.Nullable{String} = nothing
+    transition_property :: Union{Nothing, String} = nothing
 
-    transition_timing_function :: Model.Nullable{String} = nothing
+    transition_timing_function :: Union{Nothing, String} = nothing
 
-    translate :: Model.Nullable{String} = nothing
+    translate :: Union{Nothing, String} = nothing
 
-    unicode_bidi :: Model.Nullable{String} = nothing
+    unicode_bidi :: Union{Nothing, String} = nothing
 
-    user_select :: Model.Nullable{String} = nothing
+    user_select :: Union{Nothing, String} = nothing
 
-    vertical_align :: Model.Nullable{String} = nothing
+    vertical_align :: Union{Nothing, String} = nothing
 
-    visibility :: Model.Nullable{String} = nothing
+    visibility :: Union{Nothing, String} = nothing
 
-    white_space :: Model.Nullable{String} = nothing
+    white_space :: Union{Nothing, String} = nothing
 
-    widows :: Model.Nullable{String} = nothing
+    widows :: Union{Nothing, String} = nothing
 
-    width :: Model.Nullable{String} = nothing
+    width :: Union{Nothing, String} = nothing
 
-    will_change :: Model.Nullable{String} = nothing
+    will_change :: Union{Nothing, String} = nothing
 
-    word_break :: Model.Nullable{String} = nothing
+    word_break :: Union{Nothing, String} = nothing
 
-    word_spacing :: Model.Nullable{String} = nothing
+    word_spacing :: Union{Nothing, String} = nothing
 
-    word_wrap :: Model.Nullable{String} = nothing
+    word_wrap :: Union{Nothing, String} = nothing
 
-    writing_mode :: Model.Nullable{String} = nothing
+    writing_mode :: Union{Nothing, String} = nothing
 
-    z_index :: Model.Nullable{String} = nothing
+    z_index :: Union{Nothing, String} = nothing
 end

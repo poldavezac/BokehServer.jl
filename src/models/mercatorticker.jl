@@ -6,11 +6,11 @@
 
     desired_num_ticks :: Int64 = 6
 
-    dimension :: Model.Nullable{Model.EnumType{(:lat, :lon)}} = nothing
+    dimension :: Union{Nothing, Model.EnumType{(:lat, :lon)}} = nothing
 
     mantissas :: Vector{Float64} = [1.0, 2.0, 5.0]
 
-    max_interval :: Model.Nullable{Float64} = nothing
+    max_interval :: Union{Nothing, Float64} = nothing
 
     min_interval :: Float64 = 0.0
 

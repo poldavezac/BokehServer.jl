@@ -2,5 +2,5 @@
 
 @model mutable struct IndexFilter <: iIndexFilter
 
-    indices :: Model.Nullable{Vector{Int64}} = nothing
+    indices :: Union{Nothing, Vector{Int64}} = nothing
 end

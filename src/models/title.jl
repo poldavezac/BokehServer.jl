@@ -6,13 +6,13 @@
 
     background_fill_alpha :: Model.Percent = 1.0
 
-    background_fill_color :: Model.Nullable{Model.Color} = nothing
+    background_fill_color :: Union{Nothing, Model.Color} = nothing
 
     border_line_alpha :: Model.Percent = 1.0
 
     border_line_cap :: Model.LineCap = :butt
 
-    border_line_color :: Model.Nullable{Model.Color} = nothing
+    border_line_color :: Union{Nothing, Model.Color} = nothing
 
     border_line_dash :: Model.DashPattern = Int64[]
 
@@ -22,9 +22,9 @@
 
     border_line_width :: Float64 = 1.0
 
-    coordinates :: Model.Nullable{iCoordinateMapping} = nothing
+    coordinates :: Union{Nothing, iCoordinateMapping} = nothing
 
-    group :: Model.Nullable{iRendererGroup} = nothing
+    group :: Union{Nothing, iRendererGroup} = nothing
 
     level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 

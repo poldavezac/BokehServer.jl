@@ -2,7 +2,7 @@
 
 @model mutable struct Range1d <: iRange1d
 
-    bounds :: Model.Nullable{Model.MinMaxBounds} = nothing
+    bounds :: Union{Nothing, Model.MinMaxBounds} = nothing
 
     finish :: Union{Float64, Dates.DateTime, Dates.Period} = 1.0
 

@@ -2,11 +2,11 @@
 
 @model mutable struct GraphRenderer <: iGraphRenderer
 
-    coordinates :: Model.Nullable{iCoordinateMapping} = nothing
+    coordinates :: Union{Nothing, iCoordinateMapping} = nothing
 
     edge_renderer :: iGlyphRenderer = GlyphRenderer()
 
-    group :: Model.Nullable{iRendererGroup} = nothing
+    group :: Union{Nothing, iRendererGroup} = nothing
 
     inspection_policy :: iGraphHitTestPolicy = NodesOnly()
 

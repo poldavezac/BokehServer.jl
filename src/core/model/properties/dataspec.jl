@@ -44,7 +44,7 @@ for (cls, (𝑇, 𝑈)) ∈ (
 end
 
 for 𝑇 ∈ (:DistanceSpec, :StringSpec)
-    @eval const $(Symbol("Null$𝑇")) = Nullable{$𝑇}
+    @eval const $(Symbol("Null$𝑇")) = Union{Nothing, $𝑇}
     @eval Base.show(io::IO, ::Type{$(Symbol("Null$𝑇"))}) = print(io::IO, $("BokehJL.Model.Null$𝑇"))
 end
 

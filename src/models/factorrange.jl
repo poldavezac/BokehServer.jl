@@ -2,7 +2,7 @@
 
 @model mutable struct FactorRange <: iFactorRange
 
-    bounds :: Model.Nullable{Model.MinMaxBounds} = nothing
+    bounds :: Union{Nothing, Model.MinMaxBounds} = nothing
 
     factor_padding :: Float64 = 0.0
 
@@ -12,9 +12,9 @@
 
     group_padding :: Float64 = 1.4
 
-    max_interval :: Model.Nullable{Float64} = nothing
+    max_interval :: Union{Nothing, Float64} = nothing
 
-    min_interval :: Model.Nullable{Float64} = nothing
+    min_interval :: Union{Nothing, Float64} = nothing
 
     range_padding :: Float64 = 0.0
 

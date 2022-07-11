@@ -4,9 +4,9 @@
 
     attachment :: Model.EnumType{(:horizontal, :vertical, :left, :right, :above, :below)} = :horizontal
 
-    coordinates :: Model.Nullable{iCoordinateMapping} = nothing
+    coordinates :: Union{Nothing, iCoordinateMapping} = nothing
 
-    group :: Model.Nullable{iRendererGroup} = nothing
+    group :: Union{Nothing, iRendererGroup} = nothing
 
     inner_only :: Bool = true
 

@@ -42,9 +42,6 @@ end
 
 serialroot(@nospecialize(η::Events.iEvent), @nospecialize(𝑅::iRules)) ::RT  = serialref(η, 𝑅)
 
-function serialref(p𝑇::Type{<:Model.Nullable}, η, 𝑅::iRules)
-    return isnothing(η) ? nothing : serialref(p𝑇.parameters[1], η, 𝑅)
-end
 function serialref(p𝑇::Type{<:Model.iSpec}, η, 𝑅::iRules) :: RT
     @nospecialize p𝑇 η 𝑅
     serialref(Model.todict(Model.bokehconvert(p𝑇, η)), 𝑅)

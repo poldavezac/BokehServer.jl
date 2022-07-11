@@ -6,7 +6,7 @@
 
     line_cap :: Model.LineCap = :butt
 
-    line_color :: Model.Nullable{Model.Color} = "#000000"
+    line_color :: Union{Nothing, Model.Color} = "#000000"
 
     line_dash :: Model.DashPattern = Int64[]
 

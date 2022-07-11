@@ -2,13 +2,13 @@
 
 @model mutable struct ServerSentDataSource <: iServerSentDataSource
 
-    adapter :: Model.Nullable{iCustomJS} = nothing
+    adapter :: Union{Nothing, iCustomJS} = nothing
 
     data :: Model.DataDict = Model.DataDict()
 
     data_url :: String
 
-    max_size :: Model.Nullable{Int64} = nothing
+    max_size :: Union{Nothing, Int64} = nothing
 
     mode :: Model.EnumType{(:replace, :append)} = :replace
 

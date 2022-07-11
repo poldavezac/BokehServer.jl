@@ -6,13 +6,13 @@
 
     domain :: Vector{Tuple{iGlyphRenderer, Union{String, Vector{String}}}} = Tuple{iGlyphRenderer, Union{String, Vector{String}}}[]
 
-    high :: Model.Nullable{Float64} = nothing
+    high :: Union{Nothing, Float64} = nothing
 
-    high_color :: Model.Nullable{Model.Color} = nothing
+    high_color :: Union{Nothing, Model.Color} = nothing
 
-    low :: Model.Nullable{Float64} = nothing
+    low :: Union{Nothing, Float64} = nothing
 
-    low_color :: Model.Nullable{Model.Color} = nothing
+    low_color :: Union{Nothing, Model.Color} = nothing
 
     nan_color :: Model.Color = "#808080"
 

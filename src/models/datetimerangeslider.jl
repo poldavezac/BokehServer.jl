@@ -6,7 +6,7 @@
 
     aspect_ratio :: Union{Nothing, Float64, Model.EnumType{(:auto,)}} = nothing
 
-    background :: Model.Nullable{Model.Color} = nothing
+    background :: Union{Nothing, Model.Color} = nothing
 
     bar_color :: Model.Color = "#E6E6E6"
 
@@ -22,31 +22,31 @@
 
     format :: Union{iTickFormatter, String} = "%d %b %Y %H:%M:%S"
 
-    height :: Model.Nullable{Model.NonNegativeInt} = nothing
+    height :: Union{Nothing, Model.NonNegativeInt} = nothing
 
     height_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 
-    margin :: Model.Nullable{NTuple{4, Int64}} = (0, 0, 0, 0)
+    margin :: Union{Nothing, NTuple{4, Int64}} = (0, 0, 0, 0)
 
-    max_height :: Model.Nullable{Model.NonNegativeInt} = nothing
+    max_height :: Union{Nothing, Model.NonNegativeInt} = nothing
 
-    max_width :: Model.Nullable{Model.NonNegativeInt} = nothing
+    max_width :: Union{Nothing, Model.NonNegativeInt} = nothing
 
-    min_height :: Model.Nullable{Model.NonNegativeInt} = nothing
+    min_height :: Union{Nothing, Model.NonNegativeInt} = nothing
 
-    min_width :: Model.Nullable{Model.NonNegativeInt} = nothing
+    min_width :: Union{Nothing, Model.NonNegativeInt} = nothing
 
     orientation :: Model.EnumType{(:horizontal, :vertical)} = :horizontal
 
     show_value :: Bool = true
 
-    sizing_mode :: Model.Nullable{Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
+    sizing_mode :: Union{Nothing, Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
     start :: Dates.DateTime
 
     step :: Int64 = 3600000
 
-    title :: Model.Nullable{String} = ""
+    title :: Union{Nothing, String} = ""
 
     tooltips :: Bool = true
 
@@ -56,7 +56,7 @@
 
     visible :: Bool = true
 
-    width :: Model.Nullable{Model.NonNegativeInt} = nothing
+    width :: Union{Nothing, Model.NonNegativeInt} = nothing
 
     width_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 end

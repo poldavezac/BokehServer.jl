@@ -4,5 +4,5 @@
 
     field :: String
 
-    initial :: Model.Nullable{Float64} = nothing
+    initial :: Union{Nothing, Float64} = nothing
 end

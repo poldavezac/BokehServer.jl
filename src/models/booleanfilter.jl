@@ -2,5 +2,5 @@
 
 @model mutable struct BooleanFilter <: iBooleanFilter
 
-    booleans :: Model.Nullable{Vector{Bool}} = nothing
+    booleans :: Union{Nothing, Vector{Bool}} = nothing
 end

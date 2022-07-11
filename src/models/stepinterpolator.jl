@@ -4,7 +4,7 @@
 
     clip :: Bool = true
 
-    data :: Model.Nullable{iColumnarDataSource} = nothing
+    data :: Union{Nothing, iColumnarDataSource} = nothing
 
     mode :: Model.EnumType{(:before, :after, :center)} = :after
 

@@ -4,9 +4,9 @@
 
     behavior :: Model.EnumType{(:select, :inspect)} = :select
 
-    callback :: Model.Nullable{iCallback} = nothing
+    callback :: Union{Nothing, iCallback} = nothing
 
-    description :: Model.Nullable{String} = nothing
+    description :: Union{Nothing, String} = nothing
 
     gesture :: Model.EnumType{(:tap, :doubletap)} = :tap
 

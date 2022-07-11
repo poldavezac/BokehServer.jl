@@ -22,12 +22,6 @@ struct ReadOnly{T} <: iProperty end
 @inline bokehstoragetype(::Type{ReadOnly{T}}) where {T} = bokehstoragetype(T)
 @inline bokehconvert(::Type{ReadOnly{T}}, x::Any) where {T} = bokehconvert(T, x)
 
-
-struct Nullable{T} <: iProperty end
-@inline bokehstoragetype(::Type{Nullable{T}}) where {T} = Union{Nothing, bokehstoragetype(T)}
-@inline bokehread(::Type{Nullable{T}}, µ::iHasProps, α::Symbol, ν::Any) where {T} = isnothing(ν) ? nothing : bokehread(T, μ, α, ν)
-@inline bokehconvert(::Type{Nullable{T}}, ν::Any) where {T} = isnothing(ν) ? nothing : bokehconvert(T, ν)
-
 struct FontSize <: iProperty end
 
 const FONTSTYLE_PATTERN = r"^[0-9]+(.[0-9]+)?(%|em|ex|ch|ic|rem|vw|vh|vi|vb|vmin|vmax|cm|mm|q|in|pc|pt|px)$"i

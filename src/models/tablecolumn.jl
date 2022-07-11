@@ -12,7 +12,7 @@
 
     sortable :: Bool = true
 
-    title :: Model.Nullable{String} = nothing
+    title :: Union{Nothing, String} = nothing
 
     visible :: Bool = true
 

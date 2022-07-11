@@ -2,5 +2,5 @@
 
 @model mutable struct SaveTool <: iSaveTool
 
-    description :: Model.Nullable{String} = nothing
+    description :: Union{Nothing, String} = nothing
 end

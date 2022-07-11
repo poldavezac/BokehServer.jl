@@ -2,7 +2,7 @@
 
 @model mutable struct WheelPanTool <: iWheelPanTool
 
-    description :: Model.Nullable{String} = nothing
+    description :: Union{Nothing, String} = nothing
 
     dimension :: Model.EnumType{(:width, :height)} = :width
 end

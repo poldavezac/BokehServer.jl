@@ -2,11 +2,11 @@
 
 @model mutable struct Slope <: iSlope
 
-    coordinates :: Model.Nullable{iCoordinateMapping} = nothing
+    coordinates :: Union{Nothing, iCoordinateMapping} = nothing
 
-    gradient :: Model.Nullable{Float64} = nothing
+    gradient :: Union{Nothing, Float64} = nothing
 
-    group :: Model.Nullable{iRendererGroup} = nothing
+    group :: Union{Nothing, iRendererGroup} = nothing
 
     level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
@@ -14,7 +14,7 @@
 
     line_cap :: Model.LineCap = :butt
 
-    line_color :: Model.Nullable{Model.Color} = "#000000"
+    line_color :: Union{Nothing, Model.Color} = "#000000"
 
     line_dash :: Model.DashPattern = Int64[]
 
@@ -28,7 +28,7 @@
 
     x_range_name :: String = "default"
 
-    y_intercept :: Model.Nullable{Float64} = nothing
+    y_intercept :: Union{Nothing, Float64} = nothing
 
     y_range_name :: String = "default"
 end
