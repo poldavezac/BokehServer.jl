@@ -25,6 +25,7 @@ function DataTable(source::ColumnDataSource; columns = keys(source.data), kwa...
 end
 
 Model.bokehconvert(::Type{<:iTitle}, x :: AbstractString) = Title(; text = "$x")
+Model.bokehconvert(::Type{<:iTicker}, ticks :: AbstractVector{<:Real}) = FixedTicker(; ticks)
 
 using ..Events
 using ..Protocol

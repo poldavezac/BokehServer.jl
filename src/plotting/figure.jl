@@ -24,8 +24,9 @@ function Base.getproperty(μ::PropertyVector, σ::Symbol)
 end
 
 function Base.setproperty!(μ::PropertyVector, σ::Symbol, value; dotrigger :: Bool = true)
-    (σ ≡ :values) && return getfield(μ, σ)
-    for i ∈ getfield(μ, :values)
+    vals = getfield(μ, :values)
+    (σ ≡ :values) && return vals
+    for i ∈ vals
         setproperty!(i, σ, value; dotrigger)
     end
 end

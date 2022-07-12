@@ -318,7 +318,7 @@ function _👻legend!(fig::Models.Plot, rend::Models.GlyphRenderer, kwa; dotrigg
             push!(fig.center, legend; dotrigger)
             dotrigger = false
         else
-            legend = first(legend)
+            legend = first(opts)
         end
 
         val = only(j for (i, j) ∈ pairs(kwa) if i ∈ _👻LEGEND)

@@ -45,8 +45,9 @@ function _👻setter(cls::Symbol, fields::_👻Fields) :: Expr
         end
 
         quote
-            ν = $(@__MODULE__).bokehconvert($(i.type), $(@__MODULE__).bokehunwrap(ν))
-            (ν isa $Unknown) && throw(ErrorException("Could not convert `$ν` to $(i.type)"))
+            cν = $(@__MODULE__).bokehconvert($(i.type), $(@__MODULE__).bokehunwrap(ν))
+            (cν isa $Unknown) && throw(ErrorException(string("Could not convert `$ν` to ", $(i.type))))
+            ν = cν
             $set
             getproperty(µ, $name)
         end

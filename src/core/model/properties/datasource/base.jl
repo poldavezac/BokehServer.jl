@@ -118,6 +118,7 @@ end
 end
 @inline datadictarray(𝑑::AbstractVector{<:Union{iHasProps, AbstractTypes.ElTypeDataDict...}}) = 𝑑
 @inline datadictarray(𝑑::AbstractVector{<:AbstractArray{<:Union{iHasProps, AbstractTypes.ElTypeDataDict...}}}) = 𝑑
+@inline datadictarray(𝑑::AbstractRange) = datadictarray(collect(𝑑))
 
 bokehstoragetype(::Type{DataDict}) = DataDict
 bokehconvert(::Type{DataDict}, x::DataDict) = copy(x)
