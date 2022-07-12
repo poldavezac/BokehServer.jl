@@ -201,7 +201,8 @@ function _👻datasource!(kwargs::Dict{Symbol}, ::Missing, 𝑇::Type)
         if cnv isa Model.iSpec && !ismissing(cnv.field)
             throw(ErrorException("Argument `$col` has a source-type entry, yet no source was provided"))
         elseif cnv isa Model.Unknown && arg isa AbstractArray
-            data["$col"] = Model.datadictarray(p𝑇, arg)
+            # no conversion for :x and :y as the indexes can be factors or numbers
+            data["$col"] = col ∈ (:x, :y) ? arg : Model.datadictarray(p𝑇, arg)
             (; field = "$col")
         else
             arg
@@ -230,6 +231,15 @@ end
 
 function _👻datasource!(kwargs::Dict{Symbol}, src::AbstractDict, 𝑇::Type)
     _👻datasource!(kwargs, Models.ColumnDataSource(; data = Model.bokehconvert(DataDict, src)), 𝑇)
+end
+
+function _👻datasource!(kwargs::Dict{Symbol}, src, 𝑇::Type)
+    dic = if applicable(eachcol, src) && applicable(names, src)
+        zip(names(src), eachcol(src)) # this should be a DataFrames.DataFrame 
+    else
+        pairs(src)
+    end
+    _👻datasource!(kwargs, Dict((string(i) => j for (i, j) ∈ dic)...), 𝑇)
 end
 
 function _👻visuals!(
@@ -353,7 +363,10 @@ for meth ∈ methods(Models.glyphargs)
     (cls <: Models.iGlyph) || continue
 
     let 𝐹 = Symbol(lowercase("$(nameof(cls))")), 𝐹! = Symbol("$(𝐹)!")
-        fargs = Model.bokehproperties(Models.FigureOptions)
+        fargs = (
+            Model.bokehproperties(Models.FigureOptions)...,
+            Model.bokehproperties(Models.Plot)...,
+        )
         @eval $𝐹!(fig::Models.Plot; kwa...) = glyph!(fig, $cls; kwa...)
         @eval function $𝐹(; kwa...)
             fig = figure(; (i for i ∈ kwa if first(i) ∈ $fargs)...)

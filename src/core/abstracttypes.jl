@@ -12,11 +12,11 @@ module AbstractTypes
     const NumberElTypeDataDict = (
         Int8, Int16, Int32, UInt8, UInt16, UInt32, Float32, Float64
     )
-    const ElTypeDataDict = (NumberElTypeDataDict..., String)
+    const ElTypeDataDict = (NumberElTypeDataDict..., AbstractString)
     const DataDict = Dict{
         String, 
         Union{
-            (AbstractVector{I} for I ∈ ElTypeDataDict)...,
+            (AbstractVector{<:I} for I ∈ ElTypeDataDict)...,
             (AbstractVector{<:AbstractArray{I}} for I ∈ ElTypeDataDict)...,
             AbstractVector{<:iHasProps},
         }

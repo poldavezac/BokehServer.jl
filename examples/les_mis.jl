@@ -2,6 +2,7 @@
 using BokehJL
 using BokehJL.Model.JSON
 using Pkg.Artifacts
+using Pkg
 path   = joinpath(artifact"javascript", "site-packages", "bokeh", "sampledata", "_data", "les_mis.json")
 data   = JSON.parse(read(path, String))
 nodes  = data["nodes"]

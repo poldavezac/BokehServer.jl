@@ -1,6 +1,6 @@
 module Figures
 using ...Model
-using ...Models: Plot, iAxis, iGrid, iPlot
+using ...Models: Plot, iAxis, iGrid, iPlot, iLegend, iHoverTool
 using ...Models
 
 struct PropertyVector{T}
@@ -50,12 +50,20 @@ function Base.getproperty(μ::Plot, σ::Symbol)
         PropertyVector(iAxis[(i for i ∈ μ.below if i isa iAxis)..., (i for i ∈ μ.above if i isa iAxis)...])
     elseif σ ≡ :yaxis
         PropertyVector(iAxis[(i for i ∈ μ.left if i isa iAxis)..., (i for i ∈ μ.right if i isa iAxis)...])
+    elseif σ ≡ :axis
+        PropertyVector(collect(iAxis, Model.bokehchildren(iAxis, μ)))
     elseif σ ≡ :xgrid
         axes = μ.xaxis
         PropertyVector(iGrid[i for i ∈ μ.center if i isa iGrid && i.axis ∈ axes])
     elseif σ ≡ :ygrid
         axes = μ.yaxis
         PropertyVector(iGrid[i for i ∈ μ.center if i isa iGrid && i.axis ∈ axes])
+    elseif σ ≡ :grid
+        PropertyVector(collect(iGrid, Model.bokehchildren(iGrid, μ)))
+    elseif σ ≡ :legend
+        PropertyVector(collect(iLegend, Model.bokehchildren(iLegend, μ)))
+    elseif σ ≡ :hover
+        PropertyVector([i for i ∈ μ.toolbar.tools if i isa iHoverTool])
     else
         invoke(getproperty, Tuple{iPlot, Symbol}, μ, σ)
     end
@@ -69,11 +77,8 @@ end
 using .Figures
 
 function figure(; k...)
-    opts = Models.FigureOptions(;
-        (i=>j for (i, j) ∈ k if hasfield(Models.FigureOptions, i))...
-    )
-
-    plot = Models.Plot()
+    opts = Models.FigureOptions(; (i for i ∈ k if hasfield(Models.FigureOptions, first(i)))...)
+    plot = Models.Plot(; (i for i ∈ k if hasfield(Models.Plot, first(i)) && !hasfield(Models.FigureOptions, first(i)))...)
     addaxis!(plot, opts, :x; dotrigger = false) # no need to trigger when creating a brand new plot!
     addaxis!(plot, opts, :y; dotrigger = false)
     tools!(plot, opts; dotrigger = false)

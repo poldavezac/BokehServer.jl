@@ -24,6 +24,8 @@ function DataTable(source::ColumnDataSource; columns = keys(source.data), kwa...
     DataTable(; source, columns, kwa...)
 end
 
+Model.bokehconvert(::Type{<:iTitle}, x :: AbstractString) = Title(; text = "$x")
+
 using ..Events
 using ..Protocol
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env -S julia --startup-file=no --history-file=no --project
-push!(LOAD_PATH, "@dev")
+push!(LOAD_PATH, joinpath(@__DIR__, "environment"))
 using BokehJL
 using BokehJL.Models: BoxSelectTool, LassoSelectTool
 using Random

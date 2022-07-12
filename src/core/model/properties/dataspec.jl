@@ -119,7 +119,7 @@ end
 
 bokehconvert(𝑇::Type{<:iSpec}, ν::AbstractString) = 𝑇(Column(ν))
 
-function bokehconvert(𝑇::Type{<:iSpec{<:EnumType}}, ν::AbstractString)
+function bokehconvert(𝑇::Type{<:iSpec{<:Union{FontSize, EnumType}}}, ν::AbstractString)
     value = bokehconvert(speceltype(𝑇), ν)
     return 𝑇(value isa Unknown ? Column(ν) : value)
 end

@@ -62,37 +62,62 @@ end
 
 Convert a `DataDict` array *element* to the correct type `T` or `<:AbstractArray{T}`
 """
-@inline datadictelement(::Type{String},  𝑑::Color) = color(𝑑)
-@inline datadictelement(::Type{Float64}, 𝑑::Union{Date, DateTime, Period, Time}) =  bokehconvert(Float64, 𝑑)
-@inline datadictelement(::Type{T}, y::Union{T, AbstractArray{T}}) where {T} = y
-@inline datadictelement(T::Type, y::Number) = convert(T, y)
-@inline datadictelement(T::Type, y::AbstractArray) = datadictelement.(T, y)
+@inline datadictelement(::Type{Color},   𝑑) :: String = ismissing(𝑑) || isnothing(𝑑) ? "#00000000" : colorhex(𝑑)
+@inline datadictelement(::Type{String},  𝑑::Color) :: String = colorhex(𝑑)
+@inline datadictelement(::Type{Float64}, 𝑑::Dates.AbstractTime) :: Float64 =  bokehconvert(Float64, 𝑑)
+@inline datadictelement(::Type{String},  ::Missing) :: String = ""
+@inline datadictelement(::Type{Float64}, ::Missing) :: Float64 =  NaN64
+@inline datadictelement(::Type{Float32}, ::Missing) :: Float32 =  NaN32
+@inline datadictelement(::Type{T}, 𝑑::Union{T, AbstractArray{T}}) where {T} = 𝑑
+@inline datadictelement(T::Type, 𝑑::Number) = convert(T, 𝑑)
+@inline datadictelement(T::Type, 𝑑::AbstractArray) = datadictelement.(T, 𝑑)
 
 """
     datadictarray(::Type{T}, 𝑑) where {T}
 
 Convert a `DataDict` *array*  to the correct type `Vector{T}`
 """
-@inline datadictarray(T::Type, y::AbstractVector)                  = datadictelement.(T, y)
-@inline datadictarray(T::Type, y::AbstractVector{<:AbstractArray}) = [datadictelement.(T, i) for i ∈ y]
-@inline datadictarray(::Type{T}, y::Union{AbstractVector{T}, AbstractVector{<:AbstractArray{T}}}) where {T} = y
+@inline datadictarray(T::Type, 𝑑::AbstractVector)                  = datadictelement.(T, 𝑑)
+@inline datadictarray(T::Type, 𝑑::AbstractVector{<:AbstractArray}) = [datadictelement.(T, i) for i ∈ 𝑑]
+@inline datadictarray(::Type{T}, 𝑑::Union{AbstractVector{T}, AbstractVector{<:AbstractArray{T}}}) where {T} = 𝑑
 
 """
-    datadictarray(::Type{ColorSpec},   y::Union{AbstractRange, AbstractArray})
-    datadictarray(::Type{NumberSpec},  y::Union{AbstractRange, AbstractArray})
+    datadictarray(::Type{ColorSpec},  𝑑::AbstractVector)
+    datadictarray(::Type{NumberSpec}, 𝑑::AbstractVector)
+    datadictarray(::Type{IntSpec},    𝑑::AbstractVector)
 
 Convert a `DataDict` *array*  to the correct type `Vector{T}`
 """
-@inline datadictarray(::Type{ColorSpec},  y::AbstractVector)        = colorhex.(y)
-@inline datadictarray(::Type{NumberSpec}, y::AbstractVector{Int64}) = Int32.(y)
-@inline datadictarray(::Type{NumberSpec}, y::AbstractVector)        = y
-@inline datadictarray(::Type{NumberSpec}, y::AbstractRange{Int64})  = Int32.(y)
-@inline datadictarray(::Type{NumberSpec}, y::AbstractRange)         = collect(y)
-
-for (𝑇1, 𝑇2) ∈ (Union{DateTime, Date, Period, Time} => Float64, Union{Int64} => Int32)
-    @eval @inline datadictarray(y::AbstractVector{<:Union{$𝑇1, AbstractArray{<:$𝑇1}}}) = datadictarray($𝑇2, y)
+@inline datadictarray(::Type{ColorSpec},  𝑑::AbstractVector{String})  = 𝑑
+@inline datadictarray(::Type{ColorSpec},  𝑑::AbstractVector) = datadictelement.(Color, 𝑑)
+@inline function datadictarray(𝑇::Type{<:iSpec},   𝑑::AbstractVector)
+    return speceltype(𝑇) ≡ eltype(𝑑) ? 𝑑 : datadictelement.(speceltype(𝑇), 𝑑)
 end
-@inline datadictarray(y::AbstractVector{<:Union{T, AbstractArray{<:T}}}) where {T <: Union{iHasProps, AbstractTypes.ElTypeDataDict...}} = y
+
+for (𝑇1, 𝑇2) ∈ (Dates.AbstractTime => Float64, Int64 => Int32)
+    @eval @inline datadictarray(𝑑::AbstractVector{<:$𝑇1})                              = datadictarray($𝑇2, 𝑑)
+    @eval @inline datadictarray(𝑑::AbstractVector{<:AbstractArray{<:$𝑇1}})             = datadictarray($𝑇2, 𝑑)
+    @eval @inline datadictarray(𝑑::AbstractVector{Union{Missing, T}} where {T <: $𝑇1}) = datadictarray(Float64, 𝑑)
+end
+
+function datadictarray(𝑑::AbstractVector{Union{Missing, T}}) where {T <: AbstractString}
+    nan = T()
+    return T[ifelse(ismissing(i), nan, i) for i ∈ 𝑑]
+end
+
+@generated function datadictarray(𝑑::AbstractVector{Union{Missing, T}} where {T <: Real})
+    return if eltype(𝑑) ≡ Union{Missing, Float32}
+        :(Float32[ifelse(ismissing(i), NaN32, i) for i ∈ 𝑑])
+    elseif eltype(𝑑) ≡ Union{Missing, Float64}
+        :(Float64[ifelse(ismissing(i), NaN64, i) for i ∈ 𝑑])
+    elseif sizeof(eltype(𝑑)) ≤ 4
+        :(Float32[ismissing(i) ? NaN32 : convert(Float32, i) for i ∈ 𝑑])
+    else
+        :(Float64[ismissing(i) ? NaN64 : convert(Float64, i) for i ∈ 𝑑])
+    end
+end
+@inline datadictarray(𝑑::AbstractVector{<:Union{iHasProps, AbstractTypes.ElTypeDataDict...}}) = 𝑑
+@inline datadictarray(𝑑::AbstractVector{<:AbstractArray{<:Union{iHasProps, AbstractTypes.ElTypeDataDict...}}}) = 𝑑
 
 bokehstoragetype(::Type{DataDict}) = DataDict
 bokehconvert(::Type{DataDict}, x::DataDict) = copy(x)
@@ -102,7 +127,7 @@ for cls ∈ (
         AbstractVector{<:Pair{<:AbstractString}},
         DataDictContainer
 )
-    @eval bokehconvert(::Type{DataDict}, x::$cls) = DataDict("$i" => datadictarray(j) for (i, j) ∈ x)
+    @eval bokehconvert(::Type{DataDict}, x::$cls) = DataDict(("$i" => datadictarray(j) for (i, j) ∈ x)...)
 end
 
 bokehchildren(x::DataDict) = Iterators.flatten(Iterators.filter(Base.Fix2(<:, iHasProps) ∘ eltype, values(x)))
