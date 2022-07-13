@@ -113,6 +113,8 @@ function bokehconvert(𝑇::Type{<:iSpec}, ν::AbstractDict{<:AbstractString})
 end
 
 function bokehconvert(𝑇::Type{<:iSpec}, ν)
+    (ν isa 𝑇) && return ν
+
     item = bokehconvert(speceltype(𝑇), ν)
     return item isa Unknown ? item : 𝑇(item)
 end

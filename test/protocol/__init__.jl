@@ -7,3 +7,9 @@ end
 ProtocolY = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
     a::ProtocolX = ProtocolX(; a = -1)
 end
+
+ProtocolZ = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
+    a::Vector{ProtocolX}
+    b::Bokeh.Model.IntSpec
+    c::Int = 1
+end

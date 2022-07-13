@@ -1,8 +1,8 @@
 #!/usr/bin/env -S julia --startup-file=no --history-file=no --project
 using BokehJL
-using CodecZlib
-using Dates
 using Pkg.Artifacts
+using BokehJL.Tokens.CodecZlib
+using BokehJL.Model.Dates
 
 const DAYS = ["Sun", "Sat", "Fri", "Thu", "Wed", "Tue", "Mon"]
 const DATA = let data = Dict("time" => Dates.Time[], "day" => String[]) 

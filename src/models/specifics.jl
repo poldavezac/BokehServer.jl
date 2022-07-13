@@ -41,13 +41,14 @@ function Protocol.Serialize.serialref(::Type{Selection}, evt::Events.ModelChange
     return Protocol.Serialize.serialref(iHasProps, evt, 𝑅)
 end
 
-function Protocol.PatchDocReceive.setpropertyfromjson!(mdl::Selection, attr:: Symbol, val; dotrigger ::Bool =true)
+function Protocol.PatchDocReceive.fromjson(::Type{Selection}, attr:: Symbol, val)
     if(attr ∈ (:line_indices, :indices))
-       val = val .+ 1
+        Int64[i+1 for i ∈ val]
     elseif attr ≡ :multiline_indices
-       val = Dict{String, Vector{Int64}}(i=> j .+ 1 for (i, j) ∈ val)
+        Dict{String, Vector{Int64}}((i => Int64[k+1 for k ∈ j] for (i, j) ∈ val)...)
+    else
+        invoke(Protocol.PatchDocReceive.fromjson, Tuple{iHasProps, Symbol, Any}, mdl, attr, val; dotrigger)
     end
-    invoke(Protocol.PatchDocReceive.setpropertyfromjson!, Tuple{iHasProps, Symbol, Any}, mdl, attr, val; dotrigger)
 end
 
 precompile(Plot, ())

@@ -100,22 +100,27 @@ for (𝑇1, 𝑇2) ∈ (Dates.AbstractTime => Float64, Int64 => Int32)
     @eval @inline datadictarray(𝑑::AbstractVector{Union{Missing, T}} where {T <: $𝑇1}) = datadictarray(Float64, 𝑑)
 end
 
-function datadictarray(𝑑::AbstractVector{Union{Missing, T}}) where {T <: AbstractString}
-    nan = T()
-    return T[ifelse(ismissing(i), nan, i) for i ∈ 𝑑]
-end
+for (𝑇, 𝐹) ∈ (:Missing => :ismissing, :Nothing => :isnothing)
+    @eval function datadictarray(𝑑::AbstractVector{Union{$𝑇, T}}) where {T <: AbstractString}
+        nan = T()
+        return T[ifelse($𝐹(i), nan, i) for i ∈ 𝑑]
+    end
 
-@generated function datadictarray(𝑑::AbstractVector{Union{Missing, T}} where {T <: Real})
-    return if eltype(𝑑) ≡ Union{Missing, Float32}
-        :(Float32[ifelse(ismissing(i), NaN32, i) for i ∈ 𝑑])
-    elseif eltype(𝑑) ≡ Union{Missing, Float64}
-        :(Float64[ifelse(ismissing(i), NaN64, i) for i ∈ 𝑑])
-    elseif sizeof(eltype(𝑑)) ≤ 4
-        :(Float32[ismissing(i) ? NaN32 : convert(Float32, i) for i ∈ 𝑑])
-    else
-        :(Float64[ismissing(i) ? NaN64 : convert(Float64, i) for i ∈ 𝑑])
+    for (𝑃, 𝑁) ∈ (Float64 => NaN64, Float32 => NaN32)
+        @eval function datadictarray(𝑑::AbstractVector{Union{$𝑇, $𝑃}}) :: Vector{$𝑃}
+            return $𝑃[ifelse($𝐹(i), $𝑁, i) for i ∈ 𝑑]
+        end
+    end
+
+    @eval function datadictarray(𝑑::AbstractVector{Union{$𝑇, Int64}}) :: Vector{Float64}
+        return Float64[$𝐹(i) ? NaN64 : convert(Float64, i) for i ∈ 𝑑]
+    end
+
+    @eval function datadictarray(𝑑::AbstractVector{Union{$𝑇, T}} where {T <: Number}) :: Vector{Float32}
+        return Float64[$𝐹(i) ? NaN32 : convert(Float32, i) for i ∈ 𝑑]
     end
 end
+
 @inline datadictarray(𝑑::AbstractVector{<:Union{iHasProps, AbstractTypes.ElTypeDataDict...}}) = 𝑑
 @inline datadictarray(𝑑::AbstractVector{<:AbstractArray{<:Union{iHasProps, AbstractTypes.ElTypeDataDict...}}}) = 𝑑
 @inline datadictarray(𝑑::AbstractRange) = datadictarray(collect(𝑑))

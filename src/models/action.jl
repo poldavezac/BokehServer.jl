@@ -245,13 +245,13 @@ function action!(𝐷::iDocument, ::Val{T}; model::iModel, k...) where {T}
     Events.executecallbacks(getfield(_EVENT_TYPES, T)(; model, k...))
 end
 
-function PatchDocReceive.apply(::Val{:MessageSent}, 𝐷::iDocument, 𝐼::Dict{String})
+function PatchDocReceive.apply(::Val{:MessageSent}, 𝐷::iDocument, 𝐼::Dict{String}, 𝑀)
     if 𝐼["msg_type"] == "bokeh_event"
         data = 𝐼["msg_data"]
         action!(
             𝐷,
             Val(Symbol(data["event_name"]));
-            (Symbol(i) => j for (i, j) ∈ data["event_values"])...
+            (Symbol(i) => PatchDocReceive.fromjson(Any, j, 𝑀) for (i, j) ∈ data["event_values"])...
         )
     end
 end

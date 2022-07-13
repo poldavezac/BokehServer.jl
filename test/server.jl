@@ -146,3 +146,43 @@ end
         @test val[]
     end
 end
+
+function run_example(name::String)
+    path = joinpath(@__DIR__, "..", "examples", "$name.jl")
+    err  = Ref(false)
+    task = @async try
+        with_logger(Logging.NullLogger()) do
+            Base.include(Module(), path)
+        end
+    catch exc
+        err[] = true
+        @error "failed $path" exception = (exc, Base.catch_backtrace())
+    end
+    for _ = 1:100
+        istaskstarted(task) || sleep(0.1)
+    end
+    @test istaskstarted(task)
+    @test !istaskdone(task)
+
+    val = Ref{Any}(nothing)
+    BokehJL.Client.open("ws://localhost:$TEST_PORT/plot/ws") do ws, doc
+        val[] = doc
+        close(ws)
+    end
+    @test !istaskdone(task)
+    stop = @async Base.throwto(task, InterruptException())
+    wait(task)
+
+    @test !isempty(val[].roots)
+    @test istaskdone(task)
+    @test !istaskfailed(task)
+    @test !err[]
+end
+
+@testset "categorical_scatter_jitter" begin run_example("categorical_scatter_jitter") end
+@testset "latex_normal_distribution"  begin run_example("latex_normal_distribution") end
+@testset "les_mis"                    begin run_example("les_mis") end
+@testset "lines"                      begin run_example("lines") end
+@testset "periodic"                   begin run_example("periodic") end
+@testset "scatter"                    begin run_example("scatter") end
+@testset "selection_histogram"        begin run_example("selection_histogram") end

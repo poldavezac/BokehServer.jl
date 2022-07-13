@@ -57,7 +57,7 @@ BokehJL.Plotting.serve() do
 
     pv = BokehJL.figure(toolbar_location=nothing, width=200, height=p.height, x_range=(-vmax, vmax),
                 y_range=p.y_range, min_border=10, y_axis_location="right")
-    pv.ygrid_line_color = "#00000000"
+    pv.ygrid.grid_line_color = "#00000000"
     pv.xaxis.major_label_orientation = π/4
     pv.background_fill_color = "#fafafa"
 

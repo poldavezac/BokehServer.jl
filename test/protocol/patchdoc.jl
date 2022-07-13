@@ -36,33 +36,6 @@ JSON = BokehJL.Protocol.Messages.JSON
     end
 end
 
-@testset "dereference!" begin
-    cds = ProtocolX(; id = 14001)
-    𝐶 = Dict{String, Any}(
-        "events" => Any[Dict{String, Any}(
-            "column_source" => Dict{String, Any}("id" => "14001"),
-            "kind" => "ColumnDataChanged",
-            "new" => Dict{String, Any}(
-                "a" => Dict{String, Any}("dtype" => "float64", "shape" => Any[1], "__ndarray__" => "AAAAAAAAAEA=", "order" => "little")
-            ),
-            "cols" => Any["a"]
-        )],
-        "references" => Any[]
-    )
-    truth = Dict{String, Any}(
-        "events" => Any[Dict{String, Any}(
-            "column_source" => cds,
-            "kind" => "ColumnDataChanged",
-            "new" => Dict{String, Any}("a" => Float64[2.]),
-            "cols" => Any["a"]
-        )],
-        "references" => Any[]
-    )
-    BokehJL.Protocol.PatchDocReceive._dereference!(𝐶["events"], Dict{Int, BokehJL.iHasProps}(14001 => cds), BokehJL.Protocol.Buffers())
-
-    @test 𝐶 == truth
-end
-
 @testset "receive" begin
     doc  = BokehJL.Document()
     mdl  = ProtocolX(; id = 100,a  = 10)
@@ -179,6 +152,23 @@ end
             )
             BokehJL.Protocol.patchdoc!(doc, cnt, buf)
             @test called[]
+        end
+    end
+
+    @testset "complex obj attribute" begin
+        E.eventlist!() do
+            doc   = BokehJL.Document()
+            a     = [ProtocolX(;a = 1), ProtocolX(;a = 2)],
+            other = ProtocolZ(; a, b = (; value = 100, transform = a[1]))
+            cnt = Dict{String, Any}(
+                "references" => Any[jsref(other), jsref(other.a[1]), jsref(other.a[2])],
+                "events" => Any[js(BokehJL.Events.RootAddedEvent(doc, other, 1))]
+            )
+            BokehJL.Protocol.patchdoc!(doc, cnt, buf)
+            @test length(doc) ≡ 1
+            @test [i.a for i ∈ first(doc).a] == [1, 2]
+            @test first(doc).b.value ≡ 100
+            @test first(doc).b.transform ≡ first(doc).a[1]
         end
     end
 end
