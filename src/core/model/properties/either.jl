@@ -42,6 +42,9 @@ end
 
 function bokehconvert(𝑇::Union, ν)
     @nospecialize 𝑇 ν
+    # make sure the `Nothing` is always favored
+    isnothing(ν) && (Nothing <: 𝑇) && return nothing
+
     for T ∈ UnionIterator(𝑇)
         out = bokehconvert(T, ν)
         (out isa Unknown) || return out

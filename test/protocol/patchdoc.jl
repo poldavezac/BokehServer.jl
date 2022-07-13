@@ -158,7 +158,7 @@ end
     @testset "complex obj attribute" begin
         E.eventlist!() do
             doc   = BokehJL.Document()
-            a     = [ProtocolX(;a = 1), ProtocolX(;a = 2)],
+            a     = [ProtocolX(;a = 1), ProtocolX(;a = 2)]
             other = ProtocolZ(; a, b = (; value = 100, transform = a[1]))
             cnt = Dict{String, Any}(
                 "references" => Any[jsref(other), jsref(other.a[1]), jsref(other.a[2])],

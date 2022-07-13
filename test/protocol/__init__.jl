@@ -10,6 +10,6 @@ end
 
 ProtocolZ = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
     a::Vector{ProtocolX}
-    b::Bokeh.Model.IntSpec
+    b::BokehJL.Model.IntSpec
     c::Int = 1
 end

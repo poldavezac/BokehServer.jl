@@ -89,7 +89,7 @@ datadictarray(::Type{T}, 𝑑::Union{AbstractVector{T}, AbstractVector{<:Abstrac
 Convert a `DataDict` *array*  to the correct type `Vector{T}`
 """
 datadictarray(::Type{ColorSpec}, @nospecialize(𝑑::AbstractVector{<:AbstractString})) = 𝑑
-datadictarray(::Type{ColorSpec}, @nospecialize(𝑑::AbstractVector)) = datadictelement.(color, 𝑑)
+datadictarray(::Type{ColorSpec}, @nospecialize(𝑑::AbstractVector)) = colorhex.(𝑑)
 function datadictarray(𝑇::Type{<:iSpec}, 𝑑::AbstractVector)
     @nospecialize 𝑇 𝑑
     e𝑇 = bokehstoragetype(speceltype(𝑇))
