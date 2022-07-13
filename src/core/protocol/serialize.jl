@@ -46,6 +46,10 @@ function serialref(p𝑇::Type{<:Model.iSpec}, η, 𝑅::iRules) :: RT
     @nospecialize p𝑇 η 𝑅
     serialref(Model.todict(Model.bokehconvert(p𝑇, η)), 𝑅)
 end
+function serialref(p𝑇::Type{Union{Nothing, T}} where {T<:Model.iSpec}, η, 𝑅::iRules) :: RT
+    @nospecialize p𝑇 η 𝑅
+    isnothing(η) ? nothing : serialref(Model.todict(Model.bokehconvert(p𝑇, η)), 𝑅)
+end
 serialref(::Type, @nospecialize(η), @nospecialize(𝑅::iRules))            = serialref(η, 𝑅)
 serialref(@nospecialize(η::iHasProps), ::iRules)              :: RT      = RT(:id => "$(bokehid(η))")
 serialref(::Nothing, ::iRules)                                :: Nothing = nothing

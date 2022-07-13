@@ -46,8 +46,7 @@ function bokehconvert(𝑇::Union, ν)
         out = bokehconvert(T, ν)
         (out isa Unknown) || return out
     end
-
-    throw(ErrorException("Can't write $ν as $𝑇"))
+    return Unknown()
 end
 
 function bokehread(𝑇::Union, μ::iHasProps, σ::Symbol, ν)

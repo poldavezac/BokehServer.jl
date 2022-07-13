@@ -77,6 +77,9 @@ Base.show(io::IO, c::Color) = print(io, '"', colorhex(c), '"')
 
 const COLOR_ARGS = Union{NTuple{4, <:Integer}, NTuple{3, <:Integer}, Symbol, Int32, AbstractString, Color}
 
+bokehconvert(::Type{Color}, ::Nothing) = Color(0x0, 0x0, 0x0, 0x0)
+bokehconvert(::Type{ColorHex}, ::Nothing) = "#00000000"
+
 function bokehconvert(::Type{Color}, ν::COLOR_ARGS)
     clr = color(ν)
     ismissing(clr) ? Unknown() : clr

@@ -186,3 +186,4 @@ end
 @testset "periodic"                   begin run_example("periodic") end
 @testset "scatter"                    begin run_example("scatter") end
 @testset "selection_histogram"        begin run_example("selection_histogram") end
+@testset "burtin"                     begin run_example("burtin") end

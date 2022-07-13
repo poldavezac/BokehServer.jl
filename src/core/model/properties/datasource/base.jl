@@ -62,24 +62,24 @@ end
 
 Convert a `DataDict` array *element* to the correct type `T` or `<:AbstractArray{T}`
 """
-@inline datadictelement(::Type{Color},   𝑑) :: String = ismissing(𝑑) || isnothing(𝑑) ? "#00000000" : colorhex(𝑑)
-@inline datadictelement(::Type{String},  𝑑::Color) :: String = colorhex(𝑑)
-@inline datadictelement(::Type{Float64}, 𝑑::Dates.AbstractTime) :: Float64 =  bokehconvert(Float64, 𝑑)
-@inline datadictelement(::Type{String},  ::Missing) :: String = ""
-@inline datadictelement(::Type{Float64}, ::Missing) :: Float64 =  NaN64
-@inline datadictelement(::Type{Float32}, ::Missing) :: Float32 =  NaN32
-@inline datadictelement(::Type{T}, 𝑑::Union{T, AbstractArray{T}}) where {T} = 𝑑
-@inline datadictelement(T::Type, 𝑑::Number) = convert(T, 𝑑)
-@inline datadictelement(T::Type, 𝑑::AbstractArray) = datadictelement.(T, 𝑑)
+datadictelement(::Type{Color},   @nospecialize(𝑑)) :: String = colorhex(𝑑)
+datadictelement(::Type{String},  𝑑::Color) :: String = colorhex(𝑑)
+datadictelement(::Type{Float64}, @nospecialize(𝑑::Dates.AbstractTime)) :: Float64 =  bokehconvert(Float64, 𝑑)
+datadictelement(::Type{String},  ::Missing) :: String = ""
+datadictelement(::Type{Float64}, ::Missing) :: Float64 =  NaN64
+datadictelement(::Type{Float32}, ::Missing) :: Float32 =  NaN32
+datadictelement(::Type{T}, 𝑑::Union{T, AbstractArray{T}}) where {T} = 𝑑
+datadictelement(@nospecialize(T::Type), @nospecialize(𝑑::Number)) = convert(T, 𝑑)
+datadictelement(@nospecialize(T::Type), @nospecialize(𝑑::AbstractArray)) = datadictelement.(T, 𝑑)
 
 """
     datadictarray(::Type{T}, 𝑑) where {T}
 
 Convert a `DataDict` *array*  to the correct type `Vector{T}`
 """
-@inline datadictarray(T::Type, 𝑑::AbstractVector)                  = datadictelement.(T, 𝑑)
-@inline datadictarray(T::Type, 𝑑::AbstractVector{<:AbstractArray}) = [datadictelement.(T, i) for i ∈ 𝑑]
-@inline datadictarray(::Type{T}, 𝑑::Union{AbstractVector{T}, AbstractVector{<:AbstractArray{T}}}) where {T} = 𝑑
+datadictarray(@nospecialize(T::Type), @nospecialize(𝑑::AbstractVector)) = datadictelement.(T, 𝑑)
+datadictarray(T::Type, 𝑑::AbstractVector{<:AbstractArray}) = [datadictelement.(T, i) for i ∈ 𝑑]
+datadictarray(::Type{T}, 𝑑::Union{AbstractVector{T}, AbstractVector{<:AbstractArray{T}}}) where {T} = 𝑑
 
 """
     datadictarray(::Type{ColorSpec},  𝑑::AbstractVector)
@@ -88,16 +88,21 @@ Convert a `DataDict` *array*  to the correct type `Vector{T}`
 
 Convert a `DataDict` *array*  to the correct type `Vector{T}`
 """
-@inline datadictarray(::Type{ColorSpec},  𝑑::AbstractVector{String})  = 𝑑
-@inline datadictarray(::Type{ColorSpec},  𝑑::AbstractVector) = datadictelement.(Color, 𝑑)
-@inline function datadictarray(𝑇::Type{<:iSpec},   𝑑::AbstractVector)
-    return speceltype(𝑇) ≡ eltype(𝑑) ? 𝑑 : datadictelement.(speceltype(𝑇), 𝑑)
+datadictarray(::Type{ColorSpec}, @nospecialize(𝑑::AbstractVector{<:AbstractString})) = 𝑑
+datadictarray(::Type{ColorSpec}, @nospecialize(𝑑::AbstractVector)) = datadictelement.(color, 𝑑)
+function datadictarray(𝑇::Type{<:iSpec}, 𝑑::AbstractVector)
+    @nospecialize 𝑇 𝑑
+    e𝑇 = bokehstoragetype(speceltype(𝑇))
+    return e𝑇 ≡ eltype(𝑑) ? 𝑑 : datadictelement.(e𝑇, 𝑑)
 end
+datadictarray(𝑇::Type{NullDistanceSpec}, @nospecialize(𝑑::AbstractVector)) = Float64 ≡ eltype(𝑑) ? 𝑑 : Float64.(𝑑)
+datadictarray(𝑇::Type{NullStringSpec}, @nospecialize(𝑑::AbstractVector))   = datadictarray(StringSpec, 𝑑)
+datadictarray(𝑇::Type{StringSpec}, @nospecialize(𝑑::AbstractVector))       = eltype(𝑑) <: AbstractString ? 𝑑 : string.(𝑑)
 
 for (𝑇1, 𝑇2) ∈ (Dates.AbstractTime => Float64, Int64 => Int32)
-    @eval @inline datadictarray(𝑑::AbstractVector{<:$𝑇1})                              = datadictarray($𝑇2, 𝑑)
-    @eval @inline datadictarray(𝑑::AbstractVector{<:AbstractArray{<:$𝑇1}})             = datadictarray($𝑇2, 𝑑)
-    @eval @inline datadictarray(𝑑::AbstractVector{Union{Missing, T}} where {T <: $𝑇1}) = datadictarray(Float64, 𝑑)
+    @eval datadictarray(@nospecialize(𝑑::AbstractVector{<:$𝑇1}))                             = datadictarray($𝑇2, 𝑑)
+    @eval datadictarray(@nospecialize(𝑑::AbstractVector{<:AbstractArray{<:$𝑇1}}))            = datadictarray($𝑇2, 𝑑)
+    @eval datadictarray(@nospecialize(𝑑::AbstractVector{Union{Missing, T}} where {T <: $𝑇1}))= datadictarray(Float64, 𝑑)
 end
 
 for (𝑇, 𝐹) ∈ (:Missing => :ismissing, :Nothing => :isnothing)
@@ -121,9 +126,9 @@ for (𝑇, 𝐹) ∈ (:Missing => :ismissing, :Nothing => :isnothing)
     end
 end
 
-@inline datadictarray(𝑑::AbstractVector{<:Union{iHasProps, AbstractTypes.ElTypeDataDict...}}) = 𝑑
-@inline datadictarray(𝑑::AbstractVector{<:AbstractArray{<:Union{iHasProps, AbstractTypes.ElTypeDataDict...}}}) = 𝑑
-@inline datadictarray(𝑑::AbstractRange) = datadictarray(collect(𝑑))
+datadictarray(@nospecialize(𝑑::AbstractVector{<:Union{iHasProps, AbstractTypes.ElTypeDataDict...}})) = 𝑑
+datadictarray(@nospecialize(𝑑::AbstractVector{<:AbstractArray{<:Union{iHasProps, AbstractTypes.ElTypeDataDict...}}})) = 𝑑
+datadictarray(@nospecialize(𝑑::AbstractRange)) = datadictarray(collect(𝑑))
 
 bokehstoragetype(::Type{DataDict}) = DataDict
 bokehconvert(::Type{DataDict}, x::DataDict) = copy(x)

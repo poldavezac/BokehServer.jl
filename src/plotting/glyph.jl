@@ -63,7 +63,13 @@ end
 Iterates over `(field, fieltype)` tuples, only selecting `fieldtype <: iSpec` ones.
 """
 function _👻bokehspecs(𝑇::Type{<:Models.iModel})
-    return Iterators.filter(Base.Fix2(<:, Model.iSpec)∘last, Model.bokehfields(𝑇))
+    return (
+        i
+        for i ∈ Model.bokehfields(𝑇)
+        if let j = last(i)
+            (j <: Model.iSpec) || j ≡ Model.NullDistanceSpec || j ≡ Model.NullStringSpec
+        end
+    )
 end
 
 function glyph!(
@@ -110,8 +116,11 @@ function _👻runchecks(rend::Models.GlyphRenderer)
     for name ∈ (:glyph, :muted_glyph, :selection_glyph, :nonselection_glyph, :hover_glyph)
         glyph = getproperty(rend, name)
         (glyph isa Models.iGlyph) || continue
-        for (col, 𝑃) ∈ _👻bokehspecs(typeof(glyph))
-            field = getfield(glyph, col).field
+        for (col, _) ∈ _👻bokehspecs(typeof(glyph))
+            val   = getfield(glyph, col)
+            isnothing(val) && continue
+
+            field = val.field
             ismissing(field) || hascol(field) || push!(errs, "$name.$col = \"$field\"")
         end
     end
@@ -352,7 +361,6 @@ function _👻legend!(fig::Models.Plot, rend::Models.GlyphRenderer, kwa; dotrigg
 
     return rend
 end
-
 end
 
 using .GlyphPlotting: glyph!, glyph
