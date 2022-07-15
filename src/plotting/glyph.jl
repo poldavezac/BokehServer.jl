@@ -12,5 +12,7 @@ end
 using .GlyphPlotting
 
 for 𝐹 ∈ names(GlyphPlotting)
-    @eval export $𝐹
+    if 𝐹 ∉ (:step, :step!, :patch, :patch!)
+        @eval export $𝐹
+    end
 end
