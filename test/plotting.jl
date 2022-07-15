@@ -147,3 +147,47 @@ end
     @nullevents plot.xaxis.major_tick_line_color = nothing
     @test all(isnothing(i.major_tick_line_color) for i ∈ plot.xaxis)
 end
+
+@testset "line stack" begin
+    plt = BokehJL.linestack(; y = ["a", "b"], x = "c", source = Dict("a"=> [1.], "b" => [1.] , "c"=>[1.]))
+    @test length(plt.renderers) ≡ 2
+    @test plt.renderers[1].glyph.y ≡ "a"
+    @test plt.renderers[2].glyph.y.fields.values == ["a", "b"]
+
+    plt = BokehJL.linestack(; x = ["a", "b"], y = "c", source = Dict("a"=> [1.], "b" => [1.] , "c"=>[1.]))
+    @test length(plt.renderers) ≡ 2
+    @test plt.renderers[1].glyph.x ≡ "a"
+    @test plt.renderers[2].glyph.x.fields.values == ["a", "b"]
+end
+
+@testset "bar stack" begin
+    plt = BokehJL.barstack(; y = ["a", "b"], x = "c", source = Dict("a"=> [1.], "b" => [1.] , "c"=>[1.]))
+    @test length(plt.renderers) ≡ 2
+    @test plt.renderers[1].glyph.bottom ≡ 0.
+    @test plt.renderers[1].glyph.top ≡ "a"
+    @test plt.renderers[2].glyph.bottom ≡ "a"
+    @test plt.renderers[2].glyph.top.fields.values == ["a", "b"]
+
+    plt = BokehJL.barstack(; x = ["a", "b"], y = "c", source = Dict("a"=> [1.], "b" => [1.] , "c"=>[1.]))
+    @test length(plt.renderers) ≡ 2
+    @test plt.renderers[1].glyph.left ≡ 0.
+    @test plt.renderers[1].glyph.right ≡ "a"
+    @test plt.renderers[2].glyph.left ≡ "a"
+    @test plt.renderers[2].glyph.right.fields.values == ["a", "b"]
+end
+
+@testset "area stack" begin
+    plt = BokehJL.areastack(; y = ["a", "b"], x = "c", source = Dict("a"=> [1.], "b" => [1.] , "c"=>[1.]))
+    @test length(plt.renderers) ≡ 2
+    @test plt.renderers[1].glyph.y1 ≡ 0.
+    @test plt.renderers[1].glyph.y2 ≡ "a"
+    @test plt.renderers[2].glyph.y1 ≡ "a"
+    @test plt.renderers[2].glyph.y2.fields.values == ["a", "b"]
+
+    plt = BokehJL.areastack(; x = ["a", "b"], y = "c", source = Dict("a"=> [1.], "b" => [1.] , "c"=>[1.]))
+    @test length(plt.renderers) ≡ 2
+    @test plt.renderers[1].glyph.x1 ≡ 0.
+    @test plt.renderers[1].glyph.x2 ≡ "a"
+    @test plt.renderers[2].glyph.x1 ≡ "a"
+    @test plt.renderers[2].glyph.x2.fields.values == ["a", "b"]
+end
