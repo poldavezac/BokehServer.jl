@@ -13,6 +13,7 @@ include("plotting/serve.jl")
 include("plotting/layout.jl")
 include("plotting/transform.jl")
 include("plotting/stack.jl")
+include("plotting/boxplot.jl")
 end
 
 using .Plotting

@@ -191,3 +191,17 @@ end
     @test plt.renderers[2].glyph.x1 ≡ "a"
     @test plt.renderers[2].glyph.x2.fields.values == ["a", "b"]
 end
+
+@testset "boxplot" begin
+    labels = [j == 1 ? "x" : "y" for j = 1:2 for _ = 1:(j*10)]
+    vals   = [(randn(Float64, 10) .+ 10.)..., (randn(Float64, 20) .- 10.)...]
+    x = BokehJL.Plotting.boxplotitems(labels, vals)
+    @test x[1].key == "y"
+    @test x[1].quantiles[2]  < 0.
+    @test x[2].key == "x"
+    @test x[2].quantiles[2]  > 0.
+
+    plot = BokehJL.boxplot(labels, vals)
+    @test plot.x_range isa BokehJL.Models.FactorRange
+    @test length(plot.renderers) == 4
+end
