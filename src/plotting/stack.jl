@@ -53,7 +53,7 @@ const _STACK_ARG = Union{AbstractVector{<:AbstractString}, Tuple{Vararg{Abstract
 
 function linestack!(plot::Models.Plot; x, y, kw...)
     return if x isa _STACK_ARG && y isa _STACK_ARG
-        throw(ErrorException("Only one of x or y may be a list of stackers"))
+        throw(ErrorException("Only one of x or y may be a list of fields"))
     elseif y isa _STACK_ARG
         Models.GlyphRenderer[Plotting.line!(plot; x, i...) for i ∈ _stack(kw, y, :y)]
     elseif x isa _STACK_ARG
@@ -64,22 +64,26 @@ function linestack!(plot::Models.Plot; x, y, kw...)
 end
 
 function areastack!(plot::Models.Plot; x, y, kw...)
-    return if !(x isa _STACK_ARG) && (y isa _STACK_ARG)
+    return if x isa _STACK_ARG && y isa _STACK_ARG
+        throw(ErrorException("Only one of x or y may be a list of fields"))
+    elseif y isa _STACK_ARG
         Models.GlyphRenderer[Plotting.varea!(plot; x, i...) for i ∈ _stack(kw, y, :y1, :y2)]
-    elseif (x isa _STACK_ARG) && !(y isa _STACK_ARG)
+    elseif x isa _STACK_ARG
         Models.GlyphRenderer[Plotting.harea!(plot; y, i...) for i ∈ _stack(kw, x, :x1, :x2)]
     else
-        throw(ErrorException("One and only one of x or y may be a list of stackers"))
+        Models.GlyphRenderer[Plotting.varea!(plot; x, y1 = 0., y2 = y, i...)]
     end
 end
 
 function barstack!(plot::Models.Plot; x, y, kw...)
-    return if !(x isa _STACK_ARG) && (y isa _STACK_ARG)
+    return if x isa _STACK_ARG && y isa _STACK_ARG
+        throw(ErrorException("Only one of x or y may be a list of stackers"))
+    elseif y isa _STACK_ARG
         Models.GlyphRenderer[Plotting.vbar!(plot; x, i...) for i ∈ _stack(kw, y, :bottom, :top)]
-    elseif (x isa _STACK_ARG) && !(y isa _STACK_ARG)
+    elseif x isa _STACK_ARG
         Models.GlyphRenderer[Plotting.hbar!(plot; y, i...) for i ∈ _stack(kw, x, :left, :right)]
     else
-        throw(ErrorException("One and only one of x or y may be a list of stackers"))
+        Models.GlyphRenderer[Plotting.vbar!(plot; bottom = 0., top = y, x, i...)]
     end
 end
 
@@ -88,6 +92,41 @@ for 𝐹 ∈ (:linestack, :barstack, :areastack)
         plot = Plotting.figure(; (i for i ∈ kw if hasfield(Models.FigureOptions, first(i)))...)
         $(Symbol("$(𝐹)!"))(plot; (i for i ∈ kw if !hasfield(Models.FigureOptions, first(i)))..., dotrigger = false)
         plot
+    end
+
+    let doc = """ 
+        Generate multiple `$("$𝐹"[1:end-5])` renderers for levels stacked either
+        left to right or bottom to top.
+
+        The user must provide values for both `x` and `y`. Only one of these may be
+        a list of fields. 
+
+        ## Example
+
+        ```julia
+        plot = $𝐹(; x = ["a", "b", "c"], y = 0, source = Dict("a"=>[1,2], "b" => [3,4], "c"=>[5, 6]))
+        @assert plot isa BokehJL.Models.Plot
+        ```
+        """
+        eval(:(@doc($doc, $𝐹)))
+    end
+
+    let doc = """ 
+        Generate multiple `$("$𝐹"[1:end-5])` renderers for levels stacked either
+        left to right or bottom to top.
+
+        The user must provide values for both `x` and `y`. Only one of these may be
+        a list of fields.
+
+        ## Example
+
+        ```julia
+        plot = BokehJL.figure()
+        renderers = $(𝐹)!(plot; x = ["a", "b", "c"], y = 0, source = Dict("a"=>[1,2], "b" => [3,4], "c"=>[5, 6]))
+        @assert renderers isa Vector{BokehJL.Models.GlyphRenderer}
+        ```
+        """
+        eval(:(@doc($(Symbol("$(𝐹)!")))))
     end
 end
 end
