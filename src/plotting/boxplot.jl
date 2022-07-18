@@ -89,7 +89,7 @@ end
         iqr         :: Float64         = 1.5,
         bar      = (; line_color = :black, fill_color = :lightskyblue),
         segments = (; line_color = :black),
-        markers  = (; marker = :dash, color = :black),
+        borders  = (; marker = :dash, color = :black),
         aberrant = (; marker = :circle, color = :lightskyblue),
     )
 
@@ -100,7 +100,7 @@ end
         sortby      :: Function        = count,
         bar      = (; line_color = :black, fill_color = :lightskyblue),
         segments = (; line_color = :black),
-        markers  = (; marker = :dash, color = :black),
+        borders  = (; marker = :dash, color = :black),
         aberrant = (; marker = :circle, color = :lightskyblue),
     )
 
@@ -118,7 +118,7 @@ function boxplot!(
         direction :: Symbol   = :vertical,
         bar                   = (; line_color = :black, fill_color = :lightskyblue),
         segments              = (; line_color = :black),
-        markers               = (; marker     = :dash, color   = :black),
+        borders               = (; marker     = :dash, color   = :black),
         aberrant              = (; marker     = :circle, color = :lightskyblue),
         kw...
 )
@@ -140,7 +140,7 @@ function boxplot!(
         )
         push!(
             results,
-            if direction ≡ :y
+            if direction ≡ :vertical
                 vbar!(
                     plot; kwargs(:VBar, bar)...,
                     source, x = "key", bottom = "q1", top = "q3", width = "barwidth"
@@ -159,7 +159,7 @@ function boxplot!(
         results,
         segment!(plot;
             kwargs(:Segment, segments)...,
-            (if direction ≡ :y
+            (if direction ≡ :vertical
                 (; x0  = "key", x1 = "key", y0 = "iqr", y1 = "q")
             else
                 (; y0  = "key", y1 = "key", x0 = "iqr", x1 = "q")
@@ -173,24 +173,33 @@ function boxplot!(
     )
 
     # positions iqr1, median, iqr2
-    isnothing(markers) || push!(
-        results,
-        scatter!(plot;
-            kwargs(:Scatter, markers)...,
-            (direction ≡ :y ? (; x  = "key", y = "value") : (; y  = "value", x = "key"))...,
-            source = Dict(
-                "key"   => repeat([i.key for i ∈ boxes]; inner = 3),
-                "value" => [j ≡ 3 ? i.quantiles[2] : i.iqr[j] for i ∈ boxes for j ∈ 1:3],
-            ),
+    isnothing(borders) || let source = Dict(
+            "key"      => repeat([i.key for i ∈ boxes], inner = 3),
+            "position" => [j ≡ 3 ? i.quantiles[2] : i.iqr[j] for i ∈ boxes for j ∈ 1:3],
+            "barwidth" => [i.barwidth * (j≡ 3 ? 1. : .5) for i ∈ boxes for j ∈ 1:3]
         )
-    )
-          
+        push!(
+            results,
+            if direction ≡ :vertical
+                vbar!(
+                    plot; kwargs(:VBar, borders)...,
+                    source, x = "key", bottom = "position", top = "position", width = "barwidth"
+                )
+            else
+                hbar!(
+                    plot; kwargs(:HBar, borders)...,
+                    source, y = "key", left = "position", right = "position", width = "barwidth"
+                )
+            end
+        )
+    end
+
     # values beyond the [iqr1, iqr2] range
     isnothing(aberrant) || push!(
         results,
         scatter!(plot;
             kwargs(:Scatter, aberrant)...,
-            (direction ≡ :y ? (; x  = "key", y = "value") : (; y  = "value", x = "key"))...,
+            (direction ≡ :vertical ? (; x  = "key", y = "value") : (; y  = "value", x = "key"))...,
             source = Dict(
                 "key"   => [i.key for i ∈ boxes for _ ∈ i.aberrant],
                 "value" => [j     for i ∈ boxes for j ∈ i.aberrant],
