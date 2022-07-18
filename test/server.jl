@@ -187,3 +187,4 @@ end
 @testset "scatter"                    begin run_example("scatter") end
 @testset "selection_histogram"        begin run_example("selection_histogram") end
 @testset "burtin"                     begin run_example("burtin") end
+@testset "boxplot"                    begin run_example("boxplot") end
