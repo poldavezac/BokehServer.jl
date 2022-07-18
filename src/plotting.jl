@@ -14,6 +14,7 @@ include("plotting/layout.jl")
 include("plotting/transform.jl")
 include("plotting/stack.jl")
 include("plotting/boxplot.jl")
+include("plotting/graph.jl")
 end
 
 using .Plotting
