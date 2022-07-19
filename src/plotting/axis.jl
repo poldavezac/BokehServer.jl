@@ -11,11 +11,11 @@ function Model.bokehconvert(::Type{Models.iRange}, ν::Union{Tuple{<:Number, <:N
     Models.Range1d(; start = first(ν), finish = last(ν))
 end
 function Model.bokehconvert(::Type{Models.iRange}, ν::Symbol)
-    ν ≡ :user ? Models.Range1d() : ν ≡ :factor ? Models.FactorRange() : Models.DataRange1d()
+    ν ≡ :user ? Models.Range1d() : ν ∈ (:categorical, :factor) ? Models.FactorRange() : Models.DataRange1d()
 end
 
 function Model.bokehconvert(::Type{Models.iScale}, ν::Symbol)
-    return ν ≡ :log ? Models.LogScale() : ν ≡ :categorical ? Models.CategoricalScale() : Models.LinearScale()
+    return ν ≡ :log ? Models.LogScale() : ν ∈ (:categorical, :factor) ? Models.CategoricalScale() : Models.LinearScale()
 end
 
 """

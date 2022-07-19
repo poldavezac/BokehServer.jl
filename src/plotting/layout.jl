@@ -9,6 +9,14 @@ const LayoutPlotEntry = LayoutEntry{Models.iPlot}
 
 Base.adjoint(x::Models.iLayoutDOM) = x
 
+function layout(items::AbstractArray; kwa...)
+    entries  = let children = filter!(!isnothing∘first, _👻flatten(items).items)
+        T = all(i.layout isa Models.iPlot for i ∈ children) ? LayoutPlotEntry : LayoutDOMEntry
+        T[(i.layout, i.r0, i.c0, i.r1 - i.r0, i.c1 - i.c0) for i ∈ children]
+    end
+    return layout(entries; kwa...)
+end
+
 """
     layout(
         children::AbstractVector{<:Models.iLayoutDOM};
@@ -16,6 +24,8 @@ Base.adjoint(x::Models.iLayoutDOM) = x
         ncols :: Union{Int, Nothing} = nothing,
         kwa...
     )
+    layout(children::AbstractArray; kwa...)
+
 Conveniently create a grid of layoutable objects.
 
 Grids are created by using ``GridBox`` model. This gives the most control over
@@ -39,9 +49,8 @@ Supported patterns:
 
    ** warning ** The adjoint operator `'` is recursive. A non-recursive code
    would be `[p1, permutedims([[p2, p3], p4])]`.
-   
 
-3. Flat list of layoutable objects. This requires ``nrows`` and/or ``ncols`` to
+2. Flat list of layoutable objects. This requires ``nrows`` and/or ``ncols`` to
    be set. The input list will be rearranged into a 2D array accordingly. One
    can use ``None`` for padding purpose.
 
@@ -53,6 +62,7 @@ Supported patterns:
        (p4, 1, 1, 1, 1),
    ])
 
+Keywords are the same as for `layout(children::AbstractVector{<:LayoutEntry})`
 """
 function layout(
         children::AbstractVector{<:Union{Nothing, Models.iLayoutDOM}};
@@ -71,15 +81,6 @@ end
 
 layout(child::Models.iLayoutDOM) = child
 
-function layout(items::AbstractArray; kwa...)
-    entries  = let children = filter!(!isnothing∘first, _👻flatten(items).items)
-        T = all(i.layout isa Models.iPlot for i ∈ children) ? LayoutPlotEntry : LayoutDOMEntry
-        T[(i.layout, i.r0, i.c0, i.r1 - i.r0, i.c1 - i.c0) for i ∈ children]
-    end
-    return layout(entries; kwa...)
-end
-
-
 """
     layout(
         children         :: AbstractVector{<:LayoutPlotEntry};
@@ -90,7 +91,7 @@ end
         toolbar_options  :: Any                            = (;)
     )
 
-Create a plot layout.
+Create a layout of plots. Toolbars will be merged by default.
 
 Keywords:
 
@@ -138,7 +139,7 @@ end
         height      :: Union{Nothing, Int}            = nothing,
     )
 
-create a layout
+Create a layout of any layoutable object (plots, widgets...).
 
 Keywords:
 

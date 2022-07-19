@@ -126,7 +126,7 @@ for 𝐹 ∈ (:linestack, :barstack, :areastack)
         @assert renderers isa Vector{BokehJL.Models.GlyphRenderer}
         ```
         """
-        eval(:(@doc($(Symbol("$(𝐹)!")))))
+        eval(:(@doc($doc, $(Symbol("$(𝐹)!")))))
     end
 end
 end
