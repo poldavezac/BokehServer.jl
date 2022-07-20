@@ -15,18 +15,27 @@ end
 
 # ╔═╡ cd3cc468-58c3-4315-8e0b-880734128707
 begin
-	FIG = BokehJL.line(; x = 1:10, y = 1:10)
-	DATA = FIG.renderers[1].data_source
-	BTN = let btn = BokehJL.Models.Button(; label = "add a data point")
-		BokehJL.onchange(btn) do evt::BokehJL.Models.Actions.ButtonClick
-			BokehJL.stream!(
-				DATA,
-				Dict("x" => [length(DATA.data["x"])+1], "y" => [rand(1:10)])
-			)
-		end
-		btn
-	end
-	BokehJL.layout([FIG, BTN])
+    "A simple plot"
+    FIG = BokehJL.line(; x = 1:10, y = 1:10)
+
+    "The data source used by the plot"
+    DATA = FIG.renderers[1].data_source
+
+    "A button which adds a datapoint when clicked"
+    BTN = let btn = BokehJL.Models.Button(; label = "add a data point")
+
+        # Note that the `onchange` call only reacts to `ButtonClick` events
+        BokehJL.onchange(btn) do evt::BokehJL.Models.Actions.ButtonClick
+            BokehJL.stream!(
+                DATA,
+                Dict("x" => [length(DATA.data["x"])+1], "y" => [rand(1:10)])
+            )
+        end
+        btn
+    end
+
+    "A display with both the plot and the button"
+    BokehJL.layout([FIG, BTN])
 end
 
 # ╔═╡ b2ea7ada-53bb-44c9-9123-9d5ef1ab59b2

@@ -27,6 +27,42 @@ BokehJL.Plotting.serve() do
 end
 ```
 
+** Note ** Within a notebook, one needs a cell to return `BokehJL.Embeddings.notebook()`
+for plots to be displayed and typescript <-> julia synchronisation to occur:
+
+In the first cell, do:
+
+```
+using BokehJL
+BokehJL.Embeddings.notebook(port = 7788)
+```
+
+Then another can contain
+
+```julia
+"A simple plot"
+FIG = BokehJL.line(; x = 1:10, y = 1:10)
+
+"The data source used by the plot"
+DATA = FIG.renderers[1].data_source
+
+"A button which adds a datapoint when clicked"
+BTN = let btn = BokehJL.Models.Button(; label = "add a data point")
+
+    # Note that the `onchange` call only reacts to `ButtonClick` events
+    BokehJL.onchange(btn) do evt::BokehJL.Models.Actions.ButtonClick
+        BokehJL.stream!(
+            DATA,
+            Dict("x" => [length(DATA.data["x"])+1], "y" => [rand(1:10)])
+        )
+    end
+    btn
+end
+
+"A display with both the plot and the button"
+BokehJL.layout([FIG, BTN])
+```
+
 ## *bokeh* / *BokehJL* differences
 
 * This package provdes all models already existing in *bokeh* and *bokehjs*.
