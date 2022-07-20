@@ -35,36 +35,32 @@ Using the library requires two initial lines:
 
 ```julia
 using BokehJL # import our library
-BokehJL.Embeddings.notebook()  # provide javascript headers to your browser. 
+# provide javascript headers to your browser, default port is 5006
+BokehJL.Embeddings.notebook(; port = 4321)
 ```
+
+!!! note "Initializing a notebook environment"
+
+    We need the `notebook` call to be the last in the cell! This is so
+    the *bokehjs* library is added to the browser page.
 
 Any layout or plot returned by a cell is then displayed in the notebook.
-Changes occurring in julia in other cells will affect this display:
+Changes occurring in julia in other cells will affect this display.
 
-```julia
-begin
-# display a time series, with default indices on the `x` axis.
-# keep a reference to `plot` for additional changes
+The following will display a time series, with default indices on the `x` axis.
+
+```
 plot = BokehJL.line(; y = randn(Float64, 100) .+ (1:100))
-plot
-end
 ```
 
+We can update the previous cell from another:
+
 ```
-begin
-# update the time series in another cell
 push!(
     plot.renderers[1].data_source,
     Dict("y" => randn(Float64, 100) .+ (100:-1:1), "x" => 101:200)
-)
-nothing
-end
+);
 ```
-
-**Warning** We need the second line to be the last in the cell! This is so the *bokehjs*
-library is added to the browser page. In particular, `Jupyter` will only succeed 
-the second time a plot is created if we forget this line.
-
 
 In the background, a *websocket* server is created which will synchronize your
 *BokehJL* objects in *Julia* with their *typescript* counterparts. It will also
@@ -82,11 +78,10 @@ BokehJL.Plotting.serve() do
 end
 ```
 
-** Warning ** For simple cases, *BokehJL* objects should be created within the
-`do ... end` scope. This is because of our event mechanism which requires
-adding an event manager in the task's local storage. This is implicitely done
-for the user within this scope, although other strategies are available to
-advanced users.
+!!! note "A simple server"
+
+    *BokehJL* objects should be created strictly within the `do ... end` scope. This is
+    because of the event mechanism is inilialized only within this scope.
 
 ## Available plots
 
@@ -230,7 +225,7 @@ BokehJL.vbar!
 BokehJL.wedge!
 ```
 
-### Layouts
+## Layouts
 
 Multiple plots can be displayed together using:
 
@@ -275,6 +270,186 @@ plot2 = BokehJL.scatter(;
     x_range = plot1.x_range
 )
 BokehJL.layout([plot1, plot2])
+```
+
+## The event mechanism
+
+As with *python bokeh* events can be both triggered from and dealt with both in
+*typescript* and *Julia*.
+
+### Creating callbacks in *Julia*
+
+Julia event callbacks are created using `BokehJL.onchange`:
+
+```@docs
+BokehJL.onchange
+```
+
+As can be seen in the examples:
+
+1. Events are triggered on `Document` or `Model` instances.
+2. One can use event types in the signature to filter which events
+should trigger a given callback.
+
+Document event types are:
+
+```@docs
+BokehJL.RootAddedEvent
+```
+
+```@docs
+BokehJL.RootRemovedEvent
+```
+
+```@docs
+BokehJL.TitleChangedEvent
+```
+
+Model event types are:
+
+```@docs
+BokehJL.ModelChangedEvent
+```
+
+```@docs
+BokehJL.ColumnsPatchedEvent
+```
+
+```@docs
+BokehJL.ColumnsStreamedEvent
+```
+
+```@docs
+BokehJL.ColumnDataChangedEvent
+```
+
+UI event types are:
+
+```@docs
+BokehJL.DocumentReady
+```
+
+```@docs
+BokehJL.ButtonClick
+```
+
+```@docs
+BokehJL.MenuItemClick
+```
+
+```@docs
+BokehJL.LODStart
+```
+
+```@docs
+BokehJL.LODEnd
+```
+
+```@docs
+BokehJL.RangesUpdate
+```
+
+```@docs
+BokehJL.SelectionGeometry
+```
+
+```@docs
+BokehJL.Reset
+```
+
+```@docs
+BokehJL.Tap
+```
+
+```@docs
+BokehJL.DoubleTap
+```
+
+```@docs
+BokehJL.Press
+```
+
+```@docs
+BokehJL.PressUp
+```
+
+```@docs
+BokehJL.MouseEnter
+```
+
+```@docs
+BokehJL.MouseLeave
+```
+
+```@docs
+BokehJL.MouseMove
+```
+
+```@docs
+BokehJL.PanEnd
+```
+
+```@docs
+BokehJL.PanStart
+```
+
+```@docs
+BokehJL.PinchStart
+```
+
+```@docs
+BokehJL.Rotate
+```
+
+```@docs
+BokehJL.RotateStart
+```
+
+```@docs
+BokehJL.RotateEnd
+```
+
+```@docs
+BokehJL.MouseWheel
+```
+
+```@docs
+BokehJL.Pan
+```
+
+```@docs
+BokehJL.Pinch
+```
+
+### Details
+
+Events can only be triggered if an event manager has been provided. This is normally done automatically,
+although, as in *python bokeh*, only is specific cases:
+
+* when initializing a new document
+* when responding to a *typescript* message
+* when in a `Pluto` or `Jupyter` environment, for cells coming after a call to `BokehJL.Embeddings.notebook()`.
+
+As opposed to *python julia*, event managers collect all events before
+triggering callback and finally synchronizing with *typescript*. Some events
+might disappear at any point during collection or callbacks, say if a document
+root is mutated then simply removed from the document.
+
+The collection is done thanks to a task-specific manager, hidden inside the `task_local_storage()` dictionnary.
+
+Advanced users could change the manager behavior by creating custom
+`BokehJL.iServer.Application` types, overloading
+`Server.eventlist(::iApplication)`, and providing instances of these
+applications to the server. An example is the
+`BokehJL.Embeddings.Notebooks.NotebookApp` which deals with the specifics of
+working in `Pluto` or `Jupyter` environment.
+
+## Themes
+
+This is not tested sufficiently.
+
+```@autodocs
+Modules = [BokehJL.Themes]
 ```
 
 ## The package architecture

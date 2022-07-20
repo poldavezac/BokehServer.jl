@@ -31,6 +31,9 @@ maintain high interactive rates. This is referred to as interactive
 Level-of-Detail (LOD) mode. This event fires whenever a LOD mode
 has just begun.
 
+Fields:
+
+* `model::iPlot`: the plot affected by the event
 """
 @Base.kwdef struct LODStart <: iPlotActionEvent
     model::iPlot
@@ -44,6 +47,10 @@ maintain high interactive rates. This is referred to as interactive
 Level-of-Detail (LOD) mode. This event fires whenever a LOD mode
 has just ended.
 
+Fields:
+
+* `model::iPlot`: the plot affected by the event
+
 """
 @Base.kwdef struct LODEnd <: iPlotActionEvent
     model::iPlot
@@ -51,11 +58,13 @@ end
 
 """ Announce combined range updates in a single event.
 
-Attributes:
-    x0 (float) : start x-coordinate for the default x-range
-    x1 (float) : end x-coordinate for the default x-range
-    y0 (float) : start x-coordinate for the default y-range
-    y1 (float) : end y-coordinate for the default x-range
+Fields:
+
+* `model::iPlot`: the plot affected by the event
+* `x0::Float64`: start x-coordinate for the default x-range
+* `x1::Float64`: end x-coordinate for the default x-range
+* `y0::Float64`: start x-coordinate for the default y-range
+* `y1::Float64`: end y-coordinate for the default x-range
 
 Callbacks may be added to range ``start`` and ``end`` properties to respond
 to range changes, but this can result in multiple callbacks being invoked
@@ -74,11 +83,13 @@ end
 
 """ Announce the coordinates of a selection event on a plot.
 
-Attributes:
-    geometry (dict) : a dictionary containing the coordinates of the
-        selection event.
-    final (bool) : whether the selection event is the last selection event
-        in the case of selections on every mousemove.
+Fields:
+
+* `model::iModel`: the model affected by the event
+* `geometry::DICT`: a dictionary containing the coordinates of the selection
+event.
+* `final::BOOL`: whether the selection event is the last selection event in the
+case of selections on every mousemove.
 
 """
 struct SelectionGeometry <: iPlotActionEvent
@@ -87,8 +98,8 @@ struct SelectionGeometry <: iPlotActionEvent
     final    :: Bool
 end
 
-function Selectiongeometry(; model :: iModel, geometry = (;), final :: Bool = true)
-    Selectiongeometry(
+function SelectionGeometry(; model :: iModel, geometry = (;), final :: Bool = true)
+    SelectionGeometry(
         model,
         (; (Symbol(i)=>j for (i,j) ∈ geometry)...),
         final
@@ -102,11 +113,13 @@ end
 
 """ Base class for UI events associated with a specific (x,y) point.
 
-Attributes:
-    sx (float) : x-coordinate of the event in *screen* space
-    sy (float) : y-coordinate of the event in *screen* space
-    x (float) : x-coordinate of the event in *data* space
-    y (float) : y-coordinate of the event in *data* space
+Fields:
+
+* `model::iPlot`: the plot affected by the event
+* `sx::Float64`: x-coordinate of the event in *screen* space
+* `sy::Float64`: y-coordinate of the event in *screen* space
+* `x::Float64`: x-coordinate of the event in *data* space
+* `y::Float64`: y-coordinate of the event in *data* space
 
 Note that data space coordinates are relative to the default range, not
 any extra ranges, and the the screen space origin is at the top left of
@@ -126,21 +139,32 @@ for cls ∈ (
         x  :: Union{Missing, Float64} = missing
         y  :: Union{Missing, Float64} = missing
     end
+
+    eval(:(@doc($(""" Announce a `$cls` event on a BokehJL plot.
+
+    Fields:
+
+    * `model::iPlot`: the plot affected by the event
+    * `sx::Float64`: x-coordinate of the event in *screen* space
+    * `sy::Float64`: y-coordinate of the event in *screen* space
+    * `x::Float64`: x-coordinate of the event in *data* space
+    * `y::Float64`: y-coordinate of the event in *data* space
+    """), $cls)))
 end
 
 """ Announce a mouse wheel event on a BokehJL plot.
 
-Attributes:
-    delta (float) : the (signed) scroll speed
-    sx (float) : x-coordinate of the event in *screen* space
-    sy (float) : y-coordinate of the event in *screen* space
-    x (float) : x-coordinate of the event in *data* space
-    y (float) : y-coordinate of the event in *data* space
+Fields:
+
+* `model::iPlot`: the plot affected by the event
+* `delta::Float64`: the (signed) scroll speed
+* `sx::Float64`: x-coordinate of the event in *screen* space
+* `sy::Float64`: y-coordinate of the event in *screen* space
+* `x::Float64`: x-coordinate of the event in *data* space
+* `y::Float64`: y-coordinate of the event in *data* space
 
 
-.. note::
-    By default, BokehJL plots do not prevent default scroll events unless a
-    ``WheelZoomTool`` or ``WheelPanTool`` is active. This may change in
+*Note* By default, BokehJL plots do not prevent default scroll events unless a    ``WheelZoomTool`` or ``WheelPanTool`` is active. This may change in
     future releases.
 
 """
@@ -155,15 +179,16 @@ end
 
 """ Announce a pan event on a BokehJL plot.
 
-Attributes:
-    delta_x (float) : the amount of scroll in the x direction
-    delta_y (float) : the amount of scroll in the y direction
-    direction (float) : the direction of scroll (1 or -1)
-    sx (float) : x-coordinate of the event in *screen* space
-    sy (float) : y-coordinate of the event in *screen* space
-    x (float) : x-coordinate of the event in *data* space
-    y (float) : y-coordinate of the event in *data* space
+Fields:
 
+* `model::iPlot`: the plot affected by the event
+* `delta_x::Float64`: the amount of scroll in the x direction
+* `delta_y::Float64`: the amount of scroll in the y direction
+* `direction::Float64`: the direction of scroll (1 or -1)
+* `sx::Float64`: x-coordinate of the event in *screen* space
+* `sy::Float64`: y-coordinate of the event in *screen* space
+* `x::Float64`: x-coordinate of the event in *data* space
+* `y::Float64`: y-coordinate of the event in *data* space
 """
 @Base.kwdef struct Pan <: iPointEvent
     model     :: iPlot
@@ -178,16 +203,16 @@ end
 
 """ Announce a pinch event on a BokehJL plot.
 
-Attributes:
-    scale (float) : the (signed) amount of scaling
-    sx (float) : x-coordinate of the event in *screen* space
-    sy (float) : y-coordinate of the event in *screen* space
-    x (float) : x-coordinate of the event in *data* space
-    y (float) : y-coordinate of the event in *data* space
+Fields:
 
-.. note::
-    This event is only applicable for touch-enabled devices.
+* `model::iPlot`: the plot affected by the event
+* `scale::Float64`: the (signed) amount of scaling
+* `sx::Float64`: x-coordinate of the event in *screen* space
+* `sy::Float64`: y-coordinate of the event in *screen* space
+* `x::Float64`: x-coordinate of the event in *data* space
+* `y::Float64`: y-coordinate of the event in *data* space
 
+*Note* This event is only applicable for touch-enabled devices.
 """
 @Base.kwdef struct Pinch <: iPointEvent
     model     :: iPlot
@@ -256,5 +281,13 @@ function PatchDocReceive.apply(::Val{:MessageSent}, 𝐷::iDocument, 𝐼::Dict{
     end
 end
 
+export DocumentReady, ButtonClick, MenuItemClick, LODStart, LODEnd, RangesUpdate, SelectionGeometry,
+       Reset, Tap, DoubleTap, Press, PressUp, MouseEnter, MouseLeave, MouseMove,
+       PanEnd, PanStart, PinchStart, Rotate, RotateStart, RotateEnd, MouseWheel, Pan, Pinch
 end
+
 using .Actions
+
+export DocumentReady, ButtonClick, MenuItemClick, LODStart, LODEnd, RangesUpdate, SelectionGeometry,
+       Reset, Tap, DoubleTap, Press, PressUp, MouseEnter, MouseLeave, MouseMove,
+       PanEnd, PanStart, PinchStart, Rotate, RotateStart, RotateEnd, MouseWheel, Pan, Pinch

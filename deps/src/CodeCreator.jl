@@ -89,6 +89,7 @@ function structcode(io::IO, name::String, parent; adddoc :: Symbol = :none)
     end
         
     println(io, "end")
+    println(io, "export $(structname(name))")
     structcode_glyphargs(io, name)
 end
 
@@ -107,6 +108,7 @@ function createmainfile(io::IO, deplist)
     println(io, "include(\"models/figureoptions.jl\")")
     println(io, "include(\"models/specifics.jl\")")
     println(io, "end")
+    println(io, "using .Models")
 end
 
 function createcode(; adddoc ::Symbol = :none)

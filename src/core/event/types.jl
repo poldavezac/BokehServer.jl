@@ -10,7 +10,7 @@ abstract type iDataSourceEvent  <: iDocModelEvent   end
 
 macro _𝑚_event(code)
     quote
-        struct $(code.args[2])
+        @Base.__doc__ struct $(code.args[2])
             model :: iModel
             attr  :: Symbol
             $(code.args[3].args...)
@@ -18,32 +18,104 @@ macro _𝑚_event(code)
     end
 end
 
+
+"""
+Event triggered by a mutated field in an `iHasProps` instance.
+
+Fields:
+
+* `model::iModel`: the mutated instance
+* `attr::Symbol`: the mutated field name
+* `old::Any`: the previous field value
+* `new::Any`: the currnet field value
+
+Supertypes: ModelChangedEvent <: iDocModelEvent <: iEvent
+"""
 @_𝑚_event struct ModelChangedEvent <: iDocModelEvent
     old :: Any
     new :: Any
 end
 
+"""
+Event triggered by a calling `BokehJL.update!` on a `BokehJL.Models.ColumnDataSource`,
+i.e, by adding *columns* to the `ColumnDataSource`.
+
+Fields:
+
+* `model::iModel`: the mutated instance
+* `attr::Symbol`: the mutated field name (always `:data`)
+* `data::DataDict`: columns added to the `ColumnDataSource`
+
+Supertypes: ColumnDataChangedEvent <: iDataSourceEvent <: iDocModelEvent <: iEvent
+"""
 @_𝑚_event struct ColumnDataChangedEvent <: iDataSourceEvent
     data :: DataDict
 end
 
+"""
+Event triggered by a calling `BokehJL.stream!` on a `BokehJL.Models.ColumnDataSource`,
+i.e, by adding *rows* to the `ColumnDataSource`.
+
+Fields:
+
+* `model::iModel`: the mutated instance
+* `attr::Symbol`: the mutated field name (always `:data`)
+* `data::DataDict`: columns added to the `ColumnDataSource`
+* `rollover::Union{Nothing, Int}`: the rollover which was applied
+
+Supertypes: ColumnsStreamedEvent <: iDataSourceEvent <: iDocModelEvent <: iEvent
+"""
 @_𝑚_event struct ColumnsStreamedEvent <: iDataSourceEvent
     data     :: DataDict
     rollover :: Union{Nothing, Int}
 end
 
+"""
+Event triggered by a calling `BokehJL.patch!` on a `BokehJL.Models.ColumnDataSource`,
+i.e, by mutating parts of the data in a the `ColumnDataSource`.
+
+Fields:
+
+* `model::iModel`: the mutated instance
+* `attr::Symbol`: the mutated field name (always `:data`)
+* `patches::Dict{String, Vector{Pair}}`: the patches applied
+
+Supertypes: ColumnsPatchedEvent <: iDataSourceEvent <: iDocModelEvent <: iEvent
+"""
 @_𝑚_event struct ColumnsPatchedEvent <: iDataSourceEvent
     patches :: Dict{String, Vector{Pair}}
 end
 
-for cls ∈ (:RootAddedEvent, :RootRemovedEvent)
+for (cls, action) ∈ (:RootAddedEvent => "added", :RootRemovedEvent => "removed")
     @eval struct $cls <: iDocRootEvent
         doc   :: iDocument
         root  :: iModel
         index :: Int64
     end
+
+    eval(:(@doc($("""
+    Event triggered on a `BokehJL.Document` when a root is $action to it.
+
+    Fields:
+
+    * `doc::iDocument`: the mutated document
+    * `root::iModel`: the root $action to the document
+    * `index::Int`: the root index in the list of roots.
+
+    Supertypes: $cls <: iDocRootEvent <: iDocEvent <: iEvent
+    """), $cls)))
 end
 
+"""
+Event triggered on a `BokehJL.Document` when the HTML document title is changed.
+
+Fields:
+
+* `doc::iDocument`: the mutated document
+* `title::String`: the new title
+
+Supertypes: TitleChangedEvent <: iDocEvent <: iEvent
+"""
 struct TitleChangedEvent <: iDocEvent
     doc   :: iDocument
     title :: String

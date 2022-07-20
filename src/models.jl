@@ -257,3 +257,4 @@ include("models/domvalueref.jl")
 include("models/figureoptions.jl")
 include("models/specifics.jl")
 end
+using .Models
