@@ -8,3 +8,4 @@
 
     swatch :: Bool = true
 end
+export DOMColorRef

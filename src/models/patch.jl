@@ -36,4 +36,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export Patch
 glyphargs(::Type{Patch}) = (:x, :y)

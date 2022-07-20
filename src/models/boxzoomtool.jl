@@ -12,3 +12,4 @@
 
     overlay :: iBoxAnnotation = BoxAnnotation()
 end
+export BoxZoomTool

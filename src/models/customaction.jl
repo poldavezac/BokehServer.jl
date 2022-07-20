@@ -8,3 +8,4 @@
 
     icon :: Model.Image
 end
+export CustomAction

@@ -28,4 +28,5 @@
 
     y1 :: Model.NumberSpec = "y1"
 end
+export Quadratic
 glyphargs(::Type{Quadratic}) = (:x0, :y0, :x1, :y1, :cx, :cy)

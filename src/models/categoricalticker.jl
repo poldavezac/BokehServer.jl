@@ -2,3 +2,4 @@
 
 @model mutable struct CategoricalTicker <: iCategoricalTicker
 end
+export CategoricalTicker

@@ -2,3 +2,4 @@
 
 @model mutable struct NodesAndLinkedEdges <: iNodesAndLinkedEdges
 end
+export NodesAndLinkedEdges

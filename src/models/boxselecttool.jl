@@ -18,3 +18,4 @@
 
     select_every_mousemove :: Bool = false
 end
+export BoxSelectTool

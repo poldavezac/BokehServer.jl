@@ -20,3 +20,4 @@
 
     rescale_discrete_levels :: Bool = false
 end
+export EqHistColorMapper

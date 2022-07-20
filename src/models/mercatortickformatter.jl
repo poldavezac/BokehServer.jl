@@ -12,3 +12,4 @@
 
     use_scientific :: Bool = true
 end
+export MercatorTickFormatter

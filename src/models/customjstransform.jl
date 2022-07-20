@@ -8,3 +8,4 @@
 
     v_func :: String = ""
 end
+export CustomJSTransform

@@ -144,3 +144,4 @@
 
     y_scale :: iScale = LinearScale()
 end
+export GMapPlot

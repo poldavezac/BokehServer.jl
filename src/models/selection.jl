@@ -8,3 +8,4 @@
 
     multiline_indices :: Dict{String, Vector{Int64}} = Dict{String, Vector{Int64}}()
 end
+export Selection

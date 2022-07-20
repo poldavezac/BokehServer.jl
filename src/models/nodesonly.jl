@@ -2,3 +2,4 @@
 
 @model mutable struct NodesOnly <: iNodesOnly
 end
+export NodesOnly

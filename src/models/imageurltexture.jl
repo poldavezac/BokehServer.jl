@@ -6,3 +6,4 @@
 
     url :: String
 end
+export ImageURLTexture

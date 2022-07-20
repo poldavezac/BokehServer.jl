@@ -36,3 +36,4 @@
 
     y_range :: Any = nothing
 end
+export FigureOptions

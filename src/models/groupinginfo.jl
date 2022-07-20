@@ -8,3 +8,4 @@
 
     getter :: String = ""
 end
+export GroupingInfo

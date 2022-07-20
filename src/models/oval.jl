@@ -48,4 +48,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export Oval
 glyphargs(::Type{Oval}) = (:x, :y, :width, :height, :angle)

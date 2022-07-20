@@ -2,3 +2,4 @@
 
 @model mutable struct TextEditor <: iTextEditor
 end
+export TextEditor

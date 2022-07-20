@@ -4,3 +4,4 @@
 
     min_distance :: Int64 = 5
 end
+export NoOverlap

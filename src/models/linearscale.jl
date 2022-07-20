@@ -2,3 +2,4 @@
 
 @model mutable struct LinearScale <: iLinearScale
 end
+export LinearScale

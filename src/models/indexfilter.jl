@@ -4,3 +4,4 @@
 
     indices :: Union{Nothing, Vector{Int64}} = nothing
 end
+export IndexFilter

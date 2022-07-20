@@ -14,3 +14,4 @@
 
     num_minor_ticks :: Int64 = 5
 end
+export LogTicker

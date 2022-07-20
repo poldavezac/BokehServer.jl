@@ -138,3 +138,4 @@
 
     y_scale :: iScale = LinearScale()
 end
+export Plot

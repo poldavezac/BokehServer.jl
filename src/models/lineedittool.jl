@@ -14,3 +14,4 @@
 
     renderers :: Vector{iGlyphRenderer} = iGlyphRenderer[]
 end
+export LineEditTool

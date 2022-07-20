@@ -54,4 +54,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export AnnularWedge
 glyphargs(::Type{AnnularWedge}) = (:x, :y, :inner_radius, :outer_radius, :start_angle, :finish_angle, :direction)

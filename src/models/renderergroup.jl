@@ -4,3 +4,4 @@
 
     visible :: Bool = true
 end
+export RendererGroup

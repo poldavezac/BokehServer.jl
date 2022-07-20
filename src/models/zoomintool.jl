@@ -8,3 +8,4 @@
 
     factor :: Model.Percent = 0.1
 end
+export ZoomInTool

@@ -18,3 +18,4 @@
 
     tools :: Vector{iTool} = iTool[]
 end
+export Toolbar

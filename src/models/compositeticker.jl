@@ -8,3 +8,4 @@
 
     tickers :: Vector{iTicker} = iTicker[]
 end
+export CompositeTicker

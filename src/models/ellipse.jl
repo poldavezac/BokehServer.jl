@@ -48,4 +48,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export Ellipse
 glyphargs(::Type{Ellipse}) = (:x, :y, :width, :height, :angle)

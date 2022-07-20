@@ -2,3 +2,4 @@
 
 @model mutable struct CategoricalTickFormatter <: iCategoricalTickFormatter
 end
+export CategoricalTickFormatter

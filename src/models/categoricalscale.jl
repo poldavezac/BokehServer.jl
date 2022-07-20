@@ -2,3 +2,4 @@
 
 @model mutable struct CategoricalScale <: iCategoricalScale
 end
+export CategoricalScale

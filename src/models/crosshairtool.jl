@@ -14,3 +14,4 @@
 
     toggleable :: Bool = true
 end
+export CrosshairTool

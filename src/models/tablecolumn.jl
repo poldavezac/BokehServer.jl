@@ -18,3 +18,4 @@
 
     width :: Int64 = 300
 end
+export TableColumn

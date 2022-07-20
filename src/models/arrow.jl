@@ -46,3 +46,4 @@
 
     y_start :: Model.NumberSpec = "y_start"
 end
+export Arrow

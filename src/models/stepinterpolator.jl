@@ -12,3 +12,4 @@
 
     y :: Union{String, Vector{Float64}}
 end
+export StepInterpolator

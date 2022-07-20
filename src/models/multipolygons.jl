@@ -36,4 +36,5 @@
 
     ys :: Model.NumberSpec = "ys"
 end
+export MultiPolygons
 glyphargs(::Type{MultiPolygons}) = (:xs, :ys)

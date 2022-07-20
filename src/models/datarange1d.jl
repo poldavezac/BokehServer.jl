@@ -30,3 +30,4 @@
 
     start :: Union{Nothing, Float64, Dates.DateTime, Dates.Period} = nothing
 end
+export DataRange1d

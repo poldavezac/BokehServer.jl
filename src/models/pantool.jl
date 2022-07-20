@@ -6,3 +6,4 @@
 
     dimensions :: Model.EnumType{(:width, :height, :both)} = :both
 end
+export PanTool

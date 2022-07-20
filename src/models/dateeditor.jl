@@ -2,3 +2,4 @@
 
 @model mutable struct DateEditor <: iDateEditor
 end
+export DateEditor

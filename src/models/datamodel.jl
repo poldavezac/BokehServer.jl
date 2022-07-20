@@ -2,3 +2,4 @@
 
 @model mutable struct DataModel <: iDataModel
 end
+export DataModel

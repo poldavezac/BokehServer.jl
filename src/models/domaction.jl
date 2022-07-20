@@ -2,3 +2,4 @@
 
 @model mutable struct DOMAction <: iDOMAction
 end
+export DOMAction

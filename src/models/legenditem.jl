@@ -10,3 +10,4 @@
 
     visible :: Bool = true
 end
+export LegendItem

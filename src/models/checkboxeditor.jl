@@ -2,3 +2,4 @@
 
 @model mutable struct CheckboxEditor <: iCheckboxEditor
 end
+export CheckboxEditor

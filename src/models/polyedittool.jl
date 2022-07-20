@@ -12,3 +12,4 @@
 
     vertex_renderer :: Union{Nothing, iGlyphRenderer} = nothing
 end
+export PolyEditTool

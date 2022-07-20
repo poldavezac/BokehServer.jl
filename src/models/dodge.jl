@@ -6,3 +6,4 @@
 
     value :: Float64 = 0.0
 end
+export Dodge

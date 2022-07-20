@@ -4,3 +4,4 @@
 
     content :: String = ""
 end
+export DOMText

@@ -24,3 +24,4 @@
 
     subgroup_padding :: Float64 = 0.8
 end
+export FactorRange

@@ -14,3 +14,4 @@
 
     select_every_mousemove :: Bool = true
 end
+export LassoSelectTool

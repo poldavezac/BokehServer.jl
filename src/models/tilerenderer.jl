@@ -22,3 +22,4 @@
 
     y_range_name :: String = "default"
 end
+export TileRenderer

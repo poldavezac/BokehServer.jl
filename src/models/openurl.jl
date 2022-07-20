@@ -6,3 +6,4 @@
 
     url :: String = "http://"
 end
+export OpenURL

@@ -60,7 +60,6 @@ end
     all(i isa Some for i ∈ out) && return Some(tuple(something.(out)...))
 end
 
-@default BokehJL.Model.Nullable return parsedefault(T.parameters[1], cls, attr, prop)
 @default BokehJL.Model.ReadOnly return if T.parameters[1] isa Symbol
     Some(Expr(:call, T.parameters[1]))
 else

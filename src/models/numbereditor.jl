@@ -4,3 +4,4 @@
 
     step :: Float64 = 0.01
 end
+export NumberEditor

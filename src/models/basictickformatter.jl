@@ -10,3 +10,4 @@
 
     use_scientific :: Bool = true
 end
+export BasicTickFormatter

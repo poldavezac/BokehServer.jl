@@ -16,3 +16,4 @@
 
     palette :: Vector{Model.Color}
 end
+export ScanningColorMapper

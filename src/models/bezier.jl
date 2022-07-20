@@ -32,4 +32,5 @@
 
     y1 :: Model.NumberSpec = "y1"
 end
+export Bezier
 glyphargs(::Type{Bezier}) = (:x0, :y0, :x1, :y1, :cx0, :cy0, :cx1, :cy1)

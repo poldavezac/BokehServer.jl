@@ -4,3 +4,4 @@
 
     field_ :: String = ""
 end
+export MaxAggregator

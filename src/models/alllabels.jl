@@ -2,3 +2,4 @@
 
 @model mutable struct AllLabels <: iAllLabels
 end
+export AllLabels

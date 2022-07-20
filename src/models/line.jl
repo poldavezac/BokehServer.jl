@@ -20,4 +20,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export Line
 glyphargs(::Type{Line}) = (:x, :y)

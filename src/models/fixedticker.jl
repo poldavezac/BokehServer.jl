@@ -10,3 +10,4 @@
 
     ticks :: Vector{Float64} = Float64[]
 end
+export FixedTicker

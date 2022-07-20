@@ -2,3 +2,4 @@
 
 @model mutable struct LogScale <: iLogScale
 end
+export LogScale

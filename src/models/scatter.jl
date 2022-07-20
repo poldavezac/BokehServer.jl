@@ -46,4 +46,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export Scatter
 glyphargs(::Type{Scatter}) = (:x, :y, :size, :angle, :marker)

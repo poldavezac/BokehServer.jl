@@ -20,4 +20,5 @@
 
     ys :: Model.NumberSpec = "ys"
 end
+export MultiLine
 glyphargs(::Type{MultiLine}) = (:xs, :ys)

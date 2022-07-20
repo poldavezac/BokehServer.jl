@@ -8,3 +8,4 @@
 
     style :: Union{Nothing, iStyles, Dict{String, String}} = nothing
 end
+export DOMTemplate

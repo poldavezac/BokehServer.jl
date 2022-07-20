@@ -630,3 +630,4 @@
 
     z_index :: Union{Nothing, String} = nothing
 end
+export Styles

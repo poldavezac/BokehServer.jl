@@ -10,3 +10,4 @@
 
     maintain_focus :: Bool = true
 end
+export ZoomOutTool

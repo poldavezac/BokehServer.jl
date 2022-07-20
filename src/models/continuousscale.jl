@@ -2,3 +2,4 @@
 
 @model mutable struct ContinuousScale <: iContinuousScale
 end
+export ContinuousScale

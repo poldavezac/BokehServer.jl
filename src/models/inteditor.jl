@@ -4,3 +4,4 @@
 
     step :: Int64 = 1
 end
+export IntEditor

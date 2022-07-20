@@ -4,3 +4,4 @@
 
     format :: String = "%s"
 end
+export PrintfTickFormatter

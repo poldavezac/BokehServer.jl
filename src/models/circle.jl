@@ -50,4 +50,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export Circle
 glyphargs(::Type{Circle}) = (:x, :y)

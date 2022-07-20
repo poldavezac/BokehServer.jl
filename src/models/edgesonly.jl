@@ -2,3 +2,4 @@
 
 @model mutable struct EdgesOnly <: iEdgesOnly
 end
+export EdgesOnly

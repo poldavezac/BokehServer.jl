@@ -44,4 +44,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export Annulus
 glyphargs(::Type{Annulus}) = (:x, :y, :inner_radius, :outer_radius)

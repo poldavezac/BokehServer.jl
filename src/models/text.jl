@@ -32,4 +32,5 @@
 
     y_offset :: Model.NumberSpec = 0.0
 end
+export Text
 glyphargs(::Type{Text}) = (:x, :y, :text, :angle, :x_offset, :y_offset)

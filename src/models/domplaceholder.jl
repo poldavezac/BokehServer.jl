@@ -2,3 +2,4 @@
 
 @model mutable struct DOMPlaceholder <: iDOMPlaceholder
 end
+export DOMPlaceholder

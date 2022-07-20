@@ -40,4 +40,5 @@
 
     top :: Model.NumberSpec = "top"
 end
+export Quad
 glyphargs(::Type{Quad}) = (:left, :right, :top, :bottom)

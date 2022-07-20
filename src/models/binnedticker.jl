@@ -6,3 +6,4 @@
 
     num_major_ticks :: Union{Int64, Model.EnumType{(:auto,)}} = 8
 end
+export BinnedTicker

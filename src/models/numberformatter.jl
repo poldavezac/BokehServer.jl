@@ -16,3 +16,4 @@
 
     text_color :: Union{Nothing, Model.Color} = nothing
 end
+export NumberFormatter

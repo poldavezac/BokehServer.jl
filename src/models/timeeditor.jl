@@ -2,3 +2,4 @@
 
 @model mutable struct TimeEditor <: iTimeEditor
 end
+export TimeEditor

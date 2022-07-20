@@ -70,3 +70,4 @@
 
     y_units :: Model.EnumType{(:screen, :data)} = :data
 end
+export LabelSet

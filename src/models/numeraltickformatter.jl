@@ -8,3 +8,4 @@
 
     rounding :: Model.EnumType{(:round, :nearest, :floor, :rounddown, :ceil, :roundup)} = :round
 end
+export NumeralTickFormatter

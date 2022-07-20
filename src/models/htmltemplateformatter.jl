@@ -4,3 +4,4 @@
 
     template :: String = "<%= value %>"
 end
+export HTMLTemplateFormatter

@@ -22,4 +22,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export Step
 glyphargs(::Type{Step}) = (:x, :y)

@@ -22,4 +22,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export Image
 glyphargs(::Type{Image}) = (:image, :x, :y, :dw, :dh, :dilate)

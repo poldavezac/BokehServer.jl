@@ -8,3 +8,4 @@
 
     text :: String
 end
+export TeX

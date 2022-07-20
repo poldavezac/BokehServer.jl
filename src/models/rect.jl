@@ -50,4 +50,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export Rect
 glyphargs(::Type{Rect}) = (:x, :y, :width, :height, :angle, :dilate)

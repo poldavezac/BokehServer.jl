@@ -4,3 +4,4 @@
 
     field :: String
 end
+export DOMValueRef

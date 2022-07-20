@@ -2,3 +2,4 @@
 
 @model mutable struct PercentEditor <: iPercentEditor
 end
+export PercentEditor

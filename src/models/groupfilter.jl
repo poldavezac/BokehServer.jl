@@ -6,3 +6,4 @@
 
     group :: String
 end
+export GroupFilter

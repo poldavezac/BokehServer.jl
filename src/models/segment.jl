@@ -24,4 +24,5 @@
 
     y1 :: Model.NumberSpec = "y1"
 end
+export Segment
 glyphargs(::Type{Segment}) = (:x0, :y0, :x1, :y1)

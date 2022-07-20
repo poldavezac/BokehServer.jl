@@ -24,4 +24,5 @@
 
     y2 :: Model.NumberSpec = "y2"
 end
+export VArea
 glyphargs(::Type{VArea}) = (:x, :y1, :y2)

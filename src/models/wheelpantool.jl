@@ -6,3 +6,4 @@
 
     dimension :: Model.EnumType{(:width, :height)} = :width
 end
+export WheelPanTool

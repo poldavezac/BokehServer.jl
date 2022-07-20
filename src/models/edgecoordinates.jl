@@ -4,3 +4,4 @@
 
     layout :: iLayoutProvider
 end
+export EdgeCoordinates

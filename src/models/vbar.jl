@@ -40,4 +40,5 @@
 
     x :: Model.NumberSpec = "x"
 end
+export VBar
 glyphargs(::Type{VBar}) = (:x, :width, :top, :bottom)

@@ -22,3 +22,4 @@
 
     size :: Model.NumberSpec = 25.0
 end
+export NormalHead

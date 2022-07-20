@@ -16,3 +16,4 @@
 
     zoom :: Int64 = 12
 end
+export GMapOptions

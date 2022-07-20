@@ -24,4 +24,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export HArea
 glyphargs(::Type{HArea}) = (:x1, :x2, :y)

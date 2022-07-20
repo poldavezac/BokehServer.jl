@@ -6,3 +6,4 @@
 
     code :: String = ""
 end
+export CustomJSFilter

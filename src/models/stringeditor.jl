@@ -4,3 +4,4 @@
 
     completions :: Vector{String} = String[]
 end
+export StringEditor

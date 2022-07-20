@@ -4,3 +4,4 @@
 
     fields :: Vector{String} = String[]
 end
+export Stack

@@ -12,3 +12,4 @@
 
     zoom_on_axis :: Bool = true
 end
+export WheelZoomTool

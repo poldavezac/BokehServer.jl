@@ -40,4 +40,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export HBar
 glyphargs(::Type{HBar}) = (:y, :height, :right, :left)

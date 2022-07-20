@@ -34,4 +34,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export Arc
 glyphargs(::Type{Arc}) = (:x, :y, :radius, :start_angle, :finish_angle, :direction)

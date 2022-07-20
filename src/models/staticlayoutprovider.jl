@@ -4,3 +4,4 @@
 
     graph_layout :: Dict{Union{Int64, String}, Vector{Any}} = Dict{Union{Int64, String}, Vector{Any}}()
 end
+export StaticLayoutProvider

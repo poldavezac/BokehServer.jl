@@ -6,3 +6,4 @@
 
     include_zero :: Bool = false
 end
+export CumSum

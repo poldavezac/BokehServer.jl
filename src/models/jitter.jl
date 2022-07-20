@@ -10,3 +10,4 @@
 
     width :: Float64 = 1.0
 end
+export Jitter

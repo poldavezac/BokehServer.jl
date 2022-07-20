@@ -50,4 +50,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export Wedge
 glyphargs(::Type{Wedge}) = (:x, :y, :radius, :start_angle, :finish_angle, :direction)

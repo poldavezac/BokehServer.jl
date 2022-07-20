@@ -6,3 +6,4 @@
 
     source :: iColumnarDataSource
 end
+export CDSView

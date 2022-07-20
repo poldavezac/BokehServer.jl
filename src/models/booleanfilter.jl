@@ -4,3 +4,4 @@
 
     booleans :: Union{Nothing, Vector{Bool}} = nothing
 end
+export BooleanFilter

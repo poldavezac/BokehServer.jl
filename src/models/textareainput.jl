@@ -50,3 +50,4 @@
 
     width_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 end
+export TextAreaInput

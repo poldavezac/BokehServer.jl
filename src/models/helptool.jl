@@ -6,3 +6,4 @@
 
     redirect :: String = "https://docs.bokeh.org/en/latest/docs/user_guide/tools.html"
 end
+export HelpTool

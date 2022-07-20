@@ -30,4 +30,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export ImageURL
 glyphargs(::Type{ImageURL}) = (:url, :x, :y, :w, :h, :angle, :dilate)

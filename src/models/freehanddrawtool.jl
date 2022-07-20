@@ -12,3 +12,4 @@
 
     renderers :: Vector{iGlyphRenderer} = iGlyphRenderer[]
 end
+export FreehandDrawTool

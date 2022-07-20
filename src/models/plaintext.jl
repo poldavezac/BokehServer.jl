@@ -4,3 +4,4 @@
 
     text :: String
 end
+export PlainText

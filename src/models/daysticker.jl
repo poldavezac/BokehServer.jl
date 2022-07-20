@@ -10,3 +10,4 @@
 
     num_minor_ticks :: Int64 = 0
 end
+export DaysTicker

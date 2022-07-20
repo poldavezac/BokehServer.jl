@@ -28,4 +28,5 @@
 
     y :: Model.NumberSpec = "y"
 end
+export Ray
 glyphargs(::Type{Ray}) = (:x, :y, :length, :angle)

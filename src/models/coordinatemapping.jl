@@ -14,3 +14,4 @@
 
     y_target :: iRange
 end
+export CoordinateMapping

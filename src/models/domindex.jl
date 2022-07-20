@@ -2,3 +2,4 @@
 
 @model mutable struct DOMIndex <: iDOMIndex
 end
+export DOMIndex

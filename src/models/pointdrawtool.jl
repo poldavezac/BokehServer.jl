@@ -16,3 +16,4 @@
 
     renderers :: Vector{iGlyphRenderer} = iGlyphRenderer[]
 end
+export PointDrawTool

@@ -30,3 +30,4 @@
 
     tooltips :: Union{Nothing, iTemplate, String, Vector{Tuple{String, String}}} = [("index", "\$index"), ("data (x, y)", "(\$x, \$y)"), ("screen (x, y)", "(\$sx, \$sy)")]
 end
+export HoverTool

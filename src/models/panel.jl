@@ -10,3 +10,4 @@
 
     title :: String = ""
 end
+export Panel

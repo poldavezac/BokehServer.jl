@@ -4,3 +4,4 @@
 
     groups :: Vector{iRendererGroup} = iRendererGroup[]
 end
+export DOMToggleGroup

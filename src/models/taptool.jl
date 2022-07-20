@@ -16,3 +16,4 @@
 
     renderers :: Union{Model.EnumType{(:auto,)}, Vector{iDataRenderer}} = :auto
 end
+export TapTool

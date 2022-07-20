@@ -6,3 +6,4 @@
 
     initial :: Union{Nothing, Float64} = nothing
 end
+export Minimum

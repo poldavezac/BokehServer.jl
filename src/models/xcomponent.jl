@@ -4,3 +4,4 @@
 
     transform :: iCoordinateTransform
 end
+export XComponent

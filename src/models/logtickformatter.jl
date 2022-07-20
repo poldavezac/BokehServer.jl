@@ -6,3 +6,4 @@
 
     ticker :: Union{Nothing, iTicker} = nothing
 end
+export LogTickFormatter

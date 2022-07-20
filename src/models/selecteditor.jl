@@ -4,3 +4,4 @@
 
     options :: Vector{String} = String[]
 end
+export SelectEditor

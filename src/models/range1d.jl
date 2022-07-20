@@ -16,3 +16,4 @@
 
     start :: Union{Float64, Dates.DateTime, Dates.Period} = 0.0
 end
+export Range1d

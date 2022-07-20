@@ -14,3 +14,4 @@
 
     y_range :: Union{Nothing, iRange1d} = nothing
 end
+export RangeTool

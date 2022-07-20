@@ -6,3 +6,4 @@
 
     repetition :: Model.EnumType{(:repeat, :repeat_x, :repeat_y, :no_repeat)} = :repeat
 end
+export CanvasTexture

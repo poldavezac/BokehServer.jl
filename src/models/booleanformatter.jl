@@ -4,3 +4,4 @@
 
     icon :: Model.EnumType{(:check, Symbol("check-circle"), Symbol("check-circle-o"), Symbol("check-square"), Symbol("check-square-o"))} = :check
 end
+export BooleanFormatter
