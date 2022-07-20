@@ -48,6 +48,7 @@ function patchdoc(𝐹::Function, 𝐷::iDocument, λ::Events.iEventList, ios::V
 end
 
 function patchdoc(λ::AbstractVector{<:Events.iEvent}, 𝐷::iDocument, oldids::Set{Int64}, ios::Vararg{WebSockets.WebSocket})
+    any(isopen(ws.io) for ws ∈ ios) || return missing
     𝑅    = Serialize.BufferedRules()
     outp = patchdoc(λ, 𝐷, oldids, 𝑅)
     return isnothing(outp) ? missing : sendmessage(ios, msg"PATCH-DOC", outp, 𝑅.buffers)
