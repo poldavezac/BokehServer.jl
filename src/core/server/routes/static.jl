@@ -74,7 +74,7 @@ end
 
 struct FaviconRoute <: iStaticRoute
     path :: String
-    FaviconRoute() = new(joinpath(artifact"javascript", "favicon.ico"))
+    FaviconRoute() = new(Server.CONFIG.favicon)
 end
 
 function route(http::HTTP.Stream, ::Val{:GET}, 𝐴::FaviconRoute, @nospecialize(_...))

@@ -14,7 +14,6 @@ if js_hash == nothing || !artifact_exists(js_hash)
     path    = download(url_base)
     js_hash = create_artifact() do artifact_dir
         Tar.extract(IOBuffer(transcode(Bzip2Decompressor, read(path))), artifact_dir)
-        cp(joinpath(@__DIR__, "favicon.ico"), joinpath(artifact_dir, "favicon.ico"))
     end
     bind_artifact!(artifact_toml, name, js_hash, download_info = [(url_base,  bytes2hex(open(sha256, path)))])
 end

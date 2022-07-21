@@ -1,7 +1,6 @@
 #!/usr/bin/env -S julia --startup-file=no --history-file=no --project
 push!(LOAD_PATH, joinpath(@__DIR__, "environment"))
 using BokehJL
-using BokehJL.Models: BoxSelectTool, LassoSelectTool
 using Random
 using StatsBase
 
@@ -26,8 +25,8 @@ BokehJL.Plotting.serve() do
                toolbar_location="above", x_axis_location=nothing, y_axis_location=nothing,
                title="Linked Histograms")
     p.background_fill_color = "#fafafa"
-    only(BokehJL.Model.filtermodels(BoxSelectTool, p)).select_every_mousemove = false
-    only(BokehJL.Model.filtermodels(LassoSelectTool, p)).select_every_mousemove = false
+    only(BokehJL.Model.filtermodels(BokehJL.BoxSelectTool, p)).select_every_mousemove = false
+    only(BokehJL.Model.filtermodels(BokehJL.LassoSelectTool, p)).select_every_mousemove = false
 
     r = BokehJL.scatter!(p; x, y, size=3, color="#3A5785", alpha=0.6)
     LINE_ARGS = (; color="#3A5785", line_color= "#00000000")
