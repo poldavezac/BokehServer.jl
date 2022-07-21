@@ -24,9 +24,9 @@
         @test :Int32 ∈ keys(theme.items[:b])
         @test :Float64 ∈ keys(theme.items[:b])
 
-        @test BokehJL.Themes.getvalue(theme, Int32, :a)() == 1.
-        @test BokehJL.Themes.getvalue(theme, Int32, :b)() == 2.
-        @test BokehJL.Themes.getvalue(theme, Float64, :b)() == 10.
+        @test BokehJL.Themes.theme(theme, Int32, :a) == Some(1.)
+        @test BokehJL.Themes.theme(theme, Int32, :b) == Some(2.)
+        @test BokehJL.Themes.theme(theme, Float64, :b) == Some(10.)
     end
 end
 
@@ -48,13 +48,25 @@ end
                 @test getproperty(_TestTheme2(), i) == j
             end
 
-            BokehJL.Themes.setvalue!(theme, :_TestTheme1, :a, ()->10)
-            BokehJL.Themes.setvalue!(theme, :_TestTheme1, :b, ()->10)
-            BokehJL.Themes.setvalue!(theme, :_TestTheme2, :b, ()->20)
+            BokehJL.Themes.setvalue!(theme, :_TestTheme1, :a, 10)
+            BokehJL.Themes.setvalue!(theme, :_TestTheme1, :b, 10)
+            BokehJL.Themes.setvalue!(theme, :_TestTheme2, :b, 20)
             @testset "with theme" for (i, j) ∈ (:a => 10 , :b => 20, :c => -1)
                 @test getproperty(BokehJL.Themes.theme(theme, _TestTheme2), i) == j
                 @test getproperty(_TestTheme2(), i) == j
             end
         end
     end
+end
+
+@testset "read bokeh themes" begin
+    for name ∈ (:caliber, :contrast, :dark_minimal, :light_minimal, :night_sky)
+        @test !isempty(BokehJL.Themes.Theme(name).items)
+    end
+
+    BokehJL.LinearAxis().major_label_text_font != "Calibri Light"
+    BokehJL.Themes.setvalues!(:caliber) do
+        BokehJL.LinearAxis().major_label_text_font == "Calibri Light"
+    end
+    BokehJL.LinearAxis().major_label_text_font != "Calibri Light"
 end

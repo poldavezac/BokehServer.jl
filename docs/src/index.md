@@ -446,7 +446,24 @@ working in `Pluto` or `Jupyter` environment.
 
 ## Themes
 
-This is not tested sufficiently.
+Themes provided by *bokeh python* are also available here.
+
+One can set either a global theme or one specific to a document:
+
+```julia
+# set the global theme
+BokehJL.Themes.setvalues!(:caliber) # or :dark_minimal, :light_minimal, :contrast, :night_sky or :default
+
+# set the doc theme
+BokehJL.Themes.setvalues!(mydoc.theme, :caliber)
+```
+
+In most cases where user creates new *BokehJL* objects, a default document has been added
+to the `task_local_storage` dictionnary, and its theme is the one applied to those objects.
+
+!!! note
+
+    A new document always inherits a *copy* of the current global theme.
 
 ```@autodocs
 Modules = [BokehJL.Themes]

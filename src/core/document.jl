@@ -13,7 +13,7 @@ const ID = bokehidmaker()
     "private field for storing roots"
     roots     :: Vector{iModel}   = iModel[]
 
-    theme     :: Themes.Theme     = Themes.Theme()
+    theme     :: Themes.Theme     = Themes.Theme(:current)
 
     title     :: String           = ""
 
