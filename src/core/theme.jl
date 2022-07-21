@@ -42,9 +42,10 @@ function theme(dic::Theme, T::Type)
 
     return T(;(
         attr => something(fcn)()
-        for fcn ∈ (
-            getvalue(dic, T, attr) for attr ∈ Model.bokehproperties(T)
-        ) if !isnothing(fcn)
+        for (attr, fcn) ∈ Iterators.filter(
+            !isnothing ∘ last,
+            (attr => getvalue(dic, T, attr) for attr ∈ Model.bokehproperties(T))
+        )
     )...)
 end
 
