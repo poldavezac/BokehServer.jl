@@ -30,6 +30,11 @@ Model.bokehconvert(::Type{<:iTicker}, ticks :: AbstractVector{<:Real}) = FixedTi
 using ..Events
 using ..Protocol
 
+"""
+    serialref(::Type{Selection}, evt::Events.ModelChangedEvent, 𝑅::Protocol.Serialize.iRules)
+
+Write the JSON values while moving indices from a 1-based index to a 0-based index
+"""
 function Protocol.Serialize.serialref(::Type{Selection}, evt::Events.ModelChangedEvent, 𝑅::Protocol.Serialize.iRules)
     if evt.attr ∈ (:indices, :line_indices)
         evt = Events.ModelChangedEvent(evt.model, evt.attr, evt.old, evt.new .- 1)
@@ -41,13 +46,24 @@ function Protocol.Serialize.serialref(::Type{Selection}, evt::Events.ModelChange
     return Protocol.Serialize.serialref(iHasProps, evt, 𝑅)
 end
 
-function Protocol.PatchDocReceive.fromjson(::Type{Selection}, attr:: Symbol, val)
-    if(attr ∈ (:line_indices, :indices))
+"""
+    fromjson(::Type{Selection}, attr:: Symbol, val, 𝑀::Protocol.PatchDocReceive._Models)
+
+Read the JSON values and move indices from a 0-based index to a 1-based index
+"""
+function Protocol.PatchDocReceive.fromjson(::Type{Selection}, attr:: Symbol, val, 𝑀::Protocol.PatchDocReceive._Models)
+    return if(attr ∈ (:line_indices, :indices))
         Int64[i+1 for i ∈ val]
     elseif attr ≡ :multiline_indices
         Dict{String, Vector{Int64}}((i => Int64[k+1 for k ∈ j] for (i, j) ∈ val)...)
     else
-        invoke(Protocol.PatchDocReceive.fromjson, Tuple{iHasProps, Symbol, Any}, mdl, attr, val; dotrigger)
+        invoke(Protocol.PatchDocReceive.fromjson,
+               Tuple{iHasProps, Symbol, Any, Protocol.PatchDocReceive._Models},
+               mdl,
+               attr,
+               val;
+               dotrigger
+        )
     end
 end
 
