@@ -36,6 +36,23 @@ JSON = BokehJL.Protocol.Messages.JSON
     end
 end
 
+X = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
+    data :: BokehJL.Model.DataDict
+end
+
+@testset "send patch!" begin
+    E    = BokehJL.Events
+    x   = X(; data = Dict("a" => [1, 2]))
+    doc = BokehJL.Document(; roots = BokehJL.iModel[x])
+    BokehJL.Events.eventlist!() do
+        merge!(x.data, "a" => 2 => 4)
+        val   = JSON.json(BokehJL.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([x.id])))
+        # the '2' has changed to a '1' !
+        truth = """{"events":[{"kind":"ColumnsPatched","column_source":{"id":"$(x.id)"},"patches":{"a":[[1,4]]}}],"references":[]}"""
+        @test JSON.parse(val) == JSON.parse(truth)
+    end
+end
+
 @testset "receive" begin
     doc  = BokehJL.Document()
     mdl  = ProtocolX(; id = 100,a  = 10)
@@ -170,5 +187,21 @@ end
             @test first(doc).b.value ≡ 100
             @test first(doc).b.transform ≡ first(doc).a[1]
         end
+    end
+end
+
+@testset "receive patch!" begin
+    E    = BokehJL.Events
+    x   = X(; data = Dict("a" => [1, 2]))
+    doc = BokehJL.Document(; roots = BokehJL.iModel[x])
+    BokehJL.Events.eventlist!() do
+        cnt = Dict{String, Any}(
+            "references" => Any[],
+            "events" => Any[JSON.parse("""{"kind":"ColumnsPatched","column_source":{"id":"$(x.id)"},"patches":{"a":[[1,4]]}}""")],
+        )
+
+        buf  = BokehJL.Protocol.Buffers()
+        BokehJL.Protocol.patchdoc!(doc, cnt, buf)
+        @test x.data["a"][2] ≡ Int32(4)
     end
 end

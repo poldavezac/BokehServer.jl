@@ -150,7 +150,7 @@ function apply(::Val{:ColumnsStreamed}, 𝐷::iDocument, 𝐼::JSDict, 𝑀::_Mo
     Model.stream!(obj.data, data; rollover = 𝐼["rollover"])
 end
 
-function apply(::Val{:ColumnsPatched}, 𝐷::iDocument, 𝐼::JSDict, _)
+function apply(::Val{:ColumnsPatched}, 𝐷::iDocument, 𝐼::JSDict, 𝑀::_Models)
     obj  = fromjson(iHasProps, 𝐼["column_source"], 𝑀)
     data = Dict{String, Vector{Pair}}(
         col => Pair[_𝑐𝑝_key(x) => _𝑐𝑝_value(y) for (x, y) ∈ lst]
