@@ -5,6 +5,29 @@ const DataDictArg = Union{
     DataDictContainer
 }
 
+"""
+    stream!(
+            γ         :: Union{ColumnDataSource, DataDictContainer},
+            𝑑s        :: Vararg{DataDictArg};
+            rollover  :: Union{Int, Nothing} = nothing,
+    )
+
+Add rows to the `ColumnDataSource`.
+
+* `𝑑s` can be of dictionnaries or pairs (column name, new data). 
+* `rollover` indicates maximum number of rows after the rows are added. Oldest
+rows are deleted as required.
+
+```julia
+DS = BokehServer.ColumnDataSource(; data = Dict("x" => [1, 2], "y" => [3, 4]))
+
+BokehServer.stream!(DS, "x" => [3], "y" => [4])
+@assert length(DS.data["x"]) == 3
+
+BokehServer.stream!(DS, Dict("x" => [4], "y" => [5]))
+@assert length(DS.data["x"]) == 4
+```
+"""
 function stream!(
         γ         :: DataDictContainer,
         𝑑s        :: Vararg{DataDictArg};

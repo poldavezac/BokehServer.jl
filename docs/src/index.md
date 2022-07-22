@@ -233,6 +233,22 @@ Multiple plots can be displayed together using:
 BokehServer.layout
 ```
 
+### Document roots
+
+As in *bokeh python*, users can add and remove roots from a `Document`. This can be done 
+using functions `push!(::iDocument, ::iModel)` and `pop!(::iDocument, ::iModel)`:
+
+```julia
+doc = BokehServer.Document()
+fig = BokehServer.figure()
+push!(doc, fig)
+@assert length(doc) == 1
+pop!(doc, fig)
+@assert length(doc) == 0
+```
+
+### Linking axes
+
 Their axes can be linked, either using the event mechanisms or by sharing a `Range1d` object.
 
 ```
@@ -271,6 +287,30 @@ plot2 = BokehServer.scatter(;
 )
 BokehServer.layout([plot1, plot2])
 ```
+
+## The `ColumnDataSource` structure
+
+As in *python bokeh*, the `ColumnDataSource` structure is central to
+updating plots. The same methods are available for dealing with its mutations:
+
+```@docs
+BokehServer.stream!
+```
+
+```@docs
+BokehServer.update!
+```
+
+```@docs
+BokehServer.patch!
+```
+
+!!! note
+
+    One can also use `Base.push!` instead of `Base.stream!`.
+
+    One can also use `Base.merge!` instead of `Base.update!` or `Base.patch!`.
+
 
 ## The event mechanism
 
