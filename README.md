@@ -1,14 +1,20 @@
+![Continuous Integration](https://github.com/poldavezac/bokehjl/actions/workflows/ci.yml/badge.svg?develop)
+[![Stable Documentation](https://img.shields.io/badge/docs-stable-blue.svg)](https://poldavezac.github.io/bokehjl/stable)
+
 # Python's *bokeh* library in Julia
 
 ## Goals
 
-It seemed *Julia* was missing a reactive plot library, meaning one which would
-react to changes in the data when used with *Pluto* or *IJulia*. This package
-tries to bring these features by relying on the excellent
-(*bokeh*)[https://docs.bokeh.org/en/latest/index.html] library. The latter is
-basically a python web server with a javascript client. This package reproduces
-the python server and reuses the javascript part as is. This package's API is
-loosely similar to its python counterpart.
+This packages provides a server for the *bokehjs* libary:
+
+* It allows creating plots in a notebook cell *and* updating them in another.
+* It also allows publishing web apps, just as *bokeh* does.
+
+The package relies extensively on the
+(*bokeh*)[https://docs.bokeh.org/en/latest/index.html] library. The latter is a
+python web server together with a javascript client. This package rewrites the
+python server in julia and reuses the javascript part as is. This package's API
+is loosely similar to its python counterpart.
 
 ## Examples
 
@@ -80,3 +86,7 @@ to their own server rather than use this package's.
 * This package does not provide a `bokeh` executable. Rather, the user should
 call `BokehJL.Plotting.server(f)` where `f` must return the `BokehJL` layout
 instance, say one plot. Check the doc on `BokehJL.serve` for other options.
+
+## Related projects
+
+The same idea, created more or less at the same time: [Another bokeh in julia](https://github.com/cjdoris/Bokeh.jl)
