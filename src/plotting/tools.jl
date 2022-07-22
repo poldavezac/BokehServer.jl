@@ -85,8 +85,8 @@ function _toollist(
     ]
 end
 
-_tooltips!(::Vector, ::Missing) = nothing
-function _tooltips(lst::Vector, tips)
+_tooltips!(::Vector, ::Missing, ::Bool) = nothing
+function _tooltips!(lst::Vector, tooltips, dotrigger :: Bool)
     found = false
     for (i, tool) ∈ enumerate(lst)
         if tool.keep && tool.tool isa Models.HoverTool
@@ -140,7 +140,7 @@ const ActiveArg = Union{AbstractString, Symbol, Nothing, T} where {T <: Models.i
             active_scroll  :: Union{AbstractString, Symbol, Nothing, iScoll}       = :auto,
             active_tap     :: Union{AbstractString, Symbol, Nothing, iGestureTool} = :auto,
             active_multi   :: Union{AbstractString, Symbol, Nothing, iGestureTool} = :auto,
-            dotrigger      :: Bool                                                 = false
+            dotrigger      :: Bool                                                 = true
     )
 
 Adds *more* tools to the plot.
@@ -162,10 +162,10 @@ function tools!(
         active_scroll  :: ActiveArg{Models.iScroll}                                                  = nothing,
         active_tap     :: ActiveArg{Models.iGestureTool}                                             = nothing,
         active_multi   :: ActiveArg{Models.iGestureTool}                                             = nothing,
-        dotrigger      :: Bool                                                                       = false,
+        dotrigger      :: Bool                                                                       = true,
 )
     lst = _toollist(tools)
-    _tooltips!(lst, tooltips)
+    _tooltips!(lst, tooltips, dotrigger)
 
     arr = [i.tool for i ∈ lst if i.keep]
     append!(fig.toolbar.tools, arr; dotrigger)
@@ -175,6 +175,19 @@ function tools!(
     _active!(fig.toolbar,  active_scroll,   :active_scroll,   dotrigger, lst)
     _active!(fig.toolbar,  active_tap,      :active_tap,      dotrigger, lst)
     _active!(fig.toolbar,  active_multi,    :active_multi,    dotrigger, lst)
+end
+
+function tools!(plot :: Models.Plot, opts :: Models.FigureOptions; dotrigger :: Bool = true)
+    tools!(
+        plot, Model.bokehunwrap(opts.tools);
+        tooltips       = something(Model.bokehunwrap(opts.tooltips), missing),
+        active_drag    = opts.active_drag    isa Model.EnumType ? opts.active_drag.value    : opts.active_drag,
+        active_inspect = opts.active_inspect isa Model.EnumType ? opts.active_inspect.value : opts.active_inspect,
+        active_scroll  = opts.active_scroll  isa Model.EnumType ? opts.active_scroll.value  : opts.active_scroll,
+        active_tap     = opts.active_tap     isa Model.EnumType ? opts.active_tap.value     : opts.active_tap,
+        active_multi   = opts.active_multi   isa Model.EnumType ? opts.active_multi.value   : opts.active_multi,
+        dotrigger
+    )
 end
 end
 

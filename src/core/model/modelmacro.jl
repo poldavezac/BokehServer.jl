@@ -4,8 +4,8 @@ end
 macro model(expr::Expr)
     cls = if isdefined(__module__, :iCustomJS)
         getfield(__module__, :iCustomJS)
-    elseif isdefined(__module__, :Bokeh)
-        getfield(__module__, :Bokeh).Models.iCustomJS
+    elseif isdefined(__module__, :BokehJL)
+        getfield(__module__, :BokehJL).Models.iCustomJS
     end
     args = [
         :(js_event_callbacks    :: Dict{Symbol, Vector{$cls}}),
@@ -19,3 +19,4 @@ macro model(expr::Expr)
     _👻code(__source__, __module__, expr)
 end
 export @model
+precompile(Tuple{var"#@model", LineNumberNode, Module, Expr})

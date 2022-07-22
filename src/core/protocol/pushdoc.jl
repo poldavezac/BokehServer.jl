@@ -1,12 +1,12 @@
 function pushdoc(title :: AbstractString, roots, 𝑅::Serialize.iRules = Serialize.Rules())
-    return (;
-        defs    = [],
-        roots   = (;
-            references = NamedTuple[serialize(i, 𝑅) for i ∈ values(allmodels(roots))],
-            root_ids   = string.(bokehid.(roots)),
+    return Dict{Symbol, Any}(
+        :defs  => Nothing[],
+        :roots => Dict{Symbol, Any}(
+            :references => Dict{Symbol, Any}[serialize(i, 𝑅) for i ∈ values(bokehmodels(roots))],
+            :root_ids   => string.(bokehid.(roots)),
         ),
-        title,
-        version = "$(PROTOCOL_VERSION)",
+        :title   => "$title",
+        :version => "$(PROTOCOL_VERSION)",
     )
 end
 

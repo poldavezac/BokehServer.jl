@@ -1,6 +1,6 @@
 using Pkg.Artifacts
 
-@Base.kwdef struct Configuration
+@Base.kwdef mutable struct Configuration
     host           :: String         = "127.0.0.1"
     port           :: Int            = 5006
     clientloglevel :: Symbol         = :info
@@ -17,6 +17,7 @@ using Pkg.Artifacts
     wstimeout      :: Float64        = 0.1
     wssleepperiod  :: Float64        = 0.01
     minified       :: Bool           = true
+    favicon        :: String         = joinpath(dirname(pathof(parentmodule(Server))), "..", "deps", "favicon.ico")
 end
 
 const CONFIG = Configuration(; eval(Meta.parse(get(ENV, "BOKEH_CONFIG", "()")))...)

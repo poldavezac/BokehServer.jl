@@ -1,22 +1,23 @@
 @testset "pushdoc" begin
-    doc  = Bokeh.Document()
+    doc  = BokehJL.Document()
     obj  =  ProtocolX(; id = 1)
     setfield!(doc, :title, "A")
     push!(getfield(doc, :roots), obj)
 
-    truth = (; doc = (;
-        defs    = [],
-        roots   = (;
-            references = [(attributes = (;), id = "1", type = nameof(ProtocolX))],
-            root_ids   = ["1"],
+    truth = (; doc = Dict{Symbol, Any}(
+        :defs    => Nothing[],
+        :roots   => Dict{Symbol, Any}(
+            :references => [Dict{Symbol, Any}(:attributes => Dict{Symbol, Any}(), :id => "1", :type => nameof(ProtocolX))],
+            :root_ids   => ["1"],
         ),
-        title   = "A",
-        version = "$(Bokeh.Protocol.PROTOCOL_VERSION)",
+        :title   => "A",
+        :version => "$(BokehJL.Protocol.PROTOCOL_VERSION)",
     ))
-    @test Bokeh.Protocol.pushdoc(doc) == truth
+
+    @test BokehJL.Protocol.pushdoc(doc) == truth
 
 
-    JSON = Bokeh.Protocol.Messages.JSON
+    JSON = BokehJL.Protocol.Messages.JSON
 
     truth = (; doc = (;
         defs  = [],
@@ -25,14 +26,14 @@
             root_ids = ["10"]
         ),
         title   = "B",
-        version = "$(Bokeh.Protocol.PROTOCOL_VERSION)",
+        version = "$(BokehJL.Protocol.PROTOCOL_VERSION)",
     ))
 
     @test doc.title == "A"
-    @test Bokeh.bokehid.(doc) == [1]
-    Bokeh.Events.eventlist!() do
-        Bokeh.Protocol.pushdoc!(doc, JSON.parse(JSON.json(truth)), Bokeh.Protocol.Buffers())
+    @test BokehJL.bokehid.(doc) == [1]
+    BokehJL.Events.eventlist!() do
+        BokehJL.Protocol.pushdoc!(doc, JSON.parse(JSON.json(truth)), BokehJL.Protocol.Buffers())
     end
     @test doc.title == "B"
-    @test Bokeh.bokehid.(doc) == [10]
+    @test BokehJL.bokehid.(doc) == [10]
 end

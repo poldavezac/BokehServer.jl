@@ -1,8 +1,8 @@
 struct Unknown end
-@inline bokehstoragetype(T::Type)        = T
-@inline bokehunwrap(@nospecialize(ν)) = ν
+@inline bokehstoragetype(@nospecialize(T::Type)) = T
+@inline bokehunwrap(@nospecialize(ν))            = ν
 
-bokehconvert(𝑇::Type, ν) = ν isa 𝑇 ? ν : Unknown()
+bokehconvert(@nospecialize(𝑇::Type), @nospecialize(ν)) = ν isa 𝑇 ? ν : Unknown()
 bokehread(::Type, @nospecialize(::iHasProps), @nospecialize(::Symbol), ν) = ν
 
 include("properties/other.jl")
@@ -14,4 +14,4 @@ include("properties/dataspec.jl")
 include("properties/container.jl")
 include("properties/datasource.jl")
 include("properties/tuple.jl")
-include("properties/either.jl")
+include("properties/union.jl")

@@ -1,10 +1,8 @@
 function _👻structure(
         cls     :: Symbol,
         parents :: Union{Symbol, Expr},
-        fields  :: Vector{<:NamedTuple},
-)
-    @nospecialize cls parents fields
-
+        fields  :: _👻Fields,
+) :: Expr
     code   = [_👻initcode(cls, fields, i) for i ∈ _👻filter(fields)]
     fnames = map(x->x.name, _👻filter(fields))
     quote
@@ -25,16 +23,15 @@ function _👻structure(
     end
 end
 
-function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
-    @nospecialize cls fields
+function _👻setter(cls::Symbol, fields::_👻Fields) :: Expr
     code = _👻elseif_alias(fields, :(throw(ErrorException("unknown or read-only property $α")))) do i
         name = Meta.quot(i.name)
         set  = if i.js
             quote
                 old = $(@__MODULE__).bokehunwrap(getproperty(μ, $name))
-                dotrigger && Bokeh.Events.testcantrigger()
+                dotrigger && BokehJL.Events.testcantrigger()
                 new = setfield!(μ, $name, ν)
-                dotrigger && Bokeh.Events.trigger(Bokeh.ModelChangedEvent(μ, $name, old, new))
+                dotrigger && BokehJL.Events.trigger(BokehJL.ModelChangedEvent(μ, $name, old, new))
             end
         else
             :(setfield!(µ, $name, ν))
@@ -48,8 +45,9 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
         end
 
         quote
-            ν = $(@__MODULE__).bokehconvert($(i.type), $(@__MODULE__).bokehunwrap(ν))
-            (ν isa $Unknown) && throw(ErrorException("Could not convert `$ν` to $(i.type)"))
+            cν = $(@__MODULE__).bokehconvert($(i.type), $(@__MODULE__).bokehunwrap(ν))
+            (cν isa $Unknown) && throw(ErrorException(string("Could not convert `$ν` to ", $(i.type))))
+            ν = cν
             $set
             getproperty(µ, $name)
         end
@@ -62,8 +60,7 @@ function _👻setter(cls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function _👻getter(cls::Symbol, fields::Vector{<:NamedTuple})
-    @nospecialize cls fields
+function _👻getter(cls::Symbol, fields::_👻Fields) :: Expr
     expr = _👻elseif_alias(fields, :(throw(ErrorException("unknown property $α")))) do field
         name = Meta.quot(field.name)
         :($(@__MODULE__).bokehread($(field.type), μ, $name, getfield(µ, $name)))
@@ -81,8 +78,7 @@ function _👻getter(cls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function _👻propnames(cls::Symbol, fields::Vector{<:NamedTuple})
-    @nospecialize cls fields
+function _👻propnames(cls::Symbol, fields::_👻Fields) :: Expr
     quote
         function Base.propertynames(μ::$cls; private::Bool = false)
             return if private
@@ -94,31 +90,13 @@ function _👻propnames(cls::Symbol, fields::Vector{<:NamedTuple})
     end
 end
 
-function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
-    @nospecialize cls fields
-
-    function items(select::Symbol, sort::Bool)
-        vals = if select ≡ :children
-            [i.name for i ∈ fields if i.js && i.children]
-        elseif select ≡ :child
-            [i.name for i ∈ fields if i.js && i.child]
-        else
-            [i.name for i ∈ fields if i.js]
-        end
-        sort && sort!(vals)
-        return Meta.quot.(vals)
-    end
-
+function _👻funcs(cls::Symbol, fields::_👻Fields) :: Expr
     quote
-        @inline function $(@__MODULE__).bokehproperties(::Type{$cls}; select::Symbol = :all, sorted::Bool = false)
-            $(_👻elseif(Iterators.product((false, true), (:all, :children, :child))) do (sort, select)
-                :(if sorted ≡ $sort && select ≡ $(Meta.quot(select))
-                    tuple($(items(select, sort)...))
-                end)
-            end)
+        @inline function $(@__MODULE__).bokehproperties(::Type{$cls}) :: Tuple{Vararg{Symbol}}
+            return $(tuple((i.name for i ∈ fields if i.js)...))
         end
 
-        @inline function $(@__MODULE__).hasbokehproperty(T::Type{$cls}, attr::Symbol)
+        @inline function $(@__MODULE__).hasbokehproperty(T::Type{$cls}, attr::Symbol) :: Bool
             $(_👻elseif((i for i ∈ fields if i.js), false) do field
                 :(if attr ≡ $(Meta.quot(field.name))
                     true
@@ -126,7 +104,7 @@ function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
             end)
         end
 
-        @inline function $(@__MODULE__).bokehfieldtype(T::Type{$cls}, α::Symbol)
+        @inline function $(@__MODULE__).bokehfieldtype(T::Type{$cls}, α::Symbol) :: Union{Nothing, Type}
             $(_👻elseif_alias(fields, :(throw("$T.$α does not exist"))) do field
                 field.js ? field.type : nothing
             end)
@@ -136,24 +114,24 @@ function _👻funcs(cls::Symbol, fields::Vector{<:NamedTuple})
             $(_👻elseif_alias(_👻defaultvalue, fields, nothing))
         end
 
-        function $(@__MODULE__).bokehfields(::Type{$cls})
+        function $(@__MODULE__).bokehfields(::Type{$cls}) :: Tuple{Vararg{Pair{Symbol, Type}}}
             return tuple($((
-                Expr(:call, :(=>), Meta.quot(i.name), i.type)
-                for i ∈ sort(fields; by = string∘first)
+                :(Pair{Symbol, Type}($(Meta.quot(i.name)), $(i.type)))
+                for i ∈ sort(fields; by = (x)->"$(x.name)")
                 if i.js && !i.alias
             )...))
         end
     end
 end
 
-function _👻code(src, mod::Module, code::Expr)
+function _👻code(src, mod::Module, code::Expr) :: Expr
     @assert code.head ≡ :struct
     if !code.args[1]
-        @warn """Bokeh structure $mod.$(code.args[2]) is set to mutable.
+        @warn """BokehJL structure $mod.$(code.args[2]) is set to mutable.
         Add `mutable` to disable this warning""" _module = mod _file = string(src.file) _line = src.line
     end
-    @assert code.args[2] isa Expr "$(code.args[2]): Bokeh structure must have a parent (iHasProps, iModel?)"
-    @assert code.args[2].head ≡ :(<:) "$(code.args[2]): Bokeh structure cannot be templated"
+    @assert code.args[2] isa Expr "$(code.args[2]): BokehJL structure must have a parent (iHasProps, iModel?)"
+    @assert code.args[2].head ≡ :(<:) "$(code.args[2]): BokehJL structure cannot be templated"
 
     code.args[1] = true
     fields  = _👻fields(mod, code)
@@ -162,12 +140,17 @@ function _👻code(src, mod::Module, code::Expr)
     if cls isa Expr
         cls = mod.eval(cls.head ≡ :($) ? cls.args[1] : cls) 
     end
+
+    # use iXXX instead of XXX when constructing `BokehJL.Models` structures.
+    # This allows overloading the properties
+    parent = nameof(mod) ≡ :Models && nameof(parentmodule(mod)) ≡ :BokehJL ? Symbol("i$cls") : cls
+    (parent ∈ names(mod; all = true)) || (parent = cls)
     esc(quote
         @Base.__doc__ $(_👻structure(cls, parents, fields))
 
-        $(_👻getter(cls, fields))
-        $(_👻setter(cls, fields))
-        $(_👻propnames(cls, fields))
+        $(_👻getter(parent, fields))
+        $(_👻setter(parent, fields))
+        $(_👻propnames(parent, fields))
         $(_👻funcs(cls, fields))
         push!($(@__MODULE__).MODEL_TYPES, $cls)
         $cls
@@ -177,20 +160,55 @@ end
 macro wrap(expr::Expr)
     _👻code(__source__, __module__, expr)
 end
+precompile(_👻code, (LineNumberNode, Module, Expr))
 
+"""
+    bokehproperties(::Type{iHasProps}) :: Tuple{Vararg{Symbol}}
+
+Return a list of existing fields, much like `fieldnames`, but only for *javascript* aware fields.
+"""
 function bokehproperties end
+
+"""
+    hasbokehproperty(::Type{iHasProps}) :: Bool
+
+Return whether a field exists, much like `hasfield`, but only for *javascript* aware fields.
+"""
 function hasbokehproperty end
+
+"""
+    bokehfieldtype(::Type{iHasProps}) :: Type
+
+Return the field type, much like `fieldtype`, but only for *javascript* aware fields.
+"""
 function bokehfieldtype end
+
+"""
+    bokehfields(::Type{iHasProps}) :: Tuple{Vararg{Pair{Symbol, Type}}}
+
+Return tuples (symbol, type) for each field in the structure which is known to
+javascript.
+"""
 function bokehfields end
+
+"""
+    defaultvalue(::iHasProps, ::Symbol) :: Union{Nothing, Some}
+
+Return `Some(default value)` for a given field in a given object if a default value was 
+provided with the structure definition. Return `nothing` otherwise.
+
+**Warning** This is *not* necessarily the theme default. See `themevalue` for the latter.
+"""
 function defaultvalue end
 
-function themevalue(𝑇::Type{<:iHasProps}, σ::Symbol)
-    dflt = Bokeh.Themes.theme(𝑇, σ)
+function themevalue(@nospecialize(𝑇::Type{<:iHasProps}), σ::Symbol) :: Union{Some, Nothing}
+    dflt = BokehJL.Themes.theme(𝑇, σ)
     return isnothing(dflt) ? Model.defaultvalue(𝑇, σ) : dflt
 end
 
 const ID = bokehidmaker()
 
-Base.repr(mdl::T) where {T <: iHasProps} = "$T(id = $(bokehid(mdl)))" 
+Base.repr(@nospecialize(mdl::iHasProps)) = "$(nameof(typeof(mdl)))(id = $(bokehid(mdl)))" 
 
 export @wrap
+precompile(Tuple{var"#@wrap", LineNumberNode, Module, Expr})

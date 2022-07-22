@@ -1,7 +1,7 @@
-name = "Bokeh"
+name = "BokehJL"
 uuid = "b7fe046f-2d24-4718-8c03-fdde6cae2a8c"
 authors = ["Pol d'Avezac <pdavezac@yahoo.fr>"]
-version = "0.1.0"
+version = "0.5.0"
 
 [deps]
 Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
@@ -14,4 +14,5 @@ JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 SHA = "ea8e919c-243c-51af-8825-aaa63cd721ce"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"

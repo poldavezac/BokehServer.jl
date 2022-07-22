@@ -44,8 +44,8 @@ for (cls, (𝑇, 𝑈)) ∈ (
 end
 
 for 𝑇 ∈ (:DistanceSpec, :StringSpec)
-    @eval const $(Symbol("Null$𝑇")) = Nullable{$𝑇}
-    @eval Base.show(io::IO, ::Type{$𝑇}) = print(io::IO, $("Bokeh.Model.Null$𝑇"))
+    @eval const $(Symbol("Null$𝑇")) = Union{Nothing, $𝑇}
+    @eval Base.show(io::IO, ::Type{$(Symbol("Null$𝑇"))}) = print(io::IO, $("BokehJL.Model.Null$𝑇"))
 end
 
 function Base.propertynames(μ::iSpec; private :: Bool = false)
@@ -113,13 +113,19 @@ function bokehconvert(𝑇::Type{<:iSpec}, ν::AbstractDict{<:AbstractString})
 end
 
 function bokehconvert(𝑇::Type{<:iSpec}, ν)
-    item = bokehconvert(speceltype(𝑇), ν)
-    return item isa Unknown ? item : 𝑇(item)
+    return if ν isa 𝑇
+        ν
+    elseif ν isa fieldtype(𝑇, :item)
+        𝑇(ν)
+    else
+        item = bokehconvert(speceltype(𝑇), ν)
+        item isa Unknown ? item : 𝑇(item)
+    end
 end
 
 bokehconvert(𝑇::Type{<:iSpec}, ν::AbstractString) = 𝑇(Column(ν))
 
-function bokehconvert(𝑇::Type{<:iSpec{<:EnumType}}, ν::AbstractString)
+function bokehconvert(𝑇::Type{<:iSpec{<:Union{FontSize, EnumType}}}, ν::AbstractString)
     value = bokehconvert(speceltype(𝑇), ν)
     return 𝑇(value isa Unknown ? Column(ν) : value)
 end
@@ -143,10 +149,24 @@ function tonamedtuple(ν::iSpec)
     return ismissing(transform) ? out : merge(out, (; transform))
 end
 
+function todict(ν::iSpec) :: Dict{Symbol, Any}
+    out       = _👻specdict(ν.item)
+    transform = ν.transform
+    ismissing(transform) || (out[:transform] = transform)
+    return out
+end
+
 function tonamedtuple(ν::iUnitSpec)
     out  = invoke(tonamedtuple, Tuple{iSpec}, ν)
     unts = ν.units.value
     return unts ≡ units(typeof(ν))[1] ? out : merge(out, (; units = unts))
+end
+
+function todict(ν::iUnitSpec)
+    out  = invoke(todict, Tuple{iSpec}, ν)
+    unts = ν.units.value
+    (unts ≡ units(typeof(ν))[1]) || (out[:units] = units)
+    return out
 end
 
 function _👻specextract(𝑇::Type, α, ν, dflt)
@@ -159,3 +179,9 @@ _👻specvalue(val::iModel)   = (; expr  = val)
 _👻specvalue(val::EnumType) = (; value = val.value)
 _👻specvalue(val::Color)    = (; value = colorhex(val))
 _👻specvalue(val::Any)      = (; value = val)
+
+_👻specdict(val::Column)   :: Dict{Symbol, Any} = Dict{Symbol, Any}(:field => val.item)
+_👻specdict(val::iModel)   :: Dict{Symbol, Any} = Dict{Symbol, Any}(:expr  => val)
+_👻specdict(val::EnumType) :: Dict{Symbol, Any} = Dict{Symbol, Any}(:value => val.value)
+_👻specdict(val::Color)    :: Dict{Symbol, Any} = Dict{Symbol, Any}(:value => colorhex(val))
+_👻specdict(val::Any)      :: Dict{Symbol, Any} = Dict{Symbol, Any}(:value => val)

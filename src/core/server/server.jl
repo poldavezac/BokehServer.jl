@@ -2,36 +2,69 @@ const RouteDict  = Dict{Symbol, iRoute}
 const RouteTypes = Union{iRoute, Function, Pair}
 
 """
-    serve([host = CONFIG.host], [port = CONFIG.port], apps...; kwa...)
+    listener(server::HTTP.Sockets.TCPServer, routes::RouteDict)
 
-Starts a Bokeh server. `apps` can be `Bokeh.Server.iRoute` types,
+Return an anonymous function for use with `HTTP.listen`
+"""
+function listener(server::HTTP.Sockets.TCPServer, routes::RouteDict) :: Function
+    (http::HTTP.Stream) -> try
+        route(http, routes)
+    catch exc
+        if exc isa InterruptException
+            stop!(routes, server)
+            return
+        elseif CONFIG.throwonerror
+            rethrow()
+        end
+    end
+end
+
+"""
+    serve!([host = CONFIG.host], [port = CONFIG.port], apps...; kwa...)
+
+Starts a BokehJL server. `apps` can be `BokehJL.Server.iRoute` types,
 functions or pairs of `name_of_app => app_or_function`
 
 # Examples
 
 ```julia
-Bokeh.Server.serve(
-    function myapp(doc::Bokeh.Document)
+BokehJL.Server.serve(
+    function myapp(doc::BokehJL.Document)
         ...
     end,
-    :mysecondapp => (doc::Bokeh.Document) -> push!(doc, ...)
+    :mysecondapp => (doc::BokehJL.Document) -> push!(doc, ...)
 )
 ```
 """
 function serve!(routes :: RouteDict, host :: AbstractString, port :: Int; kwa...)
+    foreach(precompilemethods, values(routes))
     isempty(routes) || @info(
         "serving applications",
         (i => joinpath("http://$host:$port", "$i") for i ∈ keys(routes))...
     )
     haskey(routes, :static) || push!(routes, staticroutes(CONFIG)...)
     Base.exit_on_sigint(!CONFIG.catchsigint)
+    server = get(kwa, :server) do
+        HTTP.Sockets.listen(HTTP.Sockets.InetAddr(host, port))
+    end
     try
-        HTTP.listen(route(routes), host, port; kwa...)
+        HTTP.listen(listener(server, routes), host, port; kwa..., server)
     catch exc
         (exc isa InterruptException) || rethrow()
     finally
-        foreach(close, values(routes))
+        stop!(routes, server)
     end
+end
+
+function stop!(routes::RouteDict, server::HTTP.Sockets.TCPServer)
+    if !isopen(server) && isempty(routes)
+        return
+    end
+    @info "stopping the server"
+    cpy = collect(values(routes))
+    empty!(routes)
+    close(server)
+    foreach(close, cpy)
 end
 
 function serve(host :: AbstractString, port :: Int, apps :: Vararg{<:RouteTypes}; kwa...)

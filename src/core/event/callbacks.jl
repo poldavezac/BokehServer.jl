@@ -24,32 +24,41 @@ end
 """
     onchange(func::Function, model::iDocument)
 
-Adds a callback to the document.
+Adds a *Julia* callback to a document-level event.
+
+The function must have a single positional argument. Specifying an event type
+allows triggering the callback on that specific event type only.
 
 # Examples
 ```julia
-julia > begin
-        doc = Bokeh.Document
+doc = BokehJL.Document
 
-        onchange(doc) do evt
-            @assert evt isa Bokeh.Events.iDocEvent
-            println("callback 1: any doc events")
-        end
+# Add a callback for every type of event.
+onchange(doc) do evt
+    @assert evt isa BokehJL.Events.iDocEvent
+    println("callback 1: any doc events")
+end
 
-        onchange(doc) do evt::Bokeh.RootAddedEvent
-            @assert evt isa Bokeh.RootAddedEvent
-            println("callback 2: only RootAddedEvent")
-        end
+# Add a callback for `RootAddedEvent` only
+onchange(doc) do evt::BokehJL.RootAddedEvent
+    @assert evt isa BokehJL.RootAddedEvent
+    println("callback 2: only RootAddedEvent")
+end
 
-        Bokeh.Events.eventlist!() do
-            push!(doc, Model1())
-            delete!(doc, Model2())
-        end
-    end;
+# now trigger the events
+BokehJL.Events.eventlist!() do
+    push!(doc, Model1())
+    delete!(doc, Model2())
+end
+```
 
+will outputs
+
+```raw
 callback 1: any doc events
 callback 2: only RootAddedEvent
 callback 1: any doc events
+```
 """
 function onchange(func::Function, model::iDocument)
     wrap = _𝑒_onchange(func, model)
@@ -62,39 +71,55 @@ end
 """
     onchange(func::Function, model::iModel)
 
-Adds a callback to the model.
+Adds a *Julia* callback to a model-level event.
+
+The function can have two different signatures:
+
+1. `callback(evt [::X])` where specifying `X` allows triggering on a specific event type.
+2. `callback(model [::iModel], attribute [::Symbol], old [::A], new [::B])` where
+specifying `A` or `B` allows triggering on a specific field type.
+
+** Warning ** Using an incorrect type in the signature can result in callback
+being silently ignored.
 
 # Examples
 ```julia
-julia > begin
-        obj = Model()
-        onchange(obj) do evt
-            @assert evt isa Bokeh.Events.iDocModelEvent
-            println("callback 1: receive events")
-        end
+obj = Model()
 
-        onchange(obj) do model, attr, old, new
-            println("callback 2: just sugar")
-        end
+# Add a callback triggered by every type of event
+onchange(obj) do evt
+    @assert evt isa BokehJL.Events.iDocModelEvent
+    println("callback 1: receive events")
+end
 
-        onchange(obj) do model, attr, old, new::Float64
-            # select a specific type for new
-            # we could do the same for old
-            @assert new isa Float64
-            println("callback 3: a specific type for `new`")
-        end
+# Add a callback triggered by `BokehJL.ModelChangedEvent` only.
+onchange(obj) do model, attr, old, new
+    println("callback 2: just sugar")
+end
 
-        Bokeh.Events.eventlist!() do
-            obj.a = 1
-            obj.a = 10.
-        end
-    end;
+# Add a callback triggered by `BokehJL.ModelChangedEvent` only, where a
+# `Float64` is the new value.
+onchange(obj) do model, attr, old, new::Float64
+    @assert new isa Float64
+    println("callback 3: a specific type for `new`")
+end
 
+# now trigger the events
+BokehJL.Events.eventlist!() do
+    obj.a = 1
+    obj.a = 10.
+end
+```
+
+will outputs
+
+```raw
 callback 1: receive events
 callback 2: just sugar
 callback 1: receive events
 callback 2: just sugar
 callback 3: a specific type for `new`
+```
 """
 function onchange(func::Function, model::iModel)
     hascallback(model, func) && return func

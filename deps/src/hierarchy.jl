@@ -1,5 +1,5 @@
 module Hierarchies
-using ..Bokeh
+using ..BokehJL
 using PythonCall
 
 model(name)  = pyimport("bokeh.models" => "Model").model_class_reverse_map["$name"]

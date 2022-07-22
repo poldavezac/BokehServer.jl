@@ -1,47 +1,47 @@
 @testset "compare models" begin
-    @test Bokeh.Model.compare((; a = 1), (; a = 1))
-    @test !Bokeh.Model.compare((; a = 1), (; a = 1.))
-    @test !Bokeh.Model.compare((; a = 1), (; b = 1))
-    @test !Bokeh.Model.compare((; a = 1), (; a = 1, b = 1))
-    @test !Bokeh.Model.compare((; a = 1), 2)
+    @test BokehJL.Model.compare((; a = 1), (; a = 1))
+    @test !BokehJL.Model.compare((; a = 1), (; a = 1.))
+    @test !BokehJL.Model.compare((; a = 1), (; b = 1))
+    @test !BokehJL.Model.compare((; a = 1), (; a = 1, b = 1))
+    @test !BokehJL.Model.compare((; a = 1), 2)
 
-    @test Bokeh.Model.compare(Dict(:a => 1), Dict(:a => 1))
-    @test !Bokeh.Model.compare(Dict(:a => 1), Dict(:a => 1.))
-    @test !Bokeh.Model.compare(Dict(:a => 1), Dict(:b => 1))
-    @test !Bokeh.Model.compare(Dict(:a => 1), Dict(:a => 1, :b => 1))
-    @test !Bokeh.Model.compare(Dict(:a => 1), 2)
+    @test BokehJL.Model.compare(Dict(:a => 1), Dict(:a => 1))
+    @test !BokehJL.Model.compare(Dict(:a => 1), Dict(:a => 1.))
+    @test !BokehJL.Model.compare(Dict(:a => 1), Dict(:b => 1))
+    @test !BokehJL.Model.compare(Dict(:a => 1), Dict(:a => 1, :b => 1))
+    @test !BokehJL.Model.compare(Dict(:a => 1), 2)
 
-    @test Bokeh.Model.compare((1,), (1,))
-    @test !Bokeh.Model.compare((1,), (1.,))
-    @test !Bokeh.Model.compare((1,), (1, 1))
-    @test !Bokeh.Model.compare((1,), 2)
+    @test BokehJL.Model.compare((1,), (1,))
+    @test !BokehJL.Model.compare((1,), (1.,))
+    @test !BokehJL.Model.compare((1,), (1, 1))
+    @test !BokehJL.Model.compare((1,), 2)
 
-    @test Bokeh.Model.compare([1,], [1,])
-    @test !Bokeh.Model.compare([1], [1.,])
-    @test !Bokeh.Model.compare([1], [1, 1])
-    @test !Bokeh.Model.compare([1], 2)
+    @test BokehJL.Model.compare([1,], [1,])
+    @test !BokehJL.Model.compare([1], [1.,])
+    @test !BokehJL.Model.compare([1], [1, 1])
+    @test !BokehJL.Model.compare([1], 2)
 
-    @test Bokeh.Model.compare(1, 1)
-    @test !Bokeh.Model.compare(1, 1.)
-    @test Bokeh.Model.compare(:a, :a)
-    @test !Bokeh.Model.compare(:a, :ab)
-    @test Bokeh.Model.compare("a", "a")
-    @test !Bokeh.Model.compare("a", "ab")
+    @test BokehJL.Model.compare(1, 1)
+    @test !BokehJL.Model.compare(1, 1.)
+    @test BokehJL.Model.compare(:a, :a)
+    @test !BokehJL.Model.compare(:a, :ab)
+    @test BokehJL.Model.compare("a", "a")
+    @test !BokehJL.Model.compare("a", "ab")
 
-    X1 = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
+    X1 = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
         a:: Int32
     end
 
-    X2 = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
+    X2 = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
         b:: Int32
     end
 
-    @test Bokeh.Model.compare(X1(; id = 1), X2(; id = 1)) # comparison only uses ID!
-    @test !Bokeh.Model.compare(X1(; id = 1), X1(; id = 2))
+    @test BokehJL.Model.compare(X1(; id = 1), X2(; id = 1)) # comparison only uses ID!
+    @test !BokehJL.Model.compare(X1(; id = 1), X1(; id = 2))
 end
 
 @testset "extract fields" begin
-    out = Bokeh.Model._👻fields(@__MODULE__, :(mutable struct X <: iModel
+    out = BokehJL.Model._👻fields(@__MODULE__, :(mutable struct X <: iModel
         a:: Int32
         # a line
         b:: Float32 = 1f0
@@ -50,12 +50,12 @@ end
         (;
             index = 2, name = :a, type = Int32, default = Some(:(zero(Int32))),
             init  = Some(:(zero(Int32))), js = true,
-            alias = false, readonly = false, child = false, children = false
+            alias = false, readonly = false,
         ),
         (; 
             index = 4, name = :b, type = Float32, default = Some(1f0),
             init = Some(1f0), js = true,
-            alias = false, readonly = false, child = false, children = false
+            alias = false, readonly = false,
         ),
     ]
     @testset for (i, j) ∈ zip(out, truth)
@@ -68,17 +68,17 @@ end
         end
     end
 
-    struct Dummy <: Bokeh.iModel
+    struct Dummy <: BokehJL.iModel
     end
 
-    out = Bokeh.Model._👻fields(@__MODULE__, :(mutable struct X <: iModel
+    out = BokehJL.Model._👻fields(@__MODULE__, :(mutable struct X <: iModel
         b:: Dummy
     end))
     truth = [
         (; 
             index = 2, name = :b, type = Dummy, default = "Some(:((Dummy)()))",
             init = "Some(:((Dummy)()))", js = true,
-            alias = false, readonly = false, child = true, children = false
+            alias = false, readonly = false,
         ),
     ]
     @testset for (i, j) ∈ zip(out, truth)
@@ -91,13 +91,13 @@ end
         end
     end
 
-    out = Bokeh.Model._👻fields(@__MODULE__, :(mutable struct X <: iModel
+    out = BokehJL.Model._👻fields(@__MODULE__, :(mutable struct X <: iModel
         b:: Vector{Dummy}       = zero
         c:: Dict{Int32, Dummy}  = nodefaults
         d:: Dict{Dummy, Int32}  = Dict(Dummy() => 1)
         e:: Set{Dummy}
     end))
-    dflt(x)  = (; default = x, init = x, js = true, alias = false, readonly = false, child = false, children = true)
+    dflt(x)  = (; default = x, init = x, js = true, alias = false, readonly = false)
     truth = [
         (; index = 2, name = :b, type = Vector{Dummy}, dflt("Some(:((Vector{Dummy})()))")...),
         (; index = 4, name = :c, type = Dict{Int32, Dummy}, dflt(nothing)...),
@@ -116,90 +116,96 @@ end
 end
 
 @testset "defaultvalue" begin
-    ProtocolX = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
+    ProtocolX = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
         a::Int = 1
         b::Float64 = 2.
         c::Vector{String} = ["3"]
         d::String
     end
-    @test Bokeh.Model.defaultvalue(ProtocolX, :a) ≡ Some(1)
-    @test Bokeh.Model.defaultvalue(ProtocolX, :b) ≡ Some(2.)
-    @test Bokeh.Model.defaultvalue(ProtocolX, :c) isa Some
-    @test something(Bokeh.Model.defaultvalue(ProtocolX, :c)) == ["3"]
-    @test Bokeh.Model.defaultvalue(ProtocolX, :d) ≡ nothing
+    @test BokehJL.Model.defaultvalue(ProtocolX, :a) ≡ Some(1)
+    @test BokehJL.Model.defaultvalue(ProtocolX, :b) ≡ Some(2.)
+    @test BokehJL.Model.defaultvalue(ProtocolX, :c) isa Some
+    @test something(BokehJL.Model.defaultvalue(ProtocolX, :c)) == ["3"]
+    @test BokehJL.Model.defaultvalue(ProtocolX, :d) ≡ nothing
 
     a = ProtocolX(; a = 10, d = "x")
-    @test !Bokeh.Model.isdefaultvalue(a, :a)
-    @test Bokeh.Model.isdefaultvalue(a, :b)
-    @test Bokeh.Model.isdefaultvalue(a, :c)
-    @test !Bokeh.Model.isdefaultvalue(a, :d)
+    @test !BokehJL.Model.isdefaultvalue(a, :a)
+    @test BokehJL.Model.isdefaultvalue(a, :b)
+    @test BokehJL.Model.isdefaultvalue(a, :c)
+    @test !BokehJL.Model.isdefaultvalue(a, :d)
 end
 
 @testset "bokeh structure" begin
-    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
+    X = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
         a::Int32   = Int32(1)
         b::Float32 = 10f0
     end
     @test fieldnames(X) == (:id, :a, :b, :callbacks)
     @test propertynames(X()) == (:a, :b)
-    @test X <: Bokeh.iModel
+    @test X <: BokehJL.iModel
     @test X().a ≡ one(Int32)
     @test X().b ≡ 10f0
 
-    Z = @Bokeh.wrap  mutable struct gensym() <: Bokeh.iHasProps
-        a::Bokeh.Model.Internal{Int32} = Int32(1)
+    Z = @BokehJL.wrap  mutable struct gensym() <: BokehJL.iHasProps
+        a::BokehJL.Model.Internal{Int32} = Int32(1)
         b::Float32 = 10f0
     end
-    @test Z <: Bokeh.iHasProps
-    @test !(Z <: Bokeh.iModel)
+    @test Z <: BokehJL.iHasProps
+    @test !(Z <: BokehJL.iModel)
     @test fieldnames(Z) == (:id, :a, :b, :callbacks)
     @test propertynames(Z()) == (:a, :b)
-    @test Bokeh.Model.bokehproperties(Z) == (:b,)
+    @test BokehJL.Model.bokehproperties(Z) == (:b,)
     @test fieldtype(Z, :a) ≡ Int32
 end
 
 @testset "bokeh children" begin
     # `evals` are needed to make sure X1 exists for Y1's declaration
-    X1 = @eval @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
+    X1 = @eval @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
         a::Int64 = 1
     end
 
     # `evals` are needed to make sure X1 exists for Y1's declaration
-    Y1 = eval(:(@Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
+    Y1 = eval(:(@BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
         a::Vector{$X1}      = [$X1(; a = 1), $X1(; a = 2)]
         b::Dict{Int64, $X1} = Dict(1 => $X1(; a = 3), 2 => $X1(; a = 4))
-        c::Dict{$X1, Int64} = Dict($X1(; a = 5) => 1, $X1(; a = 6) => 2)
+        c::Dict{Int64, Vector{$X1}} = Dict(1=> [$X1(; a = 5)])
         d::Set{$X1}         = Set([$X1(; a = 7), $X1(; a = 8)])
         e::$X1              = $X1(; a = 9)
     end))
 
     @test propertynames(Y1()) == (:a, :b, :c, :d, :e)
-    @test Bokeh.Model.bokehproperties(Y1) == propertynames(Y1())
-    @test Bokeh.Model.bokehproperties(Y1; select = :child) == (:e,)
-    @test Bokeh.Model.bokehproperties(Y1; select = :children) == (:a, :b, :c, :d)
+    @test BokehJL.Model.bokehproperties(Y1) == propertynames(Y1())
 
     y1  = Y1()
-    all = Bokeh.allmodels(y1)
-    @test Bokeh.bokehid(y1) ∈ keys(all)
-    @test Bokeh.bokehid(y1.e) ∈ keys(all)
-    @testset for i ∈ (y1.a, values(y1.b), keys(y1.c), y1.d), j ∈ i
-        @test Bokeh.bokehid(j) ∈ keys(all)
+    all = BokehJL.bokehmodels(y1)
+    @test BokehJL.bokehid(y1) ∈ keys(all)
+    @test BokehJL.bokehid(y1.c[1][1]) ∈ keys(all)
+    @test BokehJL.bokehid(y1.e) ∈ keys(all)
+    @testset for i ∈ (y1.a, values(y1.b), y1.d), j ∈ i
+        @test BokehJL.bokehid(j) ∈ keys(all)
     end
+
+    Y2 = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
+        a::BokehJL.Model.IntSpec = 1
+    end
+
+    y2 = Y2(; a = (field = "aaa", transform = X1(; id = 999)))
+    @test collect(BokehJL.bokehchildren(y2)) == [y2.a.transform]
 end
 
 @testset "bokeh dataspec/container" begin
-    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
-        a::Bokeh.Model.IntSpec      = 1
-        b::Bokeh.Model.DistanceSpec = 10f0
+    X = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
+        a::BokehJL.Model.IntSpec      = 1
+        b::BokehJL.Model.DistanceSpec = 10f0
         c::Vector{Int64}            = Int64[1, 2]
     end
     @test fieldnames(X) == (:id, :a, :b, :c, :callbacks)
     @test propertynames(X()) == (:a, :b, :c)
-    @test X <: Bokeh.iModel
+    @test X <: BokehJL.iModel
     @test X().a ≡ 1
     @test X().b ≡ 10.0
     @test fieldtype(X, :c) ≡ Vector{Int64}
-    @test X().c isa Bokeh.Model.Container{Vector{Int64}}
+    @test X().c isa BokehJL.Model.Container{Vector{Int64}}
     @test X().c.values == [1, 2]
 
     x = X()
@@ -210,11 +216,11 @@ end
 end
 
 @testset "bokeh restricteddict" begin
-    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
-        b::Dict{Bokeh.Model.RestrictedKey{(:a,)}, Int}
+    X = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
+        b::Dict{BokehJL.Model.RestrictedKey{(:a,)}, Int}
     end
     @test fieldtype(X, :b) ≡ Dict{Symbol, Int}
-    @test X().b isa Bokeh.Model.Container{Dict{Bokeh.Model.RestrictedKey{(:a,)}, Int64}}
+    @test X().b isa BokehJL.Model.Container{Dict{BokehJL.Model.RestrictedKey{(:a,)}, Int64}}
 
     x = X()
     @nullevents push!(x.b, :mmm => 1)
@@ -224,25 +230,25 @@ end
 end
 
 @testset "bokeh tuple attribute" begin
-    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
-        a::Bokeh.Model.Tuple{Bokeh.Model.IntSpec, Float64}  = (1, 2.0)
+    X = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
+        a::BokehJL.Model.Tuple{BokehJL.Model.IntSpec, Float64}  = (1, 2.0)
     end
     @test X().a ≡ (1, 2.0)
-    @test fieldtype(X, :a) ≡ Tuple{Bokeh.Model.IntSpec, Float64}
+    @test fieldtype(X, :a) ≡ Tuple{BokehJL.Model.IntSpec, Float64}
     x = X(; a = ("toto", 4))
     @test x.a == ("toto", 4.0)
     @nullevents x.a = (Dict("value" => 10), -1.0)
     @test x.a == (10, -1.0)
 end
 
-𝐸T = Bokeh.Model.EnumType{(:a, :b, :c)}
+𝐸T = BokehJL.Model.EnumType{(:a, :b, :c)}
 
 @testset "bokeh either attribute" begin
-    @test collect(Type, Bokeh.Model.UnionIterator(Union{Symbol, String})) == [Symbol, String]
-    @test collect(Type, Bokeh.Model.UnionIterator(Union{Symbol, String, Float32})) == [Float32, Symbol, String]
+    @test collect(Type, BokehJL.Model.UnionIterator(Union{Symbol, String})) == [Symbol, String]
+    @test collect(Type, BokehJL.Model.UnionIterator(Union{Symbol, String, Float32})) == [Float32, Symbol, String]
 
-    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
-        a::Bokeh.Model.Union{𝐸T, Float64} = "a"
+    X = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
+        a::BokehJL.Model.Union{𝐸T, Float64} = "a"
     end
     @test fieldtype(X, :a) ≡ Union{𝐸T, Float64}
     @test X().a == :a
@@ -254,7 +260,7 @@ end
 end
 
 @testset "bokeh namedstruct attribute" begin
-    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
+    X = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
         a::@NamedTuple{x :: 𝐸T, y:: Float64}  = (; x = :a, y = 1.0)
     end
     @test fieldtype(X, :a) ≡ @NamedTuple{x::𝐸T, y::Float64}
@@ -270,15 +276,15 @@ end
 end
 
 @testset "bokeh color" begin
-    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
-        a::Bokeh.Model.Color =  :gray
-        b::Bokeh.Model.ColorSpec =  "gray"
+    X = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
+        a::BokehJL.Model.Color =  :gray
+        b::BokehJL.Model.ColorSpec =  "gray"
     end
     @test X().a.r ≡ X().a.g ≡ X().a.b ≡ 0x80
     @test X().a.a ≡ 0xff
 
-    @test !ismissing(Bokeh.Model.color("rgb(1, 2, 3)"))
-    @test !ismissing(Bokeh.Model.color("#010101"))
+    @test !ismissing(BokehJL.Model.color("rgb(1, 2, 3)"))
+    @test !ismissing(BokehJL.Model.color("#010101"))
     x = X(; a = "rgb(1,2,3)")
     @test x.a.r ≡ UInt8(1)
     @test x.a.g ≡ UInt8(2)
@@ -289,41 +295,41 @@ end
     @test x.a.g ≡ UInt8(2)
     @test x.a.b ≡ UInt8(3)
 
-    @test x.b == Bokeh.Model.colorhex(:gray)
+    @test x.b == BokehJL.Model.colorhex(:gray)
     @test X(; b = "aaa").b == "aaa"
 end
 
 @testset "bokeh marker" begin
-    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
-        a::Bokeh.Model.MarkerSpec = "x"
+    X = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
+        a::BokehJL.Model.MarkerSpec = "x"
     end
     @test X().a == :x
     @test X(;a = "fff").a == "fff"
 end
 
 @testset "bokeh complex field" begin
-    X = @Bokeh.wrap mutable struct gensym() <: Bokeh.iModel
+    X = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
         rows::Union{
-            Bokeh.enum"max,fit,auto,min",
+            BokehJL.enum"max,fit,auto,min",
             Int64,
             Dict{
                 Union{Int64, String},
                 Union{
-                    Bokeh.Model.enum"max,fit,auto,min",
+                    BokehJL.Model.enum"max,fit,auto,min",
                     Int64,
                     @NamedTuple{
-                        policy::Bokeh.Model.enum"auto,min",
-                        align::Bokeh.Model.enum"start,end,auto,center"
+                        policy::BokehJL.Model.enum"auto,min",
+                        align::BokehJL.Model.enum"start,end,auto,center"
                     },
                     @NamedTuple{
-                        policy::Bokeh.Model.enum"fixed",
+                        policy::BokehJL.Model.enum"fixed",
                         height::Int64,
-                        align::Bokeh.Model.enum"start,end,auto,center"
+                        align::BokehJL.Model.enum"start,end,auto,center"
                     },
                     @NamedTuple{
-                        policy::Bokeh.Model.enum"max,fit",
+                        policy::BokehJL.Model.enum"max,fit",
                         flex::Float64,
-                        align::Bokeh.Model.enum"start,end,auto,center"
+                        align::BokehJL.Model.enum"start,end,auto,center"
                     }
                 }
             }
@@ -333,7 +339,7 @@ end
     @test X(; rows = 10).rows ≡ 10
 
     x = X(; rows = Dict(1=>10))
-    @test x.rows isa Bokeh.Model.Container{<:Dict}
+    @test x.rows isa BokehJL.Model.Container{<:Dict}
     @test x.rows[1] ≡ 10
 
     @nullevents x.rows[1] = :max

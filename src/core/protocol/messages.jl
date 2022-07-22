@@ -47,7 +47,7 @@ end
 
 macro msg_str(val)
     symbols = Symbol.(strip.(split(val, ',')))
-    @assert symbols ⊆ _HEADERS
+    @assert symbols ⊆ _HEADERS "$symbols"
     return if length(symbols) ≡ 1
         Message{symbols[1]}
     else
@@ -225,6 +225,14 @@ isreply(::Type{<:Message}, _...) = false
 
 Base.isempty(::Message{:EMPTY}) = true
 Base.isempty(::Message) = false
+
+for args ∈ (
+        (Type{msg"PULL-DOC-REPLY"}, String),
+        (Type{msg"PATCH-DOC"}, NamedTuple{(:events, :references), Tuple{Vector{Base.Dict{Symbol, Any}}, Vector{Base.Dict{Symbol, Any}}}})
+)
+    precompile(sendmessage, (WebSockets.WebSocket, args..., Vararg{Any}))
+end
+
 export sendmessage, Message, @msg_str, receivemessage, isreply
 end
 

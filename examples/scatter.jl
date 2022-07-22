@@ -1,6 +1,6 @@
 #!/usr/bin/env -S julia --startup-file=no --history-file=no --project
-using Bokeh.Plotting
+using BokehJL
 
-Plotting.serve() do
-    Plotting.scatter(x = 1:10, y = 10. : -1. : 1., legend_label= "this is a label")
+BokehJL.Plotting.serve() do
+    BokehJL.scatter(x = 1:10, y = 10. : -1. : 1., legend_label= "this is a label")
 end

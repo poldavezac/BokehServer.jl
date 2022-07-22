@@ -23,7 +23,7 @@ created during callbacks.
 
 A list of all *processed* events is returned.
 """
-function flushevents!(λ::iEventList)
+function flushevents!(λ::iEventList)::Vector{iEvent}
     lst = iEvent[]
     while !isempty(λ)
         push!(lst, popfirst!(λ))

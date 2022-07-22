@@ -48,8 +48,10 @@ function serve(𝐹::Function, a...; k...)
         isempty(doc.roots) && if out isa iModel
             push!(doc, out)
         elseif applicable(filter, out)
-            push!(doc, filter(Base.Fix2(isa, iModel), out)...)
+            push!(doc, filter(Base.Fix2(isa, Models.iLayoutDOM), out)...)
         end
+        isempty(doc.roots) && @warn "Did you forget to return a plot?"
+        doc
     end
 
     Server.serve(plot, a...; k...)

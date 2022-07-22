@@ -1,22 +1,22 @@
-@Bokeh.wrap mutable struct X <: Bokeh.iModel
+@BokehJL.wrap mutable struct X <: BokehJL.iModel
     a::Int
     b::Float64
 end
 
-@Bokeh.wrap mutable struct Cnt <: Bokeh.iModel
+@BokehJL.wrap mutable struct Cnt <: BokehJL.iModel
     a::Vector{X}
     b::Dict{String, X}
 end
 
-@Bokeh.wrap mutable struct Cds <: Bokeh.iModel
-    data::Bokeh.Model.DataDict
+@BokehJL.wrap mutable struct Cds <: BokehJL.iModel
+    data::BokehJL.Model.DataDict
 end
 
 function _compare(x::T, y::T) where {T <: Union{String, Symbol, Number}}
     @test x == y
 end
 
-function _compare(x::T, y::T) where {T <: Bokeh.iModel}
+function _compare(x::T, y::T) where {T <: BokehJL.iModel}
     for k ∈ fieldnames(T)
         (k ≡ :callbacks) && continue
         attrx = getfield(x, k)
@@ -31,7 +31,7 @@ function _compare(x::AbstractArray{T}, y::AbstractArray{T}) where {T <: Union{St
     @test x == y
 end
 
-function _compare(x::AbstractArray{T}, y::AbstractArray{T}) where {T <: Bokeh.iModel}
+function _compare(x::AbstractArray{T}, y::AbstractArray{T}) where {T <: BokehJL.iModel}
     @test size(x) == size(y)
     for (i, j) ∈ zip(x, y)
         _compare(i, j)
@@ -53,15 +53,15 @@ end
 macro initscenario(codes...)
     code = :(push!(doc, $(codes...)))
     quote
-        let srv    = Bokeh.Document()
-            client = Bokeh.Document()
-            Bokeh.Events.eventlist!(Bokeh.Events.NullEventList()) do
-                ids = copy(Bokeh.Model.ID.ids)
+        let srv    = BokehJL.Document()
+            client = BokehJL.Document()
+            BokehJL.Events.eventlist!(BokehJL.Events.NullEventList()) do
+                ids = copy(BokehJL.Model.ID.ids)
                 let doc = srv
                     $code
                 end
 
-                Bokeh.Model.ID.ids[:] .= ids
+                BokehJL.Model.ID.ids[:] .= ids
                 let doc = client
                     $code
                 end
@@ -71,16 +71,16 @@ macro initscenario(codes...)
     end
 end
 
-function runscenario(𝐹::Function, srv = Bokeh.Document(), client = Bokeh.Document())
+function runscenario(𝐹::Function, srv = BokehJL.Document(), client = BokehJL.Document())
     _compare(getfield(srv, :roots), getfield(client, :roots))
 
-    evts = Bokeh.Protocol.patchdoc(𝐹, srv)
+    evts = BokehJL.Protocol.patchdoc(𝐹, srv)
     @test !isnothing(evts)
     if !isnothing(evts)
-        JSON = Bokeh.Protocol.Messages.JSON
+        JSON = BokehJL.Protocol.Messages.JSON
         cnv  = JSON.parse ∘ JSON.json
-        Bokeh.Events.eventlist!(Bokeh.Events.NullEventList()) do
-            Bokeh.Protocol.patchdoc!(client, cnv(evts), Bokeh.Protocol.Buffers())
+        BokehJL.Events.eventlist!(BokehJL.Events.NullEventList()) do
+            BokehJL.Protocol.patchdoc!(client, cnv(evts), BokehJL.Protocol.Buffers())
         end
 
         _compare(getfield(srv, :roots), getfield(client, :roots))
@@ -91,7 +91,7 @@ end
 macro runscenario(codes...)
     quote
         let itms = @initscenario($(codes[1:end-1]...))
-            runscenario(itms...) do doc::Bokeh.Document
+            runscenario(itms...) do doc::BokehJL.Document
                 $(codes[end])
             end
             itms

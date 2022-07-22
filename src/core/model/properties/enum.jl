@@ -64,7 +64,7 @@ const HatchPatternType = EnumType{(
 )}
 
 for 𝑇 ∈ (:LineCap, :LineDash, :LineJoin, :MarkerType, :TextAlign, :TextBaseline, :HatchPatternType, :FontStyle, :AngleUnits, :SpatialUnits)
-    @eval Base.show(io::IO, ::Type{$𝑇}) = print(io::IO, $("Bokeh.Model.$𝑇"))
+    @eval Base.show(io::IO, ::Type{$𝑇}) = print(io::IO, $("BokehJL.Model.$𝑇"))
 end
 
 function longform(::Type{HatchPatternType}, ν::Symbol)

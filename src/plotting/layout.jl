@@ -9,6 +9,14 @@ const LayoutPlotEntry = LayoutEntry{Models.iPlot}
 
 Base.adjoint(x::Models.iLayoutDOM) = x
 
+function layout(items::AbstractArray; kwa...)
+    entries  = let children = filter!(!isnothing∘first, _👻flatten(items).items)
+        T = all(i.layout isa Models.iPlot for i ∈ children) ? LayoutPlotEntry : LayoutDOMEntry
+        T[(i.layout, i.r0, i.c0, i.r1 - i.r0, i.c1 - i.c0) for i ∈ children]
+    end
+    return layout(entries; kwa...)
+end
+
 """
     layout(
         children::AbstractVector{<:Models.iLayoutDOM};
@@ -16,6 +24,8 @@ Base.adjoint(x::Models.iLayoutDOM) = x
         ncols :: Union{Int, Nothing} = nothing,
         kwa...
     )
+    layout(children::AbstractArray; kwa...)
+
 Conveniently create a grid of layoutable objects.
 
 Grids are created by using ``GridBox`` model. This gives the most control over
@@ -39,9 +49,8 @@ Supported patterns:
 
    ** warning ** The adjoint operator `'` is recursive. A non-recursive code
    would be `[p1, permutedims([[p2, p3], p4])]`.
-   
 
-3. Flat list of layoutable objects. This requires ``nrows`` and/or ``ncols`` to
+2. Flat list of layoutable objects. This requires ``nrows`` and/or ``ncols`` to
    be set. The input list will be rearranged into a 2D array accordingly. One
    can use ``None`` for padding purpose.
 
@@ -53,6 +62,7 @@ Supported patterns:
        (p4, 1, 1, 1, 1),
    ])
 
+Keywords are the same as for `layout(children::AbstractVector{<:LayoutEntry})`
 """
 function layout(
         children::AbstractVector{<:Union{Nothing, Models.iLayoutDOM}};
@@ -71,15 +81,6 @@ end
 
 layout(child::Models.iLayoutDOM) = child
 
-function layout(items::AbstractArray; kwa...)
-    entries  = let children = filter!(!isnothing∘first, _👻flatten(items).items)
-        T = all(i.layout isa Models.iPlot for i ∈ children) ? LayoutPlotEntry : LayoutDOMEntry
-        T[(i.layout, i.r0, i.c0, i.r1 - i.r0, i.c1 - i.c0) for i ∈ children]
-    end
-    return layout(entries; kwa...)
-end
-
-
 """
     layout(
         children         :: AbstractVector{<:LayoutPlotEntry};
@@ -90,7 +91,7 @@ end
         toolbar_options  :: Any                            = (;)
     )
 
-Create a plot layout.
+Create a layout of plots. Toolbars will be merged by default.
 
 Keywords:
 
@@ -138,7 +139,7 @@ end
         height      :: Union{Nothing, Int}            = nothing,
     )
 
-create a layout
+Create a layout of any layoutable object (plots, widgets...).
 
 Keywords:
 
@@ -178,46 +179,53 @@ const _👻Grid = @NamedTuple{nrows::Int, ncols::Int, items::Vector{_👻Item}}
 
 _👻nonempty(child::_👻Grid) = child.nrows != 0 && child.ncols != 0
 
-_👻flatten(λ::Models.iLayoutDOM) = _👻Grid((1, 1, [_👻Item((λ, 0, 0, 1, 1))]))
+_👻flatten(λ::Union{Nothing, Models.iLayoutDOM}) = _👻Grid((1, 1, [_👻Item((λ, 0, 0, 1, 1))]))
 
-function _👻flatten(λ::AbstractVector)
+function _👻flatten(λ::AbstractVector, attr :: Symbol = :ncols)
     children = filter!(_👻nonempty, _👻flatten.(λ))
     return if isempty(children)
         _👻Grid((0, 0, _👻Item[]))
     elseif length(children) ≡ 1
         _👻Grid((1, 1, _👻Item[_👻Item((children[1], 0, 0, 1, 1))]))
     else
-        nrows = sum(child.nrows for child in children)
-        ncols = lcm((child.ncols for child in children)...)
+        other = attr ≡ :ncols ? :nrows : :ncols
+        nrows = sum(getproperty(child, other) for child in children)
+        ncols = lcm((getproperty(child, attr) for child in children)...)
 
         items  = _👻Item[]
         offset = 0
         for child in children
-            factor = ncols÷child.ncols
+            factor = ncols÷getproperty(child, attr)
 
             for i in child.items
-                push!(items, _👻Item((i.layout, i.r0 + offset, factor*i.c0, i.r1 + offset, factor*i.c1)))
+                push!(items, _👻Item((
+                    i.layout,
+                    (if attr ≡ :ncols
+                         (i.r0 + offset, factor*i.c0, i.r1 + offset, factor*i.c1)
+                     else
+                         (factor*i.r0, i.c0 + offset, factor * i.r1, i.c1 + offset)
+                    end)...
+                )))
             end
 
-            offset += child.nrows
+            offset += getproperty(child, other)
         end
 
-        return _👻Grid((nrows, ncols, items))
+        return _👻Grid(attr ≡ :ncols ? (nrows, ncols, items) : (ncols, nrows, items))
     end
 end
 
-function _👻flatten(λ::AbstractArray{T, 2} where {T})
+function _👻flatten(λ::AbstractMatrix)
     return if isempty(λ)
         _👻Grid((0, 0, _👻Item[]))
     elseif length(λ) ≡ 1
         _👻Grid((1, 1, _👻Item[_👻Item((first(λ), 0, 0, 1, 1))]))
     elseif size(λ, 1) ≡ 1
-        grid = _👻flatten(λ')
-        _👻Grid((grid.ncols, grid.nrows, _👻Item[_👻Item((i.layout, i.c0, i.r0, i.c1, i.r1)) for i ∈ grid.items]))
+        _👻flatten(view(λ, 1, :), :nrows)
     elseif size(λ, 2) ≡ 1
-        _👻flatten(@view λ[:,1])
+        _👻flatten(view(λ, :,1), :ncols)
     else
-        _👻flatten([@view λ[i:i,:] for i ∈ axes(λ, 1)])
+        _👻flatten([view(λ, i:i,:) for i ∈ axes(λ, 1)], :ncols)
     end
 end
 

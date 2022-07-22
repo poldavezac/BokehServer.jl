@@ -5,6 +5,7 @@ struct SessionList
     SessionList() = new(fieldtype(SessionList, :sessions)())
 end
 
+Base.isempty(λ::SessionList) = isempty(λ.sessions)
 Base.get(λ::SessionList, σ::iSessionContext) :: Union{iSessionContext, Missing} = get(λ.sessions, σ.id, missing)
 Base.get!(λ::SessionList, σ::SessionContext) :: SessionContext = get!(λ.sessions, σ.id, σ)
 Base.push!(λ::SessionList, σ::SessionContext) = push!(λ.sessions, σ.id => σ)
@@ -29,6 +30,7 @@ for fcn ∈ (:get, :pop!)
     @eval Base.$fcn(𝐴::iApplication, σ::iSessionContext) = $fcn(sessions(𝐴), σ)
 end
 
+Base.isempty(𝐴::iApplication) = isempty(sessions(𝐴))
 Base.in(σ::iSessionContext, 𝐴::iApplication)  = σ ∈ sessions(𝐴)
 Base.get!(𝐴::iApplication, http::HTTP.Stream) :: iSessionContext = get!(𝐴, http.message)
 Base.get!(𝐴::iApplication, args...)           :: iSessionContext = get!(𝐴, sessionkey(𝐴, args...))
@@ -74,6 +76,12 @@ end
 sessions(𝐴::iApplication) = 𝐴.sessions
 
 makeid(_...) = "$(UUIDs.uuid4())"
+
+function precompilemethods(𝐴::Application)
+    Events.eventlist!(Events.NullEventList()) do
+        initialize!(Documents.Document(), 𝐴)
+    end
+end
 
 function makerootids(app::iApplication, rs::Vararg{iModel})
     Dict{String, String}(("$(bokehid(r))" => makeid(app) for r ∈ rs)...)
