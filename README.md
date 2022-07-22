@@ -1,5 +1,5 @@
 ![Continuous Integration](https://github.com/poldavezac/bokehjl/actions/workflows/ci.yml/badge.svg?develop)
-[![Stable Documentation](https://img.shields.io/badge/docs-stable-blue.svg)](https://poldavezac.github.io/bokehjl/stable)
+[![Dev Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://poldavezac.github.io/BokehJL/dev)
 
 # Python's *bokeh* library in Julia
 
@@ -53,10 +53,10 @@ FIG = BokehJL.line(; x = 1:10, y = 1:10)
 DATA = FIG.renderers[1].data_source
 
 "A button which adds a datapoint when clicked"
-BTN = let btn = BokehJL.Models.Button(; label = "add a data point")
+BTN = let btn = BokehJL.Button(; label = "add a data point")
 
     # Note that the `onchange` call only reacts to `ButtonClick` events
-    BokehJL.onchange(btn) do evt::BokehJL.Models.Actions.ButtonClick
+    BokehJL.onchange(btn) do evt::BokehJL.ButtonClick
         BokehJL.stream!(
             DATA,
             Dict("x" => [length(DATA.data["x"])+1], "y" => [rand(1:10)])
@@ -89,4 +89,7 @@ instance, say one plot. Check the doc on `BokehJL.serve` for other options.
 
 ## Related projects
 
-The same idea, created more or less at the same time: [Another bokeh in julia](https://github.com/cjdoris/Bokeh.jl)
+[Another bokeh in julia](https://github.com/cjdoris/Bokeh.jl) is the same idea,
+created more or less at the same time. To the best of my understanding, with my
+appologies if I'm wrong, it does not provide *Julia* <-> *javascript*
+synchronisation: static HTML pages only.
