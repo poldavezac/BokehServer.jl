@@ -7,4 +7,4 @@ using Documenter
 using BokehJL
 
 makedocs(sitename="BokehJL Documentation")
-deploydocs(; repo="github.com/poldavezac/bokehjl")
+deploydocs(; repo="poldavezac/BokehJL", devbranch = "develop")
