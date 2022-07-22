@@ -1,5 +1,5 @@
 HTTP = BokehJL.Server.HTTP
-const TEST_PORT = rand(1:9999)
+const TEST_PORT = 5032
 BokehJL.Server.CONFIG.port = TEST_PORT
 
 @testset "tokens" begin
