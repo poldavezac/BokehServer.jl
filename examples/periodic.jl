@@ -1,6 +1,6 @@
 #!/usr/bin/env -S julia --startup-file=no --history-file=no --project
 push!(LOAD_PATH, joinpath(@__DIR__, "environment"))
-using BokehJL
+using BokehServer
 using Pkg.Artifacts
 using CSV, DataFrames
 
@@ -36,32 +36,32 @@ const TOOLTIPS = [
     ("Electronic configuration", "@{electronic configuration}"),
 ]
 
-BokehJL.Plotting.serve() do
-    p = BokehJL.figure(title="Periodic Table (omitting LA and AC Series)", width=1000, height=450,
+BokehServer.Plotting.serve() do
+    p = BokehServer.figure(title="Periodic Table (omitting LA and AC Series)", width=1000, height=450,
                 x_range=groups, y_range=collect(periods[end:-1:1]),
                tools="hover", toolbar_location=nothing, tooltips=TOOLTIPS)
 
-    r = BokehJL.rect!(p; x = "group", y = "period", width = 0.95,  height = 0.95,
+    r = BokehServer.rect!(p; x = "group", y = "period", width = 0.95,  height = 0.95,
             source=df, fill_alpha=0.6, legend_field="metal",
-            color=BokehJL.Transforms.factor_cmap("metal", collect(values(cmap)), collect(keys(cmap)))
+            color=BokehServer.Transforms.factor_cmap("metal", collect(values(cmap)), collect(keys(cmap)))
     )
 
     text_props = (; source=df, text_align=:left, text_baseline=:middle)
 
-    x = BokehJL.Transforms.dodge("group", -0.4, range=p.x_range)
+    x = BokehServer.Transforms.dodge("group", -0.4, range=p.x_range)
 
-    BokehJL.text!(p; x, y="period", text="symbol", text_font_style="bold", text_props...)
+    BokehServer.text!(p; x, y="period", text="symbol", text_font_style="bold", text_props...)
 
-    BokehJL.text!(p; x, y=BokehJL.Transforms.dodge("period", 0.3, range=p.y_range), text="atomic number",
+    BokehServer.text!(p; x, y=BokehServer.Transforms.dodge("period", 0.3, range=p.y_range), text="atomic number",
        text_font_size="11px", text_props...)
 
-    BokehJL.text!(p; x, y=BokehJL.Transforms.dodge("period", -0.35, range=p.y_range), text="name",
+    BokehServer.text!(p; x, y=BokehServer.Transforms.dodge("period", -0.35, range=p.y_range), text="name",
        text_font_size="7px", text_props...)
 
-    BokehJL.text!(p; x, y=BokehJL.Transforms.dodge("period", -0.2, range=p.y_range), text="atomic mass",
+    BokehServer.text!(p; x, y=BokehServer.Transforms.dodge("period", -0.2, range=p.y_range), text="atomic mass",
            text_font_size="7px", text_props...)
 
-    BokehJL.text!(p; x=["3", "3"], y=["VI", "VII"], text=["LA", "AC"], text_align="center", text_baseline="middle")
+    BokehServer.text!(p; x=["3", "3"], y=["VI", "VII"], text=["LA", "AC"], text_align="center", text_baseline="middle")
 
     p.outline_line_color = "#00000000"
     p.grid.grid_line_color = "#00000000"

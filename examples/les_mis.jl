@@ -1,6 +1,6 @@
 #!/usr/bin/env -S julia --startup-file=no --history-file=no --project
-using BokehJL
-using BokehJL.Model.JSON
+using BokehServer
+using BokehServer.Model.JSON
 using Pkg.Artifacts
 using Pkg
 path   = joinpath(artifact"javascript", "site-packages", "bokeh", "sampledata", "_data", "les_mis.json")
@@ -22,7 +22,7 @@ xname = String[]
 yname = String[]
 color = String[]
 alpha = Float64[]
-dflt  = BokehJL.Model.colorhex(:lightgrey)
+dflt  = BokehServer.Model.colorhex(:lightgrey)
 for (i, node1) ∈ enumerate(nodes), (j, node2) ∈ enumerate(nodes)
     push!(xname, node1["name"])
     push!(yname, node2["name"])
@@ -39,8 +39,8 @@ data = Dict(
     "count" => reshape(counts, :),
 )
 
-BokehJL.Plotting.serve() do
-    fig = BokehJL.figure(;
+BokehServer.Plotting.serve() do
+    fig = BokehServer.figure(;
         title           = "Les Mis Occurrences",
         x_axis_location = "above",
         tools           = "hover,save",
@@ -50,7 +50,7 @@ BokehJL.Plotting.serve() do
         width           = 800,
         height          = 800
     )
-    BokehJL.rect!(
+    BokehServer.rect!(
         fig;
         x                = "xname",
         y                = "yname",

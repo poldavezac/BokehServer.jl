@@ -1,10 +1,10 @@
-JSON = BokehJL.Protocol.Messages.JSON
+JSON = BokehServer.Protocol.Messages.JSON
 
 @testset "send" begin
-    doc  = BokehJL.Document()
+    doc  = BokehServer.Document()
     mdl  = ProtocolX(; id = 1)
-    E    = BokehJL.Events
-    json(x) = JSON.json(BokehJL.Protocol.serialize(x))
+    E    = BokehServer.Events
+    json(x) = JSON.json(BokehServer.Protocol.serialize(x))
 
     val   = json(E.ModelChangedEvent(mdl, :a, 10, 20))
     truth = """{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"new":20}"""
@@ -22,7 +22,7 @@ JSON = BokehJL.Protocol.Messages.JSON
         push!(doc, mdl)
         # next change should not be sent to the client as the model is brand new
         mdl.a = 100
-        val   = JSON.json(BokehJL.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}()))
+        val   = JSON.json(BokehServer.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}()))
         truth = """{"events":[{"kind":"RootAdded","model":{"id":"1"}}],"""*
             """"references":[{"attributes":{"a":100},"id":"1","type":"$(nameof(ProtocolX))"}]}"""
         @test JSON.parse(val) == JSON.parse(truth)
@@ -30,23 +30,23 @@ JSON = BokehJL.Protocol.Messages.JSON
 
     E.eventlist!() do
         mdl.a = 10
-        val   = JSON.json(BokehJL.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([mdl.id])))
+        val   = JSON.json(BokehServer.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([mdl.id])))
         truth = """{"events":[{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"new":10}],"references":[]}"""
         @test JSON.parse(val) == JSON.parse(truth)
     end
 end
 
-X = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
-    data :: BokehJL.Model.DataDict
+X = @BokehServer.wrap mutable struct gensym() <: BokehServer.iModel
+    data :: BokehServer.Model.DataDict
 end
 
 @testset "receive" begin
-    doc  = BokehJL.Document()
+    doc  = BokehServer.Document()
     mdl  = ProtocolX(; id = 100,a  = 10)
-    E    = BokehJL.Events
-    buf  = BokehJL.Protocol.Buffers()
-    json1(x) = JSON.json(BokehJL.Protocol.serialize(x))
-    json2(x) = JSON.json(BokehJL.Protocol.Serialize.serialref(x, BokehJL.Protocol.Serialize.Rules()))
+    E    = BokehServer.Events
+    buf  = BokehServer.Protocol.Buffers()
+    json1(x) = JSON.json(BokehServer.Protocol.serialize(x))
+    json2(x) = JSON.json(BokehServer.Protocol.Serialize.serialref(x, BokehServer.Protocol.Serialize.Rules()))
     jsref(x) = JSON.parse(json1(x))
     js(x)    = JSON.parse(json2(x))
     @testset "add first root" begin
@@ -57,9 +57,9 @@ end
             )
 
             @test isempty(doc)
-            BokehJL.Protocol.patchdoc!(doc, cnt, buf)
+            BokehServer.Protocol.patchdoc!(doc, cnt, buf)
             @test length(doc) == 1
-            @test BokehJL.bokehid(doc[1]) == 100
+            @test BokehServer.bokehid(doc[1]) == 100
             @test doc[1].a == 10
             @test doc[1] ≢ mdl
         end
@@ -73,7 +73,7 @@ end
             )
 
             @test length(doc) == 1
-            @test_throws ErrorException BokehJL.Protocol.patchdoc!(doc, cnt, buf)
+            @test_throws ErrorException BokehServer.Protocol.patchdoc!(doc, cnt, buf)
             @test length(doc) == 1
         end
     end
@@ -86,7 +86,7 @@ end
             )
 
             @test length(doc) == 1
-            BokehJL.Protocol.patchdoc!(doc, cnt, buf)
+            BokehServer.Protocol.patchdoc!(doc, cnt, buf)
             @test isempty(doc)
         end
     end
@@ -99,7 +99,7 @@ end
             )
 
             setfield!(doc, :title, "----")
-            BokehJL.Protocol.patchdoc!(doc, cnt, buf)
+            BokehServer.Protocol.patchdoc!(doc, cnt, buf)
             @test doc.title == "A"
         end
     end
@@ -116,7 +116,7 @@ end
             )
 
             @test isempty(doc)
-            BokehJL.Protocol.patchdoc!(doc, cnt, buf)
+            BokehServer.Protocol.patchdoc!(doc, cnt, buf)
             @test length(doc) == 2
             @test doc[1].id ≡ mdl.id
             @test doc[2].id ≡ ymdl.id
@@ -134,41 +134,41 @@ end
 
             @test length(doc) == 2
             @test last(doc).a.id ≢ other.id
-            BokehJL.Protocol.patchdoc!(doc, cnt, buf)
+            BokehServer.Protocol.patchdoc!(doc, cnt, buf)
             @test length(doc) == 2
             @test last(doc).a.id ≡ other.id
         end
     end
 
     @testset "action attribute" begin
-        btn = BokehJL.Models.Button()
+        btn = BokehServer.Models.Button()
         E.eventlist!() do
             push!(getfield(doc, :roots), btn)
 
             called = Ref(false)
-            BokehJL.onchange(btn) do x
+            BokehServer.onchange(btn) do x
                 called[] = true
             end
                 
             cnt = Dict{String, Any}(
                 "references" => Any[],
-                "events" => Any[js(BokehJL.Models.Actions.ButtonClick(; model = btn))],
+                "events" => Any[js(BokehServer.Models.Actions.ButtonClick(; model = btn))],
             )
-            BokehJL.Protocol.patchdoc!(doc, cnt, buf)
+            BokehServer.Protocol.patchdoc!(doc, cnt, buf)
             @test called[]
         end
     end
 
     @testset "complex obj attribute" begin
         E.eventlist!() do
-            doc   = BokehJL.Document()
+            doc   = BokehServer.Document()
             a     = [ProtocolX(;a = 1), ProtocolX(;a = 2)]
             other = ProtocolZ(; a, b = (; value = 100, transform = a[1]))
             cnt = Dict{String, Any}(
                 "references" => Any[jsref(other), jsref(other.a[1]), jsref(other.a[2])],
-                "events" => Any[js(BokehJL.Events.RootAddedEvent(doc, other, 1))]
+                "events" => Any[js(BokehServer.Events.RootAddedEvent(doc, other, 1))]
             )
-            BokehJL.Protocol.patchdoc!(doc, cnt, buf)
+            BokehServer.Protocol.patchdoc!(doc, cnt, buf)
             @test length(doc) ≡ 1
             @test [i.a for i ∈ first(doc).a] == [1, 2]
             @test first(doc).b.value ≡ 100
@@ -178,19 +178,19 @@ end
 end
 
 function _test_patch(𝐹::Function)
-    E = BokehJL.Events
+    E = BokehServer.Events
     E.eventlist!() do
         x, truth = 𝐹(:init, nothing)
-        doc      = BokehJL.Document(; roots = BokehJL.iModel[x])
+        doc      = BokehServer.Document(; roots = BokehServer.iModel[x])
         𝐹(:mutate, x)
-        val   = JSON.json(BokehJL.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([x.id])))
+        val   = JSON.json(BokehServer.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([x.id])))
         # the '2' has changed to a '1' !
         @test JSON.parse(val) == JSON.parse("""{"events":[$truth],"references":[]}""")
 
         x, truth = 𝐹(:init, nothing)
-        doc      = BokehJL.Document(; roots = BokehJL.iModel[x])
+        doc      = BokehServer.Document(; roots = BokehServer.iModel[x])
         cnt      = Dict{String, Any}("references" => Any[], "events" => Any[JSON.parse(truth)])
-        BokehJL.Protocol.patchdoc!(doc, cnt, BokehJL.Protocol.Buffers())
+        BokehServer.Protocol.patchdoc!(doc, cnt, BokehServer.Protocol.Buffers())
         @test 𝐹(:verify, x)
     end
 end
@@ -211,7 +211,7 @@ end
 @testset "selection.indices" begin
     _test_patch() do state, x
         return if state ≡ :init
-            x =  BokehJL.Selection()
+            x =  BokehServer.Selection()
             x, """{"kind":"ModelChanged","attr":"indices","hint":null,"new":[0,1,2,3,4],"model":{"id":"$(x.id)"}}"""
         elseif state ≡ :mutate
             x.indices = collect(1:5)

@@ -37,7 +37,7 @@ Supertypes: ModelChangedEvent <: iDocModelEvent <: iEvent
 end
 
 """
-Event triggered by a calling `BokehJL.update!` on a `BokehJL.Models.ColumnDataSource`,
+Event triggered by a calling `BokehServer.update!` on a `BokehServer.Models.ColumnDataSource`,
 i.e, by adding *columns* to the `ColumnDataSource`.
 
 Fields:
@@ -53,7 +53,7 @@ Supertypes: ColumnDataChangedEvent <: iDataSourceEvent <: iDocModelEvent <: iEve
 end
 
 """
-Event triggered by a calling `BokehJL.stream!` on a `BokehJL.Models.ColumnDataSource`,
+Event triggered by a calling `BokehServer.stream!` on a `BokehServer.Models.ColumnDataSource`,
 i.e, by adding *rows* to the `ColumnDataSource`.
 
 Fields:
@@ -71,7 +71,7 @@ Supertypes: ColumnsStreamedEvent <: iDataSourceEvent <: iDocModelEvent <: iEvent
 end
 
 """
-Event triggered by a calling `BokehJL.patch!` on a `BokehJL.Models.ColumnDataSource`,
+Event triggered by a calling `BokehServer.patch!` on a `BokehServer.Models.ColumnDataSource`,
 i.e, by mutating parts of the data in a the `ColumnDataSource`.
 
 Fields:
@@ -94,7 +94,7 @@ for (cls, action) ∈ (:RootAddedEvent => "added", :RootRemovedEvent => "removed
     end
 
     eval(:(@doc($("""
-    Event triggered on a `BokehJL.Document` when a root is $action to it.
+    Event triggered on a `BokehServer.Document` when a root is $action to it.
 
     Fields:
 
@@ -107,7 +107,7 @@ for (cls, action) ∈ (:RootAddedEvent => "added", :RootRemovedEvent => "removed
 end
 
 """
-Event triggered on a `BokehJL.Document` when the HTML document title is changed.
+Event triggered on a `BokehServer.Document` when the HTML document title is changed.
 
 Fields:
 

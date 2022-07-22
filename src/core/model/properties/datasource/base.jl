@@ -6,7 +6,7 @@ struct DataDictContainer <: iContainer{DataDict}
     values :: DataDict
 end
 
-Base.show(io::IO, ::Type{DataDict}) = print(io, "BokehJL.Model.DataDict")
+Base.show(io::IO, ::Type{DataDict}) = print(io, "BokehServer.Model.DataDict")
 
 Base.setindex!(γ::DataDictContainer, 𝑣, 𝑘) = (update!(γ, 𝑘 => 𝑣); 𝑣)
 Base.size(γ::DataDictContainer) = isempty(γ.values) ? (0, 0) : (length(first(values(γ.values))), length(γ.values))
@@ -18,7 +18,7 @@ macro _𝑑𝑠_trigger(T, args...)
     esc(quote
         let parent = γ.parent.value
             if (dotrigger && !isnothing(parent) && (getfield(parent, γ.attr) ≡ γ.values))
-                BokehJL.Events.trigger(BokehJL.Events.$T(parent, γ.attr, $(args...)))
+                BokehServer.Events.trigger(BokehServer.Events.$T(parent, γ.attr, $(args...)))
             end
         end
     end)

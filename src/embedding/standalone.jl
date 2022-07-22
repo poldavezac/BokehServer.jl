@@ -1,5 +1,5 @@
 """
-Return HTML components to embed a BokehJL plot. The data for the plot is
+Return HTML components to embed a BokehServer plot. The data for the plot is
 stored directly in the returned HTML.
 
 * The `script` component, when executed will fill the `divs` components with

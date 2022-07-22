@@ -1,13 +1,13 @@
 module Properties
-using ..BokehJL
-using ..BokehJL.Model.Dates
-using ..BokehJL.Themes.JSON
+using ..BokehServer
+using ..BokehServer.Model.Dates
+using ..BokehServer.Themes.JSON
 try
-    using ..BokehJL.Models
+    using ..BokehServer.Models
 catch
-    BokehJL.eval(:(module Models end))
+    BokehServer.eval(:(module Models end))
 end
-using ..BokehJL.Models
+using ..BokehServer.Models
 using PythonCall
 using ..Defaults: parsedefault, model, modelnames
 export parsedefault, model, modelnames
@@ -22,7 +22,7 @@ macro property(opt)
         (types, type) = opt.args[2:end]
         name = types isa Expr ? Union{(Val{i} for i ∈ types.args)...} : Val{types}
     end
-    (type isa Symbol) && (type = getfield(BokehJL.Model, type))
+    (type isa Symbol) && (type = getfield(BokehServer.Model, type))
     :(function parseproperty(::$name, cls, attr::Symbol, prop)
         type    = $type
         doc     = pyis(prop.__doc__, @py(None)) ? nothing : pyconvert(String, prop.__doc__)
@@ -40,14 +40,14 @@ function _enum(objs...)
         x = pyconvert(Symbol, j)
         (x ∈ vals) || push!(vals, x)
     end
-    BokehJL.Model.EnumType{tuple(vals...)}
+    BokehServer.Model.EnumType{tuple(vals...)}
 end
 
 function parseproperty(::Val{T}, cls, attr::Symbol, prop) where {T}
-    type    = if T ∈ names(BokehJL.Model; all = true)
-        getfield(BokehJL.Model, T)
+    type    = if T ∈ names(BokehServer.Model; all = true)
+        getfield(BokehServer.Model, T)
     elseif endswith("$T", "Spec")
-        BokehJL.Model.Spec{getfield(BokehJL.Model, Symbol("$T"[1:end-4]))}
+        BokehServer.Model.Spec{getfield(BokehServer.Model, Symbol("$T"[1:end-4]))}
     else
         throw(ErrorException("Cannot deal with python property `$T`"))
     end
@@ -71,8 +71,8 @@ end
 @property AnyRef   => Any
 @property Null     => Nothing
 @property ColumnData => DataDict
-@property Interval => BokehJL.Model.Interval{pyconvert(Float64, prop.start), pyconvert(Float64, prop.end)}
-@property JSON => BokehJL.Model.JSONString
+@property Interval => BokehServer.Model.Interval{pyconvert(Float64, prop.start), pyconvert(Float64, prop.end)}
+@property JSON => BokehServer.Model.JSONString
 @property Dict     => Dict{parseproperty(cls, prop.keys_type).type, parseproperty(cls, prop.values_type).type}
 @property (List, Seq, Array) => Vector{parseproperty(cls, prop.item_type).type}
 @property Tuple    => Tuple{(parseproperty(cls, i).type for i ∈ prop._type_params)...}
@@ -86,15 +86,15 @@ end
         Symbol(split(pyconvert(String, prop._instance_type), '.')[end])
     end
 
-    if cls ∉ names(BokehJL.Models; all = true)
-        BokehJL.Models.eval(:(struct $cls end))
+    if cls ∉ names(BokehServer.Models; all = true)
+        BokehServer.Models.eval(:(struct $cls end))
     end
-    getfield(BokehJL.Models, cls)
+    getfield(BokehServer.Models, cls)
 end
 @property Nullable => Union{Nothing, parseproperty(cls, prop.type_param).type}
-@property Readonly => BokehJL.Model.ReadOnly{parseproperty(cls, prop.type_param).type}
+@property Readonly => BokehServer.Model.ReadOnly{parseproperty(cls, prop.type_param).type}
 @property Enum     => let vals = tuple(unique!([pyconvert(Symbol, j) for j ∈ prop._enum._values])...)
-    BokehJL.Model.EnumType{vals}
+    BokehServer.Model.EnumType{vals}
 end
 @property Either   => let enu = (; type = _enum((i for i ∈ prop._type_params)...))
     types = NamedTuple[(parseproperty(cls, i) for i ∈ prop._type_params if !_isenum(i))...]
@@ -111,18 +111,18 @@ end
     end
 end
 @property RestrictedDict => Dict{
-    BokehJL.Model.RestrictedKey{tuple((pyconvert(Symbol, i) for i ∈ prop._disallow)...)},
+    BokehServer.Model.RestrictedKey{tuple((pyconvert(Symbol, i) for i ∈ prop._disallow)...)},
     parseproperty(cls, prop.values_type).type
 }
 
 parseproperty(::Val{:NonNullable}, cls, _::Symbol, prop) = merge(parseproperty(cls, prop.type_param), (; default = nothing))
 parseproperty(::Val{:Alias}, _, __::Symbol, prop) = (;
-    type = BokehJL.Model.Alias{pyconvert(Symbol, prop.aliased_name)}, default = nothing, doc = nothing
+    type = BokehServer.Model.Alias{pyconvert(Symbol, prop.aliased_name)}, default = nothing, doc = nothing
 )
 
-for name ∈ names(BokehJL.Model; all = true)
-    𝑃 = getfield(BokehJL.Model, name)
-    ((𝑃 isa DataType) && (𝑃 <: BokehJL.Model.iProperty)) || continue
+for name ∈ names(BokehServer.Model; all = true)
+    𝑃 = getfield(BokehServer.Model, name)
+    ((𝑃 isa DataType) && (𝑃 <: BokehServer.Model.iProperty)) || continue
     @eval @property $(name)
 end
 

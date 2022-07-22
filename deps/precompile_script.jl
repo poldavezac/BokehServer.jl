@@ -1,7 +1,7 @@
-using BokehJL
-HTTP = BokehJL.Server.HTTP
+using BokehServer
+HTTP = BokehServer.Server.HTTP
 
-@BokehJL.wrap mutable struct ServerTestDOM <: BokehJL.Models.iLayoutDOM
+@BokehServer.wrap mutable struct ServerTestDOM <: BokehServer.Models.iLayoutDOM
     a::Int = 1
 end
 dom = ServerTestDOM(; a = 100)
@@ -9,34 +9,34 @@ show(IOBuffer(), MIME("text/html"), dom)
 
 sleep(0.01)
 
-BokehJL.Client.open(BokehJL.Embeddings.Notebooks.lastws()) do hdl::BokehJL.Client.MessageHandler
+BokehServer.Client.open(BokehServer.Embeddings.Notebooks.lastws()) do hdl::BokehServer.Client.MessageHandler
     doc = hdl.doc
-    task_local_storage(BokehJL.Events.TASK_EVENTS, BokehJL.Events.EVENTS[]) do
+    task_local_storage(BokehServer.Events.TASK_EVENTS, BokehServer.Events.EVENTS[]) do
         # by default, the bokeh client has its own event list
         # we impose the notebook one here
         dom.a = 10
     end
-    wait(BokehJL.Events.EVENTS[].task)
+    wait(BokehServer.Events.EVENTS[].task)
         
-    BokehJL.Client.receivemessage(hdl)  # need to handle the patchdoc
+    BokehServer.Client.receivemessage(hdl)  # need to handle the patchdoc
 end
 sleep(0.01)
-BokehJL.Embeddings.Notebooks.stopserver()
+BokehServer.Embeddings.Notebooks.stopserver()
 sleep(0.01)
 
 server = HTTP.Sockets.listen(HTTP.Sockets.InetAddr(HTTP.Sockets.ip"127.0.0.1", 5006))
-task = @async BokehJL.Server.serve(
+task = @async BokehServer.Server.serve(
     5006,
     :app => (doc) -> begin
-        fig = BokehJL.figure(x_axis_label = "time", y_axis_label = "energy")
+        fig = BokehServer.figure(x_axis_label = "time", y_axis_label = "energy")
         y   = rand(1:100, 100)
-        BokehJL.line!(fig; y, color = :blue)
-        BokehJL.scatter!(fig; y, color = :red)
+        BokehServer.line!(fig; y, color = :blue)
+        BokehServer.scatter!(fig; y, color = :red)
         push!(doc, fig)
     end;
     server
 )
 sleep(0.01)
-BokehJL.Client.open("ws://localhost:5006/app/ws") do _, __
+BokehServer.Client.open("ws://localhost:5006/app/ws") do _, __
 end
 close(server)

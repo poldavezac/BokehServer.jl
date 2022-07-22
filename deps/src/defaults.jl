@@ -1,7 +1,7 @@
 module Defaults
-using ..BokehJL
-using ..BokehJL.Model.Dates
-using ..BokehJL.Themes.JSON
+using ..BokehServer
+using ..BokehServer.Model.Dates
+using ..BokehServer.Themes.JSON
 using PythonCall
 
 modelsmap()  = pyimport("bokeh.models" => "Model").model_class_reverse_map
@@ -29,11 +29,11 @@ macro default(type, code)
     end)
 end
 
-@default BokehJL.Model.EnumType (name ≡ :str) && return Some(pyconvert(Symbol, dflt))
+@default BokehServer.Model.EnumType (name ≡ :str) && return Some(pyconvert(Symbol, dflt))
 @default Vector{<:Union{String, Number}} return Some(pyconvert(T, dflt))
 
-parsedefault(::Type{BokehJL.Model.HatchPatternType}, cls, ::Symbol, prop) = Some(:blank)
-parsedefault(::Type{BokehJL.Model.HatchPatternSpec}, cls, ::Symbol, prop) = Some(:blank)
+parsedefault(::Type{BokehServer.Model.HatchPatternType}, cls, ::Symbol, prop) = Some(:blank)
+parsedefault(::Type{BokehServer.Model.HatchPatternSpec}, cls, ::Symbol, prop) = Some(:blank)
 
 function parsedefault(T::Union, cls, attr::Symbol, prop)
     dflt = get(cls.__overridden_defaults__, "$attr", prop._default)
@@ -44,7 +44,7 @@ function parsedefault(T::Union, cls, attr::Symbol, prop)
     end
     (name ≡ :UndefinedType) && return nothing
     (name ≡ :NoneType) && return Some(nothing)
-    for eT ∈ BokehJL.Model.UnionIterator(T)
+    for eT ∈ BokehServer.Model.UnionIterator(T)
         opt = parsedefault(eT, cls, attr, prop)
         ismissing(opt) || return opt
     end
@@ -60,13 +60,13 @@ end
     all(i isa Some for i ∈ out) && return Some(tuple(something.(out)...))
 end
 
-@default BokehJL.Model.ReadOnly return if T.parameters[1] isa Symbol
+@default BokehServer.Model.ReadOnly return if T.parameters[1] isa Symbol
     Some(Expr(:call, T.parameters[1]))
 else
     parsedefault(T.parameters[1], cls, attr, prop)
 end
 
-__DUMMY__ = let cls = @BokehJL.wrap mutable struct gensym() <: BokehJL.Model.iModel
+__DUMMY__ = let cls = @BokehServer.wrap mutable struct gensym() <: BokehServer.Model.iModel
         a :: Int
     end
     cls()
@@ -85,9 +85,9 @@ end
 
     try
         js  = JSON.parse(pyconvert(String, pyimport("json").dumps(dflt)))
-        out = BokehJL.Model.bokehconvert(T, js)
-        if !(out isa BokehJL.Model.Unknown)
-            return Some(BokehJL.Model.bokehunwrap(BokehJL.Model.bokehread(T, __DUMMY__, :__dummy__, out)))
+        out = BokehServer.Model.bokehconvert(T, js)
+        if !(out isa BokehServer.Model.Unknown)
+            return Some(BokehServer.Model.bokehunwrap(BokehServer.Model.bokehread(T, __DUMMY__, :__dummy__, out)))
         end
     catch exc
         @error "Could not deal with default" T exception = (exc, Base.catch_backtrace())

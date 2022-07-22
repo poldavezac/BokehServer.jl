@@ -1,12 +1,12 @@
 module Dependencies
-using ..BokehJL
+using ..BokehServer
 using PythonCall
 
 function instancetype(cls)
-    if cls ∉ names(BokehJL.Models; all = true)
-        BokehJL.Models.eval(:(struct $cls end))
+    if cls ∉ names(BokehServer.Models; all = true)
+        BokehServer.Models.eval(:(struct $cls end))
     end
-    getfield(BokehJL.Models, cls)
+    getfield(BokehServer.Models, cls)
 end
 
 structname(name::Symbol) = name

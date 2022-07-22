@@ -22,17 +22,17 @@ end
 """
     serve!([host = CONFIG.host], [port = CONFIG.port], apps...; kwa...)
 
-Starts a BokehJL server. `apps` can be `BokehJL.Server.iRoute` types,
+Starts a BokehServer server. `apps` can be `BokehServer.Server.iRoute` types,
 functions or pairs of `name_of_app => app_or_function`
 
 # Examples
 
 ```julia
-BokehJL.Server.serve(
-    function myapp(doc::BokehJL.Document)
+BokehServer.Server.serve(
+    function myapp(doc::BokehServer.Document)
         ...
     end,
-    :mysecondapp => (doc::BokehJL.Document) -> push!(doc, ...)
+    :mysecondapp => (doc::BokehServer.Document) -> push!(doc, ...)
 )
 ```
 """

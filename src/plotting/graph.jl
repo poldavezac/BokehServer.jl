@@ -2,13 +2,13 @@
 Creates a network graph using the given node, edge and layout provider.
 
 Nodes are created using all `node_` keywords. These are passed on to a call to
-`BokehJL.Plotting.glyph(BokehJL.Models.Scatter; x...)` (as also occurs in
-`BokehJL.scatter!`). One can also provide the `glyph` directly using keyword
+`BokehServer.Plotting.glyph(BokehServer.Models.Scatter; x...)` (as also occurs in
+`BokehServer.scatter!`). One can also provide the `glyph` directly using keyword
 `node`.
 
 Edge are created using all `edge_` keywords. These are passed on to a call to
-`BokehJL.Plotting.glyph(BokehJL.Models.Multiline; x...)` (as also occurs in
-`BokehJL.multiline!`). One can also provide the `glyph` directly using keyword
+`BokehServer.Plotting.glyph(BokehServer.Models.Multiline; x...)` (as also occurs in
+`BokehServer.multiline!`). One can also provide the `glyph` directly using keyword
 `edge`.
 """
 function graph!(plot :: Models.Plot; layout_provider :: Models.iLayoutProvider, dotrigger :: Bool = true, kw...)
@@ -37,13 +37,13 @@ end
 Creates a network graph using the given node, edge and layout provider.
 
 Nodes are created using all `node_` keywords. These are passed on to a call to
-`BokehJL.Plotting.glyph(BokehJL.Models.Scatter; x...)` (as also occurs in
-`BokehJL.scatter!`). One can also provide the `glyph` directly using keyword
+`BokehServer.Plotting.glyph(BokehServer.Models.Scatter; x...)` (as also occurs in
+`BokehServer.scatter!`). One can also provide the `glyph` directly using keyword
 `node`.
 
 Edge are created using all `edge_` keywords. These are passed on to a call to
-`BokehJL.Plotting.glyph(BokehJL.Models.Multiline; x...)` (as also occurs in
-`BokehJL.multiline!`). One can also provide the `glyph` directly using keyword
+`BokehServer.Plotting.glyph(BokehServer.Models.Multiline; x...)` (as also occurs in
+`BokehServer.multiline!`). One can also provide the `glyph` directly using keyword
 `edge`.
 """
 function graph(; layout_provider :: Models.iLayoutProvider, kw...)

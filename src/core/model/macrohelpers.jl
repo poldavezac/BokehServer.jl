@@ -125,12 +125,12 @@ function _👻initcode(cls::Symbol, fields::_👻Fields, field::_👻Field) :: E
     opts = [j.name for j ∈ fields if j.alias && j.type.parameters[1] ≡ field.name]
     κ    = Meta.quot(field.name)
     val  = if isnothing(field.init)
-        :(let val = BokehJL.Themes.theme($cls, $κ)
+        :(let val = BokehServer.Themes.theme($cls, $κ)
             isnothing(val) && throw(ErrorException(($("$cls.$(field.name) is a mandatory argument"))))
             something(val)
         end)
     else
-        :(let val = BokehJL.Themes.theme($cls, $κ)
+        :(let val = BokehServer.Themes.theme($cls, $κ)
             isnothing(val) ? $(something(field.init)) : something(val)
         end)
     end

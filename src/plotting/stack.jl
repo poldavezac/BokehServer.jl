@@ -105,7 +105,7 @@ for 𝐹 ∈ (:linestack, :barstack, :areastack)
 
         ```julia
         plot = $𝐹(; x = ["a", "b", "c"], y = 0, source = Dict("a"=>[1,2], "b" => [3,4], "c"=>[5, 6]))
-        @assert plot isa BokehJL.Models.Plot
+        @assert plot isa BokehServer.Models.Plot
         ```
         """
         eval(:(@doc($doc, $𝐹)))
@@ -121,9 +121,9 @@ for 𝐹 ∈ (:linestack, :barstack, :areastack)
         ## Example
 
         ```julia
-        plot = BokehJL.figure()
+        plot = BokehServer.figure()
         renderers = $(𝐹)!(plot; x = ["a", "b", "c"], y = 0, source = Dict("a"=>[1,2], "b" => [3,4], "c"=>[5, 6]))
-        @assert renderers isa Vector{BokehJL.Models.GlyphRenderer}
+        @assert renderers isa Vector{BokehServer.Models.GlyphRenderer}
         ```
         """
         eval(:(@doc($doc, $(Symbol("$(𝐹)!")))))

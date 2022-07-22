@@ -1,7 +1,7 @@
 module Themes
 using JSON
 using Pkg.Artifacts
-using ..BokehJL
+using ..BokehServer
 using ..AbstractTypes
 using ..Model
 
@@ -24,7 +24,7 @@ THEME :: Theme: the default theme
 const THEME = Theme()
 
 function theme(T::Type, a...)
-    doc = BokehJL.curdoc()
+    doc = BokehServer.curdoc()
     return theme((isnothing(doc) ? THEME : doc.theme), T, a...)
 end
 

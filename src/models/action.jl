@@ -12,12 +12,12 @@ abstract type iPlotActionEvent <: iModelActionEvent end
     doc::iDocument
 end
 
-"""Announce a button click event on a BokehJL button widget."""
+"""Announce a button click event on a BokehServer button widget."""
 @Base.kwdef struct ButtonClick <: iModelActionEvent
     model::iAbstractButton
 end
 
-"""Announce a button click event on a BokehJL menu item."""
+"""Announce a button click event on a BokehServer menu item."""
 @Base.kwdef struct MenuItemClick <: iModelActionEvent
     model::iAbstractButton
     item ::String
@@ -25,7 +25,7 @@ end
 
 """ Announce the start of "interactive level-of-detail" mode on a plot.
 
-During interactive actions such as panning or zooming, BokehJL can
+During interactive actions such as panning or zooming, BokehServer can
 optionally, temporarily draw a reduced set of the data, in order to
 maintain high interactive rates. This is referred to as interactive
 Level-of-Detail (LOD) mode. This event fires whenever a LOD mode
@@ -41,7 +41,7 @@ end
 
 """ Announce the end of "interactive level-of-detail" mode on a plot.
 
-During interactive actions such as panning or zooming, BokehJL can
+During interactive actions such as panning or zooming, BokehServer can
 optionally, temporarily draw a reduced set of the data, in order to
 maintain high interactive rates. This is referred to as interactive
 Level-of-Detail (LOD) mode. This event fires whenever a LOD mode
@@ -140,7 +140,7 @@ for cls ∈ (
         y  :: Union{Missing, Float64} = missing
     end
 
-    eval(:(@doc($(""" Announce a `$cls` event on a BokehJL plot.
+    eval(:(@doc($(""" Announce a `$cls` event on a BokehServer plot.
 
     Fields:
 
@@ -152,7 +152,7 @@ for cls ∈ (
     """), $cls)))
 end
 
-""" Announce a mouse wheel event on a BokehJL plot.
+""" Announce a mouse wheel event on a BokehServer plot.
 
 Fields:
 
@@ -164,7 +164,7 @@ Fields:
 * `y::Float64`: y-coordinate of the event in *data* space
 
 
-*Note* By default, BokehJL plots do not prevent default scroll events unless a    ``WheelZoomTool`` or ``WheelPanTool`` is active. This may change in
+*Note* By default, BokehServer plots do not prevent default scroll events unless a    ``WheelZoomTool`` or ``WheelPanTool`` is active. This may change in
     future releases.
 
 """
@@ -177,7 +177,7 @@ Fields:
     y     :: Union{Missing, Float64} = missing
 end
 
-""" Announce a pan event on a BokehJL plot.
+""" Announce a pan event on a BokehServer plot.
 
 Fields:
 
@@ -201,7 +201,7 @@ Fields:
     y         :: Union{Missing, Float64} = missing
 end
 
-""" Announce a pinch event on a BokehJL plot.
+""" Announce a pinch event on a BokehServer plot.
 
 Fields:
 

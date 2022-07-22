@@ -4,7 +4,7 @@ Pkg.develop(PackageSpec(path=pwd()))
 Pkg.instantiate()
 
 using Documenter
-using BokehJL
+using BokehServer
 
-makedocs(sitename="BokehJL Documentation")
-deploydocs(; repo="poldavezac/BokehJL", devbranch = "main")
+makedocs(sitename="BokehServer Documentation")
+deploydocs(; repo="poldavezac/BokehServer.jl", devbranch = "main")
