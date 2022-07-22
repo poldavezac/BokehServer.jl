@@ -8,10 +8,13 @@
             BokehJL.Server.ExceptionRoute.body(Base.current_exceptions())
         end
     end
-
     truth   = read(joinpath(@__DIR__, "error.html"), String)
     @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(value)))
-        @test i == j
+        if '@' ∈ i
+            @test '@' ∈ j
+        else
+            @test i == j
+        end
     end
 end
 
