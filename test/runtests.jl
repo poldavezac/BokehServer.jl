@@ -84,7 +84,7 @@ function visitfiles(dir::String; force :: Bool = false)
         using Core
         using Base
         using Logging
-        using BokehJL
+        using BokehServer
         using Test: @test, @testset, @test_throws
         using Main: istestsetexpr
 

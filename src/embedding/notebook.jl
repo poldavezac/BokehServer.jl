@@ -173,7 +173,7 @@ function notebook(; port = Server.CONFIG.port)
         addplutocode()
     end
 
-    return HTML("""<img src="http://$(SERVER[].address)/favicon.ico" alt="Started BokehJL">""" * Server.Templates.headers())
+    return HTML("""<img src="http://$(SERVER[].address)/favicon.ico" alt="Started BokehServer">""" * Server.Templates.headers())
 end
 
 getplutofield(σ::Symbol, dflt) = isdefined(Main, :PlutoRunner) ? getfield(Main.PlutoRunner, σ) : dflt

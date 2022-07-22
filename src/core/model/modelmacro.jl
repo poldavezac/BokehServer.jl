@@ -4,8 +4,8 @@ end
 macro model(expr::Expr)
     cls = if isdefined(__module__, :iCustomJS)
         getfield(__module__, :iCustomJS)
-    elseif isdefined(__module__, :BokehJL)
-        getfield(__module__, :BokehJL).Models.iCustomJS
+    elseif isdefined(__module__, :BokehServer)
+        getfield(__module__, :BokehServer).Models.iCustomJS
     end
     args = [
         :(js_event_callbacks    :: Dict{Symbol, Vector{$cls}}),

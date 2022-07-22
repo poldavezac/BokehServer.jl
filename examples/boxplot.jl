@@ -1,9 +1,9 @@
 #!/usr/bin/env -S julia --startup-file=no --history-file=no --project
-using BokehJL
+using BokehServer
 using Random
 
-BokehJL.Plotting.serve() do
-    BokehJL.boxplot((let x = [
+BokehServer.Plotting.serve() do
+    BokehServer.boxplot((let x = [
             ((randn(Float64, 100) .* 3) .+ 10.)...,
             ((randn(Float64, 200) .* 2) .+ 20.)...,
             ((randn(Float64, 300) .* 1) .+ 30.)...,

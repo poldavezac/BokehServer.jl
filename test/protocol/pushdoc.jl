@@ -1,5 +1,5 @@
 @testset "pushdoc" begin
-    doc  = BokehJL.Document()
+    doc  = BokehServer.Document()
     obj  =  ProtocolX(; id = 1)
     setfield!(doc, :title, "A")
     push!(getfield(doc, :roots), obj)
@@ -11,13 +11,13 @@
             :root_ids   => ["1"],
         ),
         :title   => "A",
-        :version => "$(BokehJL.Protocol.PROTOCOL_VERSION)",
+        :version => "$(BokehServer.Protocol.PROTOCOL_VERSION)",
     ))
 
-    @test BokehJL.Protocol.pushdoc(doc) == truth
+    @test BokehServer.Protocol.pushdoc(doc) == truth
 
 
-    JSON = BokehJL.Protocol.Messages.JSON
+    JSON = BokehServer.Protocol.Messages.JSON
 
     truth = (; doc = (;
         defs  = [],
@@ -26,14 +26,14 @@
             root_ids = ["10"]
         ),
         title   = "B",
-        version = "$(BokehJL.Protocol.PROTOCOL_VERSION)",
+        version = "$(BokehServer.Protocol.PROTOCOL_VERSION)",
     ))
 
     @test doc.title == "A"
-    @test BokehJL.bokehid.(doc) == [1]
-    BokehJL.Events.eventlist!() do
-        BokehJL.Protocol.pushdoc!(doc, JSON.parse(JSON.json(truth)), BokehJL.Protocol.Buffers())
+    @test BokehServer.bokehid.(doc) == [1]
+    BokehServer.Events.eventlist!() do
+        BokehServer.Protocol.pushdoc!(doc, JSON.parse(JSON.json(truth)), BokehServer.Protocol.Buffers())
     end
     @test doc.title == "B"
-    @test BokehJL.bokehid.(doc) == [10]
+    @test BokehServer.bokehid.(doc) == [10]
 end

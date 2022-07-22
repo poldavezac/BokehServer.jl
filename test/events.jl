@@ -1,18 +1,18 @@
-EventsX = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
+EventsX = @BokehServer.wrap mutable struct gensym() <: BokehServer.iModel
     a::Int = 1
     b::Int = 1
     c::Int = 1
 end
 
-EventsY = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
+EventsY = @BokehServer.wrap mutable struct gensym() <: BokehServer.iModel
     a::EventsX = EventsX(; a = -1)
 end
 
 @testset "create model events" begin
     obj = EventsX()
 
-    BokehJL.Events.eventlist!() do
-        lst = BokehJL.Events.task_eventlist()
+    BokehServer.Events.eventlist!() do
+        lst = BokehServer.Events.task_eventlist()
         @test isempty(lst)
 
         obj.a = 2   
@@ -42,18 +42,18 @@ end
 @testset "create doc events" begin
     ini = EventsX()
 
-    doc = BokehJL.Document()
+    doc = BokehServer.Document()
     push!(getfield(doc, :roots), ini)
 
     obj = EventsX()
 
-    BokehJL.Events.eventlist!() do
-        lst = BokehJL.Events.task_eventlist()
+    BokehServer.Events.eventlist!() do
+        lst = BokehServer.Events.task_eventlist()
         @test isempty(lst)
 
         push!(doc, obj)
         @test length(lst.events) == 1
-        @test first(lst.events) isa BokehJL.Events.RootAddedEvent
+        @test first(lst.events) isa BokehServer.Events.RootAddedEvent
         @test first(lst.events).doc.id == doc.id
         @test first(lst.events).root.id == obj.id
 
@@ -62,13 +62,13 @@ end
 
         delete!(doc, ini)
         @test length(lst.events) == 1
-        @test first(lst.events) isa BokehJL.Events.RootRemovedEvent
+        @test first(lst.events) isa BokehServer.Events.RootRemovedEvent
         @test first(lst.events).doc.id == doc.id
         @test first(lst.events).root.id == ini.id
 
         doc.title = "A"
         @test length(lst.events) == 2
-        @test last(lst.events) isa BokehJL.Events.TitleChangedEvent
+        @test last(lst.events) isa BokehServer.Events.TitleChangedEvent
         @test last(lst.events).doc.id == doc.id
         @test last(lst.events).title == "A"
     end
@@ -78,17 +78,17 @@ end
     obj1 = EventsX()
     obj2 = EventsX()
     calls1 = []
-    calls2 = BokehJL.ModelChangedEvent[]
+    calls2 = BokehServer.ModelChangedEvent[]
 
-    BokehJL.onchange(obj1) do obj, attr, new, old 
+    BokehServer.onchange(obj1) do obj, attr, new, old 
         push!(calls1, (obj, attr, old, new))
     end
 
-    BokehJL.onchange(obj2) do evt
+    BokehServer.onchange(obj2) do evt
         push!(calls2, evt)
     end
 
-    BokehJL.Events.eventlist!() do
+    BokehServer.Events.eventlist!() do
         obj1.a = 10
         obj1.b = 10
         obj2.a = 10
@@ -101,20 +101,20 @@ end
 @testset "check document callback" begin
     obj1 = EventsX()
     obj2 = EventsX()
-    doc  = BokehJL.Document()
+    doc  = BokehServer.Document()
     push!(getfield(doc, :roots), obj2)
-    calls1 = BokehJL.Events.iDocEvent[]
-    calls2 = BokehJL.RootAddedEvent[]
+    calls1 = BokehServer.Events.iDocEvent[]
+    calls2 = BokehServer.RootAddedEvent[]
 
-    BokehJL.onchange(doc) do evt
+    BokehServer.onchange(doc) do evt
         push!(calls1, (evt))
     end
 
-    BokehJL.onchange(doc) do evt::BokehJL.RootAddedEvent
+    BokehServer.onchange(doc) do evt::BokehServer.RootAddedEvent
         push!(calls2, (evt))
     end
 
-    BokehJL.Events.eventlist!() do
+    BokehServer.Events.eventlist!() do
         push!(doc, obj1)
         delete!(doc, obj2)
     end
@@ -122,7 +122,7 @@ end
     @test length(calls1) == 2
     @test length(calls2) == 1
 
-    BokehJL.Events.eventlist!() do
+    BokehServer.Events.eventlist!() do
         doc.title = "A"
     end
 
@@ -131,28 +131,28 @@ end
 end
 
 @testset "check action callback" begin
-    obj = BokehJL.Models.Button()
-    doc = BokehJL.Document()
+    obj = BokehServer.Models.Button()
+    doc = BokehServer.Document()
     push!(getfield(doc, :roots), obj)
     calls = Any[]
 
-    BokehJL.onchange(doc) do evt::BokehJL.Models.Actions.DocumentReady
+    BokehServer.onchange(doc) do evt::BokehServer.Models.Actions.DocumentReady
         push!(calls, evt)
     end
 
-    BokehJL.Events.eventlist!() do
-        BokehJL.onchange(obj) do evt::BokehJL.Models.Actions.ButtonClick
+    BokehServer.Events.eventlist!() do
+        BokehServer.onchange(obj) do evt::BokehServer.Models.Actions.ButtonClick
             push!(calls, evt)
         end
     end
     @test obj.subscribed_events.values == Symbol[:button_click]
 
-    BokehJL.Events.eventlist!() do
-        BokehJL.Events.trigger(BokehJL.Models.Actions.DocumentReady(; doc = doc))
-        BokehJL.Events.trigger(BokehJL.Models.Actions.ButtonClick(; model = obj))
+    BokehServer.Events.eventlist!() do
+        BokehServer.Events.trigger(BokehServer.Models.Actions.DocumentReady(; doc = doc))
+        BokehServer.Events.trigger(BokehServer.Models.Actions.ButtonClick(; model = obj))
     end
 
     @test length(calls) == 2
-    @test calls[1] isa BokehJL.Models.Actions.DocumentReady
-    @test calls[2] isa BokehJL.Models.Actions.ButtonClick
+    @test calls[1] isa BokehServer.Models.Actions.DocumentReady
+    @test calls[2] isa BokehServer.Models.Actions.ButtonClick
 end

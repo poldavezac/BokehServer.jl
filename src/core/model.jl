@@ -1,11 +1,11 @@
 module Model
-using ..BokehJL
+using ..BokehServer
 using ..AbstractTypes
 
 """
     macro wrap(args::Expr)
 
-For advanced uses only. Allows creating BokehJL-aware model:
+For advanced uses only. Allows creating BokehServer-aware model:
 
 * the model can be transfered to the javascript client
 * changes to the fields will trigger events which one can subscribe to
@@ -18,13 +18,13 @@ others of the same type.
 practice to always provide default values.
 
 ** Note ** Wrapping a type in `Internal` will remove the field 
-from the BokehJL behavior: the client remains unaware of it and
+from the BokehServer behavior: the client remains unaware of it and
 changes trigger no event.
 
 ## Examples
 
 ```julia
-@BokehJL.model mutable struct X <: BokehJL.iModel
+@BokehServer.model mutable struct X <: BokehServer.iModel
     field1::Int     = 0
     field2::Float64 = 0.0
 end
@@ -34,7 +34,7 @@ end
 @assert X().field2 ≡ 0.0
 
 "Z is a structure where fields `nojs1` and `nojs2` are *not* passed to bokehjs"
-@BokehJL.model mutable struct Z <: BokehJL.iModel
+@BokehServer.model mutable struct Z <: BokehServer.iModel
     nojs1 ::Internal{Any} = []
     nojs2 ::Internal{Any} = Set([])
     field1::Int           = 0
@@ -48,7 +48,7 @@ end
 """
     macro model(args::Expr)
 
-Allows creating BokehJL-aware model, just as `@wrap` does, but adding default
+Allows creating BokehServer-aware model, just as `@wrap` does, but adding default
 fields used by every `iModel` structure. This macro should be used rather than
 `@wrap` which is called internally.
 """

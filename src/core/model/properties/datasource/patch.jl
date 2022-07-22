@@ -7,18 +7,24 @@ macro _𝑑𝑠_applicable(code)
 end
 
 """
-    patch!(γ::DataDictContainer, patches::Vararg{Pair{String, Pair}}; dotrigger :: Bool = true)
-    patch!(γ::DataDictContainer, patches::Vararg{Dict{String, Vector{Pair}}}; dotrigger :: Bool = true)
+    patch!(
+        γ::Union{ColumnDataSource, DataDictContainer},
+        patches::Vararg{Pair{String, Pair}}
+    )
+    patch!(
+        γ::Union{ColumnDataSource, DataDictContainer},
+        patches::Vararg{Dict{String, Vector{Pair}}}
+    )
 
 Updates values within *existing* columns.
 
 ```julia
 x = DataDictContainer(Dict("a" => [1, 2, 3]))
 
-patch!(x, "a" => 2 => 10)
+BokehServer.patch!(x, "a" => 2 => 10)
 @assert x["a"] == [1, 10, 3] 
 
-patch!(x, Dict("a" => [1 => 5, 2:3 => 10]))
+BokehServer.patch!(x, Dict("a" => [1 => 5, 2:3 => 10]))
 @assert x["a"] == [5, 10, 10] 
 ```
 """

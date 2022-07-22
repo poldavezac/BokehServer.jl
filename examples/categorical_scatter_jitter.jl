@@ -1,8 +1,8 @@
 #!/usr/bin/env -S julia --startup-file=no --history-file=no --project
-using BokehJL
+using BokehServer
 using Pkg.Artifacts
-using BokehJL.Tokens.CodecZlib
-using BokehJL.Model.Dates
+using BokehServer.Tokens.CodecZlib
+using BokehServer.Model.Dates
 
 const DAYS = ["Sun", "Sat", "Fri", "Thu", "Wed", "Tue", "Mon"]
 const DATA = let data = Dict("time" => Dates.Time[], "day" => String[]) 
@@ -24,11 +24,11 @@ const DATA = let data = Dict("time" => Dates.Time[], "day" => String[])
     data
 end
 
-BokehJL.Plotting.serve() do
-    p = BokehJL.figure(width=800, height=300, y_range=DAYS, x_axis_type="datetime",
+BokehServer.Plotting.serve() do
+    p = BokehServer.figure(width=800, height=300, y_range=DAYS, x_axis_type="datetime",
                title="Commits by Time of Day (US/Central) 2012-2016")
 
-    BokehJL.scatter!(p; x="time", y=BokehJL.Transforms.jitter("day", 0.6; range=p.y_range),  source=DATA, alpha=0.3)
+    BokehServer.scatter!(p; x="time", y=BokehServer.Transforms.jitter("day", 0.6; range=p.y_range),  source=DATA, alpha=0.3)
 
     p.xaxis.formatter.days = ["%Hh"]
     p.x_range.range_padding = 0

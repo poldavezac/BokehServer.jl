@@ -32,7 +32,7 @@ function testcantrigger()
     throw(ErrorException(if isinteractive()
         """ No event list was set: doc is readonly in this task!
         In a `Pluto` or `Jupyter` environment, add a cell with the 
-        following: `BokehJL.Embeddings.notebook()`
+        following: `BokehServer.Embeddings.notebook()`
         """
     else
         "No event list was set: doc is readonly in this task!"

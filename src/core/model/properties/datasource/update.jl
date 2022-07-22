@@ -1,5 +1,8 @@
 """
-    update!(γ::DataDictContainer, 𝑑s::Vararg{Dict{String, Vector}}; dotrigger::Bool = true)
+    update!(
+        γ::Union{ColumnDataSource, DataDictContainer},
+        𝑑s::Vararg{Dict{String, Vector}}
+    )
 
 Adds or replaces columns.
 """

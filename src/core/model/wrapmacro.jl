@@ -29,9 +29,9 @@ function _👻setter(cls::Symbol, fields::_👻Fields) :: Expr
         set  = if i.js
             quote
                 old = $(@__MODULE__).bokehunwrap(getproperty(μ, $name))
-                dotrigger && BokehJL.Events.testcantrigger()
+                dotrigger && BokehServer.Events.testcantrigger()
                 new = setfield!(μ, $name, ν)
-                dotrigger && BokehJL.Events.trigger(BokehJL.ModelChangedEvent(μ, $name, old, new))
+                dotrigger && BokehServer.Events.trigger(BokehServer.ModelChangedEvent(μ, $name, old, new))
             end
         else
             :(setfield!(µ, $name, ν))
@@ -127,11 +127,11 @@ end
 function _👻code(src, mod::Module, code::Expr) :: Expr
     @assert code.head ≡ :struct
     if !code.args[1]
-        @warn """BokehJL structure $mod.$(code.args[2]) is set to mutable.
+        @warn """BokehServer structure $mod.$(code.args[2]) is set to mutable.
         Add `mutable` to disable this warning""" _module = mod _file = string(src.file) _line = src.line
     end
-    @assert code.args[2] isa Expr "$(code.args[2]): BokehJL structure must have a parent (iHasProps, iModel?)"
-    @assert code.args[2].head ≡ :(<:) "$(code.args[2]): BokehJL structure cannot be templated"
+    @assert code.args[2] isa Expr "$(code.args[2]): BokehServer structure must have a parent (iHasProps, iModel?)"
+    @assert code.args[2].head ≡ :(<:) "$(code.args[2]): BokehServer structure cannot be templated"
 
     code.args[1] = true
     fields  = _👻fields(mod, code)
@@ -141,9 +141,9 @@ function _👻code(src, mod::Module, code::Expr) :: Expr
         cls = mod.eval(cls.head ≡ :($) ? cls.args[1] : cls) 
     end
 
-    # use iXXX instead of XXX when constructing `BokehJL.Models` structures.
+    # use iXXX instead of XXX when constructing `BokehServer.Models` structures.
     # This allows overloading the properties
-    parent = nameof(mod) ≡ :Models && nameof(parentmodule(mod)) ≡ :BokehJL ? Symbol("i$cls") : cls
+    parent = nameof(mod) ≡ :Models && nameof(parentmodule(mod)) ≡ :BokehServer ? Symbol("i$cls") : cls
     (parent ∈ names(mod; all = true)) || (parent = cls)
     esc(quote
         @Base.__doc__ $(_👻structure(cls, parents, fields))
@@ -202,7 +202,7 @@ provided with the structure definition. Return `nothing` otherwise.
 function defaultvalue end
 
 function themevalue(@nospecialize(𝑇::Type{<:iHasProps}), σ::Symbol) :: Union{Some, Nothing}
-    dflt = BokehJL.Themes.theme(𝑇, σ)
+    dflt = BokehServer.Themes.theme(𝑇, σ)
     return isnothing(dflt) ? Model.defaultvalue(𝑇, σ) : dflt
 end
 

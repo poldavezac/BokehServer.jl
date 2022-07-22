@@ -1,6 +1,6 @@
 #!/usr/bin/env -S julia --startup-file=no --history-file=no --project
 push!(LOAD_PATH, joinpath(@__DIR__, "environment"))
-import BokehJL
+import BokehServer
 using CSV
 using DataFrames
 const  txt = """
@@ -46,8 +46,8 @@ rad(mic) = a .* sqrt.(log.(mic .* 1E4)) .+ b
 const big_angle = 2π / (size(df, 1) + 1)
 const small_angle = big_angle / 7
 
-BokehJL.Plotting.serve() do
-    p = BokehJL.figure(width=width, height=height, title="",
+BokehServer.Plotting.serve() do
+    p = BokehServer.figure(width=width, height=height, title="",
         x_axis_type=nothing, y_axis_type=nothing,
         x_range=(-420, 420), y_range=(-420, 420),
         min_border=0, outline_line_color="black",
@@ -59,20 +59,20 @@ BokehJL.Plotting.serve() do
     # annular wedges
     angles = (π/2 - big_angle/2) .- (0:size(df, 1)-1) .* big_angle
     colors = [gram_color[i] for i ∈ df.gram]
-    BokehJL.annularwedge!(p; x = 0, y = 0, inner_radius, outer_radius,
+    BokehServer.annularwedge!(p; x = 0, y = 0, inner_radius, outer_radius,
                    start_angle = -big_angle .+ angles, finish_angle = angles,
                    color=colors)
 
     # small wedges
-    BokehJL.annularwedge!(p; x = 0, y = 0, inner_radius, outer_radius = rad(df.penicillin),
+    BokehServer.annularwedge!(p; x = 0, y = 0, inner_radius, outer_radius = rad(df.penicillin),
                     start_angle  = -big_angle .+ angles .+ 5*small_angle,
                     finish_angle = -big_angle .+ angles .+ 6*small_angle,
                     color=drug_color["Penicillin"])
-    BokehJL.annularwedge!(p; x = 0, y = 0, inner_radius, outer_radius = rad(df.streptomycin),
+    BokehServer.annularwedge!(p; x = 0, y = 0, inner_radius, outer_radius = rad(df.streptomycin),
                     start_angle  = -big_angle .+ angles .+ 3*small_angle,
                     finish_angle = -big_angle .+ angles .+ 4*small_angle,
                     color=drug_color["Streptomycin"])
-    BokehJL.annularwedge!(p; x = 0, y = 0, inner_radius, outer_radius = rad(df.neomycin),
+    BokehServer.annularwedge!(p; x = 0, y = 0, inner_radius, outer_radius = rad(df.neomycin),
                     start_angle  = -big_angle .+ angles .+ 1*small_angle,
                     finish_angle = -big_angle .+ angles .+ 2*small_angle,
                     color=drug_color["Neomycin"])
@@ -80,12 +80,12 @@ BokehJL.Plotting.serve() do
     # circular axes and lables
     labels = 10.0 .^ (-3:3)
     radii = rad(labels)
-    r = BokehJL.circle!(p; x= 0, y = 0, radius=radii, fill_color=nothing, line_color="white")
-    BokehJL.text!(p; x = 0, y = radii[1:end-1], text  = [string(r) for r in labels[1:end-1]],
+    r = BokehServer.circle!(p; x= 0, y = 0, radius=radii, fill_color=nothing, line_color="white")
+    BokehServer.text!(p; x = 0, y = radii[1:end-1], text  = [string(r) for r in labels[1:end-1]],
            text_font_size="11px", text_align="center", text_baseline="middle")
 
     # radial axes
-    BokehJL.annularwedge!(p; x=  0, y = 0, inner_radius = inner_radius-10,
+    BokehServer.annularwedge!(p; x=  0, y = 0, inner_radius = inner_radius-10,
         outer_radius =  outer_radius+10,
         start_angle  = -big_angle .+ angles,
         finish_angle = -big_angle .+ angles,
@@ -96,17 +96,17 @@ BokehJL.Plotting.serve() do
     yr = radii[1] .* sin.(-big_angle/2 .+ angles)
     label_angle= collect(-big_angle/2 .+ angles)
     label_angle[label_angle .< -π/2] .+= π # easier to read labels on the left side
-    BokehJL.text!(p; x = xr, y = yr, text = df.bacteria, angle=label_angle,
+    BokehServer.text!(p; x = xr, y = yr, text = df.bacteria, angle=label_angle,
            text_font_size="12px", text_align="center", text_baseline="middle")
 
     # OK, these hand drawn legends are pretty clunky, will be improved in future release
-    BokehJL.circle!(p; x = [-40, -40], y = [-370, -390], color=collect(values(gram_color)), radius=5)
-    BokehJL.text!(p; x = [-30, -30], y = [-370, -390], text= "Gram-" .*  keys(gram_color),
+    BokehServer.circle!(p; x = [-40, -40], y = [-370, -390], color=collect(values(gram_color)), radius=5)
+    BokehServer.text!(p; x = [-30, -30], y = [-370, -390], text= "Gram-" .*  keys(gram_color),
            text_font_size="9px", text_align="left", text_baseline="middle")
 
-    BokehJL.rect!(p; x = [-40, -40, -40], y = [18, 0, -18], width=30, height=13,
+    BokehServer.rect!(p; x = [-40, -40, -40], y = [18, 0, -18], width=30, height=13,
            color=collect(values(drug_color)))
-    BokehJL.text!(p; x = [-15, -15, -15], y = [18, 0, -18], text=collect(keys(drug_color)),
+    BokehServer.text!(p; x = [-15, -15, -15], y = [18, 0, -18], text=collect(keys(drug_color)),
            text_font_size="12px", text_align="left", text_baseline="middle")
     p
 end

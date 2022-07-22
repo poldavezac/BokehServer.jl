@@ -1,4 +1,4 @@
-# BokehJL: a Bokeh server in Julia
+# BokehServer: a Bokeh server in Julia
 
 ## Goals
 
@@ -13,7 +13,7 @@ loosely similar to its python counterpart.
 ## Getting Started
 
 A number of examples are provided in the `examples` directory. All of them involve starting a server which deals with a single dashboard.
-Other options are available by looking at the `BokehJL.Server.server` documentation.
+Other options are available by looking at the `BokehServer.Server.server` documentation.
 
 We try to keep a similar API to the one provided by *python bokeh*. The main differences are due to *Julia*'s aversion to instance or class methods.
 A python call `fig.scatter([1, 2, 3], [3, 2, 1])` becomes `scatter!(fig; x = [1, 2, 3], y = [3, 2, 1])`. Note that:
@@ -34,9 +34,9 @@ Example notebooks are `examples/jupyter_notebook.ipynb` and `examples/pluto_note
 Using the library requires two initial lines:
 
 ```julia
-using BokehJL # import our library
+using BokehServer # import our library
 # provide javascript headers to your browser, default port is 5006
-BokehJL.Embeddings.notebook(; port = 4321)
+BokehServer.Embeddings.notebook(; port = 4321)
 ```
 
 !!! note "Initializing a notebook environment"
@@ -50,7 +50,7 @@ Changes occurring in julia in other cells will affect this display.
 The following will display a time series, with default indices on the `x` axis.
 
 ```
-plot = BokehJL.line(; y = randn(Float64, 100) .+ (1:100))
+plot = BokehServer.line(; y = randn(Float64, 100) .+ (1:100))
 ```
 
 We can update the previous cell from another:
@@ -63,15 +63,15 @@ push!(
 ```
 
 In the background, a *websocket* server is created which will synchronize your
-*BokehJL* objects in *Julia* with their *typescript* counterparts. It will also
-manage the event mechanism provided by *BokehJL*.
+*BokehServer* objects in *Julia* with their *typescript* counterparts. It will also
+manage the event mechanism provided by *BokehServer*.
 
-### Using a BokehJL server
+### Using a BokehServer server
 
 Examples abound in the `examples` directory. They all involve using:
 
 ```julia
-BokehJL.Plotting.serve() do
+BokehServer.Plotting.serve() do
     plot = figure() # create a plot
     ...
     plot # return the plot
@@ -80,7 +80,7 @@ end
 
 !!! note "A simple server"
 
-    *BokehJL* objects should be created strictly within the `do ... end` scope. This is
+    *BokehServer* objects should be created strictly within the `do ... end` scope. This is
     because of the event mechanism is inilialized only within this scope.
 
 ## Available plots
@@ -88,141 +88,141 @@ end
 One can create a plot using:
 
 ```@docs
-BokehJL.figure
+BokehServer.figure
 ```
 
 The following types of plots are available, with and without the `!`:
 
 ```@docs
-BokehJL.annularwedge!
+BokehServer.annularwedge!
 ```
 
 ```@docs
-BokehJL.annulus!
+BokehServer.annulus!
 ```
 
 ```@docs
-BokehJL.arc!
+BokehServer.arc!
 ```
 
 ```@docs
-BokehJL.areastack!
+BokehServer.areastack!
 ```
 
 ```@docs
-BokehJL.barstack!
+BokehServer.barstack!
 ```
 
 ```@docs
-BokehJL.bezier!
+BokehServer.bezier!
 ```
 
 ```@docs
-BokehJL.boxplot!
+BokehServer.boxplot!
 ```
 
 ```@docs
-BokehJL.circle!
+BokehServer.circle!
 ```
 
 ```@docs
-BokehJL.ellipse!
+BokehServer.ellipse!
 ```
 
 ```@docs
-BokehJL.glyph!
+BokehServer.glyph!
 ```
 
 ```@docs
-BokehJL.graph!
+BokehServer.graph!
 ```
 
 ```@docs
-BokehJL.harea!
+BokehServer.harea!
 ```
 
 ```@docs
-BokehJL.hbar!
+BokehServer.hbar!
 ```
 
 ```@docs
-BokehJL.hextile!
+BokehServer.hextile!
 ```
 
 ```@docs
-BokehJL.image!
+BokehServer.image!
 ```
 
 ```@docs
-BokehJL.imagergba!
+BokehServer.imagergba!
 ```
 
 ```@docs
-BokehJL.imageurl!
+BokehServer.imageurl!
 ```
 
 ```@docs
-BokehJL.line!
+BokehServer.line!
 ```
 
 ```@docs
-BokehJL.linestack!
+BokehServer.linestack!
 ```
 
 ```@docs
-BokehJL.multiline!
+BokehServer.multiline!
 ```
 
 ```@docs
-BokehJL.multipolygons!
+BokehServer.multipolygons!
 ```
 
 ```@docs
-BokehJL.oval!
+BokehServer.oval!
 ```
 
 ```@docs
-BokehJL.patches!
+BokehServer.patches!
 ```
 
 ```@docs
-BokehJL.quad!
+BokehServer.quad!
 ```
 
 ```@docs
-BokehJL.quadratic!
+BokehServer.quadratic!
 ```
 
 ```@docs
-BokehJL.ray!
+BokehServer.ray!
 ```
 
 ```@docs
-BokehJL.rect!
+BokehServer.rect!
 ```
 
 ```@docs
-BokehJL.scatter!
+BokehServer.scatter!
 ```
 
 ```@docs
-BokehJL.segment!
+BokehServer.segment!
 ```
 
 ```@docs
-BokehJL.text!
+BokehServer.text!
 ```
 
 ```@docs
-BokehJL.varea!
+BokehServer.varea!
 ```
 
 ```@docs
-BokehJL.vbar!
+BokehServer.vbar!
 ```
 
 ```@docs
-BokehJL.wedge!
+BokehServer.wedge!
 ```
 
 ## Layouts
@@ -230,47 +230,87 @@ BokehJL.wedge!
 Multiple plots can be displayed together using:
 
 ```@docs
-BokehJL.layout
+BokehServer.layout
 ```
+
+### Document roots
+
+As in *bokeh python*, users can add and remove roots from a `Document`. This can be done 
+using functions `push!(::iDocument, ::iModel)` and `pop!(::iDocument, ::iModel)`:
+
+```julia
+doc = BokehServer.Document()
+fig = BokehServer.figure()
+push!(doc, fig)
+@assert length(doc) == 1
+pop!(doc, fig)
+@assert length(doc) == 0
+```
+
+### Linking axes
 
 Their axes can be linked, either using the event mechanisms or by sharing a `Range1d` object.
 
 ```
-plot1 = BokehJL.scatter(;
+plot1 = BokehServer.scatter(;
     x       = randn(Float64, 100),
     y       = randn(Float64, 100),
 )
-plot2 = BokehJL.scatter(;
+plot2 = BokehServer.scatter(;
     x       = randn(Float64, 100),
     y       = randn(Float64, 100),
 )
 
 # make sure plot2 reacts to plot1 mutations
-BokehJL.onchange(plot1.x_range) do evt::BokehJL.ModelChangedEvent
+BokehServer.onchange(plot1.x_range) do evt::BokehServer.ModelChangedEvent
     setproperty!(plot2.x_range, evt.attr, evt.new)
 end
 
 # make sure plot1 reacts to plot2 mutations
-BokehJL.onchange(plot2.x_range) do evt::BokehJL.ModelChangedEvent
+BokehServer.onchange(plot2.x_range) do evt::BokehServer.ModelChangedEvent
     setproperty!(plot1.x_range, evt.attr, evt.new)
 end
 
-BokehJL.layout([plot1, plot2])
+BokehServer.layout([plot1, plot2])
 ```
 
 ```
-plot1 = BokehJL.scatter(;
+plot1 = BokehServer.scatter(;
     x       = randn(Float64, 100),
     y       = randn(Float64, 100),
-    x_range = BokehJL.Models.Range1d(; start = -10, finish = 10)
+    x_range = BokehServer.Models.Range1d(; start = -10, finish = 10)
 )
-plot2 = BokehJL.scatter(;
+plot2 = BokehServer.scatter(;
     x       = randn(Float64, 100),
     y       = randn(Float64, 100),
     x_range = plot1.x_range
 )
-BokehJL.layout([plot1, plot2])
+BokehServer.layout([plot1, plot2])
 ```
+
+## The `ColumnDataSource` structure
+
+As in *python bokeh*, the `ColumnDataSource` structure is central to
+updating plots. The same methods are available for dealing with its mutations:
+
+```@docs
+BokehServer.stream!
+```
+
+```@docs
+BokehServer.update!
+```
+
+```@docs
+BokehServer.patch!
+```
+
+!!! note
+
+    One can also use `Base.push!` instead of `Base.stream!`.
+
+    One can also use `Base.merge!` instead of `Base.update!` or `Base.patch!`.
+
 
 ## The event mechanism
 
@@ -279,10 +319,10 @@ As with *python bokeh* events can be both triggered from and dealt with both in
 
 ### Creating callbacks in *Julia*
 
-Julia event callbacks are created using `BokehJL.onchange`:
+Julia event callbacks are created using `BokehServer.onchange`:
 
 ```@docs
-BokehJL.onchange
+BokehServer.onchange
 ```
 
 As can be seen in the examples:
@@ -294,131 +334,131 @@ should trigger a given callback.
 Document event types are:
 
 ```@docs
-BokehJL.RootAddedEvent
+BokehServer.RootAddedEvent
 ```
 
 ```@docs
-BokehJL.RootRemovedEvent
+BokehServer.RootRemovedEvent
 ```
 
 ```@docs
-BokehJL.TitleChangedEvent
+BokehServer.TitleChangedEvent
 ```
 
 Model event types are:
 
 ```@docs
-BokehJL.ModelChangedEvent
+BokehServer.ModelChangedEvent
 ```
 
 ```@docs
-BokehJL.ColumnsPatchedEvent
+BokehServer.ColumnsPatchedEvent
 ```
 
 ```@docs
-BokehJL.ColumnsStreamedEvent
+BokehServer.ColumnsStreamedEvent
 ```
 
 ```@docs
-BokehJL.ColumnDataChangedEvent
+BokehServer.ColumnDataChangedEvent
 ```
 
 UI event types are:
 
 ```@docs
-BokehJL.DocumentReady
+BokehServer.DocumentReady
 ```
 
 ```@docs
-BokehJL.ButtonClick
+BokehServer.ButtonClick
 ```
 
 ```@docs
-BokehJL.MenuItemClick
+BokehServer.MenuItemClick
 ```
 
 ```@docs
-BokehJL.LODStart
+BokehServer.LODStart
 ```
 
 ```@docs
-BokehJL.LODEnd
+BokehServer.LODEnd
 ```
 
 ```@docs
-BokehJL.RangesUpdate
+BokehServer.RangesUpdate
 ```
 
 ```@docs
-BokehJL.SelectionGeometry
+BokehServer.SelectionGeometry
 ```
 
 ```@docs
-BokehJL.Reset
+BokehServer.Reset
 ```
 
 ```@docs
-BokehJL.Tap
+BokehServer.Tap
 ```
 
 ```@docs
-BokehJL.DoubleTap
+BokehServer.DoubleTap
 ```
 
 ```@docs
-BokehJL.Press
+BokehServer.Press
 ```
 
 ```@docs
-BokehJL.PressUp
+BokehServer.PressUp
 ```
 
 ```@docs
-BokehJL.MouseEnter
+BokehServer.MouseEnter
 ```
 
 ```@docs
-BokehJL.MouseLeave
+BokehServer.MouseLeave
 ```
 
 ```@docs
-BokehJL.MouseMove
+BokehServer.MouseMove
 ```
 
 ```@docs
-BokehJL.PanEnd
+BokehServer.PanEnd
 ```
 
 ```@docs
-BokehJL.PanStart
+BokehServer.PanStart
 ```
 
 ```@docs
-BokehJL.PinchStart
+BokehServer.PinchStart
 ```
 
 ```@docs
-BokehJL.Rotate
+BokehServer.Rotate
 ```
 
 ```@docs
-BokehJL.RotateStart
+BokehServer.RotateStart
 ```
 
 ```@docs
-BokehJL.RotateEnd
+BokehServer.RotateEnd
 ```
 
 ```@docs
-BokehJL.MouseWheel
+BokehServer.MouseWheel
 ```
 
 ```@docs
-BokehJL.Pan
+BokehServer.Pan
 ```
 
 ```@docs
-BokehJL.Pinch
+BokehServer.Pinch
 ```
 
 ### Details
@@ -428,7 +468,7 @@ although, as in *python bokeh*, only is specific cases:
 
 * when initializing a new document
 * when responding to a *typescript* message
-* when in a `Pluto` or `Jupyter` environment, for cells coming after a call to `BokehJL.Embeddings.notebook()`.
+* when in a `Pluto` or `Jupyter` environment, for cells coming after a call to `BokehServer.Embeddings.notebook()`.
 
 As opposed to *python julia*, event managers collect all events before
 triggering callback and finally synchronizing with *typescript*. Some events
@@ -438,10 +478,10 @@ root is mutated then simply removed from the document.
 The collection is done thanks to a task-specific manager, hidden inside the `task_local_storage()` dictionnary.
 
 Advanced users could change the manager behavior by creating custom
-`BokehJL.iServer.Application` types, overloading
+`BokehServer.iServer.Application` types, overloading
 `Server.eventlist(::iApplication)`, and providing instances of these
 applications to the server. An example is the
-`BokehJL.Embeddings.Notebooks.NotebookApp` which deals with the specifics of
+`BokehServer.Embeddings.Notebooks.NotebookApp` which deals with the specifics of
 working in `Pluto` or `Jupyter` environment.
 
 ## Themes
@@ -452,13 +492,13 @@ One can set either a global theme or one specific to a document:
 
 ```julia
 # set the global theme
-BokehJL.Themes.setvalues!(:caliber) # or :dark_minimal, :light_minimal, :contrast, :night_sky or :default
+BokehServer.Themes.setvalues!(:caliber) # or :dark_minimal, :light_minimal, :contrast, :night_sky or :default
 
 # set the doc theme
-BokehJL.Themes.setvalues!(mydoc.theme, :caliber)
+BokehServer.Themes.setvalues!(mydoc.theme, :caliber)
 ```
 
-In most cases where user creates new *BokehJL* objects, a default document has been added
+In most cases where user creates new *BokehServer* objects, a default document has been added
 to the `task_local_storage` dictionnary, and its theme is the one applied to those objects.
 
 !!! note
@@ -466,12 +506,12 @@ to the `task_local_storage` dictionnary, and its theme is the one applied to tho
     A new document always inherits a *copy* of the current global theme.
 
 ```@autodocs
-Modules = [BokehJL.Themes]
+Modules = [BokehServer.Themes]
 ```
 
 ## The package architecture
 
-*BokehJL* provides the same services as *python*'s *bokeh*:
+*BokehServer* provides the same services as *python*'s *bokeh*:
 
 * Means for mirroring the *typescript* library *bokehjs*.
 * An event mechanism for reacting to changes to the *Julia* objects.

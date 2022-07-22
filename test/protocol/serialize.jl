@@ -1,12 +1,12 @@
-E    = BokehJL.Events
-ser  = BokehJL.Protocol.Serialize.serialize
+E    = BokehServer.Events
+ser  = BokehServer.Protocol.Serialize.serialize
 
-CDS  = @BokehJL.wrap mutable struct gensym() <: BokehJL.iModel
-    data :: BokehJL.Model.DataDict
+CDS  = @BokehServer.wrap mutable struct gensym() <: BokehServer.iModel
+    data :: BokehServer.Model.DataDict
 end
 
 @testset "basic events" begin
-    doc  = BokehJL.Document()
+    doc  = BokehServer.Document()
     mdl  = ProtocolX(; id = 1)
 
     val   = ser(E.ModelChangedEvent(mdl, :a, 10, 20))
@@ -28,7 +28,7 @@ end
     E.eventlist!() do
         push!(doc, mdl)
         mdl.a = 100
-        val   = BokehJL.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}())
+        val   = BokehServer.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}())
         truth = (;
             events = [Dict{Symbol, Any}(:kind => :RootAdded, :model => Dict{Symbol, Any}(:id => "1"))],
             references = [Dict{Symbol, Any}(:attributes => Dict{Symbol, Any}(:a => 100), :id => "1", :type => nameof(ProtocolX))]
@@ -38,7 +38,7 @@ end
 
     E.eventlist!() do
         mdl.a = 10
-        val   = BokehJL.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([mdl.id]))
+        val   = BokehServer.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([mdl.id]))
         truth = (;
             events = [Dict{Symbol, Any}(
                 :attr => :a, :hint => nothing, :kind => :ModelChanged,
@@ -52,14 +52,14 @@ end
 
 @testset "ColumnDataChanged" begin
     mdl   = CDS(; id = 1)
-    𝑅     = BokehJL.Protocol.Serialize.BufferedRules()
+    𝑅     = BokehServer.Protocol.Serialize.BufferedRules()
     val   = ser(E.ColumnDataChangedEvent(mdl, :data, Dict{String, Vector}("a" => Int32[1])), 𝑅)
     truth = Dict{Symbol,Any}(
         :cols => ["a"],
         :column_source => Dict{Symbol, Any}(:id => "1"),
         :kind => :ColumnDataChanged,
         :new => Dict{String, Union{Dict{Symbol, Any}, Vector}}("a" => Dict{Symbol, Any}(
-            :__ndarray__ => String(BokehJL.Protocol.Serialize.base64encode(Int32[1])),
+            :__ndarray__ => String(BokehServer.Protocol.Serialize.base64encode(Int32[1])),
             :dtype      => "int32",
             :order      => Base.ENDIAN_BOM ≡ 0x04030201 ? :little : :big,
             :shape      => (1,),

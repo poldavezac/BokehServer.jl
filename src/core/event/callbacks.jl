@@ -31,22 +31,22 @@ allows triggering the callback on that specific event type only.
 
 # Examples
 ```julia
-doc = BokehJL.Document
+doc = BokehServer.Document
 
 # Add a callback for every type of event.
 onchange(doc) do evt
-    @assert evt isa BokehJL.Events.iDocEvent
+    @assert evt isa BokehServer.Events.iDocEvent
     println("callback 1: any doc events")
 end
 
 # Add a callback for `RootAddedEvent` only
-onchange(doc) do evt::BokehJL.RootAddedEvent
-    @assert evt isa BokehJL.RootAddedEvent
+onchange(doc) do evt::BokehServer.RootAddedEvent
+    @assert evt isa BokehServer.RootAddedEvent
     println("callback 2: only RootAddedEvent")
 end
 
 # now trigger the events
-BokehJL.Events.eventlist!() do
+BokehServer.Events.eventlist!() do
     push!(doc, Model1())
     delete!(doc, Model2())
 end
@@ -88,16 +88,16 @@ obj = Model()
 
 # Add a callback triggered by every type of event
 onchange(obj) do evt
-    @assert evt isa BokehJL.Events.iDocModelEvent
+    @assert evt isa BokehServer.Events.iDocModelEvent
     println("callback 1: receive events")
 end
 
-# Add a callback triggered by `BokehJL.ModelChangedEvent` only.
+# Add a callback triggered by `BokehServer.ModelChangedEvent` only.
 onchange(obj) do model, attr, old, new
     println("callback 2: just sugar")
 end
 
-# Add a callback triggered by `BokehJL.ModelChangedEvent` only, where a
+# Add a callback triggered by `BokehServer.ModelChangedEvent` only, where a
 # `Float64` is the new value.
 onchange(obj) do model, attr, old, new::Float64
     @assert new isa Float64
@@ -105,7 +105,7 @@ onchange(obj) do model, attr, old, new::Float64
 end
 
 # now trigger the events
-BokehJL.Events.eventlist!() do
+BokehServer.Events.eventlist!() do
     obj.a = 1
     obj.a = 10.
 end
