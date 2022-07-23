@@ -37,7 +37,14 @@ task = @async BokehServer.Server.serve(
     server
 )
 sleep(0.01)
-BokehServer.Client.open("ws://localhost:5006/app/ws") do _, __
+
+BokehServer.Client.open("ws://localhost:5006/app/ws") do _, doc
+    BokehServer.varea!(
+        doc.roots[1];
+        x  = Float32[i/10.f0 for i ∈ 0:10],
+        y1 = zeros(Float32, 11),
+        y2 = Float32[i/10.f0 for i ∈ 0:10]
+    )
 end
 close(server)
 

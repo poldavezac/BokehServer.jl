@@ -1,9 +1,9 @@
-function glyph(𝑇::Symbol; kwargs...)
+function glyph(𝑇::Symbol, args...; kwargs...)
     opts = filter((x -> "$x"[1] ∈ 'A':'Z'), names(Models; all = true))
     if 𝑇 ∉ opts
         𝑇 = only(i for i ∈ opts if lowercase("$𝑇") == lowercase("$i"))
     end
-    return glyph(getfield(Models, 𝑇); kwargs...)
+    return glyph(getfield(Models, 𝑇), args...; kwargs...)
 end
 
 """
@@ -12,18 +12,24 @@ end
 Create a glyph renderer given a glyph type or its name.
 The kwargs should include all `glyphargs(𝑇)` at a minimum
 """
-function glyph(𝑇::Type{<:Models.iGlyph}; trait_color = missing, runchecks::Bool = true, kwa...)
+function glyph(𝑇::Type{<:Models.iGlyph}, args...; trait_color = missing, runchecks::Bool = true, kwa...)
+    @nospecialize 𝑇 args
     kwargs = Dict{Symbol, Any}(kwa...)
+    for (i, j) ∈ zip(Models.glyphargs(𝑇), args)
+        haskey(kwargs, i) && throw(ErrorException("$i is both in args and kwargs"))
+        kwargs[i] = j
+    end
+
     out    = Dict{Symbol, Any}(
        (i => pop!(kwargs, i) for i ∈ _👻RENDERER if i ∈ keys(kwargs))...,
        :data_source =>  _👻datasource!(kwargs, get(kwargs, :source, missing), 𝑇)
     )
 
-    defaults = _👻visuals!(kwargs, 𝑇; trait_color)
-    nonsel   = _👻visuals!(kwargs, 𝑇; trait_color, prefix = :nonselection_, defaults, override = (; alpha = _👻NSEL_ALPHA))
-    sel      = _👻visuals!(kwargs, 𝑇; trait_color, prefix = :selection_, defaults, test = true)
-    hover    = _👻visuals!(kwargs, 𝑇; trait_color, prefix = :hover_, defaults, test = true)
-    muted    = _👻visuals!(kwargs, 𝑇; trait_color, prefix = :muted_, defaults, override = (; alpha = _👻MUTED_ALPHA))
+    defaults = _👻visuals!(kwargs, 𝑇, false, trait_color, "")
+    nonsel   = _👻visuals!(kwargs, 𝑇, false, trait_color, "nonselection_", defaults, Dict{Symbol, Any}(:alpha => _👻NSEL_ALPHA))
+    sel      = _👻visuals!(kwargs, 𝑇, true,  trait_color, "selection_",    defaults)
+    hover    = _👻visuals!(kwargs, 𝑇, true,  trait_color, "hover_",        defaults)
+    muted    = _👻visuals!(kwargs, 𝑇, false, trait_color, "muted_",        defaults, Dict{Symbol, Any}(:alpha => _👻MUTED_ALPHA))
 
     create(x, d = :auto) = ismissing(x) ? d : 𝑇(; kwargs..., out..., x...)
 
@@ -54,14 +60,15 @@ end
 
 function glyph!(
         fig       :: Models.Plot,
-        𝑇         :: Union{Symbol, Type{<:Models.iGlyph}};
+        𝑇         :: Union{Symbol, Type{<:Models.iGlyph}},
+        args...;
         dotrigger :: Bool = true,
         kwa...
 )
     trait_color = let cnt = count(Base.Fix2(isa, Models.iGlyphRenderer), fig.renderers)
         _👻COLORS[min(length(_👻COLORS), 1+cnt)]
     end
-    return glyph!(fig, glyph(𝑇; trait_color, kwa...); dotrigger, kwa...)
+    return glyph!(fig, glyph(𝑇, args...; trait_color, kwa...); dotrigger, kwa...)
 end
 
 using Printf
@@ -76,10 +83,14 @@ for meth ∈ methods(Models.glyphargs)
             Model.bokehproperties(Models.FigureOptions)...,
             Model.bokehproperties(Models.Plot)...,
         )
-        @eval $𝐹!(fig::Models.Plot; kwa...) = glyph!(fig, $cls; kwa...)
-        @eval function $𝐹(; kwa...)
+        @eval function $𝐹!(fig::Models.Plot, args...; kwa...)
+            @nospecialize fig args
+            glyph!(fig, $cls, args...; kwa...)
+        end
+        @eval function $𝐹(args...; kwa...)
+            @nospecialize args
             fig = Plotting.figure(; (i for i ∈ kwa if first(i) ∈ $fargs)...)
-            glyph!(fig, $cls; (i for i ∈ kwa if first(i) ∉ $fargs)..., dotrigger = false)
+            glyph!(fig, $cls, args...; (i for i ∈ kwa if first(i) ∉ $fargs)..., dotrigger = false)
             fig
         end
         @eval export $𝐹!, $𝐹
@@ -89,13 +100,16 @@ for meth ∈ methods(Models.glyphargs)
                 println(io)
                 if ("$n")[end] ≡ '!'
                     println(io, "    $n(")
-                    println(io, "        $(@sprintf "%-10s" :plot) :: Models.Plot;")
+                    println(io, "        $(@sprintf "%-10s" :plot) :: Models.Plot,")
                 else
-                    println(io, "    $n(;")
+                    println(io, "    $n(")
                 end
-                for i ∈ Models.glyphargs(cls)
+
+                gargs = Models.glyphargs(cls)
+                for i ∈ gargs
                     p𝑇 = @sprintf "%-50s" Union{AbstractArray, Model.bokehfieldtype(cls, i)}
-                    println(io, "        $(@sprintf "%-10s" i) :: $p𝑇 = $(repr(something(Model.themevalue(cls, i)))),")
+                    print(io, "        $(@sprintf "%-10s" i) :: $p𝑇 = $(repr(something(Model.themevalue(cls, i))))")
+                    println(io, i ≡ gargs[end] ? ';' : ',')
                 end
                 println(io, "        kwa...")
                 println(io, "    )")

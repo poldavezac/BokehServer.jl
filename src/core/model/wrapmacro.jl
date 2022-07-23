@@ -54,7 +54,7 @@ function _👻setter(cls::Symbol, fields::_👻Fields) :: Expr
     end
 
     quote
-        function Base.setproperty!(μ::$cls, α::Symbol, ν; dotrigger :: Bool = true, patchdoc :: Bool = false)
+        function Base.setproperty!(μ::$cls, α::Symbol, @nospecialize(ν); dotrigger :: Bool = true, patchdoc :: Bool = false)
             $code
         end
     end
