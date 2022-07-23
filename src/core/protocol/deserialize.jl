@@ -1,4 +1,4 @@
-module PatchDocReceive
+module Deserialize
 using Base64
 using ...Model
 using ...AbstractTypes
@@ -16,19 +16,22 @@ _fieldname(x::String) = Symbol(replace(x, _END_PATT))
 
 getid(𝐼::JSDict) :: Int64 = parse(Int64, 𝐼["id"])
 
-struct _Models
+"""
+Contains info needed for deserialization.
+"""
+struct Workbench
     models   :: ModelDict
     contents :: Vector
     buffers  :: Buffers
 end
 
-function createreference!(𝑀::_Models, id::Int, 𝐼::JSDict)
+function createreference!(𝑀::Workbench, id::Int, 𝐼::JSDict)
     get!(𝑀.models, id) do
         𝑇 = _MODEL_TYPES[Symbol(𝐼["type"])]
         return 𝑇(;
             id,
             ((
-                _fieldname(i) => fromjson(𝑇, _fieldname(i), j, 𝑀)
+                _fieldname(i) => deserialize(𝑇, _fieldname(i), j, 𝑀)
                 for (i, j) ∈ get(𝐼, "attributes", ())
             )...)
         )
@@ -37,29 +40,29 @@ end
 
 _knownconversion(_...) = nothing
 
-function _knownconversion(ν::JSDict, 𝑀::_Models)
+function _knownconversion(ν::JSDict, 𝑀::Workbench)
     return if length(ν) ≡ 1 && first(keys(ν)) == "id"
-        fromjson(iHasProps, ν, 𝑀)
+        deserialize(iHasProps, ν, 𝑀)
     elseif haskey(ν, _𝐵𝐾) ||  haskey(ν, _𝑁𝐾)
-        fromjson(Vector, ν, 𝑀)
+        deserialize(Vector, ν, 𝑀)
     else
         nothing
     end
 end
 
-function fromjson(𝑇::Type, attr::Symbol, val, 𝑀::_Models)
+function deserialize(𝑇::Type, attr::Symbol, val, 𝑀::Workbench)
     out = _knownconversion(val, 𝑀)
     if isnothing(out)
-        fromjson(Model.bokehfieldtype(𝑇, attr), val, 𝑀)
+        deserialize(Model.bokehfieldtype(𝑇, attr), val, 𝑀)
     else
         out
     end
 end
 
-function fromjson(𝑇::Type, val::JSDict, 𝑀::_Models)
+function deserialize(𝑇::Type, val::JSDict, 𝑀::Workbench)
     out = _knownconversion(val, 𝑀)
     return if isnothing(out)
-        cnv = Dict((i => fromjson(Any, j, 𝑀) for (i, j) ∈ val)...)
+        cnv = Dict((i => deserialize(Any, j, 𝑀) for (i, j) ∈ val)...)
         out = Model.bokehconvert(𝑇, cnv)
         out isa Model.Unknown ? val : out
     else
@@ -67,10 +70,10 @@ function fromjson(𝑇::Type, val::JSDict, 𝑀::_Models)
     end
 end
 
-fromjson(::Type, @nospecialize(val::Union{Nothing, String, Number}), ::_Models) = val
-fromjson(::Type, @nospecialize(val::Vector), 𝑀::_Models) = [fromjson(Any, i, 𝑀) for i ∈ val]
+deserialize(::Type, @nospecialize(val::Union{Nothing, String, Number}), ::Workbench) = val
+deserialize(::Type, @nospecialize(val::Vector), 𝑀::Workbench) = [deserialize(Any, i, 𝑀) for i ∈ val]
 
-function fromjson(::Type{<:iHasProps}, val::JSDict, 𝑀::_Models)
+function deserialize(::Type{<:iHasProps}, val::JSDict, 𝑀::Workbench)
     key  = val["id"]
     bkid = parse(Int64, key)
     itm  = get(𝑀.models, bkid, nothing)
@@ -81,18 +84,18 @@ function fromjson(::Type{<:iHasProps}, val::JSDict, 𝑀::_Models)
     end
 end
 
-function fromjson(𝑇::Type{<:Pair}, val::JSDict, 𝑀::_Models)
+function deserialize(𝑇::Type{<:Pair}, val::JSDict, 𝑀::Workbench)
     @assert length(val) == 1
     (k, v) = first(val)
-    return fromjson(𝑇.parameters[1], k, 𝑀) => fromjson(𝑇.parameters[2], v, 𝑀)
+    return deserialize(𝑇.parameters[1], k, 𝑀) => deserialize(𝑇.parameters[2], v, 𝑀)
 end
 
-function fromjson(𝑇::Type{<:AbstractDict}, ν::JSDict, 𝑀::_Models)
+function deserialize(𝑇::Type{<:AbstractDict}, ν::JSDict, 𝑀::Workbench)
     p𝑇 = eltype(𝑇)
-    Dict((Pair(fromjson(p𝑇.parameters[1], i, 𝑀), fromjson(p𝑇.parameters[2], j, 𝑀)) for (i, j) ∈ ν)...)
+    Dict((Pair(deserialize(p𝑇.parameters[1], i, 𝑀), deserialize(p𝑇.parameters[2], j, 𝑀)) for (i, j) ∈ ν)...)
 end
 
-function fromjson(𝑇::Type{<:AbstractVector}, ν::JSDict, 𝑀::_Models)
+function deserialize(𝑇::Type{<:AbstractVector}, ν::JSDict, 𝑀::Workbench)
     return if haskey(ν, _𝐵𝐾)
         _reshape(𝑀.buffers[ν[_𝐵𝐾]], ν["dtype"], ν["shape"], ν["order"])
     elseif haskey(ν, _𝑁𝐾)
@@ -102,28 +105,28 @@ function fromjson(𝑇::Type{<:AbstractVector}, ν::JSDict, 𝑀::_Models)
     end
 end
 
-function fromjson(𝑇::Type{<:AbstractVector}, ν::Vector, 𝑀::_Models)
+function deserialize(𝑇::Type{<:AbstractVector}, ν::Vector, 𝑀::Workbench)
     v𝑇 = eltype(𝑇)
-    return [fromjson(v𝑇, i, 𝑀) for i ∈ ν]
+    return [deserialize(v𝑇, i, 𝑀) for i ∈ ν]
 end
 
-function fromjson(𝑇::Type{<:AbstractSet}, ν::Vector, 𝑀::_Models)
+function deserialize(𝑇::Type{<:AbstractSet}, ν::Vector, 𝑀::Workbench)
     v𝑇 = eltype(𝑇)
-    return Set([fromjson(v𝑇, i, 𝑀) for i ∈ ν])
+    return Set([deserialize(v𝑇, i, 𝑀) for i ∈ ν])
 end
 
-function fromjson(::Type{DataDict}, ν::JSDict, 𝑀::_Models)
+function deserialize(::Type{DataDict}, ν::JSDict, 𝑀::Workbench)
     out = DataDict()
     for (i, j) ∈ ν
-        arr = Model.datadictarray(fromjson(Vector, j, 𝑀))
+        arr = Model.datadictarray(deserialize(Vector, j, 𝑀))
         push!(out, i => arr)
     end
     out
 end
 
 for (name, action) ∈ (:RootAdded => :push!, :RootRemoved => :delete!)
-    @eval function apply(::Val{$(Meta.quot(name))}, 𝐷::iDocument, 𝐼::JSDict, 𝑀::_Models)
-        $action(𝐷, fromjson(iHasProps, 𝐼["model"], 𝑀))
+    @eval function apply(::Val{$(Meta.quot(name))}, 𝐷::iDocument, 𝐼::JSDict, 𝑀::Workbench)
+        $action(𝐷, deserialize(iHasProps, 𝐼["model"], 𝑀))
     end
 end
 
@@ -131,27 +134,27 @@ function apply(::Val{:TitleChanged}, 𝐷::iDocument, 𝐼 :: JSDict, _)
     𝐷.title = 𝐼["title"]
 end
 
-function apply(::Val{:ModelChanged}, 𝐷::iDocument, 𝐼::JSDict, 𝑀::_Models)
-    mdl  = fromjson(iHasProps, 𝐼["model"], 𝑀)
+function apply(::Val{:ModelChanged}, 𝐷::iDocument, 𝐼::JSDict, 𝑀::Workbench)
+    mdl  = deserialize(iHasProps, 𝐼["model"], 𝑀)
     attr = _fieldname(𝐼["attr"])
-    val  = fromjson(typeof(mdl), attr, 𝐼["new"], 𝑀)
+    val  = deserialize(typeof(mdl), attr, 𝐼["new"], 𝑀)
     setproperty!(mdl, attr, val; patchdoc = true)
 end
 
-function apply(::Val{:ColumnDataChanged}, 𝐷::iDocument, 𝐼::JSDict, 𝑀::_Models)
-    obj  = fromjson(iHasProps, 𝐼["column_source"], 𝑀)
-    data = fromjson(DataDict, 𝐼["new"], 𝑀)
+function apply(::Val{:ColumnDataChanged}, 𝐷::iDocument, 𝐼::JSDict, 𝑀::Workbench)
+    obj  = deserialize(iHasProps, 𝐼["column_source"], 𝑀)
+    data = deserialize(DataDict, 𝐼["new"], 𝑀)
     Model.update!(obj.data, data)
 end
 
-function apply(::Val{:ColumnsStreamed}, 𝐷::iDocument, 𝐼::JSDict, 𝑀::_Models)
-    obj  = fromjson(iHasProps, 𝐼["column_source"], 𝑀)
-    data = fromjson(DataDict, 𝐼["data"], 𝑀)
+function apply(::Val{:ColumnsStreamed}, 𝐷::iDocument, 𝐼::JSDict, 𝑀::Workbench)
+    obj  = deserialize(iHasProps, 𝐼["column_source"], 𝑀)
+    data = deserialize(DataDict, 𝐼["data"], 𝑀)
     Model.stream!(obj.data, data; rollover = 𝐼["rollover"])
 end
 
-function apply(::Val{:ColumnsPatched}, 𝐷::iDocument, 𝐼::JSDict, 𝑀::_Models)
-    obj  = fromjson(iHasProps, 𝐼["column_source"], 𝑀)
+function apply(::Val{:ColumnsPatched}, 𝐷::iDocument, 𝐼::JSDict, 𝑀::Workbench)
+    obj  = deserialize(iHasProps, 𝐼["column_source"], 𝑀)
     data = Dict{String, Vector{Pair}}(
         col => Pair[_𝑐𝑝_key(x) => _𝑐𝑝_value(y) for (x, y) ∈ lst]
         for (col, lst) ∈ 𝐼["patches"]
@@ -159,9 +162,7 @@ function apply(::Val{:ColumnsPatched}, 𝐷::iDocument, 𝐼::JSDict, 𝑀::_Mod
     Model.patch!(obj.data, data)
 end
 
-parsereferences(𝐶::Vector, 𝐵::Buffers = Buffers()) = parsereferences!(ModelDict(), 𝐶, 𝐵)
-
-function parsereferences!(𝑀::ModelDict, 𝐶::Vector, 𝐵::Buffers)
+function deserialize!(𝑀::ModelDict, 𝐶::Vector, 𝐵::Buffers)
     if length(Model.MODEL_TYPES) ≢ length(_MODEL_TYPES)
         𝑅 = Serialize.Rules()
         lock(_LOCK) do
@@ -171,12 +172,26 @@ function parsereferences!(𝑀::ModelDict, 𝐶::Vector, 𝐵::Buffers)
         end
     end
 
-    info = _Models(𝑀, 𝐶, 𝐵)
+    info = Workbench(𝑀, 𝐶, 𝐵)
     for new ∈ 𝐶
         createreference!(info, getid(new), new)
     end
     𝑀
 end
+
+"""
+    deserialize!(𝐷::iDocument, 𝐶::JSDict, 𝐵::Buffers)
+
+Uses data extracted from websocket communication to update a document.
+"""
+function deserialize!(𝐷::iDocument, 𝐶::JSDict, 𝐵::Buffers)
+    𝑀    = deserialize!(bokehmodels(𝐷), 𝐶["references"], 𝐵)
+    info = Workbench(𝑀, 𝐶["events"], 𝐵)
+    for msg ∈ 𝐶["events"]
+        apply(Val(Symbol(msg["kind"])), 𝐷, msg, info)
+    end
+end
+
 
 function _reshape(data::Union{Vector{Int8}, Vector{UInt8}}, dtype::String, shape::Vector{Any}, order::String)
     arr = reinterpret(
@@ -204,14 +219,6 @@ function _reshape(data::Union{Vector{Int8}, Vector{UInt8}}, dtype::String, shape
     end
 end
 
-function patchdoc!(𝐷::iDocument, 𝐶::JSDict, 𝐵::Buffers)
-    𝑀    = parsereferences!(bokehmodels(𝐷), 𝐶["references"], 𝐵)
-    info = _Models(𝑀, 𝐶["events"], 𝐵)
-    for msg ∈ 𝐶["events"]
-        apply(Val(Symbol(msg["kind"])), 𝐷, msg, info)
-    end
-end
-
 const _𝐵𝐾       = "__buffer__"
 const _𝑁𝐾       = "__ndarray__"
 const _𝑐𝑝_SLICE = AbstractDict{<:AbstractString, <:Union{Nothing, Integer}}
@@ -232,6 +239,6 @@ _𝑐𝑝_value(@nospecialize(x::Union{Number, String, iHasProps, AbstractVector
 _𝑐𝑝_value(@nospecialize(x::AbstractVector{Int64})) = collect(Int32, x)
 _𝑐𝑝_value(x::Vector{Any}) = collect((i for i ∈ x))
 
-export patchdoc!, parsereferences
+export deserialize!
 end
-using .PatchDocReceive
+using .Deserialize

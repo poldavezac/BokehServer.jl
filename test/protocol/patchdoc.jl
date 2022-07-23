@@ -152,7 +152,7 @@ end
                 
             cnt = Dict{String, Any}(
                 "references" => Any[],
-                "events" => Any[js(BokehServer.Models.Actions.ButtonClick(; model = btn))],
+                "events" => Any[js(BokehServer.ButtonClick(; model = btn))],
             )
             BokehServer.Protocol.patchdoc!(doc, cnt, buf)
             @test called[]

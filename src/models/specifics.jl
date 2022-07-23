@@ -47,18 +47,18 @@ function Protocol.Serialize.serialref(::Type{Selection}, evt::Events.ModelChange
 end
 
 """
-    fromjson(::Type{Selection}, attr:: Symbol, val, 𝑀::Protocol.PatchDocReceive._Models)
+    deserialize(::Type{Selection}, attr:: Symbol, val, 𝑀::Protocol.Deserialize.Workbench)
 
 Read the JSON values and move indices from a 0-based index to a 1-based index
 """
-function Protocol.PatchDocReceive.fromjson(::Type{Selection}, attr:: Symbol, val, 𝑀::Protocol.PatchDocReceive._Models)
+function Protocol.Deserialize.deserialize(::Type{Selection}, attr:: Symbol, val, 𝑀::Protocol.Deserialize.Workbench)
     return if(attr ∈ (:line_indices, :indices))
         Int64[i+1 for i ∈ val]
     elseif attr ≡ :multiline_indices
         Dict{String, Vector{Int64}}((i => Int64[k+1 for k ∈ j] for (i, j) ∈ val)...)
     else
-        invoke(Protocol.PatchDocReceive.fromjson,
-               Tuple{iHasProps, Symbol, Any, Protocol.PatchDocReceive._Models},
+        invoke(Protocol.Deserialize.deserialize,
+               Tuple{iHasProps, Symbol, Any, Protocol.Deserialize.Workbench},
                mdl,
                attr,
                val;

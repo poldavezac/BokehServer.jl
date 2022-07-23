@@ -14,7 +14,11 @@ pushdoc(self::iDocument, 𝑅::Serialize.iRules = Serialize.Rules()) = (; doc = 
 
 function pushdoc!(self::iDocument, μ::Dict{String}, 𝐵::Buffers)
     docmsg   = μ["doc"]
-    newroots = let models = parsereferences(docmsg["roots"]["references"], 𝐵)
+    newroots = let models = deserialize!(
+            Dict{Int64, iHasProps}(),
+            docmsg["roots"]["references"],
+            𝐵
+        )
         [models[parse(Int64, i)] for i ∈ docmsg["roots"]["root_ids"]]
     end
 

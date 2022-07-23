@@ -136,23 +136,23 @@ end
     push!(getfield(doc, :roots), obj)
     calls = Any[]
 
-    BokehServer.onchange(doc) do evt::BokehServer.Models.Actions.DocumentReady
+    BokehServer.onchange(doc) do evt::BokehServer.DocumentReady
         push!(calls, evt)
     end
 
     BokehServer.Events.eventlist!() do
-        BokehServer.onchange(obj) do evt::BokehServer.Models.Actions.ButtonClick
+        BokehServer.onchange(obj) do evt::BokehServer.ButtonClick
             push!(calls, evt)
         end
     end
     @test obj.subscribed_events.values == Symbol[:button_click]
 
     BokehServer.Events.eventlist!() do
-        BokehServer.Events.trigger(BokehServer.Models.Actions.DocumentReady(; doc = doc))
-        BokehServer.Events.trigger(BokehServer.Models.Actions.ButtonClick(; model = obj))
+        BokehServer.Events.trigger(BokehServer.DocumentReady(; doc = doc))
+        BokehServer.Events.trigger(BokehServer.ButtonClick(; model = obj))
     end
 
     @test length(calls) == 2
-    @test calls[1] isa BokehServer.Models.Actions.DocumentReady
-    @test calls[2] isa BokehServer.Models.Actions.ButtonClick
+    @test calls[1] isa BokehServer.DocumentReady
+    @test calls[2] isa BokehServer.ButtonClick
 end

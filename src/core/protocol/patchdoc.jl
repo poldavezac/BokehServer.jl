@@ -53,3 +53,5 @@ function patchdoc(λ::AbstractVector{<:Events.iEvent}, 𝐷::iDocument, oldids::
     outp = patchdoc(λ, 𝐷, oldids, 𝑅)
     return isnothing(outp) ? missing : sendmessage(ios, msg"PATCH-DOC", outp, 𝑅.buffers)
 end
+
+patchdoc!(𝐷::iDocument, 𝐶::AbstractDict, 𝐵::Buffers) = Deserialize.deserialize!(𝐷, 𝐶, 𝐵)
