@@ -2,10 +2,12 @@ module DocRoute
 using HTTP
 using JSON
 using ...AbstractTypes
+using ...Protocol
+using ..Documents: Document
 using ..Server
 using ..Server.Templates
 
-function route(http::HTTP.Stream{HTTP.Request}, app::Server.iApplication)
+function route(http::HTTP.Stream{HTTP.Request}, app::Server.iRoute)
     HTTP.setstatus(http, 200)
     HTTP.setheader(http, "Content-Type" => "text/html")
     HTTP.startwrite(http)
@@ -14,17 +16,32 @@ function route(http::HTTP.Stream{HTTP.Request}, app::Server.iApplication)
     write(http, msg)
 end
 
-Server.staticbundle(app::Server.iApplication) = Server.staticbundle(Val(:server))
+Server.staticbundle(app::Server.iApplication) = Server.staticbundle()
+Server.staticbundle(app::Server.iStaticRoute) = Server.staticbundle(Server.CONFIG.cdn, addversion = true, root = "")
 
-div(::Server.iApplication, roots::Dict{String, String}) = Templates.embed(roots)
+div(::Server.iRoute, roots::Dict{String, String}) = Templates.embed(roots)
 
-function body(app::Server.iApplication, session::Server.SessionContext)
-    bundle = Server.staticbundle(app)
-    roots  = Server.makerootids(app, session.doc...)
+function body(app::Server.iStaticRoute, doc::iDocument)
+    docid = Server.makeid(app)
+    return invoke(
+        body,
+        Tuple{Server.iRoute, iDocument},
+        app,
+        doc;
+        data = Dict(docid => Protocol.pushdoc(doc.title, doc)),
+        docid,
+    )
+end
+
+body(app::Server.iRoute, session::Server.SessionContext) = body(app, session.doc; session.token)
+
+function body(app::Server.iRoute, doc::iDocument; kwa...)
+    bundle  = Server.staticbundle(app)
+    rootids = Server.makerootids(app, doc...)
     return filetemplate(
-        Templates.docjsscripts(app, session.token, roots),
-        div(app, roots),
-        session.doc.title,
+        Templates.docjsscripts(app, rootids; kwa...),
+        div(app, rootids),
+        doc.title,
         bundle.js_files,
         bundle.js_raw,
         bundle.css_files,
@@ -70,6 +87,7 @@ function filetemplate(
         """
 end
 
+precompile(body, (Server.Application, Document))
 precompile(route, (HTTP.Stream{HTTP.Request}, Server.Application))
 end
 

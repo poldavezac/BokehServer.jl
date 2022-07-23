@@ -83,6 +83,6 @@ function precompilemethods(𝐴::Application)
     end
 end
 
-function makerootids(app::iApplication, rs::Vararg{iModel})
+function makerootids(app::iRoute, rs::Vararg{iModel})
     Dict{String, String}(("$(bokehid(r))" => makeid(app) for r ∈ rs)...)
 end

@@ -7,6 +7,7 @@ using ..Events
 using ..Documents
 
 abstract type iRoute end
+abstract type iStaticRoute <: iRoute end
 abstract type iApplication <: iRoute end
 
 """

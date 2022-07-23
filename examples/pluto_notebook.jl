@@ -22,10 +22,10 @@ begin
     DATA = FIG.renderers[1].data_source
 
     "A button which adds a datapoint when clicked"
-    BTN = let btn = BokehServer.Models.Button(; label = "add a data point")
+    BTN = let btn = BokehServer.Button(; label = "add a data point")
 
         # Note that the `onchange` call only reacts to `ButtonClick` events
-        BokehServer.onchange(btn) do evt::BokehServer.Models.Actions.ButtonClick
+        BokehServer.onchange(btn) do evt::BokehServer.ButtonClick
             BokehServer.stream!(
                 DATA,
                 Dict("x" => [length(DATA.data["x"])+1], "y" => [rand(1:10)])

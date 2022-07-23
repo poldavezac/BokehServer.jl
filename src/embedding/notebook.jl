@@ -69,12 +69,12 @@ function updateserver!(srv::NotebooksServer, model::AppModels)
         * Server.Templates.embed(roots)
         * Server.Templates.docjsscripts(
             app,
-            Server.Tokens.token(app.name),
             roots;
             use_for_title = false,
             absolute_url  = "http://$(srv.address)",
             app_path      = "/$(app.name)",
             id            = app.name,
+            token         = Server.Tokens.token(app.name),
         )
     )
 end

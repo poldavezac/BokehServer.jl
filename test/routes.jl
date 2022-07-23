@@ -32,7 +32,7 @@ end
         css_raw = String[],
         hashes = Dict{String, String}()
     )
-    val = BokehServer.Server.staticbundle(:server) 
+    val = BokehServer.Server.staticbundle() 
     for field ∈ propertynames(truth)
         @test getfield(val, field) == getfield(truth, field)
     end
@@ -41,7 +41,7 @@ end
         replace(i, "http://127.0.0.1:5006" => "x")
         for i ∈ truth.js_files
     ]
-    val = BokehServer.Server.staticbundle(Val(:server); address = "x")
+    val = BokehServer.Server.staticbundle("x")
     for field ∈ propertynames(truth)
         @test getfield(val, field) == getfield(truth, field)
     end

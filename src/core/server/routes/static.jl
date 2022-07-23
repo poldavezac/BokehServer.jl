@@ -1,6 +1,4 @@
 using Pkg.Artifacts
-abstract type iStaticRoute <: iRoute end
-
 """
     struct StaticRoute <: iRoute
         route :: Symbol

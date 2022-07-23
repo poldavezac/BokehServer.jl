@@ -3,7 +3,7 @@ push!(LOAD_PATH, joinpath(@__DIR__, "environment"))
 using BokehServer
 using StatsBase
 
-BokehServer.Plotting.serve() do
+BokehServer.serve() do
     p = BokehServer.figure(width=670, height=400, toolbar_location=nothing,
                title="Normal (Gaussian) Distribution")
 
@@ -39,25 +39,25 @@ BokehServer.Plotting.serve() do
  
     p.xaxis.ticker = [-3, -2, -1, 0, 1, 2, 3]
     p.xaxis.major_label_overrides = Dict(
-        -3 => BokehServer.Models.TeX(; text = raw"\overline{x} - 3\sigma"),
-        -2 => BokehServer.Models.TeX(; text = raw"\overline{x} - 2\sigma"),
-        -1 => BokehServer.Models.TeX(; text = raw"\overline{x} - \sigma"),
-         0 => BokehServer.Models.TeX(; text = raw"\overline{x}"),
-         1 => BokehServer.Models.TeX(; text = raw"\overline{x} + \sigma"),
-         2 => BokehServer.Models.TeX(; text = raw"\overline{x} + 2\sigma"),
-         3 => BokehServer.Models.TeX(; text = raw"\overline{x} + 3\sigma"),
+        -3 => BokehServer.TeX(; text = raw"\overline{x} - 3\sigma"),
+        -2 => BokehServer.TeX(; text = raw"\overline{x} - 2\sigma"),
+        -1 => BokehServer.TeX(; text = raw"\overline{x} - \sigma"),
+         0 => BokehServer.TeX(; text = raw"\overline{x}"),
+         1 => BokehServer.TeX(; text = raw"\overline{x} + \sigma"),
+         2 => BokehServer.TeX(; text = raw"\overline{x} + 2\sigma"),
+         3 => BokehServer.TeX(; text = raw"\overline{x} + 3\sigma"),
     )
 
     p.yaxis.ticker = [0, 0.1, 0.2, 0.3, 0.4]
     p.yaxis.major_label_overrides = Dict(
-        0=> BokehServer.Models.TeX(; text = "0"),
-        0.1=> BokehServer.Models.TeX(; text = raw"0.1/\sigma"),
-        0.2=> BokehServer.Models.TeX(; text = raw"0.2/\sigma"),
-        0.3=> BokehServer.Models.TeX(; text = raw"0.3/\sigma"),
-        0.4=> BokehServer.Models.TeX(; text = raw"0.4/\sigma"),
+        0=> BokehServer.TeX(; text = "0"),
+        0.1=> BokehServer.TeX(; text = raw"0.1/\sigma"),
+        0.2=> BokehServer.TeX(; text = raw"0.2/\sigma"),
+        0.3=> BokehServer.TeX(; text = raw"0.3/\sigma"),
+        0.4=> BokehServer.TeX(; text = raw"0.4/\sigma"),
     )
 
-    div = BokehServer.Models.Div(text=raw"""
+    div = BokehServer.Div(text=raw"""
     A histogram of a samples from a Normal (Gaussian) distribution, together with
     the ideal probability density function, given by the equation:
     <p />
@@ -67,5 +67,5 @@ BokehServer.Plotting.serve() do
     $$
     """)
 
-    BokehServer.Models.Column(children = [p, div])
+    BokehServer.Column(children = [p, div])
 end

@@ -78,5 +78,3 @@ serve(apps::Vararg{<:RouteTypes}; kwa...)                       = serve(CONFIG.h
 _topair(@nospecialize(f::Function))                 = nameof(f) => Application(f)
 _topair(@nospecialize(f::Pair{Symbol, <:Function})) = f[1]      => Application(f[2])
 _topair(@nospecialize(f::Pair{Symbol, <:iRoute}))   = f
-
-export serve

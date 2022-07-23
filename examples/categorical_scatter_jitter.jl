@@ -24,7 +24,7 @@ const DATA = let data = Dict("time" => Dates.Time[], "day" => String[])
     data
 end
 
-BokehServer.Plotting.serve() do
+BokehServer.serve() do
     p = BokehServer.figure(width=800, height=300, y_range=DAYS, x_axis_type="datetime",
                title="Commits by Time of Day (US/Central) 2012-2016")
 

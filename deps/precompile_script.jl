@@ -40,3 +40,9 @@ sleep(0.01)
 BokehServer.Client.open("ws://localhost:5006/app/ws") do _, __
 end
 close(server)
+
+BokehServer.html(; browser = false, path = tempdir()* "/toto.html") do
+    labels = [j == 1 ? "x" : "y" for j = 1:2 for _ = 1:(j*10)]
+    vals   = [(randn(Float64, 10) .+ 10.)..., (randn(Float64, 20) .- 10.)...]
+    BokehServer.boxplot(labels, vals)
+end

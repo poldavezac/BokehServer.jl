@@ -1,6 +1,8 @@
 using Pkg.Artifacts
 
 @Base.kwdef mutable struct Configuration
+    html_path      :: String         = "bokeh_plot.html"
+    cdn            :: String         = "https://cdn.bokeh.org/bokeh/release"
     host           :: String         = "127.0.0.1"
     port           :: Int            = 5006
     clientloglevel :: Symbol         = :info

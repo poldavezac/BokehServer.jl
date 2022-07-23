@@ -12,13 +12,27 @@ loosely similar to its python counterpart.
 
 ## Getting Started
 
-A number of examples are provided in the `examples` directory. All of them involve starting a server which deals with a single dashboard.
-Other options are available by looking at the `BokehServer.Server.server` documentation.
+A number of examples are provided in the `examples` directory. These usually involve starting a server:
 
-We try to keep a similar API to the one provided by *python bokeh*. The main differences are due to *Julia*'s aversion to instance or class methods.
-A python call `fig.scatter([1, 2, 3], [3, 2, 1])` becomes `scatter!(fig; x = [1, 2, 3], y = [3, 2, 1])`. Note that:
+```julia
+BokehServer.serve() do
+    BokehServer.line(; y = rand(Float64, 100))
+end
+```
 
-1. Julia relies on free functions. Thus the call usually involves adding the current plot as first argument.
+One could also create a stand-alone html page:
+
+```julia
+BokehServer.html() do
+    BokehServer.line(; y = rand(Float64, 100))
+end
+```
+
+We try to keep a similar API to the one provided by *python bokeh*. The main
+differences are due to *Julia*'s aversion to instance or class methods. A
+python call `fig.line([1, 2, 3])` becomes `line!(fig; y = [1, 2, 3])`. In other words:
+
+1. Julia relies on free functions. Thus the call requires adding the current plot as first argument.
 2. Julia suggests using a `!` when a function mutates its first argument. Thus our free functions:
 
    * without a `!`, will create a plot, feed it to the `!`-ended free function, finally returning said plot.
@@ -66,22 +80,26 @@ In the background, a *websocket* server is created which will synchronize your
 *BokehServer* objects in *Julia* with their *typescript* counterparts. It will also
 manage the event mechanism provided by *BokehServer*.
 
-### Using a BokehServer server
+### Starting a server or creating a stand-alone html page
 
 Examples abound in the `examples` directory. They all involve using:
 
 ```julia
-BokehServer.Plotting.serve() do
+BokehServer.serve() do
     plot = figure() # create a plot
     ...
     plot # return the plot
 end
 ```
 
-!!! note "A simple server"
+!!! note "Stand-alone HTML pages"
+
+    To create a stand-alone page, simply replace `serve` by `html`.
+
+!!! note "The do ... end scope"
 
     *BokehServer* objects should be created strictly within the `do ... end` scope. This is
-    because of the event mechanism is inilialized only within this scope.
+    because of the event mechanism is initialized only within this scope.
 
 ## Available plots
 
@@ -278,7 +296,7 @@ BokehServer.layout([plot1, plot2])
 plot1 = BokehServer.scatter(;
     x       = randn(Float64, 100),
     y       = randn(Float64, 100),
-    x_range = BokehServer.Models.Range1d(; start = -10, finish = 10)
+    x_range = BokehServer.Range1d(; start = -10, finish = 10)
 )
 plot2 = BokehServer.scatter(;
     x       = randn(Float64, 100),
@@ -478,7 +496,7 @@ root is mutated then simply removed from the document.
 The collection is done thanks to a task-specific manager, hidden inside the `task_local_storage()` dictionnary.
 
 Advanced users could change the manager behavior by creating custom
-`BokehServer.iServer.Application` types, overloading
+`BokehServer.Server.Application` types, overloading
 `Server.eventlist(::iApplication)`, and providing instances of these
 applications to the server. An example is the
 `BokehServer.Embeddings.Notebooks.NotebookApp` which deals with the specifics of

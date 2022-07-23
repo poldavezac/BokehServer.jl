@@ -110,6 +110,14 @@ The labels can be sorted by (use argument sortby with a function):
 * count: the number of values per box
 * median: the median of values per box
 * keys: the box key value
+
+```julia
+BokehServer.html() do
+    labels = [j == 1 ? "x" : "y" for j = 1:2 for _ = 1:(j*10)]
+    vals   = [(randn(Float64, 10) .+ 10.)..., (randn(Float64, 20) .- 10.)...]
+    BokehServer.boxplot(labels, vals)
+end
+```
 """
 function boxplot!(
         plot::Models.Plot,
