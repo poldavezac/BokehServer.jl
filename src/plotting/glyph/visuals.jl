@@ -19,25 +19,22 @@ const _👻COLORS      = (
 )
 
 function _👻visuals!(
-        props::Dict{Symbol},
-        𝑇::Type{<:Models.iGlyph};
-        trait_alpha      = 1.,
-        text_color       = _👻TEXT_COLOR,
-        trait_color      = missing,
-        prefix           = "",
-        defaults         = (;),
-        override         = (;),
-        test     :: Bool = false
+        props       :: Dict{Symbol, Any},
+        @nospecialize(𝑇 :: Type{<:Models.iGlyph}),
+        test        :: Bool,
+        trait_color :: Union{String, Missing},
+        prefix      :: String,
+        defaults    :: Dict{Symbol, Any} = Dict{Symbol, Any}(),
+        override    :: Dict{Symbol, Any} = Dict{Symbol, Any}();
+        text_color  :: Symbol            =  _👻TEXT_COLOR,
+        trait_alpha :: Float64           = 1.,
 )
-    if test
-        reg = Regex("$prefix")
-        if !any(startswith("$x", reg) for x ∈ keys(props))
-            return missing
-        end
+    if test && !isempty(prefix) && !any(startswith("$x", prefix) for x ∈ keys(props))
+        return missing
     end
 
-    defaults       = merge((; text_color, hatch_color = text_color), defaults)
-    trait_defaults = (; color = (ismissing(trait_color) ? _👻COLORS[1] : trait_color), alpha = trait_alpha)
+    defaults       = merge(Dict{Symbol, Any}(:text_color => text_color, :hatch_color => text_color), defaults)
+    trait_defaults = Dict{Symbol, Any}(:color => (ismissing(trait_color) ? _👻COLORS[1] : trait_color), :alpha => trait_alpha)
 
     result = Dict{Symbol, Any}()
     traits = Set{Symbol}()
