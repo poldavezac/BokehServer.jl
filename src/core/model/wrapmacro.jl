@@ -3,23 +3,38 @@ function _👻structure(
         parents :: Union{Symbol, Expr},
         fields  :: _👻Fields,
 ) :: Expr
-    code   = [_👻initcode(cls, fields, i) for i ∈ _👻filter(fields)]
-    fnames = map(x->x.name, _👻filter(fields))
-    quote
-        mutable struct $cls <: $parents
-            id        :: Int64
-            $((:($(i.name)::$(bokehstoragetype(i.type))) for i ∈ _👻filter(fields) if !i.alias)...)
-            callbacks :: Vector{Function}
-
+    vals  = [_👻initcode(cls, fields, i) for i ∈ _👻filter(fields)]
+    cstr  =  if all(last(i) ≡ :default for i ∈ vals)
+        quote
+            $cls(; id = $(@__MODULE__).ID(), kwa...) = $(@__MODULE__)._👻init($cls, id, kwa)
+        end
+    else
+        if any(last(i) ≡ :custom for i ∈ vals)
+            fnames = map(x->x.name, _👻filter(fields))
+            code   = first.(vals)
+        else
+            fnames = [i[1].args[2] for i ∈ vals]
+            code   = ()
+        end
+        quote
             function $cls(; id = $(@__MODULE__).ID(), kwa...)
                 $(code...)
-                new(
+                $cls(
                     id isa Int64 ? id : parse(Int64, string(id)),
                     $(fnames...),
                     Function[],
                 )
             end
         end
+    end
+    quote
+        mutable struct $cls <: $parents
+            id        :: Int64
+            $((:($(i.name)::$(bokehstoragetype(i.type))) for i ∈ _👻filter(fields) if !i.alias)...)
+            callbacks :: Vector{Function}
+        end
+
+        $cstr
     end
 end
 
@@ -56,6 +71,9 @@ function _👻funcs(cls::Symbol, fields::_👻Fields) :: Expr
 
     quote
         $bkalias
+
+        @inline $(@__MODULE__).bokehinfo(::Type{$cls}) = $(tuple(fields...))
+
         @inline function $(@__MODULE__).bokehproperties(::Type{$cls}) :: Tuple{Vararg{Symbol}}
             return $(tuple((i.name for i ∈ fields if i.js)...))
         end
@@ -162,6 +180,8 @@ provided with the structure definition. Return `nothing` otherwise.
 **Warning** This is *not* necessarily the theme default. See `themevalue` for the latter.
 """
 function defaultvalue end
+
+function bokehinfo end
 
 bokehalias(::Type, α::Symbol) = α
 

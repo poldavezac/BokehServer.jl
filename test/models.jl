@@ -48,8 +48,8 @@ end
     end))
     truth        = [
         (;
-            index = 2, name = :a, type = Int32, default = Some(:(zero(Int32))),
-            init  = Some(:(zero(Int32))), js = true,
+            index = 2, name = :a, type = Int32, default = Some(0),
+            init  = Some(0), js = true,
             alias = false, readonly = false,
         ),
         (; 
