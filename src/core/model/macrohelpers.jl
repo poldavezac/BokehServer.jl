@@ -177,7 +177,7 @@ function _👻init(𝑇::Type{<:iHasProps}, id, kwa::Base.Pairs)
     )
 end
 
-function _👻init(𝑇::Type{<:iHasProps}, α::Symbol, ν)
+function _👻init_val(𝑇::Type{<:iHasProps}, α::Symbol, ν)
     @nospecialize 𝑇 ν
     f𝑇   = bokehfieldtype(𝑇, α)
     isnothing(f𝑇) && return ν
@@ -196,7 +196,7 @@ function _👻init_with_call(𝐹, 𝑇::Type{<:iHasProps}, α1::Symbol, α2::Sy
         t = BokehServer.Themes.theme(𝑇, α1)
         isnothing(t) ? 𝐹() : something(t)
     end
-    return _👻init(𝑇, α1, val)
+    return _👻init_val(𝑇, α1, val)
 end
 
 function _👻init_with_defaults(dflt, 𝑇::Type{<:iHasProps}, α1::Symbol, α2::Symbol, kwa::Base.Pairs)
@@ -209,7 +209,7 @@ function _👻init_with_defaults(dflt, 𝑇::Type{<:iHasProps}, α1::Symbol, α2
         t = BokehServer.Themes.theme(𝑇, α1)
         isnothing(t) ? dflt : something(t)
     end
-    return _👻init(𝑇, α1, val)
+    return _👻init_val(𝑇, α1, val)
 end
 
 function _👻init_mandatory(𝑇::Type{<:iHasProps}, α1::Symbol, α2::Symbol, kwa::Base.Pairs)
@@ -221,5 +221,5 @@ function _👻init_mandatory(𝑇::Type{<:iHasProps}, α1::Symbol, α2::Symbol, 
     else
         throw(ErrorException("$𝑇.$α1 is a mandatory argument"))
     end
-    return _👻init(𝑇, α1, val)
+    return _👻init_val(𝑇, α1, val)
 end
