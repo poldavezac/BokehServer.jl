@@ -123,40 +123,69 @@ end
 
 function _👻initcode(cls::Symbol, fields::_👻Fields, field::_👻Field) :: Expr
     opts = [j.name for j ∈ fields if j.alias && j.type.parameters[1] ≡ field.name]
-    κ    = Meta.quot(field.name)
-    val  = if isnothing(field.init)
-        :(let val = BokehServer.Themes.theme($cls, $κ)
-            isnothing(val) && throw(ErrorException(($("$cls.$(field.name) is a mandatory argument"))))
-            something(val)
-        end)
-    else
-        :(let val = BokehServer.Themes.theme($cls, $κ)
-            isnothing(val) ? $(something(field.init)) : something(val)
-        end)
-    end
-        
-    val = _👻elseif((field.name, opts...), val) do key
-        sκ = Meta.quot(key)
-        :(if haskey(kwa, $sκ)
-            kwa[$sκ]
-        end)
-    end
+    args = (cls, Meta.quot(field.name), Meta.quot(isempty(opts) ? field.name : only(opts)), :kwa)
+    isnothing(field.init) && return :($(field.name) = $(@__MODULE__)._👻init_mandatory($(args...)))
 
-    return if field.type <: Internal
-        :($(field.name) = $val)
+    init = something(field.init)
+    return if (
+            isimmutable(init) || 
+            init isa Union{AbstractString, Symbol} ||
+            (init isa Expr && init.head ≡ :tuple)  ||
+            (init isa Expr && init.head ≡ :ref && length(init.args) == 1) ||
+            (init isa Expr && init.head ≡ :call && init.args[1] ∈ (:zero, :Symbol))
+    )
+        :($(field.name) = $(@__MODULE__)._👻init_with_defaults($init, $(args...)))
+    elseif init isa Expr && init.head ≡ :call && length(init.args) == 1
+        :($(field.name) = $(@__MODULE__)._👻init_with_call($(init.args[1]), $(args...)))
     else
-        x = gensym()
-        y = gensym()
-        quote
-            $(field.name) = let $x = $val, $y = $(@__MODULE__).bokehconvert($(field.type), $x)
-                ($y isa $Unknown) && throw(ErrorException(string(
-                    "Could not convert `", $x, "` to ",
-                    $cls, ".", $("$(field.name)"),
-                    "::", $(bokehstoragetype(field.type))
-                )))
-                @assert $y isa fieldtype($cls, $κ) string($("$cls.$(field.name) != "), typeof($y))
-                $y
-            end
-        end
+        @show init
+        :($(field.name) = $(@__MODULE__)._👻init_with_call($(args...)) do; $init end )
     end
+end
+
+function _👻init(𝑇::Type{<:iHasProps}, α::Symbol, ν)
+    @nospecialize 𝑇 ν
+    f𝑇   = bokehfieldtype(𝑇, α)
+    isnothing(f𝑇) && return ν
+    val = bokehconvert(f𝑇, ν)
+    val isa Unknown && throw(ErrorException("Could not initialize $𝑇.$α :: $(fieldtype(𝑇, α)) = `$ν`"))
+    return val
+end
+
+function _👻init_with_call(𝐹, 𝑇::Type{<:iHasProps}, α1::Symbol, α2::Symbol, kwa::Base.Pairs)
+    @nospecialize 𝐹 𝑇 kwa
+    val  = if haskey(kwa, α1)
+        kwa[α1]
+    elseif α1 ≢ α2 && haskey(kwa, α2)
+        kwa[α2]
+    else
+        t = BokehServer.Themes.theme(𝑇, α1)
+        isnothing(t) ? 𝐹() : something(t)
+    end
+    return _👻init(𝑇, α1, val)
+end
+
+function _👻init_with_defaults(dflt, 𝑇::Type{<:iHasProps}, α1::Symbol, α2::Symbol, kwa::Base.Pairs)
+    @nospecialize dflt 𝑇 kwa
+    val  = if haskey(kwa, α1)
+        kwa[α1]
+    elseif α1 ≢ α2 && haskey(kwa, α2)
+        kwa[α2]
+    else
+        t = BokehServer.Themes.theme(𝑇, α1)
+        isnothing(t) ? dflt : something(t)
+    end
+    return _👻init(𝑇, α1, val)
+end
+
+function _👻init_mandatory(𝑇::Type{<:iHasProps}, α1::Symbol, α2::Symbol, kwa::Base.Pairs)
+    @nospecialize 𝑇 kwa
+    val  = if haskey(kwa, α1)
+        kwa[α1]
+    elseif α1 ≢ α2 && haskey(kwa, α2)
+        kwa[α2]
+    else
+        throw(ErrorException("$𝑇.$α1 is a mandatory argument"))
+    end
+    return _👻init(𝑇, α1, val)
 end
