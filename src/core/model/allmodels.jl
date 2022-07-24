@@ -2,7 +2,7 @@ for (name, tpe, checkkey, pushkey) ∈ (
     (:bokehmodels, Dict{Int64, iHasProps}, (x)->:(haskey(found, $x)), :(push!(found, bokehid(cur) => cur))),
     (:bokehids, Set{Int64}, (x) -> :($x ∈ found), :(push!(found, bokehid(cur))))
 )
-@eval function $name(μ::Vararg{iHasProps}) :: $tpe
+    @eval function $name(μ::Vararg{iHasProps}) :: $tpe
         found = $tpe()
         todos = collect(iHasProps, μ)
         while !isempty(todos)
@@ -11,8 +11,15 @@ for (name, tpe, checkkey, pushkey) ∈ (
             $(checkkey(:key)) && continue
             $pushkey
 
-            for child ∈ bokehchildren(cur)
-                $(checkkey(:(bokehid(child)))) || push!(todos, child) 
+            for field ∈ fieldnames(typeof(cur))
+                field ∈ (:id, :callbacks) && continue
+                value = getfield(cur, field)
+                (value isa NoGood) && continue
+                for child ∈ _👻children(value)
+                    if child isa iHasProps
+                        $(checkkey(:(bokehid(child)))) || push!(todos, child) 
+                    end
+                end
             end
         end
         found
@@ -50,8 +57,15 @@ function models(𝐹::Function, μ::Vararg{iHasProps})
         push!(found, key)
         applicable(𝐹, cur) && 𝐹(cur)
 
-        for child ∈ bokehchildren(cur)
-            (bokehid(child) ∈ found) || push!(todos, child) 
+        for field ∈ fieldnames(typeof(cur))
+            field ∈ (:id, :callbacks) && continue
+            value = getfield(cur, field)
+            (value isa NoGood) && continue
+            for child ∈ _👻children(value)
+                if child isa iHasProps
+                    (bokehid(child) ∈ found) || push!(todos, child) 
+                end
+            end
         end
     end
 end
