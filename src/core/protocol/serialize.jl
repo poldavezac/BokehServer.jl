@@ -25,10 +25,10 @@ _fieldname(x::Symbol) :: String = replace("$x", _END_PATT)
 function serialroot(η::iHasProps, 𝑅::iRules) :: RT
     @nospecialize η 𝑅
     attrs = RT()
-    for (i, j) ∈ Model.bokehfields(typeof(η))
-        if !Model.isdefaultvalue(η, i)
-            val = Model.bokehunwrap(getproperty(η, i))
-            attrs[_fieldname(i)] = serialref(j, val, 𝑅)
+    𝑇     = typeof(η)
+    for i ∈ Model.bokehproperties(𝑇)
+        if hasfield(𝑇, i) && !Model.isdefaultvalue(η, i)
+            attrs[_fieldname(i)] = serializeattribute(𝑇, i, getfield(η, i), 𝑅)
         end
     end
     return RT(
@@ -40,39 +40,57 @@ end
 
 serialroot(@nospecialize(η::Events.iEvent), @nospecialize(𝑅::iRules)) ::RT  = serialref(η, 𝑅)
 
-function serialref(p𝑇::Type{<:Model.iSpec}, η, 𝑅::iRules) :: RT
-    @nospecialize p𝑇 η 𝑅
-    serialref(Union{Nothing, p𝑇}, η, 𝑅)
-end
+const _👻Simple = Union{AbstractString, Number, Nothing}
 
-function serialref(p𝑇::Type{Union{Nothing, T}} where {T<:Model.iSpec}, η, 𝑅::iRules) :: RT
-    @nospecialize p𝑇 η 𝑅
-    return if isnothing(η)
-        nothing
-    elseif η isa NamedTuple
-        RT("$i" => serialref(j, 𝑅) for (i,j) ∈ pairs(η))
-    elseif η isa Model.iHasProps
-        RT("expr" => serialref(η, 𝑅))
-    elseif !(η isa AbstractString)
-        RT("value" => serialref(η, 𝑅))
+serializeattribute(::Type, ::Symbol, @nospecialize(η), @nospecialize(𝑅)) = serialref(η, 𝑅)
+
+function serialref(@nospecialize(η), @nospecialize(𝑅::iRules))
+    # using if ... elseif ... reduces compilation resources 
+    return if η isa Union{
+            _👻Simple,
+            Tuple{Vararg{_👻Simple}},
+            AbstractSet{<:_👻Simple},
+            AbstractDict{String, <:_👻Simple}
+    }
+        η
+    elseif η isa OrdinalRange
+        # warning : we're going to javascript, thus the ranges start at 0...
+        RT("start"  => first(η)-1, "step"  => 1, "stop"  => last(η))
+    elseif η isa StepRangeLen
+        # warning : we're going to javascript, thus the ranges start at 0...
+        RT("start"  => first(η)-1, "step"  => step(η), "stop"  => last(η))
+    elseif η isa AbstractVector{<:_👻Simple}
+        # warning: put this **after** Ranges as these are considered AbstractVector types
+        η
+    elseif η isa Model.iSpec
+        out = let itm = η.item
+            key = itm isa Model.iHasProps ? "expr" : itm isa Model.Column ? "field" : "value"
+            RT(key => serialref(itm, 𝑅))
+        end
+        let itm = η.transform
+            ismissing(itm) || (out["transform"] = serialref(itm, 𝑅))
+        end
+        (η isa Model.iUnitSpec) && let itm = η.units.value
+            (itm ≡ first(Model.units(η))) || (out["units"] = "$itm")
+        end
+        out
+    elseif η isa iHasProps
+        RT("id"  => "$(bokehid(η))")
+    elseif η isa Model.EnumType
+        "$(η.value)"
+    elseif η isa Union{Date, DateTime}
+        "$η"
+    elseif η isa Model.Color
+        "$(Model.colorhex(η))"
+    elseif η isa Union{AbstractVector, AbstractSet, Tuple}
+        Any[serialref(i, 𝑅) for i ∈ η]
+    elseif η isa Union{AbstractDict, NamedTuple}
+        RT(("$i" => serialref(j, 𝑅) for (i,j) ∈ η)...)
     else
-        key = Model.bokehconvert(p𝑇, η).item isa Model.Column ? "field" : "value"
-        RT(key => serialref(η, 𝑅))
+        @assert !(η isa Events.iEvent)
+        RT(("$i" => serialref(getfield(η, i), 𝑅) for i ∈ fieldnames(typeof(η)))...)
     end
 end
-
-serialref(::Type, @nospecialize(η), @nospecialize(𝑅::iRules))            = serialref(η, 𝑅)
-serialref(@nospecialize(η::iHasProps), ::iRules)              :: RT      = RT("id"  => "$(bokehid(η))")
-serialref(@nospecialize(η::Model.EnumType), ::iRules)         :: String  = "$(η.value)"
-serialref(@nospecialize(η::TitleChangedEvent), ::iRules)     :: RT     = RT("kind"  => "TitleChanged", "title"  => η.title)
-serialref(@nospecialize(η::Union{Date, DateTime}), ::iRules) :: String = "$η"
-serialref(@nospecialize(η::Model.Color), ::iRules)           :: String = "$(Model.colorhex(η))"
-serialref(@nospecialize(η::Union{AbstractString, Number, Symbol, Nothing}), ::iRules) = η
-serialref(@nospecialize(η::Union{AbstractVector, AbstractSet, Tuple}), 𝑅::iRules) :: Vector{Any}  = Any[serialref(i, 𝑅) for i ∈ η]
-serialref(@nospecialize(η::Union{AbstractDict, NamedTuple}), 𝑅::iRules) :: RT = RT(("$i" => serialref(j, 𝑅) for (i,j) ∈ η)...)
-# warning : we're going to javascript, thus the ranges start at 0...
-serialref(x::OrdinalRange, ::iRules) :: RT = RT("start"  => first(x)-1, "step"  => 1, "stop"  => last(x))
-serialref(x::StepRangeLen, ::iRules) :: RT = RT("start"  => first(x)-1, "step"  => step(x), "stop"  => last(x))
 
 for cls ∈ (:RootAddedEvent, :RootRemovedEvent)
     @eval function serialref(η::$cls, 𝑅::iRules) :: RT
@@ -80,22 +98,21 @@ for cls ∈ (:RootAddedEvent, :RootRemovedEvent)
     end
 end
 
-serialref(η::Events.ModelChangedEvent, 𝑅::iRules) :: RT = serialref(typeof(η.model), η, 𝑅)
-function serialref(::Type, η::Events.ModelChangedEvent, 𝑅::iRules) :: RT
+function serialroot(η::Events.TitleChangedEvent, 𝑅::iRules) :: RT
+    return RT("kind"  => "TitleChanged", "title"  => η.title)
+end
+
+function serialroot(η::Events.ModelChangedEvent, 𝑅::iRules) :: RT
     return RT(
-        "attr"   => _fieldname(η.attr),
-        "hint"   => nothing,
-        "kind"   => "ModelChanged",
-        "model"  => serialref(η.model, 𝑅),
-        "new"    => serialref(
-            Model.bokehfieldtype(typeof(η.model), η.attr),
-            Model.bokehunwrap(η.new),
-            𝑅
-        ),
+        "attr"  => _fieldname(η.attr),
+        "hint"  => nothing,
+        "kind"  => "ModelChanged",
+        "model" => serialref(η.model, 𝑅),
+        "new"   => serializeattribute(typeof(η.model), η.attr, Model.bokehunwrap(η.new), 𝑅),
     )
 end
 
-function serialref(η::Events.ColumnsPatchedEvent, 𝑅::iRules) :: RT
+function serialroot(η::Events.ColumnsPatchedEvent, 𝑅::iRules) :: RT
     return RT(
         "column_source"  => serialref(η.model, 𝑅),
         "kind"           => "ColumnsPatched",
@@ -106,7 +123,7 @@ function serialref(η::Events.ColumnsPatchedEvent, 𝑅::iRules) :: RT
     )
 end
 
-function serialref(η::Events.ColumnsStreamedEvent, 𝑅::iRules) :: RT
+function serialroot(η::Events.ColumnsStreamedEvent, 𝑅::iRules) :: RT
     return RT(
         "column_source"  => serialref(η.model, 𝑅),
         "data"           => serialref(η.data, 𝑅),
@@ -115,7 +132,7 @@ function serialref(η::Events.ColumnsStreamedEvent, 𝑅::iRules) :: RT
     )
 end
 
-function serialref(η::Events.ColumnDataChangedEvent, ::iRules) :: RT
+function serialroot(η::Events.ColumnDataChangedEvent, ::iRules) :: RT
     𝑅 = Rules()
     return RT(
         "cols"           => serialref(collect(keys(η.data)), 𝑅),
@@ -125,7 +142,7 @@ function serialref(η::Events.ColumnDataChangedEvent, ::iRules) :: RT
     )
 end
 
-function serialref(η::Events.iActionEvent, 𝑅::iRules) :: RT
+function serialroot(η::Events.iActionEvent, 𝑅::iRules) :: RT
     @nospecialize η 𝑅
     return RT(
         "kind"      => "MessageSent",
@@ -137,8 +154,8 @@ function serialref(η::Events.iActionEvent, 𝑅::iRules) :: RT
     )
 end
 
-_𝑐𝑝_to(x::AbstractRange, 𝑅::iRules) :: RT    = serialref(x, 𝑅)
-_𝑐𝑝_to(x::Integer,        ::iRules) :: Int64 = Int64(x)-1
+_𝑐𝑝_to(x::AbstractRange, 𝑅::iRules)                  = serialref(x, 𝑅)
+_𝑐𝑝_to(x::Integer,        ::iRules)                  = Int64(x)-1
 _𝑐𝑝_to(x::Tuple{<:Integer, <:Any, <:Any}, 𝑅::iRules) = (x[1]-1, _𝑐𝑝_to(x[2], 𝑅), _𝑐𝑝_to(x[3], 𝑅))
 
 const _𝑑𝑠_ID    = bokehidmaker()
@@ -177,14 +194,6 @@ function _𝑑𝑠_to(𝑑::_𝑑𝑠_NDBIN, 𝑅::iRules)
         𝑑
     end
 end
-function serialref(η::Any, 𝑅::iRules) :: RT
-    @nospecialize η 𝑅
-    return RT((
-        i => serialref(Model.bokehunwrap(getproperty(η, i)), 𝑅)
-        for i ∈ propertynames(η)
-    )...)
-end
-
 
 const SERIAL_ROOTS = Union{Events.iEvent, iHasProps}
 serialize(η::AbstractVector{<:SERIAL_ROOTS}, 𝑅 :: iRules) = [serialroot(i, 𝑅) for i ∈ η]
@@ -196,14 +205,14 @@ serialize(x)                   = serialize(x, Rules())
 
 export serialize
 for 𝑅 ∈ (Rules, BufferedRules)
-    precompile(serialroot, (iHasProps, 𝑅))
     for 𝑇 ∈ (
             iHasProps, ModelChangedEvent, RootAddedEvent, RootRemovedEvent,
             ColumnDataChangedEvent, ColumnsStreamedEvent, ColumnsPatchedEvent,
-            AbstractVector, AbstractDict, NamedTuple, Tuple, Events.iActionEvent,
+            Events.iActionEvent,
     )
-        precompile(serialref,  (𝑇, 𝑅))
+        precompile(serialroot, (𝑇, 𝑅))
     end
+    precompile(serialref,  (iHasProps, 𝑅))
 end
 end
 using .Serialize
