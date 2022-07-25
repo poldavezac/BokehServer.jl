@@ -121,7 +121,14 @@ end
 Return the fields which *may* store `iHasProps` instances
 """
 function bokehchildfields(@nospecialize(T::Type{<:iHasProps}))
-    return (field for (field, p𝑇) ∈ bokehfields(T) if _👻hasbokehmodel(p𝑇))
+    return (
+        field
+        for (field, p𝑇) ∈ bokehfields(T)
+        if begin
+            (p𝑇 <: ReadOnly) && (p𝑇 = p𝑇.parameters[1])
+            !(p𝑇 <: NoGood)
+        end
+    )
 end
 
 """
@@ -135,10 +142,6 @@ end
 
 bokehchildren(@nospecialize(μ::iHasProps)) = bokehchildren(iHasProps, μ)
 
-_👻hasbokehmodel(::Type) = true
-_👻hasbokehmodel(::Type{<:NoGood}) = false
-_👻hasbokehmodel(@nospecialize(𝑇::Type{<:ReadOnly})) = _👻hasbokehmodel(𝑇.parameters[1])
-
 _👻children(::Any)    = ()
 _👻children(::NoGood) = ()
 _👻children(@nospecialize(mdl::iHasProps)) = (mdl,)
@@ -151,25 +154,35 @@ _👻children(@nospecialize(mdl::iSpec)) = (mdl.item, mdl.transform)
 
 const _𝑐𝑚𝑝_BIN = Union{Number, Symbol, Missing, Nothing, Function}
 
-compare(::Any, ::Any)                    = false
-compare(x::EnumType,  y::Symbol)         = x.value ≡ y
-compare(x::Color,     y::AbstractString) = x ≡ color(y)
-compare(x::iHasProps, y::iHasProps)      = x.id ≡ y.id
-compare(x::_𝑐𝑚𝑝_BIN,  y::_𝑐𝑚𝑝_BIN)       = x ≡ y
-compare(x::Pair, y::Pair)                = compare(first(x), first(y)) && compare(last(x), last(y))
-compare(x::AbstractString, y::AbstractString) = x == y
-compare(x::T, y::T) where {T} = (x ≡ y) ||  all(compare(getproperty(x, i), getproperty(y, i)) for i ∈ fieldnames(T))
-compare(x::AbstractSet, y::AbstractSet) = (x ≡ y) || (length(x) ≡ length(y) && all(i ∈ y for i ∈ x))
-
-for (cls, 𝐹) ∈ (AbstractArray => size, Tuple => length)
-    @eval compare(x::$cls, y::$cls) = (x ≡ y) || ($𝐹(x) ≡ $𝐹(y) && all(compare(x[i], y[i]) for i ∈ eachindex(x)))
-end
-
-for cls ∈ (AbstractDict, NamedTuple)
-    @eval function compare(x::$cls, y::$cls)
-        isempty(x) && isempty(y) && return true
-        x ≡ y && return true
-        return length(x) ≡ length(y) && all(haskey(y, i) && compare(j, y[i]) for (i, j) ∈ pairs(x))
+function compare(x, y)
+    @nospecialize x y
+    # for compilation performance, we use if ... elseif ... pattern rather than relying on multiple dispatch
+    return if x isa EnumType && y isa Symbol
+        x.value ≡ y
+    elseif x isa _𝑐𝑚𝑝_BIN
+        (y isa _𝑐𝑚𝑝_BIN) && (x ≡ y)
+    elseif x isa AbstractString
+        (y isa AbstractString) && (x == y)
+    elseif x isa Pair
+        (y isa Pair) && compare(first(x), first(y)) && compare(last(x), last(y))
+    elseif x isa iHasProps
+        (y isa iHasProps) && x.id ≡ y.id
+    elseif x isa AbstractSet
+        (y isa AbstractSet) && ((x ≡ y) || (length(x) ≡ length(y) && all(i ∈ y for i ∈ x)))
+    elseif x isa AbstractArray
+        (y isa AbstractArray) && ((x ≡ y) || (size(x) ≡ size(y) && all(compare(x[i], y[i]) for i ∈ eachindex(x))))
+    elseif x isa Union{NamedTuple, AbstractDict}
+        (y isa Union{NamedTuple, AbstractDict}) && (
+            (x ≡ y) || (
+                length(x) ≡ length(y) &&
+                all(haskey(y, i) && compare(j, y[i]) for (i, j) ∈ pairs(x))
+           )
+        )
+    elseif x isa Tuple
+        # must come *after* NamedTuple
+        (y isa Tuple) && ((x ≡ y) || (length(x) ≡ length(y) && all(compare(x[i], y[i]) for i ∈ eachindex(x))))
+    else
+        typeof(x) ≡ typeof(y) && all(compare(getproperty(x, i), getproperty(y, i)) for i ∈ fieldnames(typeof(x)))
     end
 end
 

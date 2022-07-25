@@ -37,7 +37,9 @@ BokehServer.Server.serve(
 ```
 """
 function serve!(routes :: RouteDict, host :: AbstractString, port :: Int; kwa...)
+    # run routes once to speed-up reaction time once the server has started.
     foreach(precompilemethods, values(routes))
+
     isempty(routes) || @info(
         "serving applications",
         (i => joinpath("http://$host:$port", "$i") for i ∈ keys(routes))...

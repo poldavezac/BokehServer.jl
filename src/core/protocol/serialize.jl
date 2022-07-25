@@ -45,7 +45,7 @@ const _👻Simple = Union{AbstractString, Number, Nothing}
 serializeattribute(::Type, ::Symbol, @nospecialize(η), @nospecialize(𝑅)) = serialref(η, 𝑅)
 
 function serialref(@nospecialize(η), @nospecialize(𝑅::iRules))
-    # using if ... elseif ... reduces compilation resources 
+    # for compilation performance, we use if ... elseif ... pattern rather than relying on multiple dispatch
     return if η isa Union{
             _👻Simple,
             Tuple{Vararg{_👻Simple}},
