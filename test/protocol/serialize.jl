@@ -106,3 +106,14 @@ end
     )
     @test truth == val
 end
+
+@testset "dataspec" begin
+    mdl   = CDS(; id = 1)
+    𝑅   = BokehServer.Protocol.Serialize.Rules()
+    ser = BokehServer.Protocol.Serialize.serialref
+    Model = BokehServer.Model
+    @test ser(Model.IntSpec(1), 𝑅)  == Dict{String, Any}("value" => 1)
+    @test ser(Model.IntSpec(1, mdl), 𝑅)  == Dict{String, Any}("value" => 1, "transform" => Dict{String, Any}("id" => "1"))
+    @test ser(Model.IntSpec(Model.Column("a")), 𝑅)  == Dict{String, Any}("field" => "a")
+    @test ser(Model.bokehconvert(Model.DistanceSpec, (; value = 1., units = :screen)), 𝑅)  == Dict{String, Any}("value" => 1., "units" => "screen")
+end

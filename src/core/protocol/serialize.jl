@@ -64,14 +64,19 @@ function serialref(@nospecialize(η), @nospecialize(𝑅::iRules))
         η
     elseif η isa Model.iSpec
         out = let itm = η.item
-            key = itm isa Model.iHasProps ? "expr" : itm isa Model.Column ? "field" : "value"
-            RT(key => serialref(itm, 𝑅))
+            if itm isa Model.iHasProps
+                RT("expr" => serialref(itm, 𝑅))
+            elseif itm isa Model.Column
+                RT("field" => itm.item)
+            else
+                RT("value" => serialref(itm, 𝑅))
+            end
         end
         let itm = η.transform
             ismissing(itm) || (out["transform"] = serialref(itm, 𝑅))
         end
         (η isa Model.iUnitSpec) && let itm = η.units.value
-            (itm ≡ first(Model.units(η))) || (out["units"] = "$itm")
+            (itm ≡ first(Model.units(typeof(η)))) || (out["units"] = "$itm")
         end
         out
     elseif η isa iHasProps
