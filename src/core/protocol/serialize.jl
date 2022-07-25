@@ -63,8 +63,16 @@ end
 
 serialref(::Type, @nospecialize(η), @nospecialize(𝑅::iRules))            = serialref(η, 𝑅)
 serialref(@nospecialize(η::iHasProps), ::iRules)              :: RT      = RT("id"  => "$(bokehid(η))")
-serialref(::Nothing, ::iRules)                                :: Nothing = nothing
 serialref(@nospecialize(η::Model.EnumType), ::iRules)         :: String  = "$(η.value)"
+serialref(@nospecialize(η::TitleChangedEvent), ::iRules)     :: RT     = RT("kind"  => "TitleChanged", "title"  => η.title)
+serialref(@nospecialize(η::Union{Date, DateTime}), ::iRules) :: String = "$η"
+serialref(@nospecialize(η::Model.Color), ::iRules)           :: String = "$(Model.colorhex(η))"
+serialref(@nospecialize(η::Union{AbstractString, Number, Symbol, Nothing}), ::iRules) = η
+serialref(@nospecialize(η::Union{AbstractVector, AbstractSet, Tuple}), 𝑅::iRules) :: Vector{Any}  = Any[serialref(i, 𝑅) for i ∈ η]
+serialref(@nospecialize(η::Union{AbstractDict, NamedTuple}), 𝑅::iRules) :: RT = RT(("$i" => serialref(j, 𝑅) for (i,j) ∈ η)...)
+# warning : we're going to javascript, thus the ranges start at 0...
+serialref(x::OrdinalRange, ::iRules) :: RT = RT("start"  => first(x)-1, "step"  => 1, "stop"  => last(x))
+serialref(x::StepRangeLen, ::iRules) :: RT = RT("start"  => first(x)-1, "step"  => step(x), "stop"  => last(x))
 
 for cls ∈ (:RootAddedEvent, :RootRemovedEvent)
     @eval function serialref(η::$cls, 𝑅::iRules) :: RT
@@ -86,13 +94,6 @@ function serialref(::Type, η::Events.ModelChangedEvent, 𝑅::iRules) :: RT
         ),
     )
 end
-
-# warning : we're going to javascript, thus the ranges start at 0...
-serialref(x::OrdinalRange, ::iRules) :: RT = RT("start"  => first(x)-1, "step"  => 1, "stop"  => last(x))
-serialref(x::StepRangeLen, ::iRules) :: RT = RT("start"  => first(x)-1, "step"  => step(x), "stop"  => last(x))
-_𝑐𝑝_to(x::AbstractRange, 𝑅::iRules) :: RT    = serialref(x, 𝑅)
-_𝑐𝑝_to(x::Integer,        ::iRules) :: Int64 = Int64(x)-1
-_𝑐𝑝_to(x::Tuple{<:Integer, <:Any, <:Any}, 𝑅::iRules) = (x[1]-1, _𝑐𝑝_to(x[2], 𝑅), _𝑐𝑝_to(x[3], 𝑅))
 
 function serialref(η::Events.ColumnsPatchedEvent, 𝑅::iRules) :: RT
     return RT(
@@ -136,6 +137,10 @@ function serialref(η::Events.iActionEvent, 𝑅::iRules) :: RT
     )
 end
 
+_𝑐𝑝_to(x::AbstractRange, 𝑅::iRules) :: RT    = serialref(x, 𝑅)
+_𝑐𝑝_to(x::Integer,        ::iRules) :: Int64 = Int64(x)-1
+_𝑐𝑝_to(x::Tuple{<:Integer, <:Any, <:Any}, 𝑅::iRules) = (x[1]-1, _𝑐𝑝_to(x[2], 𝑅), _𝑐𝑝_to(x[3], 𝑅))
+
 const _𝑑𝑠_ID    = bokehidmaker()
 const _𝑑𝑠_BIN   = Union{(AbstractVector{i} for i ∈ AbstractTypes.NumberElTypeDataDict)...}
 const _𝑑𝑠_NDBIN = Union{(AbstractVector{<:AbstractArray{i}} for i ∈ AbstractTypes.NumberElTypeDataDict)...} 
@@ -172,15 +177,6 @@ function _𝑑𝑠_to(𝑑::_𝑑𝑠_NDBIN, 𝑅::iRules)
         𝑑
     end
 end
-
-serialref(@nospecialize(η::TitleChangedEvent), ::iRules)    :: RT     = RT("kind"  => "TitleChanged", "title"  => η.title)
-serialref(@nospecialize(η::Union{Date, DateTime}), ::iRules) :: String = "$η"
-serialref(@nospecialize(η::Model.Color), ::iRules)           :: String = "$(Model.colorhex(η))"
-serialref(@nospecialize(η::Union{AbstractString, Number, Symbol}), ::iRules) = η
-serialref(@nospecialize(η::Union{AbstractVector, AbstractSet}), 𝑅::iRules)   = [serialref(i, 𝑅) for i ∈ η]
-serialref(@nospecialize(η::AbstractDict), 𝑅::iRules) :: Dict  = Dict((serialref(i, 𝑅) => serialref(j, 𝑅) for (i,j) ∈ η)...)
-serialref(@nospecialize(η::NamedTuple), 𝑅::iRules)   :: RT    = RT((i => serialref(j, 𝑅) for (i,j) ∈ pairs(η))...)
-serialref(@nospecialize(η::Tuple), 𝑅::iRules)        :: Tuple = tuple((serialref(i, 𝑅) for i ∈ η)...)
 function serialref(η::Any, 𝑅::iRules) :: RT
     @nospecialize η 𝑅
     return RT((

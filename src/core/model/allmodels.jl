@@ -173,11 +173,11 @@ for cls ∈ (AbstractDict, NamedTuple)
     end
 end
 
-function isdefaultvalue(η::𝑇, α::Symbol) where {𝑇 <: iHasProps}
+function isdefaultvalue(@nospecialize(η::iHasProps), α::Symbol)
     dflt  = defaultvalue(typeof(η), α)
     isnothing(dflt) && return false
     left  = bokehunwrap(getproperty(η, α))
-    f𝑇    = bokehfieldtype(𝑇, α)
+    f𝑇    = bokehfieldtype(typeof(η), α)
     right = bokehunwrap(bokehread(f𝑇, η, α, bokehconvert(f𝑇, something(dflt))))
     return compare(left, right)
 end
