@@ -111,13 +111,33 @@ BokehServer.figure
 
 The following types of plots are available, with and without the `!`:
 
+```@raw html
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-2.4.2.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.2.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.2.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-mathjax-2.4.2.min.js"></script>
+```
+
+BOXPLOT
+
+```@docs
+BokehServer.boxplot!
+```
+
+ANNULARWEDGE
+
 ```@docs
 BokehServer.annularwedge!
 ```
 
+ANNULUS
+
 ```@docs
 BokehServer.annulus!
 ```
+
+ARC
 
 ```@docs
 BokehServer.arc!
@@ -131,24 +151,22 @@ BokehServer.areastack!
 BokehServer.barstack!
 ```
 
+BEZIER
+
 ```@docs
 BokehServer.bezier!
 ```
 
-```@docs
-BokehServer.boxplot!
-```
+CIRCLE
 
 ```@docs
 BokehServer.circle!
 ```
 
-```@docs
-BokehServer.ellipse!
-```
+ELLIPSE
 
 ```@docs
-BokehServer.glyph!
+BokehServer.ellipse!
 ```
 
 ```@docs

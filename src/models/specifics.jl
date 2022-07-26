@@ -64,6 +64,17 @@ function Protocol.Deserialize.deserialize(::Type{Selection}, α:: Symbol, η, �
     end
 end
 
+function ColumnDataSource(args::Vararg{Pair{<:AbstractString, <:AbstractVector}}; kwa...)
+    data = get(Dict{String, AbstractVector}, kwa, :data)
+    for (i, j) ∈ args
+        push!(data, "$i" => j)
+    end
+    for (i, j) ∈ kwa
+        Model.hasbokehproperty(ColumnDataSource, i) || push!(data, "$i" => j)
+    end
+    return ColumnDataSource(; data, (i for i ∈ kwa if hasfield(ColumnDataSource, first(i)))...)
+end
+
 precompile(Plot, ())
 precompile(ColumnDataSource, ())
 precompile(GlyphRenderer, ())

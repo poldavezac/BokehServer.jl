@@ -79,7 +79,7 @@ function _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
             )
         end
 
-        (opts ⊈ keys(specs)) && continue
+        (isempty(opts) || (opts ⊈ keys(specs))) && continue
         p𝑇 = specs[opts[1]]
         any(p𝑇 ≢ specs[opts[i]] for i ∈ 2:length(opts)) && continue
 
