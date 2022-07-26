@@ -51,6 +51,7 @@ function _knownconversion(ν::JSDict, 𝑀::Workbench)
 end
 
 function deserialize(𝑇::Type, attr::Symbol, val, 𝑀::Workbench)
+    @nospecialize 𝑇 val
     out = _knownconversion(val, 𝑀)
     if isnothing(out)
         deserialize(Model.bokehfieldtype(𝑇, attr), val, 𝑀)
@@ -59,7 +60,7 @@ function deserialize(𝑇::Type, attr::Symbol, val, 𝑀::Workbench)
     end
 end
 
-function deserialize(𝑇::Type, val::JSDict, 𝑀::Workbench)
+function deserialize(@nospecialize(𝑇::Type), val::JSDict, 𝑀::Workbench)
     out = _knownconversion(val, 𝑀)
     return if isnothing(out)
         cnv = Dict((i => deserialize(Any, j, 𝑀) for (i, j) ∈ val)...)
@@ -84,18 +85,18 @@ function deserialize(::Type{<:iHasProps}, val::JSDict, 𝑀::Workbench)
     end
 end
 
-function deserialize(𝑇::Type{<:Pair}, val::JSDict, 𝑀::Workbench)
+function deserialize(@nospecialize(𝑇::Type{<:Pair}), val::JSDict, 𝑀::Workbench)
     @assert length(val) == 1
     (k, v) = first(val)
     return deserialize(𝑇.parameters[1], k, 𝑀) => deserialize(𝑇.parameters[2], v, 𝑀)
 end
 
-function deserialize(𝑇::Type{<:AbstractDict}, ν::JSDict, 𝑀::Workbench)
+function deserialize(@nospecialize(𝑇::Type{<:AbstractDict}), ν::JSDict, 𝑀::Workbench)
     p𝑇 = eltype(𝑇)
     Dict((Pair(deserialize(p𝑇.parameters[1], i, 𝑀), deserialize(p𝑇.parameters[2], j, 𝑀)) for (i, j) ∈ ν)...)
 end
 
-function deserialize(𝑇::Type{<:AbstractVector}, ν::JSDict, 𝑀::Workbench)
+function deserialize(@nospecialize(𝑇::Type{<:AbstractVector}), ν::JSDict, 𝑀::Workbench)
     return if haskey(ν, _𝐵𝐾)
         _reshape(𝑀.buffers[ν[_𝐵𝐾]], ν["dtype"], ν["shape"], ν["order"])
     elseif haskey(ν, _𝑁𝐾)
@@ -130,7 +131,7 @@ for (name, action) ∈ (:RootAdded => :push!, :RootRemoved => :delete!)
     end
 end
 
-function apply(::Val{:TitleChanged}, 𝐷::iDocument, 𝐼 :: JSDict, _)
+function apply(::Val{:TitleChanged}, 𝐷::iDocument, 𝐼 :: JSDict, ::Workbench)
     𝐷.title = 𝐼["title"]
 end
 
@@ -162,7 +163,7 @@ function apply(::Val{:ColumnsPatched}, 𝐷::iDocument, 𝐼::JSDict, 𝑀::Work
     Model.patch!(obj.data, data)
 end
 
-function deserialize!(𝑀::ModelDict, 𝐶::Vector, 𝐵::Buffers)
+function deserialize!(𝑀::ModelDict, @nospecialize(𝐶::Vector), 𝐵::Buffers)
     if length(Model.MODEL_TYPES) ≢ length(_MODEL_TYPES)
         𝑅 = Serialize.Rules()
         lock(_LOCK) do
@@ -224,7 +225,7 @@ const _𝑁𝐾       = "__ndarray__"
 const _𝑐𝑝_SLICE = AbstractDict{<:AbstractString, <:Union{Nothing, Integer}}
 
 _𝑐𝑝_key(𝑥::Integer)   = 𝑥+1
-_𝑐𝑝_key(𝑥::Vector)    = (𝑥[1]+1, _𝑐𝑝_fro(𝑥[2]), _𝑐𝑝_fro(𝑥[3]))
+_𝑐𝑝_key(@nospecialize(𝑥::Vector)) = (𝑥[1]+1, _𝑐𝑝_fro(𝑥[2]), _𝑐𝑝_fro(𝑥[3]))
 _𝑐𝑝_key(𝑥::_𝑐𝑝_SLICE) =  (;
     start = let x = get(𝑥, "start", nothing)
         isnothing(x) ? 1 : x + 1

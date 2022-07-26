@@ -31,38 +31,35 @@ using ..Events
 using ..Protocol
 
 """
-    serialref(::Type{Selection}, evt::Events.ModelChangedEvent, 𝑅::Protocol.Serialize.iRules)
+    serializeattribute(::Type{Selection}, α::Symbol, η, 𝑅::Protocol.Serialize.iRules)
 
-Write the JSON values while moving indices from a 1-based index to a 0-based index
+Serialize values and move indices from a 1-based index to a 0-based index
 """
-function Protocol.Serialize.serialref(::Type{Selection}, evt::Events.ModelChangedEvent, 𝑅::Protocol.Serialize.iRules)
-    if evt.attr ∈ (:indices, :line_indices)
-        evt = Events.ModelChangedEvent(evt.model, evt.attr, evt.old, evt.new .- 1)
-    elseif evt.attr ≡ :multiline_indices
-        evt = Events.ModelChangedEvent(
-            evt.model, evt.attr, evt.old, Dict{String, Vector{Int64}}(i => j .- 1 for (i, j) in evt.new)
-        )
+function Protocol.Serialize.serializeattribute(::Type{Selection}, α::Symbol, η, 𝑅::Protocol.Serialize.iRules)
+    return if α ∈ (:indices, :line_indices)
+        η .- 1
+    elseif α ≡ :multiline_indices
+        Dict{String, Any}(i => j .- 1 for (i, j) ∈ η)
+    else
+        Protocol.Serialize.serialref(η, 𝑅)
     end
-    return Protocol.Serialize.serialref(iHasProps, evt, 𝑅)
 end
 
 """
-    deserialize(::Type{Selection}, attr:: Symbol, val, 𝑀::Protocol.Deserialize.Workbench)
+    deserialize(::Type{Selection}, α::Symbol, η, 𝑀::Protocol.Deserialize.Workbench)
 
 Read the JSON values and move indices from a 0-based index to a 1-based index
 """
-function Protocol.Deserialize.deserialize(::Type{Selection}, attr:: Symbol, val, 𝑀::Protocol.Deserialize.Workbench)
-    return if(attr ∈ (:line_indices, :indices))
-        Int64[i+1 for i ∈ val]
-    elseif attr ≡ :multiline_indices
-        Dict{String, Vector{Int64}}((i => Int64[k+1 for k ∈ j] for (i, j) ∈ val)...)
+function Protocol.Deserialize.deserialize(::Type{Selection}, α:: Symbol, η, 𝑀::Protocol.Deserialize.Workbench)
+    return if(α ∈ (:line_indices, :indices))
+        Int64[i+1 for i ∈ η]
+    elseif α ≡ :multiline_indices
+        Dict{String, Vector{Int64}}((i => Int64[k+1 for k ∈ j] for (i, j) ∈ η)...)
     else
-        invoke(Protocol.Deserialize.deserialize,
-               Tuple{iHasProps, Symbol, Any, Protocol.Deserialize.Workbench},
-               mdl,
-               attr,
-               val;
-               dotrigger
+        invoke(
+            Protocol.Deserialize.deserialize,
+            Tuple{iHasProps, Symbol, Any, Protocol.Deserialize.Workbench},
+            mdl, α, η; dotrigger
         )
     end
 end

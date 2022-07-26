@@ -38,8 +38,8 @@ python call `fig.line([1, 2, 3])` becomes `line!(fig; y = [1, 2, 3])`. In other 
    * without a `!`, will create a plot, feed it to the `!`-ended free function, finally returning said plot.
    * with a `!`, will require a plot as first argument. The function usually adds one or more renderers to the plot.
 
-3. We decided to heavily rely on keywords. Usually, the plot is the single positional argument required by our API.
-   This is different from *python bokeh* which prefers to defines a list of positional arguments and a list of keywords for its API.
+3. Julia makes a clear distinction between positional and keyword arguments, whereas python doesn't. We recreated something similar to
+   python's: one will obtain the same plot when writing `line!(fig, 1:10, (1:10).^2)` or `line!(fig; x = 1:10, y = (1:10).^2)`.
 
 ### Using Jupyter or Pluto
 

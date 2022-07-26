@@ -48,7 +48,7 @@ macro _𝑑𝑠_merge_args(code)
     end)
 end
 
-function _𝑑𝑠_check(data::DataDict, others::Vararg{<:AbstractVector})
+function _𝑑𝑠_check(data::DataDict, others::Vararg{AbstractVector})
     isempty(data) && isempty(others) && return
     sz = isempty(data) ? length(first(others)) : length(first(values(data)))
     if any(sz ≢ length(i) for i ∈ values(data)) || any(sz ≢ length(i) for i ∈ others)

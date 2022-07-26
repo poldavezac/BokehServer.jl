@@ -79,7 +79,9 @@ makeid(_...) = "$(UUIDs.uuid4())"
 
 function precompilemethods(𝐴::Application)
     Events.eventlist!(Events.NullEventList()) do
-        initialize!(Documents.Document(), 𝐴)
+        doc = Documents.Document()
+        initialize!(doc, 𝐴)
+        Protocol.pushdoc("", doc)
     end
 end
 

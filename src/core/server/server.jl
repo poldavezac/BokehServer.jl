@@ -37,7 +37,9 @@ BokehServer.Server.serve(
 ```
 """
 function serve!(routes :: RouteDict, host :: AbstractString, port :: Int; kwa...)
+    # run routes once to speed-up reaction time once the server has started.
     foreach(precompilemethods, values(routes))
+
     isempty(routes) || @info(
         "serving applications",
         (i => joinpath("http://$host:$port", "$i") for i ∈ keys(routes))...
@@ -67,13 +69,13 @@ function stop!(routes::RouteDict, server::HTTP.Sockets.TCPServer)
     foreach(close, cpy)
 end
 
-function serve(host :: AbstractString, port :: Int, apps :: Vararg{<:RouteTypes}; kwa...)
+function serve(host :: AbstractString, port :: Int, apps :: Vararg{RouteTypes}; kwa...)
     serve!(RouteDict(_topair.(apps)...), host, port; kwa...)
 end
 
-serve(host::AbstractString, apps::Vararg{<:RouteTypes}; kwa...) = serve(host, CONFIG.port, apps...; kwa...)
-serve(port::Int, apps::Vararg{<:RouteTypes}; kwa...)            = serve(CONFIG.host, port, apps...; kwa...)
-serve(apps::Vararg{<:RouteTypes}; kwa...)                       = serve(CONFIG.host, CONFIG.port, apps...; kwa...)
+serve(host::AbstractString, apps::Vararg{RouteTypes}; kwa...) = serve(host, CONFIG.port, apps...; kwa...)
+serve(port::Int, apps::Vararg{RouteTypes}; kwa...)            = serve(CONFIG.host, port, apps...; kwa...)
+serve(apps::Vararg{RouteTypes}; kwa...)                       = serve(CONFIG.host, CONFIG.port, apps...; kwa...)
 
 _topair(@nospecialize(f::Function))                 = nameof(f) => Application(f)
 _topair(@nospecialize(f::Pair{Symbol, <:Function})) = f[1]      => Application(f[2])

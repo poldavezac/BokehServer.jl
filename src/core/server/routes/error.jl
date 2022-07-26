@@ -2,7 +2,7 @@ module ExceptionRoute
 using HTTP
 using ..Server
 const _AT   = r"\s*@"
-const _OPTS = let bkpath = dirname(dirname(abspath(pathof(parentmodule(Server)))))
+const _OPTS = let bkpath = abspath(joinpath(@__DIR__, "..", "..", "..", ".."))
     (
         bkpath => "BOKEHJL_DIR",
         replace(bkpath, ENV["HOME"] => "~") => "BOKEHJL_DIR",
