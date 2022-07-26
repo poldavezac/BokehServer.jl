@@ -11,7 +11,7 @@ This packages provides a server for the *bokehjs* libary:
 * It also allows publishing web apps, just as *bokeh* does.
 
 The package relies extensively on the
-(*bokeh*)[https://docs.bokeh.org/en/latest/index.html] library. The latter is a
+[*Bokeh*](https://docs.bokeh.org/en/latest/index.html) library. The latter is a
 python web server together with a javascript client. This package rewrites the
 python server in julia and reuses the javascript part as is. This package's API
 is loosely similar to its python counterpart.
