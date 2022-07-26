@@ -5,7 +5,7 @@
 It seemed *Julia* was missing a reactive plot library, meaning one which would
 react to changes in the data when used with *Pluto* or *IJulia*. This package
 tries to bring these features by relying on the excellent
-(*bokeh*)[https://docs.bokeh.org/en/latest/index.html] library. The latter is
+(*Bokeh*)[https://docs.bokeh.org/en/latest/index.html] library. The latter is
 basically a python web server with a javascript client. This package reproduces
 the python server and reuses the javascript part as is. This package's API is
 loosely similar to its python counterpart.
@@ -16,7 +16,7 @@ A number of examples are provided in the `examples` directory. These usually inv
 
 ```julia
 BokehServer.serve() do
-    BokehServer.line(; y = rand(Float64, 100))
+    BokehServer.line(rand(Float64, 100))
 end
 ```
 
@@ -24,11 +24,11 @@ One could also create a stand-alone html page:
 
 ```julia
 BokehServer.html() do
-    BokehServer.line(; y = rand(Float64, 100))
+    BokehServer.line(rand(Float64, 100))
 end
 ```
 
-We try to keep a similar API to the one provided by *python bokeh*. The main
+We try to keep a similar API to the one provided by [Bokeh](https://docs.bokeh.org/en/latest/index.html). The main
 differences are due to *Julia*'s aversion to instance or class methods. A
 python call `fig.line([1, 2, 3])` becomes `line!(fig; y = [1, 2, 3])`. In other words:
 
@@ -253,7 +253,7 @@ BokehServer.layout
 
 ### Document roots
 
-As in *bokeh python*, users can add and remove roots from a `Document`. This can be done 
+As in [Bokeh](https://docs.bokeh.org/en/latest/index.html), users can add and remove roots from a `Document`. This can be done 
 using functions `push!(::iDocument, ::iModel)` and `pop!(::iDocument, ::iModel)`:
 
 ```julia
@@ -308,7 +308,7 @@ BokehServer.layout([plot1, plot2])
 
 ## The `ColumnDataSource` structure
 
-As in *python bokeh*, the `ColumnDataSource` structure is central to
+As in [Bokeh](https://docs.bokeh.org/en/latest/index.html), the `ColumnDataSource` structure is central to
 updating plots. The same methods are available for dealing with its mutations:
 
 ```@docs
@@ -332,7 +332,7 @@ BokehServer.patch!
 
 ## The event mechanism
 
-As with *python bokeh* events can be both triggered from and dealt with both in
+As with [Bokeh](https://docs.bokeh.org/en/latest/index.html) events can be both triggered from and dealt with both in
 *typescript* and *Julia*.
 
 ### Creating callbacks in *Julia*
@@ -482,16 +482,16 @@ BokehServer.Pinch
 ### Details
 
 Events can only be triggered if an event manager has been provided. This is normally done automatically,
-although, as in *python bokeh*, only is specific cases:
+although, as in [Bokeh](https://docs.bokeh.org/en/latest/index.html), only is specific cases:
 
 * when initializing a new document
 * when responding to a *typescript* message
 * when in a `Pluto` or `Jupyter` environment, for cells coming after a call to `BokehServer.Embeddings.notebook()`.
 
-As opposed to *python julia*, event managers collect all events before
-triggering callback and finally synchronizing with *typescript*. Some events
-might disappear at any point during collection or callbacks, say if a document
-root is mutated then simply removed from the document.
+As opposed to [Bokeh](https://docs.bokeh.org/en/latest/index.html), event managers collect all events before triggering
+callback and finally synchronizing with *typescript*. Some events might
+disappear at any point during collection or callbacks, say if a document root
+is mutated then simply removed from the document.
 
 The collection is done thanks to a task-specific manager, hidden inside the `task_local_storage()` dictionnary.
 
@@ -504,7 +504,7 @@ working in `Pluto` or `Jupyter` environment.
 
 ## Themes
 
-Themes provided by *bokeh python* are also available here.
+Themes provided by [Bokeh](https://docs.bokeh.org/en/latest/index.html) are also available here.
 
 One can set either a global theme or one specific to a document:
 
@@ -529,7 +529,7 @@ Modules = [BokehServer.Themes]
 
 ## The package architecture
 
-*BokehServer* provides the same services as *python*'s *bokeh*:
+*BokehServer* provides the same services [Bokeh](https://docs.bokeh.org/en/latest/index.html):
 
 * Means for mirroring the *typescript* library *bokehjs*.
 * An event mechanism for reacting to changes to the *Julia* objects.

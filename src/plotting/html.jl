@@ -9,7 +9,7 @@ struct Standalone <: Server.iStaticRoute end
 
 """
     html(
-        𝐹       :: Function;
+        𝐹       :: Union{Function, iLayoutDOM};
         title   :: AbstractString = "Bokeh Plot",
         browser :: Bool           = true,
         path    :: AbstractString = "",
@@ -62,6 +62,10 @@ function html(𝐹::Function; title :: AbstractString = "Bokeh Plot", k...) :: U
     isempty(doc.roots) && @warn "Did you forget to return a plot?"
 
     return html(doc; k...)
+end
+
+function html(plot::Models.iLayoutDOM; title :: AbstractString = "Bokeh Plot", k...) :: Union{HTML, Nothing}
+    return html(Documents.Document(; roots = [plot], title); k...)
 end
 
 function html(

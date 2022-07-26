@@ -7,16 +7,8 @@ The function can take:
 to the document, should the latter be left empty.
 * a `Document`, in which case the returned oject(s) will automatically be added
 to the document, should the latter be left empty.
-* a `Plot`, in which case a `Plot` is created and then added to the document,
-should the latter be left empty.
 
 # examples
-
-```julia
-BokehServer.serve() do fig::BokehServer.Plot
-    .scatter!(fig; x = 1:10, y = 10. : -1. : 1.)
-end
-```
 
 ```julia
 BokehServer.serve() do
@@ -36,12 +28,8 @@ function serve(𝐹::Function, a...; k...)
     function plot(doc::iDocument)
         out = if applicable(𝐹)
             𝐹()
-        elseif applicable(𝐹, iDocument)
+        elseif applicable(𝐹, doc)
             𝐹(doc)
-        elseif applicable(𝐹, Models.Plot)
-            fig = Model.Plot()
-            𝐹(fig)
-            fig
         end
 
         isempty(doc.roots) && if out isa iModel
@@ -55,4 +43,36 @@ function serve(𝐹::Function, a...; k...)
 
     Server.serve(plot, a...; k...)
 end
+
+"""
+    serve(
+        plot::iLayoutDOM,
+        [host = "localhost"],
+        [port = 5006];
+        name  = :plot,
+        title = "Bokeh Plot",
+        k...
+    )
+
+Serve a plot or layout.
+
+This is similar to calling:
+
+```julia
+myplot = scatter(rand(Float64, 100))
+title  = "My beloved scatter"
+
+serve() do doc :: BokehServer.Document
+    push!(doc, myplot)
+    doc.title = title
+end
+```
+"""
+function serve(plot::Models.iLayoutDOM, a...; title = "Bokeh Plot", k...)
+    return serve(a...; k...) do doc :: Document
+        push!(doc, plot)
+        doc.title = title
+    end
+end
+
 export serve
