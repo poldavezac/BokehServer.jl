@@ -15,9 +15,17 @@ The kwargs should include all `glyphargs(𝑇)` at a minimum
 function glyph(𝑇::Type{<:Models.iGlyph}, args...; trait_color = missing, runchecks::Bool = true, kwa...)
     @nospecialize 𝑇 args
     kwargs = Dict{Symbol, Any}(kwa...)
-    for (i, j) ∈ zip(Models.glyphargs(𝑇), args)
-        haskey(kwargs, i) && throw(ErrorException("$i is both in args and kwargs"))
-        kwargs[i] = j
+    if length(args) ≡ 1 && Models.glyphargs(𝑇)[1:2] == (:x, :y)
+        # Allows plotting `f(x) = y` with a single positional arg
+        # the `else` clause would plot `f(y) = x`
+        haskey(kwargs, :y) && throw(ErrorException("`:y` is both in args and kwargs"))
+        kwargs[:y] = args[1]
+    else
+        # provides python-like positional keywords.
+        for (i, j) ∈ zip(Models.glyphargs(𝑇), args)
+            haskey(kwargs, i) && throw(ErrorException("`:$i` is both in args and kwargs"))
+            kwargs[i] = j
+        end
     end
 
     out    = Dict{Symbol, Any}(
