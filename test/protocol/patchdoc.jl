@@ -45,14 +45,11 @@ end
     mdl  = ProtocolX(; id = 100,a  = 10)
     E    = BokehServer.Events
     buf  = BokehServer.Protocol.Buffers()
-    json1(x) = JSON.json(BokehServer.Protocol.serialize(x))
-    json2(x) = JSON.json(BokehServer.Protocol.Serialize.serialref(x, BokehServer.Protocol.Serialize.Rules()))
-    jsref(x) = JSON.parse(json1(x))
-    js(x)    = JSON.parse(json2(x))
+    js(x)= JSON.parse(JSON.json(BokehServer.Protocol.serialize(x)))
     @testset "add first root" begin
         E.eventlist!() do
             cnt = Dict{String, Any}(
-                "references" => Any[jsref(mdl)],
+                "references" => Any[js(mdl)],
                 "events" =>  Any[js(E.RootAddedEvent(doc, mdl, 1))],
             )
 
@@ -108,7 +105,7 @@ end
     @testset "add y root" begin
         E.eventlist!() do
             cnt = Dict{String, Any}(
-                "references" => Any[jsref(ymdl), jsref(ymdl.a), jsref(mdl)],
+                "references" => Any[js(ymdl), js(ymdl.a), js(mdl)],
                 "events" => Any[
                     js(E.RootAddedEvent(doc, mdl, 1)),
                     js(E.RootAddedEvent(doc, ymdl, 1))
@@ -128,7 +125,7 @@ end
         E.eventlist!() do
             other = ProtocolX()
             cnt = Dict{String, Any}(
-                "references" => Any[jsref(other)],
+                "references" => Any[js(other)],
                 "events" => Any[js(E.ModelChangedEvent(ymdl, :a, nothing, other))],
             )
 
@@ -152,7 +149,7 @@ end
                 
             cnt = Dict{String, Any}(
                 "references" => Any[],
-                "events" => Any[js(BokehServer.Models.Actions.ButtonClick(; model = btn))],
+                "events" => Any[js(BokehServer.ButtonClick(; model = btn))],
             )
             BokehServer.Protocol.patchdoc!(doc, cnt, buf)
             @test called[]
@@ -165,7 +162,7 @@ end
             a     = [ProtocolX(;a = 1), ProtocolX(;a = 2)]
             other = ProtocolZ(; a, b = (; value = 100, transform = a[1]))
             cnt = Dict{String, Any}(
-                "references" => Any[jsref(other), jsref(other.a[1]), jsref(other.a[2])],
+                "references" => Any[js(other), js(other.a[1]), js(other.a[2])],
                 "events" => Any[js(BokehServer.Events.RootAddedEvent(doc, other, 1))]
             )
             BokehServer.Protocol.patchdoc!(doc, cnt, buf)

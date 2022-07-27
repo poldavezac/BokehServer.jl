@@ -10,23 +10,21 @@ function patchdoc(
 
     all = bokehmodels(doc)
     return (;
-        events     = serialize(
-            [
-                i for i ∈ λ if begin
-                    if i isa Events.iDocEvent
-                        i.doc ≡ doc
-                    elseif i isa Union{Events.iDocModelEvent, Events.iModelActionEvent}
-                        # only keep mutation events which refer to a model not in the references
-                        id = bokehid(i.model)
-                        (id ∈ oldids) && haskey(all, id)
-                    elseif i isa Events.iDocActionEvent
-                        false
-                    end
+        events     = Any[
+            serialize(i, 𝑅)
+            for i ∈ λ if begin
+                if i isa Events.iDocEvent
+                    i.doc ≡ doc
+                elseif i isa Union{Events.iDocModelEvent, Events.iModelActionEvent}
+                    # only keep mutation events which refer to a model not in the references
+                    id = bokehid(i.model)
+                    (id ∈ oldids) && haskey(all, id)
+                elseif i isa Events.iDocActionEvent
+                    false
                 end
-            ],
-            𝑅
-        ),
-        references = serialize([j for (i, j) ∈ all if i ∉ oldids], 𝑅)
+            end
+        ],
+        references = Any[serialize(j, 𝑅) for (i, j) ∈ all if i ∉ oldids]
     )
 end
 
@@ -53,3 +51,5 @@ function patchdoc(λ::AbstractVector{<:Events.iEvent}, 𝐷::iDocument, oldids::
     outp = patchdoc(λ, 𝐷, oldids, 𝑅)
     return isnothing(outp) ? missing : sendmessage(ios, msg"PATCH-DOC", outp, 𝑅.buffers)
 end
+
+patchdoc!(𝐷::iDocument, 𝐶::AbstractDict, 𝐵::Buffers) = Deserialize.deserialize!(𝐷, 𝐶, 𝐵)

@@ -1,6 +1,6 @@
 #!/usr/bin/env -S julia --startup-file=no --history-file=no --project
 using BokehServer
-BokehServer.Plotting.serve() do
+BokehServer.serve() do
     fruits = ["Apples", "Pears", "Nectarines", "Plums", "Grapes", "Strawberries"]
     years = ["2015", "2016", "2017"]
 

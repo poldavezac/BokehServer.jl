@@ -205,3 +205,18 @@ end
     @test plot.x_range isa BokehServer.Models.FactorRange
     @test length(plot.renderers) == 4
 end
+
+struct DummyStaticRoute <: BokehServer.Server.iStaticRoute end
+BokehServer.Server.makeid(::DummyStaticRoute) = "a"
+
+@testset "standalone" begin
+    BokehServer.Model.ID.ids[:] .= 1
+    out = BokehServer.html(; title = "my favorite plot", browser = false, app = DummyStaticRoute()) do
+        BokehServer.line(; y = [1,2,3])
+    end
+    @test out isa HTML
+    truth = read(joinpath(@__DIR__, "standalone.html"), String)
+    @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(out.content)))
+        @test i == j
+    end
+end

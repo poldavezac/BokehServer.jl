@@ -10,8 +10,8 @@ const Buffers = Vector{Pair{String, Vector{UInt8}}}
 
 include("protocol/messages.jl")
 include("protocol/serialize.jl")
-include("protocol/patchdoc/send.jl")
-include("protocol/patchdoc/receive.jl")
+include("protocol/deserialize.jl")
+include("protocol/patchdoc.jl")
 include("protocol/pushdoc.jl")
 
 for (tpe, func) ∈ (msg"PULL-DOC-REPLY,PUSH-DOC" => :pushdoc!, msg"PATCH-DOC" => :patchdoc!)

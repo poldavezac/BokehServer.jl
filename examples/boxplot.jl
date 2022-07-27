@@ -2,7 +2,7 @@
 using BokehServer
 using Random
 
-BokehServer.Plotting.serve() do
+BokehServer.serve() do
     BokehServer.boxplot((let x = [
             ((randn(Float64, 100) .* 3) .+ 10.)...,
             ((randn(Float64, 200) .* 2) .+ 20.)...,

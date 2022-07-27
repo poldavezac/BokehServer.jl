@@ -1,3 +1,5 @@
+using ..Protocol
+
 struct HTTPError <: Exception
     status :: Int
     reason :: String
@@ -59,22 +61,18 @@ function bodyparams(req::HTTP.Request)
     end
 end
 
-staticbundle(type::Symbol) = staticbundle(Val(type))
-
 function staticbundle(
-        ::Val{:server};
-        address    :: String = "http://$(CONFIG.host):$(CONFIG.port)",
+        address    :: String = "http://$(CONFIG.host):$(CONFIG.port)";
         addversion :: Bool   = false,
+        root       :: String = "static/js",
         clientlog  :: Symbol = CONFIG.clientloglevel
 )
-    version = addversion ? "" : ""  # TODO: extract the hex from the files and add a `?v=...`
-    root    = "$address/static/js/bokeh"
+    version = addversion ? "-$(Protocol.PROTOCOL_VERSION)" : ""  # TODO: extract the hex from the files and add a `?v=...`
     minv    = CONFIG.minified ? ".min" : ""
+    prefix  = isempty(root ) ? "$address/bokeh" : "$address/$root/bokeh"
+    suffix  = "$version$minv.js"
     return (;
-        js_files  = String[
-            "$root$suffix$minv.js$version"
-            for suffix ∈ ("", "-gl", "-widgets", "-tables", "-mathjax")
-        ],
+        js_files  = String[string(prefix, i, suffix) for i ∈ ("", "-gl", "-widgets", "-tables", "-mathjax")],
         js_raw    = String["""Bokeh.set_log_level("$clientlog");"""],
         css_files = String[],
         css_raw   = String[],

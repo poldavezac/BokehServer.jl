@@ -3,17 +3,23 @@ function _👻structure(
         parents :: Union{Symbol, Expr},
         fields  :: _👻Fields,
 ) :: Expr
-    code   = [_👻initcode(cls, fields, i) for i ∈ _👻filter(fields)]
-    fnames = map(x->x.name, _👻filter(fields))
-    quote
-        mutable struct $cls <: $parents
-            id        :: Int64
-            $((:($(i.name)::$(bokehstoragetype(i.type))) for i ∈ _👻filter(fields) if !i.alias)...)
-            callbacks :: Vector{Function}
-
+    vals  = [_👻initcode(cls, fields, i) for i ∈ _👻filter(fields)]
+    cstr  =  if all(last(i) ≡ :default for i ∈ vals)
+        quote
+            $cls(; id = $(@__MODULE__).ID(), kwa...) = $(@__MODULE__)._👻init($cls, id, kwa)
+        end
+    else
+        if any(last(i) ≡ :custom for i ∈ vals)
+            fnames = map(x->x.name, _👻filter(fields))
+            code   = first.(vals)
+        else
+            fnames = [i[1].args[2] for i ∈ vals]
+            code   = ()
+        end
+        quote
             function $cls(; id = $(@__MODULE__).ID(), kwa...)
                 $(code...)
-                new(
+                $cls(
                     id isa Int64 ? id : parse(Int64, string(id)),
                     $(fnames...),
                     Function[],
@@ -21,60 +27,14 @@ function _👻structure(
             end
         end
     end
-end
-
-function _👻setter(cls::Symbol, fields::_👻Fields) :: Expr
-    code = _👻elseif_alias(fields, :(throw(ErrorException("unknown or read-only property $α")))) do i
-        name = Meta.quot(i.name)
-        set  = if i.js
-            quote
-                old = $(@__MODULE__).bokehunwrap(getproperty(μ, $name))
-                dotrigger && BokehServer.Events.testcantrigger()
-                new = setfield!(μ, $name, ν)
-                dotrigger && BokehServer.Events.trigger(BokehServer.ModelChangedEvent(μ, $name, old, new))
-            end
-        else
-            :(setfield!(µ, $name, ν))
-        end
-
-        if i.readonly
-            set = quote
-                patchdoc || throw(ErrorException($("$cls.$(i.name) is readonly")))
-                $set
-            end
-        end
-
-        quote
-            cν = $(@__MODULE__).bokehconvert($(i.type), $(@__MODULE__).bokehunwrap(ν))
-            (cν isa $Unknown) && throw(ErrorException(string("Could not convert `$ν` to ", $(i.type))))
-            ν = cν
-            $set
-            getproperty(µ, $name)
-        end
-    end
-
     quote
-        function Base.setproperty!(μ::$cls, α::Symbol, ν; dotrigger :: Bool = true, patchdoc :: Bool = false)
-            $code
+        mutable struct $cls <: $parents
+            id        :: Int64
+            $((:($(i.name)::$(bokehstoragetype(i.type))) for i ∈ _👻filter(fields) if !i.alias)...)
+            callbacks :: Vector{Function}
         end
-    end
-end
 
-function _👻getter(cls::Symbol, fields::_👻Fields) :: Expr
-    expr = _👻elseif_alias(fields, :(throw(ErrorException("unknown property $α")))) do field
-        name = Meta.quot(field.name)
-        :($(@__MODULE__).bokehread($(field.type), μ, $name, getfield(µ, $name)))
-    end
-
-    code = :(if α ∈ $((:id, :callbacks, (i.name for i ∈ fields if !i.js)...))
-        return getfield(µ, α)
-    end)
-    push!(code.args, Expr(:elseif, expr.args...))
-
-    quote
-        function Base.getproperty(μ::$cls, α::Symbol)
-            $code
-        end
+        $cstr
     end
 end
 
@@ -91,7 +51,29 @@ function _👻propnames(cls::Symbol, fields::_👻Fields) :: Expr
 end
 
 function _👻funcs(cls::Symbol, fields::_👻Fields) :: Expr
+    bkalias = if any(i.alias for i ∈ fields)
+        quote
+            @inline function $(@__MODULE__).bokehalias(::Type{$cls}, α::Symbol) :: Symbol
+                return $(_👻elseif((i for i ∈ fields if i.js), :α) do field
+                    if field.alias
+                        :(if α ≡ $(Meta.quot(field.name))
+                            $(Meta.quot(field.type.parameters[1]))
+                        end)
+                    else
+                        nothing
+                    end
+                end)
+            end
+        end
+    else
+        nothing
+    end
+
     quote
+        $bkalias
+
+        @inline $(@__MODULE__).bokehinfo(::Type{$cls}) = $(tuple(fields...))
+
         @inline function $(@__MODULE__).bokehproperties(::Type{$cls}) :: Tuple{Vararg{Symbol}}
             return $(tuple((i.name for i ∈ fields if i.js)...))
         end
@@ -105,7 +87,7 @@ function _👻funcs(cls::Symbol, fields::_👻Fields) :: Expr
         end
 
         @inline function $(@__MODULE__).bokehfieldtype(T::Type{$cls}, α::Symbol) :: Union{Nothing, Type}
-            $(_👻elseif_alias(fields, :(throw("$T.$α does not exist"))) do field
+            $(_👻elseif_alias(fields, nothing) do field
                 field.js ? field.type : nothing
             end)
         end
@@ -148,8 +130,6 @@ function _👻code(src, mod::Module, code::Expr) :: Expr
     esc(quote
         @Base.__doc__ $(_👻structure(cls, parents, fields))
 
-        $(_👻getter(parent, fields))
-        $(_👻setter(parent, fields))
         $(_👻propnames(parent, fields))
         $(_👻funcs(cls, fields))
         push!($(@__MODULE__).MODEL_TYPES, $cls)
@@ -200,6 +180,35 @@ provided with the structure definition. Return `nothing` otherwise.
 **Warning** This is *not* necessarily the theme default. See `themevalue` for the latter.
 """
 function defaultvalue end
+
+function bokehinfo end
+
+bokehalias(::Type, α::Symbol) = α
+
+function Base.getproperty(μ::iHasProps, α::Symbol)
+    α  = bokehalias(typeof(μ), α)
+    ν  = getfield(μ, α)
+    f𝑇 = bokehfieldtype(typeof(μ), α)
+    return isnothing(f𝑇) ? ν : bokehread(f𝑇, μ, α, ν)
+end
+
+function Base.setproperty!(μ::iHasProps, α::Symbol, ν; dotrigger :: Bool = true, patchdoc :: Bool = false)
+    α  = bokehalias(typeof(μ), α)
+    f𝑇 = bokehfieldtype(typeof(μ), α)
+
+    isnothing(f𝑇) && return setfield!(μ, α, ν)
+
+    (f𝑇 <: ReadOnly) && !patchdoc && throw(ErrorException("$(typeof(μ)).$α is readonly"))
+
+    cν  = bokehconvert(f𝑇, bokehunwrap(ν))
+    (cν isa Unknown) && throw(ErrorException("Could not convert `$ν` to $f𝑇"))
+
+    old = getfield(μ, α)
+    dotrigger && BokehServer.Events.testcantrigger()
+    new = setfield!(μ, α, cν)
+    dotrigger && BokehServer.Events.trigger(BokehServer.ModelChangedEvent(μ, α, old, new))
+    return new
+end
 
 function themevalue(@nospecialize(𝑇::Type{<:iHasProps}), σ::Symbol) :: Union{Some, Nothing}
     dflt = BokehServer.Themes.theme(𝑇, σ)

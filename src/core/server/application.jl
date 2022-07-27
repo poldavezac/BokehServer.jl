@@ -79,10 +79,12 @@ makeid(_...) = "$(UUIDs.uuid4())"
 
 function precompilemethods(𝐴::Application)
     Events.eventlist!(Events.NullEventList()) do
-        initialize!(Documents.Document(), 𝐴)
+        doc = Documents.Document()
+        initialize!(doc, 𝐴)
+        Protocol.pushdoc("", doc)
     end
 end
 
-function makerootids(app::iApplication, rs::Vararg{iModel})
+function makerootids(app::iRoute, rs::Vararg{iModel})
     Dict{String, String}(("$(bokehid(r))" => makeid(app) for r ∈ rs)...)
 end

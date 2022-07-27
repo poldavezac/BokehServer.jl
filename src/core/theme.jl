@@ -24,6 +24,7 @@ THEME :: Theme: the default theme
 const THEME = Theme()
 
 function theme(T::Type, a...)
+    @nospecialize T a
     doc = BokehServer.curdoc()
     return theme((isnothing(doc) ? THEME : doc.theme), T, a...)
 end
@@ -34,7 +35,7 @@ end
 Retrieves a default value from theme `dic` for type `cls` and field `attr`.
 This is done by looking through all supertypes for `cls`
 """
-function theme(dic::Theme, cls::Type, attr::Symbol) :: Union{Some, Nothing}
+function theme(dic::Theme, @nospecialize(cls::Type), attr::Symbol) :: Union{Some, Nothing}
     attrtheme = get(dic.items, attr, nothing)
     isnothing(attrtheme) && return nothing
 

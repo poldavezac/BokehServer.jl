@@ -36,7 +36,7 @@ const TOOLTIPS = [
     ("Electronic configuration", "@{electronic configuration}"),
 ]
 
-BokehServer.Plotting.serve() do
+BokehServer.serve() do
     p = BokehServer.figure(title="Periodic Table (omitting LA and AC Series)", width=1000, height=450,
                 x_range=groups, y_range=collect(periods[end:-1:1]),
                tools="hover", toolbar_location=nothing, tooltips=TOOLTIPS)

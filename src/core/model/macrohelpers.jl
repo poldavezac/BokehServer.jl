@@ -11,7 +11,7 @@ struct _👻Field
     function _👻Field(mod::Module, index::Int, line::Expr)
         (name, type)    = (line.head ≡ :(::) ? line : line.args[1]).args
         realtype        = mod.eval(type)
-        (default, init) = _👻defaultvalue(realtype, line)
+        (default, init) = _👻defaultvalue(mod, realtype, line)
         new(
             index, name,
             #= type     =# realtype,
@@ -90,7 +90,7 @@ function _👻elseif_alias(𝐹::Function, fields::_👻Fields, @nospecialize(el
     end
 end
 
-function _👻defaultvalue(@nospecialize(T::Type), line::Expr) :: Tuple{<:Union{Nothing, Some}, <:Union{Nothing, Some}}
+function _👻defaultvalue(mod, @nospecialize(T::Type), line::Expr) :: Tuple{<:Union{Nothing, Some}, <:Union{Nothing, Some}}
     if line.head ≡ :(::)
         out = _👻defaultvalue(T)
         return (out, out)
@@ -106,57 +106,120 @@ function _👻defaultvalue(@nospecialize(T::Type), line::Expr) :: Tuple{<:Union{
     end
      
     expr = line.args[2]
-    if expr isa Expr && expr.head ≡ :call && expr.args[1] ≡ :new
-        return nothing, Some(expr.args[2])
+    # ugly kludge is needed to obtain constructors with a fast compile time
+    return if expr isa Expr && expr.head ≡ :call && expr.args[1] ≡ :new
+        nothing, Some(expr.args[2])
+    elseif expr isa Expr && expr.head ≡ :tuple && all(i isa Union{Number, String, Symbol, Missing, Nothing} for i ∈ expr.args)
+        Some(eval(expr)), Some(eval(expr))
+    elseif expr isa Expr && expr.head ≡ :call && expr.args[1] ≡ :Symbol
+        Some(eval(expr)), Some(eval(expr))
+    elseif expr isa Expr && expr.head ≡ :ref && length(expr.args) == 1
+        Some(mod.eval(expr)), Some(mod.eval(expr))
+    elseif expr ≡ :nothing
+        Some(nothing), Some(nothing)
+    else
+        Some(expr), Some(expr)
     end
-    return Some(expr), Some(expr)
 end
 
 function _👻defaultvalue(@nospecialize(T::Type)) :: Union{Nothing, Some}
     R = bokehstoragetype(T)
-    applicable(zero, R) ? Some(:(zero($R))) : applicable(R) ? Some(:($R())) : nothing
+    return if applicable(zero, R)
+        R <: Number ? Some(zero(R)) : Some(:(zero(R)))
+    elseif applicable(R)
+        Some(:($R()))
+    else
+        nothing
+    end
 end
 
 function _👻defaultvalue(field::_👻Field) :: Union{Nothing, Expr}
     isnothing(field.default) ? nothing : :(Some($(something(field.default))))
 end
 
-function _👻initcode(cls::Symbol, fields::_👻Fields, field::_👻Field) :: Expr
+function _👻initcode(cls::Symbol, fields::_👻Fields, field::_👻Field) :: Tuple{Expr, Symbol}
     opts = [j.name for j ∈ fields if j.alias && j.type.parameters[1] ≡ field.name]
-    κ    = Meta.quot(field.name)
-    val  = if isnothing(field.init)
-        :(let val = BokehServer.Themes.theme($cls, $κ)
-            isnothing(val) && throw(ErrorException(($("$cls.$(field.name) is a mandatory argument"))))
-            something(val)
-        end)
-    else
-        :(let val = BokehServer.Themes.theme($cls, $κ)
-            isnothing(val) ? $(something(field.init)) : something(val)
-        end)
-    end
-        
-    val = _👻elseif((field.name, opts...), val) do key
-        sκ = Meta.quot(key)
-        :(if haskey(kwa, $sκ)
-            kwa[$sκ]
-        end)
-    end
+    args = (cls, Meta.quot(field.name), Meta.quot(isempty(opts) ? field.name : only(opts)), :kwa)
+    isnothing(field.init) && return (:($(field.name) = $(@__MODULE__)._👻init_mandatory($(args...))), :mandatory)
 
-    return if field.type <: Internal
-        :($(field.name) = $val)
+    init = something(field.init)
+    return if (isimmutable(init) || init isa Union{AbstractString, Symbol} || init isa Array && isempty(init))
+        :($(field.name) = $(@__MODULE__)._👻init_with_defaults($init, $(args...))), :default
+    elseif init isa Expr && init.head ≡ :call && length(init.args) == 1
+        :($(field.name) = $(@__MODULE__)._👻init_with_call($(init.args[1]), $(args...))), :call
     else
-        x = gensym()
-        y = gensym()
-        quote
-            $(field.name) = let $x = $val, $y = $(@__MODULE__).bokehconvert($(field.type), $x)
-                ($y isa $Unknown) && throw(ErrorException(string(
-                    "Could not convert `", $x, "` to ",
-                    $cls, ".", $("$(field.name)"),
-                    "::", $(bokehstoragetype(field.type))
-                )))
-                @assert $y isa fieldtype($cls, $κ) string($("$cls.$(field.name) != "), typeof($y))
-                $y
+        (
+            :($(field.name) = $(@__MODULE__)._👻init_with_call($(args...)) do; $init end ),
+            if init.head ≢ :vect || !all(i isa Union{Number, String, Symbol, Nothing, Missing} for i ∈ init.args)
+                :custom
+            else
+                :vect
             end
-        end
+        )
     end
+end
+
+# a specific constructor which allows reducing compilation time
+function _👻init(𝑇::Type{<:iHasProps}, id, kwa::Base.Pairs)
+    @nospecialize 𝑇 id kwa
+    𝑇(
+        id isa Int64 ? id : parse(Int64, string(id)),
+        (
+            _👻init_with_defaults(
+                let x = something(i.init)
+                    x isa QuoteNode ? x.value : x
+                end, 𝑇, i.name, bokehalias(𝑇, i.name), kwa
+            )
+            for i ∈ bokehinfo(𝑇)
+            if !i.alias
+        )...,
+        Function[]
+    )
+end
+
+function _👻init_val(𝑇::Type{<:iHasProps}, α::Symbol, ν)
+    @nospecialize 𝑇 ν
+    f𝑇   = bokehfieldtype(𝑇, α)
+    isnothing(f𝑇) && return ν
+    val = bokehconvert(f𝑇, ν)
+    val isa Unknown && throw(ErrorException("Could not initialize $𝑇.$α :: $(fieldtype(𝑇, α)) = `$ν` :: $(typeof(ν))"))
+    return val
+end
+
+function _👻init_with_call(𝐹, 𝑇::Type{<:iHasProps}, α1::Symbol, α2::Symbol, kwa::Base.Pairs)
+    @nospecialize 𝐹 𝑇 kwa
+    val  = if haskey(kwa, α1)
+        kwa[α1]
+    elseif α1 ≢ α2 && haskey(kwa, α2)
+        kwa[α2]
+    else
+        t = BokehServer.Themes.theme(𝑇, α1)
+        isnothing(t) ? 𝐹() : something(t)
+    end
+    return _👻init_val(𝑇, α1, val)
+end
+
+function _👻init_with_defaults(dflt, 𝑇::Type{<:iHasProps}, α1::Symbol, α2::Symbol, kwa::Base.Pairs)
+    @nospecialize dflt 𝑇 kwa
+    val  = if haskey(kwa, α1)
+        kwa[α1]
+    elseif α1 ≢ α2 && haskey(kwa, α2)
+        kwa[α2]
+    else
+        t = BokehServer.Themes.theme(𝑇, α1)
+        isnothing(t) ? dflt : something(t)
+    end
+    return _👻init_val(𝑇, α1, val)
+end
+
+function _👻init_mandatory(𝑇::Type{<:iHasProps}, α1::Symbol, α2::Symbol, kwa::Base.Pairs)
+    @nospecialize 𝑇 kwa
+    val  = if haskey(kwa, α1)
+        kwa[α1]
+    elseif α1 ≢ α2 && haskey(kwa, α2)
+        kwa[α2]
+    else
+        throw(ErrorException("$𝑇.$α1 is a mandatory argument"))
+    end
+    return _👻init_val(𝑇, α1, val)
 end

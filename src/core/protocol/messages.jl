@@ -144,16 +144,20 @@ message(hdr::_h"SERVER-INFO-REPLY", reqid::String; meta...)               = Prot
     reqid
 )
 
-function sendmessage(@nospecialize(ios::Union{AbstractVector, AbstractSet, Tuple}), 𝑇::Type{<:iMessage}, args...; kwa...) :: String
+function sendmessage(ios, 𝑇::Type{<:iMessage}, args...; kwa...) :: String
+    @nospecialize ios 𝑇 args kwa
     @assert !isempty(ios)
     msgid = string(ID())
-    for io ∈ ios
-        sendmessage(io, 𝑇, args...; msgid, kwa...)
+
+    itr = message(𝑇, args...; kwa...)
+    for line ∈ collect(itr), io ∈ ios
+        WebSockets.isclosed(io) || WebSockets.send(io, line)
     end
-    return get(kwa, :msgid, msgid)
+    return messageid(itr)
 end
 
 function sendmessage(io::WebSockets.WebSocket, T::Type{<:iMessage}, args...; kwa...) :: Union{Missing, String}
+    @nospecialize io T args kwa
     itr = message(T, args...; kwa...)
     for line ∈ collect(itr)
         WebSockets.isclosed(io) && (return missing)

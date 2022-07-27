@@ -48,8 +48,8 @@ end
     end))
     truth        = [
         (;
-            index = 2, name = :a, type = Int32, default = Some(:(zero(Int32))),
-            init  = Some(:(zero(Int32))), js = true,
+            index = 2, name = :a, type = Int32, default = Some(0),
+            init  = Some(0), js = true,
             alias = false, readonly = false,
         ),
         (; 
@@ -350,4 +350,11 @@ end
     @test x.rows[1].align == :start
 
     @test_throws ErrorException X(; a = (; policy = :mmm,  align = :start))
+end
+
+@testset "columndatasource" begin
+    cds = BokehServer.Source("x" => 1:5; y = 1:5, selection_policy = BokehServer.IntersectRenderers())
+    @test "x" ∈ keys(cds.data)
+    @test "y" ∈ keys(cds.data)
+    @test cds.selection_policy isa BokehServer.IntersectRenderers
 end

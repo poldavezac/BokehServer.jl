@@ -20,13 +20,13 @@ handle(msg, _...) = begin
     @info "Receive a message" msg.header
     msg
 end
-handle(msg::msg"ACK,EMPTY", _) = msg
+handle(msg::msg"ACK,EMPTY", _...) = msg
 
-function handle(msg::msg"ERROR", _)
+function handle(msg::msg"ERROR", _...)
     @error(
         "Received an error message",
-        message = msg.content["text"],
-        traceback = msg.content["traceback"]
+        message = msg.contents["text"],
+        traceback = msg.contents["traceback"]
     )
     throw(ServerError())
 end

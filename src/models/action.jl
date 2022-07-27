@@ -2,23 +2,22 @@ module Actions
 using ...AbstractTypes
 using ...Model
 using ...Events
-using ...Events: iDocActionEvent, iModelActionEvent, iActionEvent
-using ...Protocol.PatchDocReceive
+using ...Protocol
 using ..Models: iAbstractButton, iPlot, iModel, iDropdown
-abstract type iPlotActionEvent <: iModelActionEvent end
+abstract type iPlotActionEvent <: Events.iModelActionEvent end
 
 """Announce when a Document is fully idle."""
-@Base.kwdef struct DocumentReady <: iDocActionEvent
+@Base.kwdef struct DocumentReady <: Events.iDocActionEvent
     doc::iDocument
 end
 
 """Announce a button click event on a BokehServer button widget."""
-@Base.kwdef struct ButtonClick <: iModelActionEvent
+@Base.kwdef struct ButtonClick <: Events.iModelActionEvent
     model::iAbstractButton
 end
 
 """Announce a button click event on a BokehServer menu item."""
-@Base.kwdef struct MenuItemClick <: iModelActionEvent
+@Base.kwdef struct MenuItemClick <: Events.iModelActionEvent
     model::iAbstractButton
     item ::String
 end
@@ -223,9 +222,9 @@ Fields:
     y         :: Union{Missing, Float64} = missing
 end
 
-Base.propertynames(::T; private::Bool = false) where {T <: iActionEvent} = (fieldnames(T)..., :event_name)
+Base.propertynames(::T; private::Bool = false) where {T <: Events.iActionEvent} = (fieldnames(T)..., :event_name)
 
-function Base.getproperty(μ::T, σ::Symbol) where {T <: iActionEvent}
+function Base.getproperty(μ::T, σ::Symbol) where {T <: Events.iActionEvent}
     return σ ≡ :event_name ? getfield(_EVENT_NAMES, nameof(T)) : getfield(μ, σ)
 end
 
@@ -270,23 +269,21 @@ function action!(𝐷::iDocument, ::Val{T}; model::iModel, k...) where {T}
     Events.executecallbacks(getfield(_EVENT_TYPES, T)(; model, k...))
 end
 
-function PatchDocReceive.apply(::Val{:MessageSent}, 𝐷::iDocument, 𝐼::Dict{String}, 𝑀)
+function Protocol.Deserialize.apply(::Val{:MessageSent}, 𝐷::iDocument, 𝐼::Dict{String}, 𝑀)
     if 𝐼["msg_type"] == "bokeh_event"
         data = 𝐼["msg_data"]
         action!(
             𝐷,
             Val(Symbol(data["event_name"]));
-            (Symbol(i) => PatchDocReceive.fromjson(Any, j, 𝑀) for (i, j) ∈ data["event_values"])...
+            (Symbol(i) => Protocol.Deserialize.deserialize(Any, j, 𝑀) for (i, j) ∈ data["event_values"])...
         )
     end
 end
-
-export DocumentReady, ButtonClick, MenuItemClick, LODStart, LODEnd, RangesUpdate, SelectionGeometry,
-       Reset, Tap, DoubleTap, Press, PressUp, MouseEnter, MouseLeave, MouseMove,
-       PanEnd, PanStart, PinchStart, Rotate, RotateStart, RotateEnd, MouseWheel, Pan, Pinch
 end
 
-using .Actions
+using .Actions: DocumentReady, ButtonClick, MenuItemClick, LODStart, LODEnd, RangesUpdate, SelectionGeometry,
+       Reset, Tap, DoubleTap, Press, PressUp, MouseEnter, MouseLeave, MouseMove,
+       PanEnd, PanStart, PinchStart, Rotate, RotateStart, RotateEnd, MouseWheel, Pan, Pinch
 
 export DocumentReady, ButtonClick, MenuItemClick, LODStart, LODEnd, RangesUpdate, SelectionGeometry,
        Reset, Tap, DoubleTap, Press, PressUp, MouseEnter, MouseLeave, MouseMove,

@@ -3,70 +3,124 @@ using ...AbstractTypes
 using ...Model
 using ...Models
 
-function defaulttool(σ::Symbol)
-    (σ ≡ :pan)           && return Models.PanTool(dimensions=:both)
-    (σ ≡ :xpan)          && return Models.PanTool(dimensions=:width)
-    (σ ≡ :ypan)          && return Models.PanTool(dimensions=:height)
-    (σ ≡ :xwheel_pan)    && return Models.WheelPanTool(dimension=:width)
-    (σ ≡ :ywheel_pan)    && return Models.WheelPanTool(dimension=:height)
-    (σ ≡ :wheel_zoom)    && return Models.WheelZoomTool(dimensions=:both)
-    (σ ≡ :xwheel_zoom)   && return Models.WheelZoomTool(dimensions=:width)
-    (σ ≡ :ywheel_zoom)   && return Models.WheelZoomTool(dimensions=:height)
-    (σ ≡ :zoom_in)       && return Models.ZoomInTool(dimensions=:both)
-    (σ ≡ :xzoom_in)      && return Models.ZoomInTool(dimensions=:width)
-    (σ ≡ :yzoom_in)      && return Models.ZoomInTool(dimensions=:height)
-    (σ ≡ :zoom_out)      && return Models.ZoomOutTool(dimensions=:both)
-    (σ ≡ :xzoom_out)     && return Models.ZoomOutTool(dimensions=:width)
-    (σ ≡ :yzoom_out)     && return Models.ZoomOutTool(dimensions=:height)
-    (σ ≡ :click)         && return Models.TapTool(behavior=:inspect)
-    (σ ≡ :tap)           && return Models.TapTool()
-    (σ ≡ :doubletap)     && return Models.TapTool(gesture=:doubletap)
-    (σ ≡ :crosshair)     && return Models.CrosshairTool()
-    (σ ≡ :box_select)    && return Models.BoxSelectTool()
-    (σ ≡ :xbox_select)   && return Models.BoxSelectTool(dimensions=:width)
-    (σ ≡ :ybox_select)   && return Models.BoxSelectTool(dimensions=:height)
-    (σ ≡ :poly_select)   && return Models.PolySelectTool()
-    (σ ≡ :lasso_select)  && return Models.LassoSelectTool()
-    (σ ≡ :box_zoom)      && return Models.BoxZoomTool(dimensions=:both)
-    (σ ≡ :xbox_zoom)     && return Models.BoxZoomTool(dimensions=:width)
-    (σ ≡ :ybox_zoom)     && return Models.BoxZoomTool(dimensions=:height)
-    (σ ≡ :save)          && return Models.SaveTool()
-    (σ ≡ :undo)          && return Models.UndoTool()
-    (σ ≡ :redo)          && return Models.RedoTool()
-    (σ ≡ :reset)         && return Models.ResetTool()
-    (σ ≡ :help)          && return Models.HelpTool()
-    (σ ≡ :box_edit)      && return Models.BoxEditTool()
-    (σ ≡ :line_edit)     && return Models.LineEditTool()
-    (σ ≡ :point_draw)    && return Models.PointDrawTool()
-    (σ ≡ :poly_draw)     && return Models.PolyDrawTool()
-    (σ ≡ :poly_edit)     && return Models.PolyEditTool()
-    (σ ≡ :freehand_draw) && return Models.FreehandDrawTool()
-    (σ ≡ :hover)         && return Models.HoverTool(tooltips=[
-        ("index",         "\$index"),
-        ("data (x, y)",   "(\$x, \$y)"),
-        ("screen (x, y)", "(\$sx, \$sy)"),
-    ])
-    throw(ErrorException("Unknown tool shorthand $σ"))
+function defaulttool(σ::Symbol) :: Models.iTool
+    return if σ ≡ :pan
+        Models.PanTool(dimensions=:both)
+    elseif σ ≡ :xpan
+        Models.PanTool(dimensions=:width)
+    elseif σ ≡ :ypan
+        Models.PanTool(dimensions=:height)
+    elseif σ ≡ :xwheel_pan
+        Models.WheelPanTool(dimension=:width)
+    elseif σ ≡ :ywheel_pan
+        Models.WheelPanTool(dimension=:height)
+    elseif σ ≡ :wheel_zoom
+        Models.WheelZoomTool(dimensions=:both)
+    elseif σ ≡ :xwheel_zoom
+        Models.WheelZoomTool(dimensions=:width)
+    elseif σ ≡ :ywheel_zoom
+        Models.WheelZoomTool(dimensions=:height)
+    elseif σ ≡ :zoom_in
+        Models.ZoomInTool(dimensions=:both)
+    elseif σ ≡ :xzoom_in
+        Models.ZoomInTool(dimensions=:width)
+    elseif σ ≡ :yzoom_in
+        Models.ZoomInTool(dimensions=:height)
+    elseif σ ≡ :zoom_out
+        Models.ZoomOutTool(dimensions=:both)
+    elseif σ ≡ :xzoom_out
+        Models.ZoomOutTool(dimensions=:width)
+    elseif σ ≡ :yzoom_out
+        Models.ZoomOutTool(dimensions=:height)
+    elseif σ ≡ :click
+        Models.TapTool(behavior=:inspect)
+    elseif σ ≡ :tap
+        Models.TapTool()
+    elseif σ ≡ :doubletap
+        Models.TapTool(gesture=:doubletap)
+    elseif σ ≡ :crosshair
+        Models.CrosshairTool()
+    elseif σ ≡ :box_select
+        Models.BoxSelectTool()
+    elseif σ ≡ :xbox_select
+        Models.BoxSelectTool(dimensions=:width)
+    elseif σ ≡ :ybox_select
+        Models.BoxSelectTool(dimensions=:height)
+    elseif σ ≡ :poly_select
+        Models.PolySelectTool()
+    elseif σ ≡ :lasso_select
+        Models.LassoSelectTool()
+    elseif σ ≡ :box_zoom
+        Models.BoxZoomTool(dimensions=:both)
+    elseif σ ≡ :xbox_zoom
+        Models.BoxZoomTool(dimensions=:width)
+    elseif σ ≡ :ybox_zoom
+        Models.BoxZoomTool(dimensions=:height)
+    elseif σ ≡ :save
+        Models.SaveTool()
+    elseif σ ≡ :undo
+        Models.UndoTool()
+    elseif σ ≡ :redo
+        Models.RedoTool()
+    elseif σ ≡ :reset
+        Models.ResetTool()
+    elseif σ ≡ :help
+        Models.HelpTool()
+    elseif σ ≡ :box_edit
+        Models.BoxEditTool()
+    elseif σ ≡ :line_edit
+        Models.LineEditTool()
+    elseif σ ≡ :point_draw
+        Models.PointDrawTool()
+    elseif σ ≡ :poly_draw
+        Models.PolyDrawTool()
+    elseif σ ≡ :poly_edit
+        Models.PolyEditTool()
+    elseif σ ≡ :freehand_draw
+        Models.FreehandDrawTool()
+    elseif σ ≡ :hover
+        Models.HoverTool(tooltips=[
+            ("index",         "\$index"),
+            ("data (x, y)",   "(\$x, \$y)"),
+            ("screen (x, y)", "(\$sx, \$sy)"),
+        ])
+    else
+        throw(ErrorException("Unknown tool shorthand $σ"))
+    end
 end
 defaulttool(x::Models.iTool) = x
 defaulttool(x::AbstractString) = defaulttool(Symbol(strip(x)))
 
 Model.bokehconvert(::Type{Models.iTool}, x::Union{Models.iTool, AbstractString, Symbol, Val}) = defaulttool(x)
 
+struct _ToolInfo
+    tool :: Models.iTool
+    arg  :: Union{Models.iTool, Symbol}
+    keep :: Bool
+end
+
+function _isdiff(@nospecialize(x), @nospecialize(y))
+    return if x isa iHasProps
+        if (typeof(x) ≡ typeof(y))
+            any(
+                _isdiff(getproperty(x, k), getproperty(y, k))
+                for k ∈ propertynames(lst[i])
+                if k ≢ :id
+            )
+        else
+            true
+        end
+    else
+        !Model.compare(x, y)
+    end
+end
+
 _toollist(t::AbstractString) = _toollist(split(t, ','))
 function _toollist(
     tools :: AbstractVector{<:Union{Symbol, AbstractString, Models.iTool}},
 )
-    lst = [defaulttool.(i) for i ∈ tools]
+    lst = Models.iTool[defaulttool.(i) for i ∈ tools]
     keeps = let keeps = ones(Bool, length(lst))
-
-        _isdiff(_...)                 = true
-        _isdiff(x::T, y::T) where {T} = !Model.compare(x, y)
-        _isdiff(x::T, y::T) where {T <: iHasProps} = any(
-            _isdiff(getproperty(x, k), getproperty(y, k))
-            for k ∈ propertynames(lst[i])
-            if k ≢ :id
-        )
 
         for i ∈ 1:length(lst)-1
             keeps[i] && for j ∈ (i+1) : length(lst)
@@ -76,17 +130,15 @@ function _toollist(
         keeps
     end
 
-    _arg(x::Union{Models.iTool, Symbol}) = x
-    _arg(x::AbstractString)              = Symbol(strip(x))
-
-    return Any[
-        (; tool, arg = _arg(arg), keep)
+    return _ToolInfo[
+        _ToolInfo(tool, (arg isa AbstractString ? Symbol(strip(arg)) : arg), keep)
         for (tool, arg, keep) ∈ zip(lst, tools, keeps)
     ]
 end
 
-_tooltips!(::Vector, ::Missing, ::Bool) = nothing
-function _tooltips!(lst::Vector, tooltips, dotrigger :: Bool)
+_tooltips!(::Vector{_ToolInfo}, ::Missing, ::Bool) = nothing
+function _tooltips!(lst::Vector{_ToolInfo}, tooltips, dotrigger :: Bool)
+    @nospecialize lst _tooltips
     found = false
     for (i, tool) ∈ enumerate(lst)
         if tool.keep && tool.tool isa Models.HoverTool
@@ -106,15 +158,15 @@ function _tooltips!(lst::Vector, tooltips, dotrigger :: Bool)
     end
 end
 
-function _active!(tb::Models.iToolbar, val::Union{Nothing, Models.iTool}, attr::Symbol, dotrigger::Bool, ::Vector)
+function _active!(tb::Models.iToolbar, val::Union{Nothing, Models.iTool}, attr::Symbol, dotrigger::Bool, ::Vector{_ToolInfo})
     setproperty!(tb, attr, val; dotrigger)
 end
 
-function _active!(tb::Models.iToolbar, val::AbstractString, attr::Symbol, dotrigger::Bool, lst::Vector)
+function _active!(tb::Models.iToolbar, val::AbstractString, attr::Symbol, dotrigger::Bool, lst::Vector{_ToolInfo})
     _active!(tb, Symbol(strip(val)), attr, dotrigger, lst)
 end
 
-function _active!(tb::Models.iToolbar, val::Symbol, attr::Symbol, dotrigger::Bool, lst::Vector)
+function _active!(tb::Models.iToolbar, val::Symbol, attr::Symbol, dotrigger::Bool, lst::Vector{_ToolInfo})
     if val ≡ :auto
         setproperty!(tb, attr, :auto; dotrigger)
     else
@@ -164,10 +216,11 @@ function tools!(
         active_multi   :: ActiveArg{Models.iGestureTool}                                             = nothing,
         dotrigger      :: Bool                                                                       = true,
 )
+    @nospecialize fig tools
     lst = _toollist(tools)
     _tooltips!(lst, tooltips, dotrigger)
 
-    arr = [i.tool for i ∈ lst if i.keep]
+    arr = Models.iTool[i.tool for i ∈ lst if i.keep]
     append!(fig.toolbar.tools, arr; dotrigger)
 
     _active!(fig.toolbar,  active_drag,     :active_drag,     dotrigger, lst)

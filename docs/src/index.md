@@ -5,27 +5,45 @@
 It seemed *Julia* was missing a reactive plot library, meaning one which would
 react to changes in the data when used with *Pluto* or *IJulia*. This package
 tries to bring these features by relying on the excellent
-(*bokeh*)[https://docs.bokeh.org/en/latest/index.html] library. The latter is
+(*Bokeh*)[https://docs.bokeh.org/en/latest/index.html] library. The latter is
 basically a python web server with a javascript client. This package reproduces
 the python server and reuses the javascript part as is. This package's API is
 loosely similar to its python counterpart.
 
 ## Getting Started
 
-A number of examples are provided in the `examples` directory. All of them involve starting a server which deals with a single dashboard.
-Other options are available by looking at the `BokehServer.Server.server` documentation.
+A number of examples are provided in the `examples` directory. These usually involve starting a server:
 
-We try to keep a similar API to the one provided by *python bokeh*. The main differences are due to *Julia*'s aversion to instance or class methods.
-A python call `fig.scatter([1, 2, 3], [3, 2, 1])` becomes `scatter!(fig; x = [1, 2, 3], y = [3, 2, 1])`. Note that:
+```julia
+BokehServer.serve() do
+    BokehServer.line(rand(Float64, 100))
+end
+```
 
-1. Julia relies on free functions. Thus the call usually involves adding the current plot as first argument.
+One could also create a stand-alone html page:
+
+```julia
+BokehServer.html() do
+    BokehServer.line(rand(Float64, 100))
+end
+```
+
+We try to keep a similar API to the one provided by [Bokeh](https://docs.bokeh.org/en/latest/index.html). The main
+differences are due to *Julia*'s aversion to instance or class methods. A
+python call `fig.line([1, 2, 3])` becomes `line!(fig; y = [1, 2, 3])`. In other words:
+
+1. Julia relies on free functions. Thus the call requires adding the current plot as first argument.
 2. Julia suggests using a `!` when a function mutates its first argument. Thus our free functions:
 
    * without a `!`, will create a plot, feed it to the `!`-ended free function, finally returning said plot.
    * with a `!`, will require a plot as first argument. The function usually adds one or more renderers to the plot.
 
-3. We decided to heavily rely on keywords. Usually, the plot is the single positional argument required by our API.
-   This is different from *python bokeh* which prefers to defines a list of positional arguments and a list of keywords for its API.
+3. Julia makes a clear distinction between positional and keyword arguments, whereas python doesn't. We recreated something similar to
+   python's: one will obtain the same plot when writing `line!(fig, 1:10, (1:10).^2)` or `line!(fig; x = 1:10, y = (1:10).^2)`.
+
+### Gallery
+
+Checkout [Bokeh](https://docs.bokeh.org/en/latest/index.html)'s gallery or try the files in the `examples` directory.
 
 ### Using Jupyter or Pluto
 
@@ -66,22 +84,26 @@ In the background, a *websocket* server is created which will synchronize your
 *BokehServer* objects in *Julia* with their *typescript* counterparts. It will also
 manage the event mechanism provided by *BokehServer*.
 
-### Using a BokehServer server
+### Starting a server or creating a stand-alone html page
 
 Examples abound in the `examples` directory. They all involve using:
 
 ```julia
-BokehServer.Plotting.serve() do
+BokehServer.serve() do
     plot = figure() # create a plot
     ...
     plot # return the plot
 end
 ```
 
-!!! note "A simple server"
+!!! note "Stand-alone HTML pages"
+
+    To create a stand-alone page, simply replace `serve` by `html`.
+
+!!! note "The do ... end scope"
 
     *BokehServer* objects should be created strictly within the `do ... end` scope. This is
-    because of the event mechanism is inilialized only within this scope.
+    because of the event mechanism is initialized only within this scope.
 
 ## Available plots
 
@@ -93,44 +115,66 @@ BokehServer.figure
 
 The following types of plots are available, with and without the `!`:
 
-```@docs
-BokehServer.annularwedge!
+```@raw html
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-2.4.2.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.2.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.2.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-mathjax-2.4.2.min.js"></script>
 ```
 
-```@docs
-BokehServer.annulus!
-```
-
-```@docs
-BokehServer.arc!
-```
-
-```@docs
-BokehServer.areastack!
-```
-
-```@docs
-BokehServer.barstack!
-```
-
-```@docs
-BokehServer.bezier!
-```
+BOXPLOT
 
 ```@docs
 BokehServer.boxplot!
 ```
 
+ANNULARWEDGE
+
+```@docs
+BokehServer.annularwedge!
+```
+
+ANNULUS
+
+```@docs
+BokehServer.annulus!
+```
+
+ARC
+
+```@docs
+BokehServer.arc!
+```
+
+AREASTACK
+
+```@docs
+BokehServer.areastack!
+```
+
+BARSTACK
+
+```@docs
+BokehServer.barstack!
+```
+
+BEZIER
+
+```@docs
+BokehServer.bezier!
+```
+
+CIRCLE
+
 ```@docs
 BokehServer.circle!
 ```
 
-```@docs
-BokehServer.ellipse!
-```
+ELLIPSE
 
 ```@docs
-BokehServer.glyph!
+BokehServer.ellipse!
 ```
 
 ```@docs
@@ -161,6 +205,8 @@ BokehServer.imagergba!
 BokehServer.imageurl!
 ```
 
+LINE
+
 ```@docs
 BokehServer.line!
 ```
@@ -169,6 +215,8 @@ BokehServer.line!
 BokehServer.linestack!
 ```
 
+MULTILINE
+
 ```@docs
 BokehServer.multiline!
 ```
@@ -176,6 +224,8 @@ BokehServer.multiline!
 ```@docs
 BokehServer.multipolygons!
 ```
+
+OVAL
 
 ```@docs
 BokehServer.oval!
@@ -235,7 +285,7 @@ BokehServer.layout
 
 ### Document roots
 
-As in *bokeh python*, users can add and remove roots from a `Document`. This can be done 
+As in [Bokeh](https://docs.bokeh.org/en/latest/index.html), users can add and remove roots from a `Document`. This can be done 
 using functions `push!(::iDocument, ::iModel)` and `pop!(::iDocument, ::iModel)`:
 
 ```julia
@@ -278,7 +328,7 @@ BokehServer.layout([plot1, plot2])
 plot1 = BokehServer.scatter(;
     x       = randn(Float64, 100),
     y       = randn(Float64, 100),
-    x_range = BokehServer.Models.Range1d(; start = -10, finish = 10)
+    x_range = BokehServer.Range1d(; start = -10, finish = 10)
 )
 plot2 = BokehServer.scatter(;
     x       = randn(Float64, 100),
@@ -290,8 +340,12 @@ BokehServer.layout([plot1, plot2])
 
 ## The `ColumnDataSource` structure
 
-As in *python bokeh*, the `ColumnDataSource` structure is central to
+As in [Bokeh](https://docs.bokeh.org/en/latest/index.html), the `ColumnDataSource` structure is central to
 updating plots. The same methods are available for dealing with its mutations:
+
+```@docs
+BokehServer.Source
+```
 
 ```@docs
 BokehServer.stream!
@@ -314,7 +368,7 @@ BokehServer.patch!
 
 ## The event mechanism
 
-As with *python bokeh* events can be both triggered from and dealt with both in
+As with [Bokeh](https://docs.bokeh.org/en/latest/index.html) events can be both triggered from and dealt with both in
 *typescript* and *Julia*.
 
 ### Creating callbacks in *Julia*
@@ -464,21 +518,21 @@ BokehServer.Pinch
 ### Details
 
 Events can only be triggered if an event manager has been provided. This is normally done automatically,
-although, as in *python bokeh*, only is specific cases:
+although, as in [Bokeh](https://docs.bokeh.org/en/latest/index.html), only is specific cases:
 
 * when initializing a new document
 * when responding to a *typescript* message
 * when in a `Pluto` or `Jupyter` environment, for cells coming after a call to `BokehServer.Embeddings.notebook()`.
 
-As opposed to *python julia*, event managers collect all events before
-triggering callback and finally synchronizing with *typescript*. Some events
-might disappear at any point during collection or callbacks, say if a document
-root is mutated then simply removed from the document.
+As opposed to [Bokeh](https://docs.bokeh.org/en/latest/index.html), event managers collect all events before triggering
+callback and finally synchronizing with *typescript*. Some events might
+disappear at any point during collection or callbacks, say if a document root
+is mutated then simply removed from the document.
 
 The collection is done thanks to a task-specific manager, hidden inside the `task_local_storage()` dictionnary.
 
 Advanced users could change the manager behavior by creating custom
-`BokehServer.iServer.Application` types, overloading
+`BokehServer.Server.Application` types, overloading
 `Server.eventlist(::iApplication)`, and providing instances of these
 applications to the server. An example is the
 `BokehServer.Embeddings.Notebooks.NotebookApp` which deals with the specifics of
@@ -486,7 +540,7 @@ working in `Pluto` or `Jupyter` environment.
 
 ## Themes
 
-Themes provided by *bokeh python* are also available here.
+Themes provided by [Bokeh](https://docs.bokeh.org/en/latest/index.html) are also available here.
 
 One can set either a global theme or one specific to a document:
 
@@ -511,7 +565,7 @@ Modules = [BokehServer.Themes]
 
 ## The package architecture
 
-*BokehServer* provides the same services as *python*'s *bokeh*:
+*BokehServer* provides the same services [Bokeh](https://docs.bokeh.org/en/latest/index.html):
 
 * Means for mirroring the *typescript* library *bokehjs*.
 * An event mechanism for reacting to changes to the *Julia* objects.

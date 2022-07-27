@@ -19,7 +19,7 @@ y = [y1..., y2..., y3...]
 
 TOOLS="pan,wheel_zoom,box_select,lasso_select,reset"
 
-BokehServer.Plotting.serve() do
+BokehServer.serve() do
     # create the scatter plot
     p = BokehServer.figure(tools=TOOLS, width=600, height=600, min_border=10, min_border_left=50,
                toolbar_location="above", x_axis_location=nothing, y_axis_location=nothing,

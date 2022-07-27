@@ -39,15 +39,12 @@ function body(app::Server.iApplication, token::String, params::Dict{String, Stri
     app_path     = get(params, "bokeh-app-path", "/")
     absolute_url = get(params, "bokeh-absolute-url", nothing)
     bundle       = if get(params, "resources", "default") == "none"
-        Server.staticbundle(Val(:server))
+        Server.staticbundle()
     elseif isnothing(absolute_url)
-        Server.staticbundle(Val(:server))
+        Server.staticbundle()
     else
         uri = HTTP.URIs.URI(absolute_url)
-        Server.staticbundle(
-            Val(:server);
-            host = joinpath("$(uri.scheme)://$(uri.host)", urlprefix(app))
-        )
+        Server.staticbundle(joinpath("$(uri.scheme)://$(uri.host)", urlprefix(app)))
     end
 
     script = Templates.onload(Templates.safely(Templates.docjs(

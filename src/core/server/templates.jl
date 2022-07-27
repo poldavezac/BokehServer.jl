@@ -42,7 +42,8 @@ function docjs(
         doc_json,
         render_items::Vararg{NamedTuple}; 
         app_path     = "",
-        absolute_url = ""
+        absolute_url = "",
+        _...
 )
     args = join(", \"$i\"" for i ∈ (app_path, absolute_url) if !(isnothing(i) || isempty(i)))
     tryrun("""
@@ -62,23 +63,33 @@ function onload(code::String)
     })();"""
 end
 
-function docjsscripts(
-        app,
-        token::String,
-        roots::Dict{String, String};
-        id            :: String = Server.makeid(app),
+function doconload(
+        app           :: Server.iRoute,
+        roots         :: Dict{String, String},
+        id            :: AbstractString;
         use_for_title :: Bool   = true,
         kwa...
 )
-    json = Templates.scripttag(JSON.json([]); type = "application/json", id)
-    return json * Templates.scripttag(
-        Templates.onload(Templates.safely(Templates.docjs(
+    return scripttag(
+        onload(safely(docjs(
             "document.getElementById('$id').textContent",
-            (; token, roots, root_ids = collect(keys(roots)), use_for_title);
+            (; roots, root_ids = collect(keys(roots)), use_for_title, kwa...);
             kwa...
         )));
         id = Server.makeid(app)
     )
+end
+
+function docjsscripts(
+        app           :: Server.iRoute,
+        rootids       :: Dict{String, String};
+        id            :: String = Server.makeid(app),
+        use_for_title :: Bool   = true,
+        data          :: Any    = [],
+        kwa...
+)
+    json = scripttag(JSON.json(data); type = "application/json", id)
+    return json * doconload(app, rootids, id; use_for_title, kwa...)
 end
 
 embed(rs::AbstractDict{<:AbstractString, <:AbstractString}) = join((embed(r) for r ∈ rs), "\n    ")
@@ -90,8 +101,8 @@ function embed(rootid::String, elementid::String)
     return """<div class="bk-root" id="$elementid" data-root-id="$rootid"></div>"""
 end
 
-function headers(tpe::Val = Val(:server); kwa...)
-    vals = Server.staticbundle(tpe; kwa...).js_files
+function headers(; kwa...)
+    vals = Server.staticbundle(; kwa...).js_files
     return join(("<script type=\"text/javascript\" src=\"$i\"></script>" for i ∈ vals), "\n")
 end
 end
