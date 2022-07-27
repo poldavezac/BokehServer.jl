@@ -41,6 +41,10 @@ python call `fig.line([1, 2, 3])` becomes `line!(fig; y = [1, 2, 3])`. In other 
 3. Julia makes a clear distinction between positional and keyword arguments, whereas python doesn't. We recreated something similar to
    python's: one will obtain the same plot when writing `line!(fig, 1:10, (1:10).^2)` or `line!(fig; x = 1:10, y = (1:10).^2)`.
 
+### Gallery
+
+Checkout [Bokeh](https://docs.bokeh.org/en/latest/index.html)'s gallery or try the files in the `examples` directory.
+
 ### Using Jupyter or Pluto
 
 Example notebooks are `examples/jupyter_notebook.ipynb` and `examples/pluto_notebook.jl`.
@@ -143,9 +147,13 @@ ARC
 BokehServer.arc!
 ```
 
+AREASTACK
+
 ```@docs
 BokehServer.areastack!
 ```
+
+BARSTACK
 
 ```@docs
 BokehServer.barstack!
@@ -197,6 +205,8 @@ BokehServer.imagergba!
 BokehServer.imageurl!
 ```
 
+LINE
+
 ```@docs
 BokehServer.line!
 ```
@@ -205,6 +215,8 @@ BokehServer.line!
 BokehServer.linestack!
 ```
 
+MULTILINE
+
 ```@docs
 BokehServer.multiline!
 ```
@@ -212,6 +224,8 @@ BokehServer.multiline!
 ```@docs
 BokehServer.multipolygons!
 ```
+
+OVAL
 
 ```@docs
 BokehServer.oval!
@@ -328,6 +342,10 @@ BokehServer.layout([plot1, plot2])
 
 As in [Bokeh](https://docs.bokeh.org/en/latest/index.html), the `ColumnDataSource` structure is central to
 updating plots. The same methods are available for dealing with its mutations:
+
+```@docs
+BokehServer.Source
+```
 
 ```@docs
 BokehServer.stream!
