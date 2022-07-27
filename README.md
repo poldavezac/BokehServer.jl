@@ -1,14 +1,14 @@
 ![Continuous Integration](https://github.com/poldavezac/BokehServer.jl/actions/workflows/ci.yml/badge.svg?develop)
 [![Dev Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://poldavezac.github.io/BokehServer.jl/dev)
 
-# Python's *bokeh* library in Julia
+# Python's *Bokeh* library in Julia
 
 ## Goals
 
 This packages provides a server for the *bokehjs* libary:
 
 * It allows creating plots in a notebook cell *and* updating them in another.
-* It also allows publishing web apps, just as *bokeh* does.
+* It also allows publishing web apps, just as *Bokeh* does.
 
 The package relies extensively on the
 [*Bokeh*](https://docs.bokeh.org/en/latest/index.html) library. The latter is a
@@ -69,14 +69,14 @@ end
 BokehServer.layout([FIG, BTN])
 ```
 
-## *bokeh* / *BokehServer* differences
+## *Bokeh* / *BokehServer* differences
 
-* This package provdes all models already existing in *bokeh* and *bokehjs*.
-This is done by programmatically parsing the python *bokeh* and creating our
-own code. Hopefully further *bokeh* versions will not affect this too much.
+* This package provdes all models already existing in *Bokeh* and *bokehjs*.
+This is done by programmatically parsing the python *Bokeh* and creating our
+own code. Hopefully further *Bokeh* versions will not affect this too much.
 * This package should work out-of-the-box both with `IJulia` and `Pluto`.
 * Because `end` is a julia keyword, all class attributes starting with `end` in
-*bokeh* start with `finish` in *BokehServer*. The protocol hides this from the
+*Bokeh* start with `finish` in *BokehServer*. The protocol hides this from the
 *bokehjs* library.
 * This package does not yet have a mechanism for adding custom classes with
 their typescript code.
