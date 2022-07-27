@@ -64,6 +64,21 @@ function Protocol.Deserialize.deserialize(::Type{Selection}, α:: Symbol, η, �
     end
 end
 
+"""
+    ColumnDataSource(args::Vararg{Pair{<:AbstractString, <:AbstractVector}}; kwa...)
+
+Create a `ColumnDataSource`.
+
+Columns can be specified using either or both positional and keyword arguments. Keyword arguments
+which are *not* a `ColumnDataSource` field name are considered to be a 
+
+```julia
+CDS = ColumnDataSource("x" => 1:5; y = 1:5, selection_policy = IntersectRenderers())
+@assert "x" ∈ keys(CDS.data)
+@assert "y" ∈ keys(CDS.data)
+@assert CDS.selection_policy isa IntersectRenderers
+```
+"""
 function ColumnDataSource(args::Vararg{Pair{<:AbstractString, <:AbstractVector}}; kwa...)
     data = get(Dict{String, AbstractVector}, kwa, :data)
     for (i, j) ∈ args

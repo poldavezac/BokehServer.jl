@@ -351,3 +351,10 @@ end
 
     @test_throws ErrorException X(; a = (; policy = :mmm,  align = :start))
 end
+
+@testset "columndatasource" begin
+    cds = BokehServer.ColumnDataSource("x" => 1:5; y = 1:5, selection_policy = BokehServer.IntersectRenderers())
+    @test "x" ∈ keys(cds.data)
+    @test "y" ∈ keys(cds.data)
+    @test cds.selection_policy isa BokehServer.IntersectRenderers
+end
