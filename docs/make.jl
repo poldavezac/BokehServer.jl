@@ -44,7 +44,6 @@ addplot("MULTILINE") do plt
        xs=[xpts .* (1 + i/10.0) .+ xx for (i, xx) ∈ enumerate(x)],
        ys=[ypts .* (1 + i/10.0) .+ yy for (i, yy) ∈ enumerate(y)],
     )
-    @show keys(source.data)
     BokehServer.multiline!(plt; xs="xs", ys="ys", line_color="#8073ac", line_width=2, source)
 end
 
