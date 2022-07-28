@@ -9,7 +9,8 @@ const PROTOCOL_VERSION = v"2.4.2"
 const Buffers = Vector{Pair{String, Vector{UInt8}}}
 
 include("protocol/messages.jl")
-include("protocol/serialization.jl")
+include("protocol/serialize.jl")
+include("protocol/deserialize.jl")
 include("protocol/patchdoc.jl")
 include("protocol/pushdoc.jl")
 
