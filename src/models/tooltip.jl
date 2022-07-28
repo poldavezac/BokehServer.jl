@@ -2,22 +2,26 @@
 
 @model mutable struct Tooltip <: iTooltip
 
-    attachment :: Model.EnumType{(:horizontal, :vertical, :left, :right, :above, :below)} = :horizontal
+    attachment :: Model.EnumType{(:horizontal, :vertical, :left, :right, :above, :below, :auto)} = :auto
 
-    coordinates :: Union{Nothing, iCoordinateMapping} = nothing
+    classes :: Vector{String} = String[]
 
-    group :: Union{Nothing, iRendererGroup} = nothing
+    closable :: Bool = false
 
-    inner_only :: Bool = true
+    content :: Union{iDOMHTML, String}
 
-    level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :overlay
+    interactive :: Bool = true
+
+    position :: Union{Nothing, Tuple{Float64, Float64}, Model.EnumType{(:top_left, :top_center, :top_right, :center_left, :center_center, :center_right, :bottom_left, :bottom_center, :bottom_right, :top, :left, :center, :right, :bottom)}} = nothing
 
     show_arrow :: Bool = true
 
-    visible :: Bool = true
+    styles :: Union{iStyles, Dict{String, Union{Nothing, String}}} = Dict{String, Union{Nothing, String}}()
 
-    x_range_name :: String = "default"
+    stylesheets :: Vector{Union{Dict{String, Union{iStyles, Dict{String, Union{Nothing, String}}}}, String}} = Union{Dict{String, Union{iStyles, Dict{String, Union{Nothing, String}}}}, String}[]
 
-    y_range_name :: String = "default"
+    target :: Union{iSelector, iUIElement, Model.EnumType{(:auto,)}} = :auto
+
+    visible :: Bool = false
 end
 export Tooltip

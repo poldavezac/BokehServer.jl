@@ -7,5 +7,7 @@
     dimensions :: Model.EnumType{(:width, :height, :both)} = :both
 
     factor :: Model.Percent = 0.1
+
+    icon :: Union{Nothing, Model.ToolIconValue} = nothing
 end
 export ZoomInTool

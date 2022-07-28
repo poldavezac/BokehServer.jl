@@ -2,9 +2,9 @@
 
 @model mutable struct DOMTemplate <: iDOMTemplate
 
-    actions :: Vector{iAction} = iAction[]
+    actions :: Vector{iDOMAction} = iDOMAction[]
 
-    children :: Vector{Union{iDOMNode, iLayoutDOM, String}} = Union{iDOMNode, iLayoutDOM, String}[]
+    children :: Vector{Union{iDOMNode, iUIElement, String}} = Union{iDOMNode, iUIElement, String}[]
 
     style :: Union{Nothing, iStyles, Dict{String, String}} = nothing
 end

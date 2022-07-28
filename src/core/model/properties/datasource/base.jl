@@ -52,7 +52,7 @@ function _𝑑𝑠_check(data::DataDict, others::Vararg{AbstractVector})
     isempty(data) && isempty(others) && return
     sz = isempty(data) ? length(first(others)) : length(first(values(data)))
     if any(sz ≢ length(i) for i ∈ values(data)) || any(sz ≢ length(i) for i ∈ others)
-        throw(ErrorException("The data source columns must have equal length"))
+        throw(BokehException("The data source columns must have equal length"))
     end
 end
 

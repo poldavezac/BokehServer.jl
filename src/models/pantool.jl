@@ -5,5 +5,7 @@
     description :: Union{Nothing, String} = nothing
 
     dimensions :: Model.EnumType{(:width, :height, :both)} = :both
+
+    icon :: Union{Nothing, Model.ToolIconValue} = nothing
 end
 export PanTool

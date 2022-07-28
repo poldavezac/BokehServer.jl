@@ -2,6 +2,8 @@
 
 @model mutable struct Selection <: iSelection
 
+    image_indices :: Vector{NamedTuple{(:index, :i, :j, :flat_index), NTuple{4, Int64}}} = NamedTuple{(:index, :i, :j, :flat_index), NTuple{4, Int64}}[]
+
     indices :: Vector{Int64} = Int64[]
 
     line_indices :: Vector{Int64} = Int64[]

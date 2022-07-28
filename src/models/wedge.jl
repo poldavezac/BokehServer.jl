@@ -2,6 +2,8 @@
 
 @model mutable struct Wedge <: iWedge
 
+    decorations :: Vector{iDecoration} = iDecoration[]
+
     direction :: Model.EnumType{(:clock, :anticlock)} = :anticlock
 
     fill_alpha :: Model.AlphaSpec = 1.0
@@ -9,8 +11,6 @@
     fill_color :: Model.ColorSpec = "#808080"
 
     finish_angle :: Model.AngleSpec = "end_angle"
-
-    finish_angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     hatch_alpha :: Model.AlphaSpec = 1.0
 
@@ -40,11 +40,7 @@
 
     radius :: Model.DistanceSpec = "radius"
 
-    radius_units :: Model.EnumType{(:screen, :data)} = :data
-
     start_angle :: Model.AngleSpec = "start_angle"
-
-    start_angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     x :: Model.NumberSpec = "x"
 

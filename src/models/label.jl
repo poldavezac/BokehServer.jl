@@ -8,13 +8,13 @@
 
     background_fill_alpha :: Model.Percent = 1.0
 
-    background_fill_color :: Union{Nothing, Model.Color} = nothing
+    background_fill_color :: Union{Nothing, Model.Color} = "#808080"
 
     border_line_alpha :: Model.Percent = 1.0
 
     border_line_cap :: Model.LineCap = :butt
 
-    border_line_color :: Union{Nothing, Model.Color} = nothing
+    border_line_color :: Union{Nothing, Model.Color} = "#000000"
 
     border_line_dash :: Model.DashPattern = Int64[]
 
@@ -30,9 +30,7 @@
 
     level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
-    render_mode :: Model.EnumType{(:canvas, :css)} = :canvas
-
-    text :: String = ""
+    text :: Union{iBaseText, String} = ""
 
     text_align :: Model.TextAlign = :left
 
@@ -50,6 +48,8 @@
 
     text_line_height :: Float64 = 1.2
 
+    text_outline_color :: Union{Nothing, Model.Color} = nothing
+
     visible :: Bool = true
 
     x :: Float64
@@ -58,7 +58,7 @@
 
     x_range_name :: String = "default"
 
-    x_units :: Model.EnumType{(:screen, :data)} = :data
+    x_units :: Model.EnumType{(:canvas, :screen, :data)} = :data
 
     y :: Float64
 
@@ -66,6 +66,6 @@
 
     y_range_name :: String = "default"
 
-    y_units :: Model.EnumType{(:screen, :data)} = :data
+    y_units :: Model.EnumType{(:canvas, :screen, :data)} = :data
 end
 export Label

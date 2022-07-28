@@ -2,9 +2,7 @@
 
 @model mutable struct Band <: iBand
 
-    base :: Model.PropertyUnitsSpec = (field = "base",)
-
-    base_units :: Model.EnumType{(:screen, :data)} = :data
+    base :: Model.UnitsSpec = "base"
 
     coordinates :: Union{Nothing, iCoordinateMapping} = nothing
 
@@ -32,15 +30,11 @@
 
     line_width :: Float64 = 1.0
 
-    lower :: Model.PropertyUnitsSpec = (field = "lower",)
-
-    lower_units :: Model.EnumType{(:screen, :data)} = :data
+    lower :: Model.UnitsSpec = "lower"
 
     source :: iDataSource = ColumnDataSource()
 
-    upper :: Model.PropertyUnitsSpec = (field = "upper",)
-
-    upper_units :: Model.EnumType{(:screen, :data)} = :data
+    upper :: Model.UnitsSpec = "upper"
 
     visible :: Bool = true
 

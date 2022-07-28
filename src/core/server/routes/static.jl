@@ -1,4 +1,3 @@
-using Pkg.Artifacts
 """
     struct StaticRoute <: iRoute
         route :: Symbol
@@ -72,7 +71,7 @@ end
 
 struct FaviconRoute <: iStaticRoute
     path :: String
-    FaviconRoute() = new(Server.CONFIG.favicon)
+    FaviconRoute() = new(bokehconfig(:favicon))
 end
 
 function route(http::HTTP.Stream, ::Val{:GET}, 𝐴::FaviconRoute, @nospecialize(_...))
@@ -87,9 +86,9 @@ function route(http::HTTP.Stream, ::Val{:GET}, 𝐴::FaviconRoute, @nospecialize
     end
 end
 
-staticroutes(cnf = Server.CONFIG) = (
-    cnf.staticroute       => StaticRoute(cnf.staticroute, cnf.staticpaths),
-    Symbol("favicon.ico") => FaviconRoute()
+staticroutes() = (
+    bokehconfig(:staticroute) => StaticRoute(bokehconfig(:staticroute), bokehconfig(:staticpaths)),
+    Symbol("favicon.ico")     => FaviconRoute()
 )
 
 Base.close(::iStaticRoute) = nothing

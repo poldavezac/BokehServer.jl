@@ -90,5 +90,5 @@ BokehServer.serve() do
         end
     end
 
-    BokehServer.layout([p pv; ph nothing]; toolbar_location = nothing)
+    BokehServer.layout([p pv; ph nothing])
 end

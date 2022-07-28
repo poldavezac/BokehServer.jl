@@ -155,6 +155,8 @@ _👻children(@nospecialize(mdl::iSpec)) = (mdl.item, mdl.transform)
 const _𝑐𝑚𝑝_BIN = Union{Number, Symbol, Missing, Nothing, Function}
 
 function compare(x, y)
+    x = bokehunwrap(x)
+    y = bokehunwrap(y)
     @nospecialize x y
     # for compilation performance, we use if ... elseif ... pattern rather than relying on multiple dispatch
     return if x isa EnumType && y isa Symbol

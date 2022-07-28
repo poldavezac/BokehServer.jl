@@ -6,6 +6,6 @@
 
     description :: Union{Nothing, String} = "Perform a Custom Action"
 
-    icon :: Model.Image
+    icon :: Union{Nothing, Model.ToolIconValue} = nothing
 end
 export CustomAction

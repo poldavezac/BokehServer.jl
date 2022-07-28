@@ -4,11 +4,9 @@
 
     angle :: Model.AngleSpec = 0.0
 
-    angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
+    decorations :: Vector{iDecoration} = iDecoration[]
 
     length :: Model.DistanceSpec = 0.0
-
-    length_units :: Model.EnumType{(:screen, :data)} = :data
 
     line_alpha :: Model.AlphaSpec = 1.0
 

@@ -1,4 +1,5 @@
 include("core/abstracttypes.jl")
+include("core/config.jl")
 include("core/model.jl")
 include("core/event.jl")
 include("core/theme.jl")

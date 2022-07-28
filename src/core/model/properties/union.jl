@@ -34,7 +34,7 @@ function bokehstoragetype(𝑇::Union)
     types = [bokehstoragetype(T) for T ∈ UnionIterator(𝑇)]
     for i ∈ 1:length(types)-1, j ∈ i+1:length(types)
         if types[i] <: types[j] || types[j] <: types[i]
-            throw(ErrorException("`$𝑇` has non-orthogonal types $(types[i]) and $(types[j])"))
+            throw(BokehException("`$𝑇` has non-orthogonal types $(types[i]) and $(types[j])"))
         end
     end
     return Union{types...}

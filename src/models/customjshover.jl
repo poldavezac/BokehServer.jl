@@ -2,7 +2,7 @@
 
 @model mutable struct CustomJSHover <: iCustomJSHover
 
-    args :: Dict{String, iModel} = Dict{String, iModel}()
+    args :: Dict{String, Any} = Dict{String, Any}()
 
     code :: String = ""
 end

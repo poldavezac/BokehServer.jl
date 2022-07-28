@@ -4,7 +4,7 @@
 
     angle :: Model.AngleSpec = 0.0
 
-    angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
+    decorations :: Vector{iDecoration} = iDecoration[]
 
     fill_alpha :: Model.AlphaSpec = 1.0
 
@@ -41,8 +41,6 @@
     radius :: Model.NullDistanceSpec = nothing
 
     radius_dimension :: Model.EnumType{(:x, :y, :max, :min)} = :x
-
-    radius_units :: Model.EnumType{(:screen, :data)} = :data
 
     size :: Model.SizeSpec = 4.0
 

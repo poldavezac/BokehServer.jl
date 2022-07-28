@@ -6,6 +6,8 @@
 
     dimensions :: Model.EnumType{(:width, :height, :both)} = :both
 
+    icon :: Union{Nothing, Model.ToolIconValue} = nothing
+
     maintain_focus :: Bool = true
 
     speed :: Float64 = 0.0016666666666666668

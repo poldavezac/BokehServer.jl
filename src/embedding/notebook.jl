@@ -1,12 +1,14 @@
 module Notebooks
 using UUIDs
 using HTTP
+using ...BokehServer: bokehconfig, bokehconfig!
 using ...AbstractTypes
 using ...Events
 using ...Model
 using ...Models
 using ...Protocol
 using ...Server
+using ...BokehServer
 
 struct NotebooksServer
     address :: String
@@ -14,8 +16,8 @@ struct NotebooksServer
     routes  :: Server.RouteDict
     lastid  :: Ref{String}
 
-    function NotebooksServer(host::String = Server.CONFIG.host, port::Int = Server.CONFIG.port)
-        routes = Server.RouteDict(Server.staticroutes(Server.CONFIG)...)
+    function NotebooksServer(host::String = bokehconfig(:host), port::Int = bokehconfig(:port))
+        routes = Server.RouteDict(Server.staticroutes()...)
         new(
             "$host:$port",
             let server = HTTP.Sockets.listen(HTTP.Sockets.InetAddr(host, port))
@@ -157,16 +159,16 @@ function addplutocode()
 end
 
 """
-    notebook(; port = Server.CONFIG.port)
+    notebook(; port = bokehconfig(:port))
 
 Provides the headers needed for a notebook to display the plots.
 Should be returned - and displayed - by a cell prior to displaying plots.
 
 *Note* Needed by `IJulia`, not `Pluto`.
 """
-function notebook(; port = Server.CONFIG.port)
+function notebook(; port = bokehconfig(:port))
     if isnothing(SERVER[])
-        Server.CONFIG.port = port
+        bokehconfig!(:port, port)
         SERVER[]        = NotebooksServer()
         Events.EVENTS[] = Events.Deferred{NotebooksEventList}()
 

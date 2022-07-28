@@ -24,6 +24,8 @@
 
     coordinates :: Union{Nothing, iCoordinateMapping} = nothing
 
+    cross_bounds :: Union{Tuple{Float64, Float64}, Model.EnumType{(:auto,)}} = :auto
+
     dimension :: Int64 = 0
 
     grid_line_alpha :: Model.Percent = 1.0

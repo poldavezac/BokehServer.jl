@@ -85,7 +85,7 @@ function defaulttool(σ::Symbol) :: Models.iTool
             ("screen (x, y)", "(\$sx, \$sy)"),
         ])
     else
-        throw(ErrorException("Unknown tool shorthand $σ"))
+        throw(BokehException("Unknown tool shorthand $σ"))
     end
 end
 defaulttool(x::Models.iTool) = x
@@ -176,7 +176,7 @@ function _active!(tb::Models.iToolbar, val::Symbol, attr::Symbol, dotrigger::Boo
                 break
             end
         end
-        throw(ErrorException("Could not find tool `$val` to activate"))
+        throw(BokehException("Could not find tool `$val` to activate"))
     end
 end
 

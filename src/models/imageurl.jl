@@ -6,15 +6,13 @@
 
     angle :: Model.AngleSpec = 0.0
 
-    angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
+    decorations :: Vector{iDecoration} = iDecoration[]
 
     dilate :: Bool = false
 
     global_alpha :: Model.NumberSpec = 1.0
 
     h :: Model.NullDistanceSpec = nothing
-
-    h_units :: Model.EnumType{(:screen, :data)} = :data
 
     retry_attempts :: Int64 = 0
 
@@ -23,8 +21,6 @@
     url :: Model.StringSpec = (field = "url",)
 
     w :: Model.NullDistanceSpec = nothing
-
-    w_units :: Model.EnumType{(:screen, :data)} = :data
 
     x :: Model.NumberSpec = "x"
 

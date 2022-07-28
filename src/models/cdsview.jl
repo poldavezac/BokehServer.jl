@@ -2,8 +2,6 @@
 
 @model mutable struct CDSView <: iCDSView
 
-    filters :: Vector{iFilter} = iFilter[]
-
-    source :: iColumnarDataSource
+    filter :: iFilter = AllIndices()
 end
 export CDSView

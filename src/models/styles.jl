@@ -30,6 +30,8 @@
 
     animation_timing_function :: Union{Nothing, String} = nothing
 
+    aspect_ratio :: Union{Nothing, String} = nothing
+
     backface_visibility :: Union{Nothing, String} = nothing
 
     background :: Union{Nothing, String} = nothing
@@ -211,10 +213,6 @@
     counter_increment :: Union{Nothing, String} = nothing
 
     counter_reset :: Union{Nothing, String} = nothing
-
-    css_float :: Union{Nothing, String} = nothing
-
-    css_text :: Union{Nothing, String} = nothing
 
     cursor :: Union{Nothing, String} = nothing
 

@@ -4,6 +4,8 @@
 
     aspect_scale :: Float64 = 1.0
 
+    decorations :: Vector{iDecoration} = iDecoration[]
+
     fill_alpha :: Model.AlphaSpec = 1.0
 
     fill_color :: Model.ColorSpec = "#808080"

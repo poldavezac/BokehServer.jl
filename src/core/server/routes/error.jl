@@ -1,6 +1,6 @@
 module ExceptionRoute
 using HTTP
-using ..Server
+using ...BokehServer: bokehconfig
 const _AT   = r"\s*@"
 const _OPTS = let bkpath = abspath(joinpath(@__DIR__, "..", "..", "..", ".."))
     (
@@ -25,7 +25,7 @@ end
 function body(excs::Base.ExceptionStack)
     io = IOBuffer()
     println(io, """<!DOCTYPE html>
-        <html lang=\"""", Server.CONFIG.language, """\">
+        <html lang=\"""", bokehconfig(:language), """\">
         <head>
             <meta charset="utf-8">
             <title>Error</title>

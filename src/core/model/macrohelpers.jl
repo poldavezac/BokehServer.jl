@@ -100,7 +100,7 @@ function _👻defaultvalue(mod, @nospecialize(T::Type), line::Expr) :: Tuple{<:U
         out = _👻defaultvalue(T)
         if isnothing(out)
             R = bokehstoragetype(T)
-            throw(ErrorException("Unknown defaults for $R (calls `zero($R)` or `$R()` are unavailable)"))
+            throw(BokehException("Unknown defaults for $R (calls `zero($R)` or `$R()` are unavailable)"))
         end
         return out, out
     end
@@ -182,7 +182,7 @@ function _👻init_val(𝑇::Type{<:iHasProps}, α::Symbol, ν)
     f𝑇   = bokehfieldtype(𝑇, α)
     isnothing(f𝑇) && return ν
     val = bokehconvert(f𝑇, ν)
-    val isa Unknown && throw(ErrorException("Could not initialize $𝑇.$α :: $(fieldtype(𝑇, α)) = `$ν` :: $(typeof(ν))"))
+    val isa Unknown && throw(BokehException("Could not initialize $𝑇.$α :: $(fieldtype(𝑇, α)) = `$ν` :: $(typeof(ν))"))
     return val
 end
 
@@ -219,7 +219,7 @@ function _👻init_mandatory(𝑇::Type{<:iHasProps}, α1::Symbol, α2::Symbol, 
     elseif α1 ≢ α2 && haskey(kwa, α2)
         kwa[α2]
     else
-        throw(ErrorException("$𝑇.$α1 is a mandatory argument"))
+        throw(BokehException("$𝑇.$α1 is a mandatory argument"))
     end
     return _👻init_val(𝑇, α1, val)
 end

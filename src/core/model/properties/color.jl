@@ -51,7 +51,7 @@ Color(ν::Union{NTuple{4,<:Integer}, NTuple{3,<:Integer}}) = Color(ν...)
 Color(ν::Int32)                                           = Color(reinterpret(UIn8, Int32[ν])...)
 function Color(ν::AbstractString)
     c = color(ν)
-    ismissing(ν) && throw(ErrorException("unknown color $ν"))
+    ismissing(ν) && throw(BokehException("unknown color $ν"))
     return c
 end
 

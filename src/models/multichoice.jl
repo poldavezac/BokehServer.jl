@@ -2,25 +2,29 @@
 
 @model mutable struct MultiChoice <: iMultiChoice
 
-    align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:start, :center, :end)}} = :start
+    align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:auto, :start, :center, :end)}} = :auto
 
     aspect_ratio :: Union{Nothing, Float64, Model.EnumType{(:auto,)}} = nothing
 
-    background :: Union{Nothing, Model.Color} = nothing
+    classes :: Vector{String} = String[]
+
+    context_menu :: Union{Nothing, iMenu} = nothing
 
     css_classes :: Vector{String} = String[]
 
-    default_size :: Int64 = 300
-
     delete_button :: Bool = true
 
+    description :: Union{Nothing, iTooltip, String} = nothing
+
     disabled :: Bool = false
+
+    flow_mode :: Model.EnumType{(:block, :inline)} = :block
 
     height :: Union{Nothing, Model.NonNegativeInt} = nothing
 
     height_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 
-    margin :: Union{Nothing, NTuple{4, Int64}} = (0, 0, 0, 0)
+    margin :: Union{Nothing, Int64, Tuple{Int64, Int64}, NTuple{4, Int64}} = nothing
 
     max_height :: Union{Nothing, Model.NonNegativeInt} = nothing
 
@@ -38,11 +42,17 @@
 
     placeholder :: Union{Nothing, String} = nothing
 
+    resizable :: Union{Bool, Model.EnumType{(:width, :height, :both)}} = false
+
     search_option_limit :: Union{Nothing, Int64} = nothing
 
     sizing_mode :: Union{Nothing, Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
     solid :: Bool = true
+
+    styles :: Union{iStyles, Dict{String, Union{Nothing, String}}} = Dict{String, Union{Nothing, String}}()
+
+    stylesheets :: Vector{Union{Dict{String, Union{iStyles, Dict{String, Union{Nothing, String}}}}, String}} = Union{Dict{String, Union{iStyles, Dict{String, Union{Nothing, String}}}}, String}[]
 
     title :: String = ""
 

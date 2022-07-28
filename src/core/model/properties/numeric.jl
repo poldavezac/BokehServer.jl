@@ -50,7 +50,7 @@ function bokehconvert(::Type{MinMaxBounds}, ν::Tuple{<:Any, <:Any})
     isnothing(ν1) && isnothing(ν2) && return nothing
 
     if !isnothing(ν1) && !isnothing(ν2) && (ν1 > ν2)
-        throw(ErrorException("MinMaxBounds $ν should be in ascending order"))
+        throw(BokehException("MinMaxBounds $ν should be in ascending order"))
     end
     return (ν1, ν2)
 end

@@ -4,7 +4,7 @@
 
     angle :: Model.AngleSpec = 0.0
 
-    angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
+    decorations :: Vector{iDecoration} = iDecoration[]
 
     text :: Model.StringSpec = (field = "text",)
 
@@ -23,6 +23,8 @@
     text_font_style :: Model.FontStyleSpec = :normal
 
     text_line_height :: Model.NumberSpec = 1.2
+
+    text_outline_color :: Model.ColorSpec = nothing
 
     x :: Model.NumberSpec = "x"
 

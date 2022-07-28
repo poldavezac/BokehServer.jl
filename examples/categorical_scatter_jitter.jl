@@ -30,7 +30,7 @@ BokehServer.serve() do
 
     BokehServer.scatter!(p; x="time", y=BokehServer.Transforms.jitter("day", 0.6; range=p.y_range),  source=DATA, alpha=0.3)
 
-    p.xaxis.formatter.days = ["%Hh"]
+    p.xaxis.formatter.days = "%Hh"
     p.x_range.range_padding = 0
     p.ygrid.grid_line_color = "#00000000"
     p

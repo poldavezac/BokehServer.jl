@@ -2,24 +2,32 @@
 
 @model mutable struct DatetimeTickFormatter <: iDatetimeTickFormatter
 
-    days :: Vector{String} = ["%m/%d", "%a%d"]
+    context :: Union{Nothing, iDatetimeTickFormatter, String} = nothing
 
-    hourmin :: Vector{String} = ["%H:%M"]
+    context_location :: Model.EnumType{(:above, :below, :left, :right)} = :below
 
-    hours :: Vector{String} = ["%Hh", "%H:%M"]
+    context_which :: Model.EnumType{(:start, :center, :end, :all)} = :start
 
-    microseconds :: Vector{String} = ["%fus"]
+    days :: String = "%m/%d"
 
-    milliseconds :: Vector{String} = ["%3Nms", "%S.%3Ns"]
+    hourmin :: String = "%H:%M"
 
-    minsec :: Vector{String} = [":%M:%S"]
+    hours :: String = "%Hh"
 
-    minutes :: Vector{String} = [":%M", "%Mm"]
+    microseconds :: String = "%fus"
 
-    months :: Vector{String} = ["%m/%Y", "%b %Y"]
+    milliseconds :: String = "%3Nms"
 
-    seconds :: Vector{String} = ["%Ss"]
+    minsec :: String = ":%M:%S"
 
-    years :: Vector{String} = ["%Y"]
+    minutes :: String = ":%M"
+
+    months :: String = "%m/%Y"
+
+    seconds :: String = "%Ss"
+
+    strip_leading_zeros :: Bool = true
+
+    years :: String = "%Y"
 end
 export DatetimeTickFormatter

@@ -2,6 +2,8 @@
 
 @model mutable struct Segment <: iSegment
 
+    decorations :: Vector{iDecoration} = iDecoration[]
+
     line_alpha :: Model.AlphaSpec = 1.0
 
     line_cap :: Model.LineCapSpec = :butt

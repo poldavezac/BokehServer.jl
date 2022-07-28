@@ -1,6 +1,6 @@
 HTTP = BokehServer.Server.HTTP
 const TEST_PORT = 5032
-BokehServer.Server.CONFIG.port = TEST_PORT
+BokehServer.bokehconfig!(:port, TEST_PORT)
 
 @testset "tokens" begin
     Tokens = BokehServer.Server.Tokens

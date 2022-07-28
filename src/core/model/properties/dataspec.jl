@@ -30,9 +30,9 @@ for (cls, 𝑇) ∈ (
 end
 
 for (cls, (𝑇, 𝑈)) ∈ (
-    :DistanceSpec      => Distance => SpatialUnits,
-    :PropertyUnitsSpec => Float64  => SpatialUnits,
-    :AngleSpec         => Float64  => AngleUnits,
+    :DistanceSpec => Distance => SpatialUnits,
+    :UnitsSpec    => Float64  => CoordinateUnits,
+    :AngleSpec    => Float64  => AngleUnits,
 )
     @eval struct $cls <: iUnitSpec{$𝑇, $𝑈}
         item      :: SpecItemType{$(bokehstoragetype(𝑇))}
@@ -141,7 +141,7 @@ function bokehread(::Type{<:iSpec}, ::iHasProps, ::Symbol, ν)
 end
 
 bokehread(::Type{<:iSpec{String}}, ::iHasProps, ::Symbol, ν) = tonamedtuple(ν)
-bokehread(::Type{PropertyUnitsSpec}, ::iHasProps, ::Symbol, ν) = tonamedtuple(ν)
+bokehread(::Type{UnitsSpec}, ::iHasProps, ::Symbol, ν) = tonamedtuple(ν)
 
 function tonamedtuple(ν::iSpec)
     out       = _👻specvalue(ν.item)

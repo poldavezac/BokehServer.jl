@@ -10,7 +10,7 @@
 
     scale_control :: Bool = false
 
-    styles :: Model.JSONString
+    styles :: Union{Nothing, Model.JSONString} = nothing
 
     tilt :: Int64 = 45
 

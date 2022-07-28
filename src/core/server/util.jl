@@ -62,13 +62,13 @@ function bodyparams(req::HTTP.Request)
 end
 
 function staticbundle(
-        address    :: String = "http://$(CONFIG.host):$(CONFIG.port)";
+        address    :: String = "http://$(bokehconfig(:host)):$(bokehconfig(:port))";
         addversion :: Bool   = false,
         root       :: String = "static/js",
-        clientlog  :: Symbol = CONFIG.clientloglevel
+        clientlog  :: Symbol = bokehconfig(:clientloglevel)
 )
     version = addversion ? "-$(Protocol.PROTOCOL_VERSION)" : ""  # TODO: extract the hex from the files and add a `?v=...`
-    minv    = CONFIG.minified ? ".min" : ""
+    minv    = bokehconfig(:minified) ? ".min" : ""
     prefix  = isempty(root ) ? "$address/bokeh" : "$address/$root/bokeh"
     suffix  = "$version$minv.js"
     return (;

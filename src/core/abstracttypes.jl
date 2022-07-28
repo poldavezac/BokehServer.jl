@@ -1,49 +1,44 @@
 module AbstractTypes
-    abstract type iHasProps end
-    abstract type iModel <: iHasProps end
-    abstract type iDocument end
-    abstract type iTheme end
-    abstract type iProperty end
+abstract type iHasProps end
+abstract type iModel <: iHasProps end
+abstract type iDocument end
+abstract type iTheme end
+abstract type iProperty end
+abstract type iBokehException <: Exception end
+struct BokehException <: iBokehException
+    msg::String
+end
 
-    """
-    The BokehServer protocol only allows limited element types in a DataDict.
-    Other types such as dates are automatically converted.
-    """
-    const NumberElTypeDataDict = (
-        Int8, Int16, Int32, UInt8, UInt16, UInt32, Float32, Float64
-    )
-    const ElTypeDataDict = (NumberElTypeDataDict..., AbstractString)
-    const DataDict = Dict{
-        String, 
-        Union{
-            (AbstractVector{<:I} for I ∈ ElTypeDataDict)...,
-            (AbstractVector{<:AbstractArray{I}} for I ∈ ElTypeDataDict)...,
-            AbstractVector{<:iHasProps},
-        }
+"""
+The BokehServer protocol only allows limited element types in a DataDict.
+Other types such as dates are automatically converted.
+"""
+const NumberElTypeDataDict = (
+    Int8, Int16, Int32, UInt8, UInt16, UInt32, Float32, Float64
+)
+const ElTypeDataDict = (NumberElTypeDataDict..., AbstractString)
+const DataDict = Dict{
+    String, 
+    Union{
+        (AbstractVector{<:I} for I ∈ ElTypeDataDict)...,
+        (AbstractVector{<:AbstractArray{I}} for I ∈ ElTypeDataDict)...,
+        AbstractVector{<:iHasProps},
     }
+}
 
-    bokehid(μ::Union{iModel, iDocument}) = getfield(μ, :id)
+bokehid(μ::Union{iModel, iDocument}) = getfield(μ, :id)
 
-    struct BokehIdMaker
-        ids :: Vector{Int}
-        BokehIdMaker() = new(collect(1:Threads.nthreads()))
-    end
+const _ID  = collect(1:Threads.nthreads())
+const _INC = 10^Int(ceil(log10(Threads.nthreads()+1)))
 
-    function (self::BokehIdMaker)() :: Int64
-        return (self.ids[Threads.threadid()] += 1000)
-    end
+"""
+    newid() :: Int64
 
-    struct BokehSymbolIdMaker
-        ids :: BokehIdMaker
-        BokehStringIdMaker() = new(BokehIdMaker())
-    end
+Provide a unique number in a thread-safe way
+"""
+newid() :: Int64 = _ID[Threads.threadid()] += _INC
 
-    function (self::BokehSymbolIdMaker)() :: Symbol
-        return Symbol(string(self.ids()))
-    end
-
-    bokehidmaker(T::Type = Int64) = T ≡ Symbol ? BokehSymbolIdMaker() : BokehIdMaker()
-
-    export iHasProps, iModel, iDocument, iTheme, iProperty, bokehid, bokehidmaker, DataDict
+export iHasProps, iModel, iDocument, iTheme, iProperty, bokehid, DataDict
+export BokehException, iBokehException, newid
 end
 using .AbstractTypes

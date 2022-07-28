@@ -19,7 +19,6 @@ the server.
 """
 precompilemethods(::iRoute) = nothing
 
-include("server/config.jl")
 include("server/util.jl")
 include("server/templates.jl")
 include("server/session.jl")

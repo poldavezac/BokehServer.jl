@@ -4,6 +4,6 @@
 
     field :: String
 
-    initial :: Union{Nothing, Float64} = nothing
+    initial :: Union{Nothing, Float64} = -Inf
 end
 export Maximum

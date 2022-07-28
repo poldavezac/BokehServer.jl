@@ -4,8 +4,8 @@ using ..Tokens
 using ..Documents: Document
 using ..Events
 using ..Protocol
-using ..Protocol.Messages: @msg_str, requestid, Message
-using ..Server: CONFIG
+using ..Protocol.Messages: @msg_str, requestid
+using ..BokehServer: bokehconfig
 
 struct ServerError <: Exception end
 
@@ -41,7 +41,7 @@ function handle(μ::msg"PUSH-DOC,PATCH-DOC", ω::MessageHandler)
 end
 
 function receivemessage(ω::MessageHandler, args...)
-    msg = Protocol.receivemessage(ω.ws, CONFIG.wstimeout, CONFIG.wssleepperiod)
+    msg = Protocol.receivemessage(ω.ws, bokehconfig(:wstimeout), bokehconfig(:wssleepperiod))
     handle(msg, args..., ω)
     msg
 end

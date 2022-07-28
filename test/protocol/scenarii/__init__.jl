@@ -56,12 +56,12 @@ macro initscenario(codes...)
         let srv    = BokehServer.Document()
             client = BokehServer.Document()
             BokehServer.Events.eventlist!(BokehServer.Events.NullEventList()) do
-                ids = copy(BokehServer.Model.ID.ids)
+                ids = copy(BokehServer.AbstractTypes._ID)
                 let doc = srv
                     $code
                 end
 
-                BokehServer.Model.ID.ids[:] .= ids
+                BokehServer.AbstractTypes._ID[:] .= ids
                 let doc = client
                     $code
                 end
@@ -74,13 +74,14 @@ end
 function runscenario(𝐹::Function, srv = BokehServer.Document(), client = BokehServer.Document())
     _compare(getfield(srv, :roots), getfield(client, :roots))
 
-    evts = BokehServer.Protocol.patchdoc(𝐹, srv)
-    @test !isnothing(evts)
-    if !isnothing(evts)
-        JSON = BokehServer.Protocol.Messages.JSON
-        cnv  = JSON.parse ∘ JSON.json
+    outp = BokehServer.Protocol.patchdoc(𝐹, srv)
+    @test !isnothing(outp)
+    if !isnothing(outp)
+        JSON   = BokehServer.Protocol.Messages.JSON
+        cnv(x) = JSON.parse(JSON.json(x); dicttype = BokehServer.Protocol.Decoding.DataStructures.OrderedDict)
+
         BokehServer.Events.eventlist!(BokehServer.Events.NullEventList()) do
-            BokehServer.Protocol.patchdoc!(client, cnv(evts), BokehServer.Protocol.Buffers())
+            BokehServer.Protocol.patchdoc!(client, cnv((; outp.events)), outp.buffers)
         end
 
         _compare(getfield(srv, :roots), getfield(client, :roots))

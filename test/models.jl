@@ -226,7 +226,7 @@ end
     @nullevents push!(x.b, :mmm => 1)
     @test x.b[:mmm] ≡ 1
 
-    @test_throws KeyError x.b[:a] = 2
+    @test_throws BokehServer.Model.Unknown x.b[:a] = 2
 end
 
 @testset "bokeh tuple attribute" begin
@@ -256,7 +256,7 @@ end
     @test x.a ≡ 4.0
     @nullevents x.a = :c
     @test x.a == :c
-    @test_throws ErrorException X(; a = :mmm)
+    @test_throws BokehServer.BokehException X(; a = :mmm)
 end
 
 @testset "bokeh namedstruct attribute" begin
@@ -272,7 +272,7 @@ end
     @nullevents x.a = (; y= 10., x = :c)
     @test x.a.x == :c
     @test x.a.y == 10.0
-    @test_throws ErrorException X(; a = (; x = :mmm, y = 10.))
+    @test_throws BokehServer.BokehException X(; a = (; x = :mmm, y = 10.))
 end
 
 @testset "bokeh color" begin
@@ -349,7 +349,7 @@ end
     @test x.rows[1].policy == :auto
     @test x.rows[1].align == :start
 
-    @test_throws ErrorException X(; a = (; policy = :mmm,  align = :start))
+    @test_throws BokehServer.BokehException X(; a = (; policy = :mmm,  align = :start))
 end
 
 @testset "columndatasource" begin

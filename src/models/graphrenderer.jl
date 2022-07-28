@@ -4,7 +4,7 @@
 
     coordinates :: Union{Nothing, iCoordinateMapping} = nothing
 
-    edge_renderer :: iGlyphRenderer = GlyphRenderer()
+    edge_renderer :: iGlyphRenderer = GlyphRenderer(; glyph = MultiLine(), data_source = ColumnDataSource(data = Dict("start" => String[], "end" => String[])))
 
     group :: Union{Nothing, iRendererGroup} = nothing
 
@@ -14,7 +14,7 @@
 
     level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
-    node_renderer :: iGlyphRenderer = GlyphRenderer()
+    node_renderer :: iGlyphRenderer = GlyphRenderer(; glyph = Circle(), data_source = ColumnDataSource(data = Dict("index" => String[])))
 
     selection_policy :: iGraphHitTestPolicy = NodesOnly()
 

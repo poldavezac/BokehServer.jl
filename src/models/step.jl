@@ -2,6 +2,8 @@
 
 @model mutable struct Step <: iStep
 
+    decorations :: Vector{iDecoration} = iDecoration[]
+
     line_alpha :: Model.Percent = 1.0
 
     line_cap :: Model.LineCap = :butt

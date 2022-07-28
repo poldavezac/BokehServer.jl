@@ -4,8 +4,6 @@
 
     angle :: Model.AngleSpec = 0.0
 
-    angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
-
     background_fill_alpha :: Model.AlphaSpec = 1.0
 
     background_fill_color :: Model.ColorSpec = nothing
@@ -30,11 +28,9 @@
 
     level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
-    render_mode :: Model.EnumType{(:canvas, :css)} = :canvas
-
     source :: iDataSource = ColumnDataSource()
 
-    text :: Model.StringSpec = (field = "text",)
+    text :: Model.NullStringSpec = (field = "text",)
 
     text_align :: Model.TextAlignSpec = :left
 
@@ -52,6 +48,8 @@
 
     text_line_height :: Model.NumberSpec = 1.2
 
+    text_outline_color :: Model.ColorSpec = nothing
+
     visible :: Bool = true
 
     x :: Model.NumberSpec = "x"
@@ -60,7 +58,7 @@
 
     x_range_name :: String = "default"
 
-    x_units :: Model.EnumType{(:screen, :data)} = :data
+    x_units :: Model.EnumType{(:canvas, :screen, :data)} = :data
 
     y :: Model.NumberSpec = "y"
 
@@ -68,6 +66,6 @@
 
     y_range_name :: String = "default"
 
-    y_units :: Model.EnumType{(:screen, :data)} = :data
+    y_units :: Model.EnumType{(:canvas, :screen, :data)} = :data
 end
 export LabelSet

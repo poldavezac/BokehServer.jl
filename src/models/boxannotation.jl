@@ -2,9 +2,9 @@
 
 @model mutable struct BoxAnnotation <: iBoxAnnotation
 
-    bottom :: Union{Nothing, Float64} = nothing
+    bottom :: Union{Nothing, Float64, String, Tuple{String, String}, Tuple{String, String, String}} = nothing
 
-    bottom_units :: Model.EnumType{(:screen, :data)} = :data
+    bottom_units :: Model.EnumType{(:canvas, :screen, :data)} = :data
 
     coordinates :: Union{Nothing, iCoordinateMapping} = nothing
 
@@ -26,9 +26,9 @@
 
     hatch_weight :: Model.Size = 1.0
 
-    left :: Union{Nothing, Float64} = nothing
+    left :: Union{Nothing, Float64, String, Tuple{String, String}, Tuple{String, String, String}} = nothing
 
-    left_units :: Model.EnumType{(:screen, :data)} = :data
+    left_units :: Model.EnumType{(:canvas, :screen, :data)} = :data
 
     level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
@@ -46,15 +46,13 @@
 
     line_width :: Float64 = 1.0
 
-    render_mode :: Model.EnumType{(:canvas, :css)} = :canvas
+    right :: Union{Nothing, Float64, String, Tuple{String, String}, Tuple{String, String, String}} = nothing
 
-    right :: Union{Nothing, Float64} = nothing
+    right_units :: Model.EnumType{(:canvas, :screen, :data)} = :data
 
-    right_units :: Model.EnumType{(:screen, :data)} = :data
+    top :: Union{Nothing, Float64, String, Tuple{String, String}, Tuple{String, String, String}} = nothing
 
-    top :: Union{Nothing, Float64} = nothing
-
-    top_units :: Model.EnumType{(:screen, :data)} = :data
+    top_units :: Model.EnumType{(:canvas, :screen, :data)} = :data
 
     visible :: Bool = true
 

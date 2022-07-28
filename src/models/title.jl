@@ -6,13 +6,13 @@
 
     background_fill_alpha :: Model.Percent = 1.0
 
-    background_fill_color :: Union{Nothing, Model.Color} = nothing
+    background_fill_color :: Union{Nothing, Model.Color} = "#808080"
 
     border_line_alpha :: Model.Percent = 1.0
 
     border_line_cap :: Model.LineCap = :butt
 
-    border_line_color :: Union{Nothing, Model.Color} = nothing
+    border_line_color :: Union{Nothing, Model.Color} = "#000000"
 
     border_line_dash :: Model.DashPattern = Int64[]
 
@@ -30,23 +30,27 @@
 
     offset :: Float64 = 0.0
 
-    render_mode :: Model.EnumType{(:canvas, :css)} = :canvas
-
     standoff :: Float64 = 10.0
 
-    text :: String = ""
+    text :: Union{iBaseText, String} = ""
+
+    text_align :: Model.TextAlign = :left
 
     text_alpha :: Model.Percent = 1.0
 
-    text_color :: Model.Color = "#444444"
+    text_baseline :: Model.TextBaseline = :bottom
+
+    text_color :: Union{Nothing, Model.Color} = "#444444"
 
     text_font :: String = "helvetica"
 
-    text_font_size :: String = "13px"
+    text_font_size :: Model.FontSize = "13px"
 
     text_font_style :: Model.FontStyle = :bold
 
     text_line_height :: Float64 = 1.0
+
+    text_outline_color :: Union{Nothing, Model.Color} = nothing
 
     vertical_align :: Model.EnumType{(:top, :middle, :bottom)} = :bottom
 

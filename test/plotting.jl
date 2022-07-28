@@ -56,12 +56,26 @@ end
     @test [i[2:end] for i ∈ obj.children] == [(0,0,1,1), (0,1,1,1), (1, 1, 1, 1)]
 
     obj = BokehServer.Plotting.layout([plt plt]; toolbar_location = :above, dotrigger = false)
-    @test obj isa BokehServer.Models.Column
-    @test obj.children[2] isa BokehServer.Models.GridBox
+    @test obj isa BokehServer.Models.GridPlot
+    @test obj.toolbar_location.value ≡ :above
 
     obj = BokehServer.Plotting.layout([plt plt]; toolbar_location = :right, dotrigger = false)
-    @test obj isa BokehServer.Models.Row
-    @test obj.children[1] isa BokehServer.Models.GridBox
+    @test obj isa BokehServer.Models.GridPlot
+    @test obj.toolbar_location.value ≡ :right
+end
+
+@testset "group tools" begin
+    p1 = BokehServer.Plotting.figure()
+    p2 = BokehServer.Plotting.figure()
+    allt = [p1.toolbar.tools..., p2.toolbar.tools...]
+    grp = BokehServer.Plotting.Layouts.grouptools(allt)
+    @test length(grp) == length(p1.toolbar.tools)
+    @test grp[1].tools[1] isa BokehServer.Models.PanTool
+    @test grp[2].tools[1] isa BokehServer.Models.WheelZoomTool
+    @test grp[3].tools[1] isa BokehServer.Models.BoxZoomTool
+    @test grp[4] isa BokehServer.Models.SaveTool
+    @test grp[5].tools[1] isa BokehServer.Models.ResetTool
+    @test grp[6].tools[1] isa BokehServer.Models.HelpTool
 end
 
 @testset "create glyph" begin
@@ -210,7 +224,7 @@ struct DummyStaticRoute <: BokehServer.Server.iStaticRoute end
 BokehServer.Server.makeid(::DummyStaticRoute) = "a"
 
 @testset "standalone" begin
-    BokehServer.Model.ID.ids[:] .= 1
+    BokehServer.AbstractTypes._ID[:] .= 1
     out = BokehServer.html(; title = "my favorite plot", browser = false, app = DummyStaticRoute()) do
         BokehServer.line(; y = [1,2,3])
     end

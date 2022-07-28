@@ -142,7 +142,7 @@ function addaxis!(
     isxaxis = items.axis ≡ :x
     ismissing(location) && (location = isxaxis ? :below : :left)
     if !isnothing(location) && (location ∉ _LOCATIONS)
-        throw(ErrorException("Location should be Nothing or $_LOCATIONS"))
+        throw(BokehException("Location should be Nothing or $_LOCATIONS"))
     end
     fname(x) = isxaxis ? x : Symbol(replace("$x", "x" => "y"))
 

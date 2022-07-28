@@ -2,17 +2,17 @@
 
 @model mutable struct DateRangeSlider <: iDateRangeSlider
 
-    align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:start, :center, :end)}} = :start
+    align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:auto, :start, :center, :end)}} = :auto
 
     aspect_ratio :: Union{Nothing, Float64, Model.EnumType{(:auto,)}} = nothing
 
-    background :: Union{Nothing, Model.Color} = nothing
-
     bar_color :: Model.Color = "#E6E6E6"
 
-    css_classes :: Vector{String} = String[]
+    classes :: Vector{String} = String[]
 
-    default_size :: Int64 = 300
+    context_menu :: Union{Nothing, iMenu} = nothing
+
+    css_classes :: Vector{String} = String[]
 
     direction :: Model.EnumType{(:ltr, :rtl)} = :ltr
 
@@ -20,13 +20,15 @@
 
     finish :: Dates.DateTime
 
+    flow_mode :: Model.EnumType{(:block, :inline)} = :block
+
     format :: Union{iTickFormatter, String} = "%d %b %Y"
 
     height :: Union{Nothing, Model.NonNegativeInt} = nothing
 
     height_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 
-    margin :: Union{Nothing, NTuple{4, Int64}} = (0, 0, 0, 0)
+    margin :: Union{Nothing, Int64, Tuple{Int64, Int64}, NTuple{4, Int64}} = nothing
 
     max_height :: Union{Nothing, Model.NonNegativeInt} = nothing
 
@@ -38,6 +40,8 @@
 
     orientation :: Model.EnumType{(:horizontal, :vertical)} = :horizontal
 
+    resizable :: Union{Bool, Model.EnumType{(:width, :height, :both)}} = false
+
     show_value :: Bool = true
 
     sizing_mode :: Union{Nothing, Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
@@ -45,6 +49,10 @@
     start :: Dates.DateTime
 
     step :: Int64 = 1
+
+    styles :: Union{iStyles, Dict{String, Union{Nothing, String}}} = Dict{String, Union{Nothing, String}}()
+
+    stylesheets :: Vector{Union{Dict{String, Union{iStyles, Dict{String, Union{Nothing, String}}}}, String}} = Union{Dict{String, Union{iStyles, Dict{String, Union{Nothing, String}}}}, String}[]
 
     title :: Union{Nothing, String} = ""
 

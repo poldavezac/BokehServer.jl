@@ -6,7 +6,7 @@ function _👻structure(
     vals  = [_👻initcode(cls, fields, i) for i ∈ _👻filter(fields)]
     cstr  =  if all(last(i) ≡ :default for i ∈ vals)
         quote
-            $cls(; id = $(@__MODULE__).ID(), kwa...) = $(@__MODULE__)._👻init($cls, id, kwa)
+            $cls(; id = $newid(), kwa...) = $_👻init($cls, id, kwa)
         end
     else
         if any(last(i) ≡ :custom for i ∈ vals)
@@ -17,7 +17,7 @@ function _👻structure(
             code   = ()
         end
         quote
-            function $cls(; id = $(@__MODULE__).ID(), kwa...)
+            function $cls(; id = $newid(), kwa...)
                 $(code...)
                 $cls(
                     id isa Int64 ? id : parse(Int64, string(id)),
@@ -198,10 +198,13 @@ function Base.setproperty!(μ::iHasProps, α::Symbol, ν; dotrigger :: Bool = tr
 
     isnothing(f𝑇) && return setfield!(μ, α, ν)
 
-    (f𝑇 <: ReadOnly) && !patchdoc && throw(ErrorException("$(typeof(μ)).$α is readonly"))
+    (f𝑇 <: ReadOnly) && !patchdoc && throw(BokehException("$(typeof(μ)).$α is readonly"))
 
     cν  = bokehconvert(f𝑇, bokehunwrap(ν))
-    (cν isa Unknown) && throw(ErrorException("Could not convert `$ν` to $f𝑇"))
+    (cν isa Unknown) && let msg = "Could not convert `$ν` to $f𝑇"
+        isempty(cν.msg) || (msg = string(msg, ": ", cν.msg))
+        throw(Unknown(msg))
+    end
 
     old = getfield(μ, α)
     dotrigger && BokehServer.Events.testcantrigger()
@@ -214,8 +217,6 @@ function themevalue(@nospecialize(𝑇::Type{<:iHasProps}), σ::Symbol) :: Union
     dflt = BokehServer.Themes.theme(𝑇, σ)
     return isnothing(dflt) ? Model.defaultvalue(𝑇, σ) : dflt
 end
-
-const ID = bokehidmaker()
 
 Base.repr(@nospecialize(mdl::iHasProps)) = "$(nameof(typeof(mdl)))(id = $(bokehid(mdl)))" 
 

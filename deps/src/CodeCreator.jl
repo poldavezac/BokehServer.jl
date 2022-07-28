@@ -1,4 +1,3 @@
-
 module CodeCreator
 module BokehServer
 # a very simplified BokehServer for parsing bokeh
@@ -8,12 +7,34 @@ end
 using .BokehServer
 using PythonCall
 
+modelsmap()  = pyimport("bokeh.models" => "Model").model_class_reverse_map
+model(name)  = name == "FigureOptions" ? pyimport("bokeh.plotting._figure" => name) : modelsmap()["$name"]
+modelnames() = (
+    pyconvert(String, i)
+    for (i, j) ∈ modelsmap().items()
+    if (
+        occursin(".models.", pyconvert(String, j.__module__))
+        && (
+            PythonCall.pyisnone(j.__doc__)
+            || !occursin("This is an abstract base class", pyconvert(String, j.__doc__))
+        )
+    )
+)
+
 include("defaults.jl")
 include("properties.jl")
 include("hierarchy.jl")
 include("dependencies.jl")
 
 filename(name::String) = lowercase(String(structname(name)))
+
+function __init__()
+    if haskey(ENV, "BOKEHSERVER_PYTHONPATH")
+        insert!(pyconvert(PyList{String}, pyimport("sys").path), 1, ENV["BOKEHSERVER_PYTHONPATH"])
+    end
+    pyimport("bokeh").__path__
+    pyimport("bokeh.models").__path__
+end
 
 const _ABSTRACT = pyconvert(String, pyimport("bokeh.core.has_props")._ABSTRACT_ADMONITION)
 
@@ -37,6 +58,15 @@ function abstracttypescode(io::IO)
         end
         isvirtual(name) || (direct[name] = opts[1])
     end
+
+    for (name, opts) ∈ sort!(collect(unions()); by = string∘first)
+        print(io, "const ", name, " = Union{")
+        vals = sort!(collect(opts))
+        for i ∈ 1:length(vals)-1
+            print(io, 'i', vals[i], ", ")
+        end
+        println(io, 'i', vals[end], '}')
+    end
     return direct
 end
 
@@ -50,7 +80,11 @@ function doccode(io::IO, doc::String, indent::Int)
     nothing
 end
 
-const _BM_PATT  = (r"BokehServer\.Models\." => "i", r"(CodeCreator\.)*?BokehServer\." => "", r"CodeCreator\." => "")
+const _BM_PATT  = (
+    r"BokehServer\.Models\." => "i",
+    r"(CodeCreator\.)*?BokehServer\." => "",
+    r"CodeCreator\." => ""
+)
 
 function structcode_field(io::IO, name, info, adddoc)
     (name ≡ :__doc__) && return
@@ -72,7 +106,7 @@ end
 
 function structcode_glyphargs(io::IO, name::String)
     obj = model(name)
-    if pyhasattr(obj, "_args")
+    if pyhasattr(obj, "_args") && length(obj._args) > 0
         println(io, "glyphargs(::Type{$(structname(name))}) = $(tuple(_fieldname.(obj._args)...))")
     end
 end
@@ -100,8 +134,7 @@ function createmainfile(io::IO, deplist)
     println(io, "using ..BokehServer")
     println(io, "using ..Model")
     println(io, "include(\"models/modeltypes.jl\")")
-    println(io, "include(\"models/action.jl\")")
-    println(io, "const iTemplate = String")
+    println(io, "include(\"models/uievents.jl\")")
     for name ∈ sort!(collect(keys(deplist)))
         println(io, "include(\"models/$(filename(name)).jl\")")
     end
@@ -125,7 +158,7 @@ function createcode(; adddoc ::Symbol = :none)
     foreach(
         Base.Filesystem.rm,
         filter!(
-            !endswith(Regex(joinpath("models", "(action|specifics)\\.jl"))),
+            !endswith(Regex(joinpath("models", "(uievents|specifics)\\.jl"))),
             readdir(joinpath((@__DIR__), "..", "..", "src", "models"); join = true)
         )
     )

@@ -1,6 +1,7 @@
 module Layouts
 using ...Model
 using ...Models
+using DataStructures: OrderedDict
 const SizingModeType  = Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}
 const LocationType    = Model.EnumType{(:above, :left, :right, :below)}
 const LayoutEntry     = Tuple{<:T, Int, Int, Int, Int} where {T}
@@ -108,27 +109,21 @@ function layout(
         width            :: Union{Nothing, Int}    = nothing,
         height           :: Union{Nothing, Int}    = nothing,
         toolbar_options  :: Any                    = (;),
+        merge_tools      :: Bool                   = true,
         dotrigger        :: Bool                   = true,
 )
-    grid = invoke(layout, Tuple{AbstractVector{<:LayoutDOMEntry}}, children; sizing_mode, width, height, dotrigger)
-    isnothing(toolbar_location) && return grid
-
-    @assert toolbar_location ∈ LocationType
-
+    _👻setattributes!(children, width, height, sizing_mode, dotrigger)
     for itm ∈ children
         setproperty!(first(itm), :toolbar_location, nothing; dotrigger)
     end
 
-    toolbar  = let toolbars = getproperty.(first.(children), :toolbar)
-        tools = collect(Iterators.flatten(i.tools for i ∈ toolbars))
-        proxy = Models.ProxyToolbar(; toolbars, tools, toolbar_options...)
-        Models.ToolbarBox(; toolbar = proxy, toolbar_location)
+    toolbar = let tools = ToolType[]
+        for child ∈ children
+            append!(tools, child[1].toolbar.tools)
+        end
+        Models.Toolbar(; tools = merge_tools ? grouptools(tools) : tools, toolbar_options...)
     end
-
-    return (toolbar_location ∈ (:above, :below) ? Models.Column : Models.Row)(;
-        children = (toolbar_location ∈ (:left, :above) ? [toolbar, grid] : [grid, toolbar]),
-        sizing_mode
-    )
+    return Models.GridPlot(; children, toolbar_location, sizing_mode, toolbar)
 end
 
 """
@@ -154,18 +149,7 @@ function layout(
         height      :: Union{Nothing, Int}    = nothing,
         dotrigger   :: Bool                   = true,
 )
-    @assert isnothing(sizing_mode) || sizing_mode ∈ SizingModeType
-    for entry ∈ children
-        itm = first(entry)
-        isnothing(width)  || setproperty(itm, :width, width; dotrigger)
-        isnothing(height) || setproperty(itm, :height, height; dotrigger)
-        (
-            isnothing(sizing_mode)      ||
-            !isnothing(itm.sizing_mode) ||
-            itm.width_policy != :auto   ||
-            itm.height_policy != :auto
-        ) && setproperty!(itm, :sizing_mode, sizing_mode; dotrigger)
-    end
+    _👻setattributes!(children, width, height, sizing_mode, dotrigger)
     return Models.GridBox(; children, sizing_mode)
 end
 
@@ -173,6 +157,67 @@ function layout(children::AbstractVector{<:Tuple{<:Models.iLayoutDOM, Int, Int}}
     T = all(Base.Fix2(isa, Models.iPlot)∘first, children) ? Models.iPlot : Models.iLayoutDOM
     return layout(LayoutEntry{T}[(i..., 1, 1) for i ∈ items]; kwa...)
 end
+
+const ToolType = Union{Models.iTool, Models.iToolProxy}
+
+""" Group common tools into tool proxies. """
+function grouptools(tools::AbstractVector{<:ToolType}) :: Vector{ToolType}
+    return grouptools(tools) do tool::Type, _
+        tool <: Union{Models.iCopyTool, Models.iSaveTool} ? tool() : nothing
+    end
+end
+
+function grouptools(𝐹::Function, atools::AbstractVector{<:ToolType}) :: Vector{ToolType}
+    computed = ToolType[i for i ∈ atools if i isa Models.iToolProxy]
+    by_type  = let dict = OrderedDict{Type{<:ToolType}, Vector{_👻Tool}}()
+        for tool ∈ filter(!Base.Fix2(isa, Models.iToolProxy), atools)
+            push!(get!(Vector{_👻Tool}, dict, typeof(tool)), _👻Tool(tool))
+        end
+        dict
+    end
+
+    for (cls, entries) ∈ by_type
+        merged = 𝐹(cls, @view entries[:])
+        if !isnothing(merged)
+            push!(computed, merged)
+        else
+            while !isempty(entries)
+                inds  = [
+                    1,
+                    (
+                        ind
+                        for ind ∈ 2:length(entries)
+                        if Model.compare(entries[ind].props, entries[1].props)
+                    )...
+                ]
+                if length(inds) == 1
+                    push!(computed, entries[inds[1]].tool)
+                else
+                    tools = [i.tool for i in entries[inds]]
+                    tool  = 𝐹(cls, @view tools[:])
+                    push!(computed, isnothing(tool) ? Models.ToolProxy(; tools) : tool)
+                end
+                deleteat!(entries, inds)
+            end
+        end
+    end
+    return computed
+end
+
+struct _👻Tool
+    tool  :: Models.iTool
+    props :: Vector{Any}
+
+    _👻Tool(tool::Models.iTool) = new(
+        tool,
+        Any[
+            Model.bokehunwrap(getproperty(tool, i))
+            for i ∈ Model.bokehproperties(typeof(tool))
+            if i ∉ (:overlay, :id)
+        ]
+    )
+end
+
 
 const _👻Item = @NamedTuple{layout::Union{Nothing, Models.iLayoutDOM}, r0::Int, c0::Int, r1::Int, c1::Int}
 const _👻Grid = @NamedTuple{nrows::Int, ncols::Int, items::Vector{_👻Item}}
@@ -226,6 +271,27 @@ function _👻flatten(λ::AbstractMatrix)
         _👻flatten(view(λ, :,1), :ncols)
     else
         _👻flatten([view(λ, i:i,:) for i ∈ axes(λ, 1)], :ncols)
+    end
+end
+
+function _👻setattributes!(
+        children    :: AbstractVector{<:LayoutEntry},
+        width       :: Union{Nothing, Number},
+        height      :: Union{Nothing, Number},
+        sizing_mode :: Union{Nothing, Symbol},
+        dotrigger   :: Bool
+)
+    @assert isnothing(sizing_mode) || sizing_mode ∈ SizingModeType
+    for entry ∈ children
+        itm = first(entry)
+        isnothing(width)  || setproperty(itm, :width, width; dotrigger)
+        isnothing(height) || setproperty(itm, :height, height; dotrigger)
+        (
+            isnothing(sizing_mode)      ||
+            !isnothing(itm.sizing_mode) ||
+            itm.width_policy != :auto   ||
+            itm.height_policy != :auto
+        ) && setproperty!(itm, :sizing_mode, sizing_mode; dotrigger)
     end
 end
 
