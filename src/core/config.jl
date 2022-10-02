@@ -6,6 +6,7 @@ const _ARTIFACT_PATH = joinpath(
     end,
     "bokeh"
 )
+const _STATIC_PATH = joinpath(_ARTIFACT_PATH, "server", "static")
 
 @Base.kwdef mutable struct Configuration
     html_path      :: String         = "bokeh_plot.html"
@@ -15,7 +16,7 @@ const _ARTIFACT_PATH = joinpath(
     clientloglevel :: Symbol         = :info
     language       :: Symbol         = :en
     staticroute    :: Symbol         = :static
-    staticpaths    :: Vector{String} = [joinpath(pwd(), "static"), joinpath(_ARTIFACT_PATH, "server", "static")]
+    staticpaths    :: Vector{String} = [joinpath(pwd(), "static"), _STATIC_PATH]
     catchsigint    :: Bool           = true
     throwonerror   :: Bool           = false
     secretkey      :: Vector{UInt8}  = collect(UInt8, get(ENV, "BOKEH_SECRETKEY", ""))
@@ -24,6 +25,8 @@ const _ARTIFACT_PATH = joinpath(
     minified       :: Bool           = true
     favicon        :: String         = joinpath(@__DIR__, "..", "..", "deps", "favicon.ico")
     themepath      :: String         = joinpath(_ARTIFACT_PATH, "themes")
+    bokehjsdir     :: String         = _STATIC_PATH
+    nodejs         :: String         = ""
 end
 
 const CONFIG = Configuration(; eval(Meta.parse(get(ENV, "BOKEH_CONFIG", "()")))...)

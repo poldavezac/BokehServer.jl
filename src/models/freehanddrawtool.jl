@@ -4,7 +4,7 @@
 
     description :: Union{Nothing, String} = nothing
 
-    empty_value :: Union{Bool, Float64, Int64, Dates.Date, Dates.DateTime, Model.Color, String}
+    empty_value :: Union{Bool, Float64, Int64, Dates.Date, Dates.DateTime, Model.Color, String} = required
 
     icon :: Union{Nothing, Model.ToolIconValue} = nothing
 

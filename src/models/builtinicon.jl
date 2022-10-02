@@ -4,7 +4,7 @@
 
     color :: Model.Color = "#808080"
 
-    icon_name :: Union{String, Model.ToolIcon}
+    icon_name :: Union{String, Model.ToolIcon} = required
 
     size :: Union{Model.FontSize, Int64} = "1em"
 end

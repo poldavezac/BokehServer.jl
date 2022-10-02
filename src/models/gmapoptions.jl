@@ -2,9 +2,9 @@
 
 @model mutable struct GMapOptions <: iGMapOptions
 
-    lat :: Float64
+    lat :: Float64 = required
 
-    lng :: Float64
+    lng :: Float64 = required
 
     map_type :: Model.EnumType{(:satellite, :roadmap, :terrain, :hybrid)} = :roadmap
 

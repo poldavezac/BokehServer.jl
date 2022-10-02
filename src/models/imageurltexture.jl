@@ -4,6 +4,6 @@
 
     repetition :: Model.EnumType{(:repeat, :repeat_x, :repeat_y, :no_repeat)} = :repeat
 
-    url :: String
+    url :: String = required
 end
 export ImageURLTexture

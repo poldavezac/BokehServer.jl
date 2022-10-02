@@ -18,7 +18,7 @@
 
     disabled :: Bool = false
 
-    finish :: Dates.DateTime
+    finish :: Dates.DateTime = required
 
     flow_mode :: Model.EnumType{(:block, :inline)} = :block
 
@@ -46,7 +46,7 @@
 
     sizing_mode :: Union{Nothing, Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
-    start :: Dates.DateTime
+    start :: Dates.DateTime = required
 
     step :: Int64 = 3600000
 
@@ -58,7 +58,7 @@
 
     tooltips :: Bool = true
 
-    value :: Tuple{Dates.DateTime, Dates.DateTime}
+    value :: Tuple{Dates.DateTime, Dates.DateTime} = required
 
     value_throttled :: Model.ReadOnly{Tuple{Dates.DateTime, Dates.DateTime}}
 

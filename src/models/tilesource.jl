@@ -16,9 +16,9 @@
 
     url :: String = ""
 
-    x_origin_offset :: Float64
+    x_origin_offset :: Float64 = required
 
-    y_origin_offset :: Float64
+    y_origin_offset :: Float64 = required
 end
 export TileSource
 glyphargs(::Type{TileSource}) = (:url, :tile_size, :min_zoom, :max_zoom, :extra_url_vars)

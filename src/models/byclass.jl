@@ -2,6 +2,6 @@
 
 @model mutable struct ByClass <: iByClass
 
-    query :: String
+    query :: String = required
 end
 export ByClass

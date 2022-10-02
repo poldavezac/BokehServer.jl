@@ -1,4 +1,6 @@
 using ..Protocol
+using ..Model
+using .JSCompiler: bundle_models
 
 struct HTTPError <: Exception
     status :: Int
@@ -61,6 +63,30 @@ function bodyparams(req::HTTP.Request)
     end
 end
 
+@inline function _👻web_isfile(val::AbstractString)
+    return any(endswith(val, i) for i ∈ (".css", ".js")) || isfile(val)
+end
+
+function _👻web_files(fcn::Function, out = String[], mdls = Model.MODEL_TYPES)
+    for mdl ∈ mdls
+        val = fcn(mdl)
+        if val isa AbstractString
+            _👻web_isfile(val) && push!(out, val)
+        elseif !isnothing(val)
+            append!(out, val)
+        end
+    end
+    return out
+end
+
+function _👻web_raw(fcn::Function, out = String[], mdls = Model.MODEL_TYPES)
+    for mdl ∈ mdls
+        val = fcn(mdl)
+        (val isa AbstractString && !_👻web_isfile(val)) && push!(out, val)
+    end
+    return out
+end
+
 function staticbundle(
         address    :: String = "http://$(bokehconfig(:host)):$(bokehconfig(:port))";
         addversion :: Bool   = false,
@@ -71,11 +97,17 @@ function staticbundle(
     minv    = bokehconfig(:minified) ? ".min" : ""
     prefix  = isempty(root ) ? "$address/bokeh" : "$address/$root/bokeh"
     suffix  = "$version$minv.js"
+    raw     = String["""Bokeh.set_log_level("$clientlog");"""]
+    mdls    = bundle_models()
+    isnothing(mdls) || push!(raw, mdls)
     return (;
-        js_files  = String[string(prefix, i, suffix) for i ∈ ("", "-gl", "-widgets", "-tables", "-mathjax")],
-        js_raw    = String["""Bokeh.set_log_level("$clientlog");"""],
-        css_files = String[],
-        css_raw   = String[],
+        js_files  = _👻web_files(
+            Model.javascript,
+            String[string(prefix, i, suffix) for i ∈ ("", "-gl", "-widgets", "-tables", "-mathjax")],
+        ),
+        js_raw  = _👻web_raw(Model.javascript, raw),
+        css_files = _👻web_files(Model.css),
+        css_raw   = _👻web_raw(Model.css),
         hashes    = Dict{String, String}()
     )
 end

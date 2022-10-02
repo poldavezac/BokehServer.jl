@@ -94,7 +94,7 @@ function _👻defaultvalue(mod, @nospecialize(T::Type), line::Expr) :: Tuple{<:U
     if line.head ≡ :(::)
         out = _👻defaultvalue(T)
         return (out, out)
-    elseif line.args[2] ≡ :nodefaults
+    elseif line.args[2] ∈ (:nodefaults, :required)
         return nothing, nothing
     elseif line.args[2] ≡ :zero
         out = _👻defaultvalue(T)

@@ -2,7 +2,7 @@
 
 @model mutable struct TablerIcon <: iTablerIcon
 
-    icon_name :: String
+    icon_name :: String = required
 
     size :: Union{Model.FontSize, Int64} = "1em"
 end

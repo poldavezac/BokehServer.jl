@@ -8,7 +8,7 @@
 
     closable :: Bool = false
 
-    content :: Union{iDOMHTML, String}
+    content :: Union{iDOMHTML, String} = required
 
     interactive :: Bool = true
 

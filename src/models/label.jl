@@ -52,7 +52,7 @@
 
     visible :: Bool = true
 
-    x :: Float64
+    x :: Float64 = required
 
     x_offset :: Float64 = 0.0
 
@@ -60,7 +60,7 @@
 
     x_units :: Model.EnumType{(:canvas, :screen, :data)} = :data
 
-    y :: Float64
+    y :: Float64 = required
 
     y_offset :: Float64 = 0.0
 

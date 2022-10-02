@@ -2,7 +2,7 @@
 
 @model mutable struct CumSum <: iCumSum
 
-    field :: String
+    field :: String = required
 
     include_zero :: Bool = false
 end

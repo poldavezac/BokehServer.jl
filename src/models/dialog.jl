@@ -8,7 +8,7 @@
 
     closable :: Bool = true
 
-    content :: Union{iDOMNode, iUIElement, String}
+    content :: Union{iDOMNode, iUIElement, String} = required
 
     draggable :: Bool = true
 

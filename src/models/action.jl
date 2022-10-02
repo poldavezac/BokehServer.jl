@@ -8,7 +8,7 @@
 
     icon :: Union{Nothing, iIcon} = nothing
 
-    label :: String
+    label :: String = required
 
     menu :: Union{Nothing, iMenu} = nothing
 

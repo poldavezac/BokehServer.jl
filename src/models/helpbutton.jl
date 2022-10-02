@@ -44,7 +44,7 @@
 
     stylesheets :: Vector{Union{Dict{String, Union{iStyles, Dict{String, Union{Nothing, String}}}}, String}} = Union{Dict{String, Union{iStyles, Dict{String, Union{Nothing, String}}}}, String}[]
 
-    tooltip :: iTooltip
+    tooltip :: iTooltip = required
 
     visible :: Bool = true
 

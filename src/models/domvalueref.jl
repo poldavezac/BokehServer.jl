@@ -2,6 +2,6 @@
 
 @model mutable struct DOMValueRef <: iDOMValueRef
 
-    field :: String
+    field :: String = required
 end
 export DOMValueRef

@@ -6,7 +6,7 @@
 
     align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:auto, :start, :center, :end)}} = :auto
 
-    api_key :: Vector{UInt8}
+    api_key :: Vector{UInt8} = required
 
     api_version :: String = "weekly"
 

@@ -2,6 +2,6 @@
 
 @model mutable struct ByXPath <: iByXPath
 
-    query :: String
+    query :: String = required
 end
 export ByXPath

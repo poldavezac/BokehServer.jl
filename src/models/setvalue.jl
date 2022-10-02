@@ -2,10 +2,10 @@
 
 @model mutable struct SetValue <: iSetValue
 
-    attr :: String
+    attr :: String = required
 
-    obj :: iHasProps
+    obj :: iHasProps = required
 
-    value :: Any
+    value :: Any = required
 end
 export SetValue

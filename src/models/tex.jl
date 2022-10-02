@@ -6,6 +6,6 @@
 
     macros :: Dict{String, Union{String, Tuple{String, Int64}}} = Dict{String, Union{String, Tuple{String, Int64}}}()
 
-    text :: String
+    text :: String = required
 end
 export TeX

@@ -119,7 +119,13 @@ end
     getfield(BokehServer.Models, clsname)
 end
 @property Nullable => Union{Nothing, parseproperty(cls, prop.type_param).type}
-@property Required => parseproperty(cls, prop.type_param).type
+
+function parseproperty(T::Val{:Required}, cls, attr::Symbol, prop)
+    type = parseproperty(cls, prop.type_param).type
+    doc = PythonCall.pyisnone(prop.__doc__) ? nothing : pyconvert(String, prop.__doc__)
+    return (; type, default = Some(:__required__), doc)
+end
+
 @property Readonly => BokehServer.Model.ReadOnly{parseproperty(cls, prop.type_param).type}
 @property Enum     => let vals = tuple(unique!([pyconvert(Symbol, j) for j ∈ prop._enum._values])...)
     BokehServer.Model.EnumType{vals}
@@ -195,6 +201,20 @@ for (i, j) ∈ modelsmap().items()
 end
 parseproperties(::Val{:CopyTool}, cls::Py; k...) = _parsetool(cls; k...)
 parseproperties(::Val{:CustomAction}, cls::Py; k...) = _parsetool(cls; k...)
+
+for 𝑇 ∈ (:DaysTicker, :MonthsTicker, :YearsTicker)
+    @eval function parseproperties(::$(Val{𝑇}), cls::Py; k...)
+        out = parseproperties(cls; k...)
+        out[:interval] = merge(
+            out[:interval],
+            (;
+                type = BokehServer.Model.ReadOnly{out[:interval].type},
+                default = nothing
+            )
+        )
+        return out
+    end
+end
 
 function parseproperties(::Val{:GraphRenderer}, cls::Py; k...)
     out = parseproperties(cls; k...)

@@ -2,6 +2,6 @@
 
 @model mutable struct DifferenceFilter <: iDifferenceFilter
 
-    operands :: Model.NonEmpty{Vector{iFilter}}
+    operands :: Model.NonEmpty{Vector{iFilter}} = required
 end
 export DifferenceFilter

@@ -2,6 +2,6 @@
 
 @model mutable struct ByCSS <: iByCSS
 
-    query :: String
+    query :: String = required
 end
 export ByCSS

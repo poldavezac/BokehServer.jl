@@ -2,8 +2,8 @@
 
 @model mutable struct DOMValueOf <: iDOMValueOf
 
-    attr :: String
+    attr :: String = required
 
-    obj :: iHasProps
+    obj :: iHasProps = required
 end
 export DOMValueOf

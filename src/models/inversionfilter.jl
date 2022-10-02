@@ -2,6 +2,6 @@
 
 @model mutable struct InversionFilter <: iInversionFilter
 
-    operand :: iFilter
+    operand :: iFilter = required
 end
 export InversionFilter

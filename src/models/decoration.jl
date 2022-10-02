@@ -4,6 +4,6 @@
 
     marking :: iMarking
 
-    node :: Model.EnumType{(:start, :middle, :end)}
+    node :: Model.EnumType{(:start, :middle, :end)} = required
 end
 export Decoration

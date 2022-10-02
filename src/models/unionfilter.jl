@@ -2,6 +2,6 @@
 
 @model mutable struct UnionFilter <: iUnionFilter
 
-    operands :: Model.NonEmpty{Vector{iFilter}}
+    operands :: Model.NonEmpty{Vector{iFilter}} = required
 end
 export UnionFilter

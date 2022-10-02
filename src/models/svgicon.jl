@@ -4,6 +4,6 @@
 
     size :: Union{Model.FontSize, Int64} = "1em"
 
-    svg :: String
+    svg :: String = required
 end
 export SVGIcon

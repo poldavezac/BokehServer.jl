@@ -358,3 +358,33 @@ end
     @test "y" ∈ keys(cds.data)
     @test cds.selection_policy isa BokehServer.IntersectRenderers
 end
+
+@testset "js_onchange" begin
+    X1 = @BokehServer.model mutable struct gensym() <: BokehServer.iModel
+        a:: Int32
+        b:: Int32
+    end
+    obj = X1()
+    @test isempty(obj.js_property_callbacks)
+
+    @nullevents BokehServer.js_onchange(obj, :a; code = "111")
+    @test length(obj.js_property_callbacks) == 1
+    @test length(obj.js_property_callbacks["change:a"]) == 1
+    @test obj.js_property_callbacks["change:a"][1].code == "111"
+
+    @nullevents BokehServer.js_onchange(obj, "change:a"; code = "222")
+    @test length(obj.js_property_callbacks) == 1
+    @test length(obj.js_property_callbacks["change:a"]) == 2
+    @test obj.js_property_callbacks["change:a"][1].code == "111"
+    @test obj.js_property_callbacks["change:a"][2].code == "222"
+
+    @test_throws ErrorException BokehServer.js_onchange(obj, :k)
+end
+
+@testset "js_link" begin
+    out = BokehServer.Models._js_link_code(:(a.b = c.d))
+    @test out.head ≡ :call && out.args[1] ≡ BokehServer.js_onchange
+
+    out = BokehServer.Models._js_link_code(:(a.bb.b = c.d[begin]))
+    @test out.head ≡ :call && out.args[1] ≡ BokehServer.js_onchange
+end

@@ -2,7 +2,7 @@
 
 @model mutable struct DOMHTML <: iDOMHTML
 
-    html :: Union{String, Vector{Union{iDOMNode, iUIElement, String}}}
+    html :: Union{String, Vector{Union{iDOMNode, iUIElement, String}}} = required
 
     refs :: Vector{Union{iDOMNode, iUIElement, String}} = Union{iDOMNode, iUIElement, String}[]
 end

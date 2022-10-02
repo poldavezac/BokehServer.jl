@@ -2,7 +2,7 @@
 
 @model mutable struct GeoJSONDataSource <: iGeoJSONDataSource
 
-    geojson :: Model.JSONString
+    geojson :: Model.JSONString = required
 
     selected :: Model.ReadOnly{iSelection} = Selection()
 

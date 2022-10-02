@@ -229,6 +229,11 @@ BokehServer.Server.makeid(::DummyStaticRoute) = "a"
         BokehServer.line(; y = [1,2,3])
     end
     @test out isa HTML
+    # open(joinpath(@__DIR__, "standalone.html"), "w") do stream
+    #     for i ∈ eachline(IOBuffer(out.content))
+    #         println(stream, i)
+    #     end
+    # end
     truth = read(joinpath(@__DIR__, "standalone.html"), String)
     @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(out.content)))
         @test i == j

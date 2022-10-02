@@ -18,7 +18,7 @@
 
     disabled :: Bool = false
 
-    finish :: Float64
+    finish :: Float64 = required
 
     flow_mode :: Model.EnumType{(:block, :inline)} = :block
 
@@ -46,7 +46,7 @@
 
     sizing_mode :: Union{Nothing, Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
-    start :: Float64
+    start :: Float64 = required
 
     step :: Float64 = 1.0
 
@@ -58,7 +58,7 @@
 
     tooltips :: Bool = true
 
-    value :: Tuple{Float64, Float64}
+    value :: Tuple{Float64, Float64} = required
 
     value_throttled :: Model.ReadOnly{Tuple{Float64, Float64}}
 

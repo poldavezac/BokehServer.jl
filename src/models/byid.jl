@@ -2,6 +2,6 @@
 
 @model mutable struct ByID <: iByID
 
-    query :: String
+    query :: String = required
 end
 export ByID

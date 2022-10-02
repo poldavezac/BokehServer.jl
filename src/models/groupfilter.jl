@@ -2,8 +2,8 @@
 
 @model mutable struct GroupFilter <: iGroupFilter
 
-    column_name :: String
+    column_name :: String = required
 
-    group :: String
+    group :: String = required
 end
 export GroupFilter

@@ -4,7 +4,7 @@
 
     desired_num_ticks :: Int64 = 6
 
-    interval :: Float64
+    interval :: Float64 = required
 
     num_minor_ticks :: Int64 = 5
 end

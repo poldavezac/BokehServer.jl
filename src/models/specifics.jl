@@ -87,6 +87,106 @@ function Source(args::Vararg{Pair{<:AbstractString, <:AbstractVector}}; kwa...)
 end
 export Source
 
+function _👻js_on(μ::iHasProps, attr::Union{AbstractString, Symbol}, σs)
+    @nospecialize μ σs
+    info = Dict{String, Vector{iCallback}}(pairs(getproperty(μ, attr))...)
+    for (i, j) ∈ σs
+        push!(get!(info, "$i", iCallback[]), (j isa iCallback ? j : CustomJS(; j...)))
+    end
+    setproperty!(μ, attr, info)
+end
+
+"""
+    js_onchange(μ::iHasProps, σ::Union{AbstractString, Symbol}; k...) = js_onchange(μ, σ => CustomJS(; k...))
+    js_onchange(μ::iHasProps, σs::Vararg{Pair{<:Union{AbstractString, Symbol}}})
+
+Adds a javascript callback to the model for a given bokeh field mutation
+"""
+function js_onchange(μ::iHasProps, σs::Vararg{Pair{<:Union{AbstractString, Symbol}}})
+    @nospecialize μ σs
+    vals = [(i isa Symbol ? i : Symbol(split(i, ':')[end])) => j for (i, j) ∈ σs]
+    err = [i for (i, _) ∈ vals if !Model.hasbokehproperty(typeof(μ), i)]
+    isempty(err) || throw(ErrorException("$μ is missing fields $err"))
+
+    _👻js_on(μ, :js_property_callbacks, ("change:$i"=>j  for (i, j) ∈ vals))
+end
+
+"""
+    js_onevent(μ::iHasProps, σ::Union{AbstractString, Symbol}; k...) = js_onevent(μ, σ => CustomJS(; k...))
+    js_onevent(μ::iHasProps, σs::Vararg{Pair{<:Union{AbstractString, Symbol}}})
+
+Adds a javascript callback to the model for a given bokeh event
+"""
+js_onevent(μ::iHasProps, σs::Vararg{Pair{<:Union{AbstractString, Symbol}}}) = _👻js_on(μ, :js_event_callbacks, σs)
+
+for 𝐹 ∈ (:js_onchange, :js_onevent)
+    @eval $𝐹(μ::iHasProps, σ::Union{AbstractString, Symbol}; k...) = $𝐹(μ, σ => CustomJS(; k...))
+    @eval export $𝐹
+end
+
+"""
+    @js_link expr
+
+Creates a CustomJS to link two model attributes together
+
+# Examples
+
+    `@js_link plot.x_range.start = range_slider.value[0]`
+
+    is equivalent to:
+
+    ```
+    js_onchange(
+        ranger_slider, :value;
+        args = Dict{String, Any}("left"=>plot.x_range, "right"=> "range_slider"),
+        code = "left.start = right.value[0]"
+    )
+    ```
+"""
+macro js_link(expr::Expr)
+    return _js_link_code(expr)
+end
+
+export @js_link
+
+function _js_link_code(expr::Expr)
+    check(x) = (x || throw(ErrorException("Could not deal with $expr")))
+    check(expr.head ≡ :(=))
+    check(length(expr.args) ≡ 2)
+
+    left = expr.args[begin]
+    check((left isa Expr) && (left.head ≡ :(.)))
+    check(left.args[end] isa QuoteNode && left.args[end].value isa Symbol)
+
+    check(expr.args[end] isa Expr)
+    rightvals = Set{Union{Expr, Symbol}}()
+    rightopts = Any[expr.args[end]]
+    while !isempty(rightopts)
+        val = pop!(rightopts)
+        (val isa Expr) || continue
+        if val.head ≡ :call
+            append!(rightopts, val.args[2:end])
+        elseif val.head ≡ :ref
+            append!(rightopts, val.args)
+        elseif val.head ≡ :(.)
+            push!(rightvals, val)
+        else
+            check(false)
+        end
+    end
+    check(length(rightvals) == 1)
+
+    right = first(rightvals)
+    check((right isa Expr) && (right.head ≡ :(.)))
+    check(right.args[end] isa QuoteNode && right.args[end].value isa Symbol)
+
+    code = replace("$(expr.args[end])", "$(right.args[1])" => "this")
+    return :($(js_onchange)($(right.args[1]), $(Meta.quot(right.args[2].value));
+        args = Dict{String, Any}("other" => $(left.args[1])),
+        code = $("other.$(left.args[end]) = $code")
+    ))
+end
+
 precompile(Plot, ())
 precompile(ColumnDataSource, ())
 precompile(GlyphRenderer, ())

@@ -538,6 +538,23 @@ applications to the server. An example is the
 `BokehServer.Embeddings.Notebooks.NotebookApp` which deals with the specifics of
 working in `Pluto` or `Jupyter` environment.
 
+### Javascript callbacks
+
+Users can provide javascript code, to be executed client-side. This is done using a `CustomJS` object.
+The latter is then provided to the model *triggering* the change. One or both these actions can be done using:
+
+```docs
+js_onchange
+```
+
+```docs
+js_onevent
+```
+
+```docs
+@js_link
+```
+
 ## Themes
 
 Themes provided by [Bokeh](https://docs.bokeh.org/en/latest/index.html) are also available here.
@@ -561,6 +578,36 @@ to the `task_local_storage` dictionnary, and its theme is the one applied to tho
 
 ```@autodocs
 Modules = [BokehServer.Themes]
+```
+
+## Custom models
+
+Custom models can be created and used. Examples are in the `examples/extensions` directory.
+
+These models should follow the following pattern
+
+```
+@BokehServer.model mutable struct MyModel <: BokehServer.iModel
+    __implementation__ = "path to typescript, relative to current code directory"
+
+    a :: Int = 10
+    b :: Vector{Float64} =  [1., 2., 3.]
+end
+```
+
+Typescript code is required as well. The user is invited to refer to python *Bokeh*.
+Other fields `__javascript__`, `__css__`, `__dependencies__` can also be used. Again,
+better documentation is available in the python library.
+
+
+### Creating a template of a derived type
+
+The julia hierarchy system is very different from python's. In particular, one needs to redeclare
+all fields for every new structure. A template can be created as follows:
+
+```
+julia> path = joinpath(dirname(pathof(BokehServer)), "template.jl")
+julia> run(`$path Slider`)  # Slider or any python Bokeh model class name
 ```
 
 ## The package architecture
