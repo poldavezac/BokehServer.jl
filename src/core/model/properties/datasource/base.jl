@@ -71,6 +71,7 @@ datadictelement(::Type{Float32}, ::Missing) :: Float32 =  NaN32
 datadictelement(::Type{T}, 𝑑::Union{T, AbstractArray{T}}) where {T} = 𝑑
 datadictelement(@nospecialize(T::Type), @nospecialize(𝑑::Number)) = convert(T, 𝑑)
 datadictelement(@nospecialize(T::Type), @nospecialize(𝑑::AbstractArray)) = datadictelement.(T, 𝑑)
+datadictelement(𝑇::Type{<:EnumType}, x::Symbol) = string(bokehconvert(𝑇, x).value)
 
 """
     datadictarray(::Type{T}, 𝑑) where {T}

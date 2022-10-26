@@ -227,7 +227,6 @@ end
     y = Random.randn(100) .* 5
 
     plt = BokehServer.hexbin(x, y, .5)
-    @show plt.renderers[1].glyph
     @test plt.renderers[1].glyph isa BokehServer.HexTile
 end
 
