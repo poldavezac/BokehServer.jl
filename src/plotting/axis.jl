@@ -351,7 +351,7 @@ function resetaxis!(
         location  :: Union{Nothing, Missing, Symbol} = missing,
         dotrigger :: Bool                            = true,
 )
-    old = getaxis(fig, items.isaxis; items.rangename, items.axisname)
+    old = getaxis(fig, items.axis; items.rangename, items.axisname)
     popaxis!(fig, old; dotrigger)
     addaxis!(fig, items; location, dotrigger)
 end

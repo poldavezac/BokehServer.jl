@@ -284,8 +284,8 @@ function _👻setattributes!(
     @assert isnothing(sizing_mode) || sizing_mode ∈ SizingModeType
     for entry ∈ children
         itm = first(entry)
-        isnothing(width)  || setproperty(itm, :width, width; dotrigger)
-        isnothing(height) || setproperty(itm, :height, height; dotrigger)
+        isnothing(width)  || setproperty!(itm, :width, width; dotrigger)
+        isnothing(height) || setproperty!(itm, :height, height; dotrigger)
         (
             isnothing(sizing_mode)      ||
             !isnothing(itm.sizing_mode) ||

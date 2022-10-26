@@ -55,7 +55,7 @@ function models(𝐹::Function, μ::Vararg{iHasProps})
         key = bokehid(cur)
         (key ∈ found)  && continue
         push!(found, key)
-        applicable(𝐹, cur) && 𝐹(cur)
+        applicable(𝐹, cur) && (𝐹(cur) ≡ true) && break
 
         for field ∈ fieldnames(typeof(cur))
             field ∈ (:id, :callbacks) && continue

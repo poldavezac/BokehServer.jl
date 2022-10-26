@@ -1,3 +1,5 @@
+using Random
+
 @testset "create figure" begin
     plot = BokehServer.Plotting.figure()
     @test plot isa BokehServer.Models.Plot
@@ -218,6 +220,15 @@ end
     plot = BokehServer.boxplot(labels, vals)
     @test plot.x_range isa BokehServer.Models.FactorRange
     @test length(plot.renderers) == 4
+end
+
+@testset "hexbin" begin
+    x = Random.randn(100) .* 5
+    y = Random.randn(100) .* 5
+
+    plt = BokehServer.hexbin(x, y, .5)
+    @show plt.renderers[1].glyph
+    @test plt.renderers[1].glyph isa BokehServer.HexTile
 end
 
 struct DummyStaticRoute <: BokehServer.Server.iStaticRoute end

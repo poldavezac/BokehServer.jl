@@ -1,3 +1,5 @@
+using ColorSchemes
+
 Model.stream!(μ::ColumnDataSource, args...; kwa...) = Model.stream!(μ.data, args...; kwa...)
 Model.patch!(μ::ColumnDataSource, args...; kwa...)  = Model.patch!(μ.data, args...; kwa...)
 Model.update!(μ::ColumnDataSource, args...; kwa...) = Model.update!(μ.data, args...; kwa...)
@@ -185,6 +187,22 @@ function _js_link_code(expr::Expr)
         args = Dict{String, Any}("other" => $(left.args[1])),
         code = $("other.$(left.args[end]) = $code")
     ))
+end
+
+for 𝐹 ∈ (:LinearColorMapper, :LogColorMapper)
+    @eval function $𝐹(palette :: Union{AbstractString, Symbol}, a...; k...)
+        palette = let vals = if Symbol(palette) ∈ names(ColorSchemes; all = true)
+                getproperty(ColorSchemes, palette).colors
+            else
+                name = match(_PALETTE, string(palette))
+                Model.Colors.colormap(name[1], parse(Int, name[2]))
+            end
+            [Model.color(i) for i ∈ vals]
+        end
+        return $𝐹(palette, a...; k...)
+    end
+
+    @eval $𝐹(palette::AbstractVector, low::Real, high::Real; k ...) = $𝐹(; palette, low, high, k...)
 end
 
 precompile(Plot, ())
