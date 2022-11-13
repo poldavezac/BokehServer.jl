@@ -16,6 +16,18 @@ python web server together with a javascript client. This package rewrites the
 python server in julia and reuses the javascript part as is. This package's API
 is loosely similar to its python counterpart.
 
+## Using our Plots backend
+
+The `Plots` package provides multiple backends. We created our own:
+
+```julia
+using Plots
+using BokehServer
+bokeh()
+
+plot([1, 2])
+```
+
 ## Examples
 
 Examples are available in the *examples* directory. One such one would be
