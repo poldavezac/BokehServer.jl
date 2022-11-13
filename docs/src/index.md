@@ -45,6 +45,18 @@ python call `fig.line([1, 2, 3])` becomes `line!(fig; y = [1, 2, 3])`. In other 
 
 Checkout [Bokeh](https://docs.bokeh.org/en/latest/index.html)'s gallery or try the files in the `examples` directory.
 
+### Using the `Plots` package
+
+A `Plots` backend is provided. It relies on a `bokeh` function being called.
+
+```julia
+begin
+    using Plots
+    using BokehServer
+    bokeh()
+end
+```
+
 ### Using Jupyter or Pluto
 
 Example notebooks are `examples/jupyter_notebook.ipynb` and `examples/pluto_notebook.jl`.

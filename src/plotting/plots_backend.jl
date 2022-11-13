@@ -857,7 +857,7 @@ end
     # "application/postscript"  => "ps",
     # "image/svg+xml"           => "svg"
 function Plots._show(io::IO, ::MIME"text/html", plt::Plot{BokehBackend})
-    return write(io, Plotting.html(()-> create(plt); browser = false))
+    return write(io, Plotting.html(()-> create(plt); browser = false).content)
 end
 
 # Display/show the plot (open a GUI window, or browser page, for example).
