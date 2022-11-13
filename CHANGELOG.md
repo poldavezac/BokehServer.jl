@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] - 2022-11-13
+
+### Changed
+- Now using Bokeh 3.0.1
+- Support for the Plots package
+- Support for custom Bokeh.Model.iModel
+
 ## [0.2.0] - 2022-07-29
 
 ### Changed
