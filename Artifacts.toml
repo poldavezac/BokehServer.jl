@@ -1,6 +1,6 @@
 [javascript]
-git-tree-sha1 = "51b39d741035ea4a5f9ac8606b15e7306f7e974b"
+git-tree-sha1 = "d15346de4d4777a04d2f16bb82fe62f00188429b"
 
     [[javascript.download]]
-    sha256 = "3fbad8b87144ccf6bdb42a47e508a602ce15c8660dbedeffeff29d6946e203dc"
-    url = "https://anaconda.org/bokeh/bokeh/2.4.2/download/noarch/bokeh-2.4.2-py_0.tar.bz2"
+    sha256 = "8e4818a9f4e330620c2d45bff7aa1891551c29eb1db5da1c0b5a2ba141871ad4"
+    url = "https://anaconda.org/bokeh/bokeh/3.0.1/download/noarch/bokeh-3.0.1-py_0.tar.bz2"
