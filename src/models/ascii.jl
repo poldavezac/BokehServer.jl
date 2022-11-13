@@ -2,6 +2,6 @@
 
 @model mutable struct Ascii <: iAscii
 
-    text :: String
+    text :: String = required
 end
 export Ascii

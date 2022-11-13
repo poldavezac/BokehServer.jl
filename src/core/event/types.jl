@@ -1,8 +1,8 @@
 abstract type iEventList                            end
 abstract type iEvent                                end
-abstract type iActionEvent      <: iEvent           end
-abstract type iDocActionEvent   <: iActionEvent     end
-abstract type iModelActionEvent <: iActionEvent     end
+abstract type iUIEvent      <: iEvent           end
+abstract type iDocUIEvent   <: iUIEvent     end
+abstract type iModelUIEvent <: iUIEvent     end
 abstract type iDocEvent         <: iEvent           end
 abstract type iDocRootEvent     <: iDocEvent        end
 abstract type iDocModelEvent    <: iEvent           end
@@ -121,11 +121,30 @@ struct TitleChangedEvent <: iDocEvent
     title :: String
 end
 
-Base.hash(key::T) where {T<:iModelActionEvent} = hash((T, bokehid(key.model), key.event_name))
+Base.hash(key::T) where {T<:iModelUIEvent} = hash((T, bokehid(key.model), key.event_name))
 Base.hash(key::T) where {T<:iDocModelEvent}    = hash((T, bokehid(key.model), key.attr))
 Base.hash(key::T) where {T<:iDocRootEvent}     = hash((T, bokehid(key.doc), bokehid(key.root), key.root))
 Base.hash(key::T) where {T<:iDocEvent}         = hash((T, bokehid(key.doc)))
-Base.hash(key::T) where {T<:iDocActionEvent}   = hash((T, bokehid(key.doc)))
+Base.hash(key::T) where {T<:iDocUIEvent}   = hash((T, bokehid(key.doc)))
+
+function Model.compare(x::iEvent, y::iEvent)
+    @nospecialize x y
+    (typeof(x) ≡ typeof(y)) || return false
+    return if x isa iDocModelEvent
+        (bokehid(x.model) ≡ bokehid(y.model)) || return false
+        (x.attr ≡ y.attr) || return false
+
+        return all(
+            Model.compare(getproperty(x, i), getproperty(y, i))
+            for i ∈ propertynames(x)
+            if i ∉ (:model, :attr, :doc)
+        )
+    elseif x isa Union{RootRemovedEvent, RootAddedEvent}
+        bokehid(x.model) ≡ bokehid(y.model)
+    else
+        false
+    end
+end
 
 export ModelChangedEvent, RootAddedEvent, RootRemovedEvent, TitleChangedEvent
 export ColumnsPatchedEvent, ColumnsStreamedEvent, ColumnDataChangedEvent

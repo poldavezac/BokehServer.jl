@@ -4,11 +4,9 @@ using ..Model
 using ..Events
 using ..Themes
 
-const ID = bokehidmaker()
-
 @Base.kwdef mutable struct Document <: iDocument
     "private field for document id"
-    id        :: String           = string(ID())
+    id        :: String           = string(newid())
 
     "private field for storing roots"
     roots     :: Vector{iModel}   = iModel[]
@@ -58,7 +56,7 @@ for 𝐹 ∈ (:bokehmodels, :bokehids)
     @eval Model.$𝐹(𝐷::Document) = $𝐹(getfield(𝐷, :roots)...)
 end
 
-for 𝐹 ∈ (:last, :first, :isempty, :length)
+for 𝐹 ∈ (:last, :first, :isempty, :length, :lastindex, :firstindex, :eachindex)
     @eval Base.$𝐹(𝐷::Document) = $𝐹(getfield(𝐷, :roots))
 end
 Base.getindex(𝐷::Document, i::Integer) = getfield(𝐷, :roots)[i]
@@ -70,7 +68,7 @@ end
 function Base.push!(𝐷::Document, roots::Vararg{iModel}; dotrigger :: Bool = true)
     if !isempty(roots)
         let common = bokehid.(roots) ∩ bokehid.(𝐷)
-            isempty(common) || throw(ErrorException("Roots already added: $common"))
+            isempty(common) || throw(BokehException("Roots already added: $common"))
         end
         size = length(𝐷)
         push!(getfield(𝐷, :roots), roots...)

@@ -6,6 +6,8 @@
 
     dimensions :: Model.EnumType{(:width, :height, :both)} = :both
 
+    icon :: Union{Nothing, Model.ToolIconValue} = nothing
+
     line_alpha :: Model.Percent = 1.0
 
     line_color :: Model.Color = "#000000"

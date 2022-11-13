@@ -6,7 +6,7 @@
 
     editor :: iCellEditor = StringEditor()
 
-    field :: String
+    field :: String = required
 
     formatter :: iCellFormatter = StringFormatter()
 

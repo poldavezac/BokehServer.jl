@@ -6,8 +6,8 @@
 
     data :: Union{Nothing, iColumnarDataSource} = nothing
 
-    x :: Union{String, Vector{Float64}}
+    x :: Union{String, Vector{Float64}} = required
 
-    y :: Union{String, Vector{Float64}}
+    y :: Union{String, Vector{Float64}} = required
 end
 export LinearInterpolator

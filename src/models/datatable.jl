@@ -2,7 +2,7 @@
 
 @model mutable struct DataTable <: iDataTable
 
-    align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:start, :center, :end)}} = :start
+    align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:auto, :start, :center, :end)}} = :auto
 
     aspect_ratio :: Union{Nothing, Float64, Model.EnumType{(:auto,)}} = nothing
 
@@ -10,19 +10,21 @@
 
     autosize_mode :: Model.EnumType{(:fit_columns, :fit_viewport, :force_fit, :none)} = :force_fit
 
-    background :: Union{Nothing, Model.Color} = nothing
+    classes :: Vector{String} = String[]
 
     columns :: Vector{iTableColumn} = iTableColumn[]
 
-    css_classes :: Vector{String} = String[]
+    context_menu :: Union{Nothing, iMenu} = nothing
 
-    default_size :: Int64 = 300
+    css_classes :: Vector{String} = String[]
 
     disabled :: Bool = false
 
     editable :: Bool = false
 
     fit_columns :: Union{Nothing, Bool} = nothing
+
+    flow_mode :: Model.EnumType{(:block, :inline)} = :block
 
     frozen_columns :: Union{Nothing, Int64} = nothing
 
@@ -40,7 +42,7 @@
 
     index_width :: Int64 = 40
 
-    margin :: Union{Nothing, NTuple{4, Int64}} = (0, 0, 0, 0)
+    margin :: Union{Nothing, Int64, Tuple{Int64, Int64}, NTuple{4, Int64}} = nothing
 
     max_height :: Union{Nothing, Model.NonNegativeInt} = nothing
 
@@ -51,6 +53,8 @@
     min_width :: Union{Nothing, Model.NonNegativeInt} = nothing
 
     reorderable :: Bool = true
+
+    resizable :: Union{Bool, Model.EnumType{(:width, :height, :both)}} = false
 
     row_height :: Int64 = 25
 
@@ -64,7 +68,11 @@
 
     source :: iDataSource = ColumnDataSource()
 
-    view :: iCDSView = new(CDSView(; source))
+    styles :: Union{iStyles, Dict{String, Union{Nothing, String}}} = Dict{String, Union{Nothing, String}}()
+
+    stylesheets :: Vector{Union{Dict{String, Union{iStyles, Dict{String, Union{Nothing, String}}}}, String}} = Union{Dict{String, Union{iStyles, Dict{String, Union{Nothing, String}}}}, String}[]
+
+    view :: iCDSView = CDSView()
 
     visible :: Bool = true
 

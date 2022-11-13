@@ -6,7 +6,7 @@ function _👻structure(
     vals  = [_👻initcode(cls, fields, i) for i ∈ _👻filter(fields)]
     cstr  =  if all(last(i) ≡ :default for i ∈ vals)
         quote
-            $cls(; id = $(@__MODULE__).ID(), kwa...) = $(@__MODULE__)._👻init($cls, id, kwa)
+            $cls(; id = $newid(), kwa...) = $_👻init($cls, id, kwa)
         end
     else
         if any(last(i) ≡ :custom for i ∈ vals)
@@ -17,7 +17,7 @@ function _👻structure(
             code   = ()
         end
         quote
-            function $cls(; id = $(@__MODULE__).ID(), kwa...)
+            function $cls(; id = $newid(), kwa...)
                 $(code...)
                 $cls(
                     id isa Int64 ? id : parse(Int64, string(id)),
@@ -107,6 +107,8 @@ function _👻funcs(cls::Symbol, fields::_👻Fields) :: Expr
 end
 
 function _👻code(src, mod::Module, code::Expr) :: Expr
+    impl = _👻files(mod, code)
+
     @assert code.head ≡ :struct
     if !code.args[1]
         @warn """BokehServer structure $mod.$(code.args[2]) is set to mutable.
@@ -132,9 +134,59 @@ function _👻code(src, mod::Module, code::Expr) :: Expr
 
         $(_👻propnames(parent, fields))
         $(_👻funcs(cls, fields))
+        $(impl)
         push!($(@__MODULE__).MODEL_TYPES, $cls)
         $cls
     end)
+end
+
+    
+implementation(_...) = nothing
+
+for 𝐹 ∈ (:structpath, :implementation, :css, :javascript, :dependencies)
+    @eval $𝐹(::Nothing) = nothing
+    @eval $𝐹(x) = implementation(x, $(Meta.quot(𝐹)))
+end
+
+_👻paths(r::AbstractString, x::AbstractString) = normpath(joinpath(r, x))
+_👻paths(::Nothing, x::AbstractString) = normpath(x)
+_👻paths(::Any, x::Any) = x
+
+function _👻files(mod::Module, code::Expr)
+    if nameof(mod) ≡ :Models && nameof(parentmodule(mod)) ≡ :BokehServer
+        return
+    end
+
+    cls  = code.args[2].args[1]
+    inds = Int[]
+    root = let r = Base.source_path(nothing)
+        isnothing(r) ? nothing : dirname(r)
+    end
+
+    info = lastarg = :(if σ ≡ :structpath
+        return $root
+    end)
+
+    for (i, j) ∈ enumerate(code.args[end].args)
+        (j isa Expr && j.head ≡ :(=)) || continue
+        if j.args[1] ∈ (:__implementation__, :__css__, :__dependencies__, :__javascript__)
+            val = Symbol("$(j.args[1])"[3:end-2])
+            itm = Expr(
+                :elseif,
+                :(σ ≡ $(Meta.quot(val))),
+                (val ≡ :implementation  ? :($(_👻paths)($root, $(j.args[2]))) : j.args[2])
+            )
+            push!(lastarg.args, itm)
+            lastarg = itm
+
+            push!(inds, i)
+        end
+    end
+    push!(lastarg.args, nothing)
+    isempty(inds) && return nothing
+
+    deleteat!(code.args[end].args, inds)
+    return :($(@__MODULE__).implementation(::Type{$cls}, σ::Symbol) = $info)
 end
 
 macro wrap(expr::Expr)
@@ -198,10 +250,13 @@ function Base.setproperty!(μ::iHasProps, α::Symbol, ν; dotrigger :: Bool = tr
 
     isnothing(f𝑇) && return setfield!(μ, α, ν)
 
-    (f𝑇 <: ReadOnly) && !patchdoc && throw(ErrorException("$(typeof(μ)).$α is readonly"))
+    (f𝑇 <: ReadOnly) && !patchdoc && throw(BokehException("$(typeof(μ)).$α is readonly"))
 
     cν  = bokehconvert(f𝑇, bokehunwrap(ν))
-    (cν isa Unknown) && throw(ErrorException("Could not convert `$ν` to $f𝑇"))
+    (cν isa Unknown) && let msg = "Could not convert `$ν` to $f𝑇"
+        isempty(cν.msg) || (msg = string(msg, ": ", cν.msg))
+        throw(Unknown(msg))
+    end
 
     old = getfield(μ, α)
     dotrigger && BokehServer.Events.testcantrigger()
@@ -214,8 +269,6 @@ function themevalue(@nospecialize(𝑇::Type{<:iHasProps}), σ::Symbol) :: Union
     dflt = BokehServer.Themes.theme(𝑇, σ)
     return isnothing(dflt) ? Model.defaultvalue(𝑇, σ) : dflt
 end
-
-const ID = bokehidmaker()
 
 Base.repr(@nospecialize(mdl::iHasProps)) = "$(nameof(typeof(mdl)))(id = $(bokehid(mdl)))" 
 

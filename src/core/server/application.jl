@@ -50,7 +50,7 @@ end
 
 eventlist(::iApplication)                       = Events.EventList()
 Events.eventlist!(𝐹::Function, 𝐴::iApplication) = Events.eventlist!(𝐹, eventlist(𝐴))
-checktokensignature(::iApplication, token::AbstractString) = Tokens.check(token, CONFIG.secretkey)
+checktokensignature(::iApplication, token::AbstractString) = Tokens.check(token, bokehconfig(:secretkey))
 
 """
     initialize!(::Union{iDocument, SessionContext}, ::iApplication)
@@ -69,7 +69,7 @@ Create a new session, leaving the document empty.
 """
 function sessionkey(::iApplication, args...)
     σ = SessionKey(args...)
-    Tokens.check(σ.token, CONFIG.secretkey) || httperror("Invalid token or session ID")
+    Tokens.check(σ.token, bokehconfig(:secretkey)) || httperror("Invalid token or session ID")
     σ
 end
 

@@ -4,7 +4,7 @@
 
     angle :: Model.AngleSpec = 0.0
 
-    angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
+    decorations :: Vector{iDecoration} = iDecoration[]
 
     dilate :: Bool = false
 
@@ -26,8 +26,6 @@
 
     height :: Model.DistanceSpec = "height"
 
-    height_units :: Model.EnumType{(:screen, :data)} = :data
-
     line_alpha :: Model.AlphaSpec = 1.0
 
     line_cap :: Model.LineCapSpec = :butt
@@ -43,8 +41,6 @@
     line_width :: Model.NumberSpec = 1.0
 
     width :: Model.DistanceSpec = "width"
-
-    width_units :: Model.EnumType{(:screen, :data)} = :data
 
     x :: Model.NumberSpec = "x"
 

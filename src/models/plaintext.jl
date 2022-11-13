@@ -2,6 +2,6 @@
 
 @model mutable struct PlainText <: iPlainText
 
-    text :: String
+    text :: String = required
 end
 export PlainText

@@ -8,8 +8,8 @@
 
     mode :: Model.EnumType{(:before, :after, :center)} = :after
 
-    x :: Union{String, Vector{Float64}}
+    x :: Union{String, Vector{Float64}} = required
 
-    y :: Union{String, Vector{Float64}}
+    y :: Union{String, Vector{Float64}} = required
 end
 export StepInterpolator

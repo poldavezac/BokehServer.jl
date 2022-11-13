@@ -20,9 +20,9 @@
 
     wrap_around :: Bool = true
 
-    x_origin_offset :: Float64
+    x_origin_offset :: Float64 = required
 
-    y_origin_offset :: Float64
+    y_origin_offset :: Float64 = required
 end
 export TMSTileSource
 glyphargs(::Type{TMSTileSource}) = (:url, :tile_size, :min_zoom, :max_zoom, :x_origin_offset, :y_origin_offset, :extra_url_vars, :initial_resolution)

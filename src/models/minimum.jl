@@ -2,8 +2,8 @@
 
 @model mutable struct Minimum <: iMinimum
 
-    field :: String
+    field :: String = required
 
-    initial :: Union{Nothing, Float64} = nothing
+    initial :: Union{Nothing, Float64} = Inf
 end
 export Minimum

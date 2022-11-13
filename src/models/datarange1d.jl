@@ -6,7 +6,7 @@
 
     default_span :: Union{Float64, Dates.Period} = 2.0
 
-    finish :: Union{Nothing, Float64, Dates.DateTime, Dates.Period} = nothing
+    finish :: Union{Float64, Dates.DateTime, Dates.Period} = NaN
 
     flipped :: Bool = false
 
@@ -18,8 +18,6 @@
 
     min_interval :: Union{Nothing, Float64, Dates.Period} = nothing
 
-    names :: Vector{String} = String[]
-
     only_visible :: Bool = false
 
     range_padding :: Union{Float64, Dates.Period} = 0.1
@@ -28,6 +26,6 @@
 
     renderers :: Union{Model.EnumType{(:auto,)}, Vector{iModel}} = iModel[]
 
-    start :: Union{Nothing, Float64, Dates.DateTime, Dates.Period} = nothing
+    start :: Union{Float64, Dates.DateTime, Dates.Period} = NaN
 end
 export DataRange1d

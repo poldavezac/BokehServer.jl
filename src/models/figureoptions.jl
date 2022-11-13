@@ -14,11 +14,11 @@
 
     tools :: Union{String, Vector{Union{iTool, String}}} = "pan,wheel_zoom,box_zoom,save,reset,help"
 
-    tooltips :: Union{Nothing, iTemplate, String, Vector{Tuple{String, String}}} = nothing
+    tooltips :: Union{Nothing, iDOMTemplate, String, Vector{Tuple{String, String}}} = nothing
 
     x_axis_label :: Union{Nothing, iBaseText, String} = ""
 
-    x_axis_location :: Union{Nothing, Model.EnumType{(:above, :below)}} = :below
+    x_axis_location :: Union{Nothing, Model.VerticalLocation} = :below
 
     x_axis_type :: Union{Nothing, Model.EnumType{(:auto, :linear, :log, :datetime, :mercator)}} = :auto
 
@@ -28,7 +28,7 @@
 
     y_axis_label :: Union{Nothing, iBaseText, String} = ""
 
-    y_axis_location :: Union{Nothing, Model.EnumType{(:left, :right)}} = :left
+    y_axis_location :: Union{Nothing, Model.HorizontalLocation} = :left
 
     y_axis_type :: Union{Nothing, Model.EnumType{(:auto, :linear, :log, :datetime, :mercator)}} = :auto
 

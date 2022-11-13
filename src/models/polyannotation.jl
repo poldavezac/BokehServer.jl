@@ -44,12 +44,12 @@
 
     xs :: Vector{Float64} = Float64[]
 
-    xs_units :: Model.EnumType{(:screen, :data)} = :data
+    xs_units :: Model.EnumType{(:canvas, :screen, :data)} = :data
 
     y_range_name :: String = "default"
 
     ys :: Vector{Float64} = Float64[]
 
-    ys_units :: Model.EnumType{(:screen, :data)} = :data
+    ys_units :: Model.EnumType{(:canvas, :screen, :data)} = :data
 end
 export PolyAnnotation

@@ -2,6 +2,8 @@
 
 @model mutable struct Annulus <: iAnnulus
 
+    decorations :: Vector{iDecoration} = iDecoration[]
+
     fill_alpha :: Model.AlphaSpec = 1.0
 
     fill_color :: Model.ColorSpec = "#808080"
@@ -20,8 +22,6 @@
 
     inner_radius :: Model.DistanceSpec = "inner_radius"
 
-    inner_radius_units :: Model.EnumType{(:screen, :data)} = :data
-
     line_alpha :: Model.AlphaSpec = 1.0
 
     line_cap :: Model.LineCapSpec = :butt
@@ -37,8 +37,6 @@
     line_width :: Model.NumberSpec = 1.0
 
     outer_radius :: Model.DistanceSpec = "outer_radius"
-
-    outer_radius_units :: Model.EnumType{(:screen, :data)} = :data
 
     x :: Model.NumberSpec = "x"
 

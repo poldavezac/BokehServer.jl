@@ -1,10 +1,10 @@
 function _👻legend!(fig::Models.Plot, rend::Models.GlyphRenderer, kwa; dotrigger :: Bool = true)
-    haskey(kwa, :legend) && throw(ErrorException("Use one of keywords $_👻LEGEND"))
-    count(∈(_👻LEGEND), keys(kwa)) > 1 && throw(ErrorException("Only one keyword allowed amongst $_👻LEGEND"))
+    haskey(kwa, :legend) && throw(BokehException("Use one of keywords $_👻LEGEND"))
+    count(∈(_👻LEGEND), keys(kwa)) > 1 && throw(BokehException("Only one keyword allowed amongst $_👻LEGEND"))
 
     if any(∈(_👻LEGEND), keys(kwa))
         opts = [i for j ∈ (:center, :above, :below, :left, :right) for i ∈ getproperty(fig, j) if i isa Models.iLegend]
-        (length(opts) > 1) && throw(ErrorException("Too many `Legend` objects to use the `legend_` keywords"))
+        (length(opts) > 1) && throw(BokehException("Too many `Legend` objects to use the `legend_` keywords"))
 
         if isempty(opts)
             legend = Models.Legend()
@@ -15,7 +15,7 @@ function _👻legend!(fig::Models.Plot, rend::Models.GlyphRenderer, kwa; dotrigg
         end
 
         val = only(j for (i, j) ∈ pairs(kwa) if i ∈ _👻LEGEND)
-        (val isa AbstractString) || throw(ErrorException("Keywords $_👻LEGEND only accept strings"))
+        (val isa AbstractString) || throw(BokehException("Keywords $_👻LEGEND only accept strings"))
 
         if haskey(kwa, :legend_label) || haskey(kwa, :legend_field)
             label = haskey(kwa, :legend_field) ? (; field = "$val") : (; value = "$val")
@@ -29,7 +29,7 @@ function _👻legend!(fig::Models.Plot, rend::Models.GlyphRenderer, kwa; dotrigg
             end
         else
             src = rend.data_source
-            haskey(src.data, val) || throw(ErrorException("Missing columns for :legend_group keyword"))
+            haskey(src.data, val) || throw(BokehException("Missing columns for :legend_group keyword"))
             done = Set{String}()
             for (i, j) ∈ enumerate(src.data[val])
                 ("$j" ∈ done) && continue

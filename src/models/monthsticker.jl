@@ -4,7 +4,7 @@
 
     desired_num_ticks :: Int64 = 6
 
-    interval :: Float64
+    interval :: Model.ReadOnly{Float64}
 
     months :: Vector{Int64} = Int64[]
 

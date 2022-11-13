@@ -2,13 +2,13 @@
 
 @model mutable struct BoxEditTool <: iBoxEditTool
 
-    custom_icon :: Union{Nothing, Model.Image} = nothing
-
     description :: Union{Nothing, String} = nothing
 
     dimensions :: Model.EnumType{(:width, :height, :both)} = :both
 
-    empty_value :: Union{Bool, Float64, Int64, Dates.Date, Dates.DateTime, Model.Color, String}
+    empty_value :: Union{Bool, Float64, Int64, Dates.Date, Dates.DateTime, Model.Color, String} = required
+
+    icon :: Union{Nothing, Model.ToolIconValue} = nothing
 
     num_objects :: Int64 = 0
 

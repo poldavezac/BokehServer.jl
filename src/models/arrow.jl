@@ -6,7 +6,7 @@
 
     finish :: Union{Nothing, iArrowHead} = OpenHead()
 
-    finish_units :: Model.EnumType{(:screen, :data)} = :data
+    finish_units :: Model.EnumType{(:canvas, :screen, :data)} = :data
 
     group :: Union{Nothing, iRendererGroup} = nothing
 
@@ -30,7 +30,7 @@
 
     start :: Union{Nothing, iArrowHead} = nothing
 
-    start_units :: Model.EnumType{(:screen, :data)} = :data
+    start_units :: Model.EnumType{(:canvas, :screen, :data)} = :data
 
     visible :: Bool = true
 

@@ -1,6 +1,7 @@
 module WSRoute
 using HTTP
 using HTTP.WebSockets
+using ...BokehServer: bokehconfig
 using ...Events
 using ...Protocol
 using ...Protocol.Messages: @msg_str, messageid, nodata
@@ -16,7 +17,7 @@ function route(io::HTTP.Stream, 𝐴::Server.iApplication)
     end
 
     out = WebSockets.upgrade(io) do ws::WebSockets.WebSocket
-        waittime = Server.CONFIG.wssleepperiod
+        waittime = bokehconfig(:wssleepperiod)
         session  = nothing
         try
             session = onopen(ws, 𝐴) :: SessionContext
@@ -82,10 +83,10 @@ function onopen(ω::WebSockets.WebSocket, 𝐴::iApplication) :: SessionContext
 end
 
 function onmessage(ω::WebSockets.WebSocket, 𝐴::iApplication, σ::SessionContext)
-    @safely msg = Protocol.receivemessage(ω, Server.CONFIG.wstimeout, Server.CONFIG.wssleepperiod)
+    @safely msg = Protocol.receivemessage(ω, bokehconfig(:wstimeout), bokehconfig(:wssleepperiod))
     yield()
     try
-        answer = handle(msg, 𝐴, σ)
+        answer = handle(msg, 𝐴, σ, ω)
         @safely Protocol.sendmessage(ω, answer...)
     catch exc
         @safely Protocol.sendmessage(ω, msg"ERROR", messageid(msg), sprint(showerror, exc))
@@ -102,16 +103,17 @@ end
 struct EmptyMessageError <: Exception end
 handle(msg::msg"EMPTY", _...) = throw(EmptyMessageError())
 
-function handle(msg::msg"SERVER-INFO-REQ", ::iApplication, ::SessionContext)
+function handle(msg::msg"SERVER-INFO-REQ", ::iApplication, ::SessionContext, ::WebSockets.WebSocket)
     return (msg"SERVER-INFO-REPLY", messageid(msg))
 end
 
-function handle(msg::msg"PULL-DOC-REQ", ::iApplication, σ::SessionContext)
-    return (msg"PULL-DOC-REPLY", messageid(msg), Protocol.pushdoc(σ.doc))
+function handle(msg::msg"PULL-DOC-REQ", ::iApplication, σ::SessionContext, ::WebSockets.WebSocket)
+    outp = Protocol.pushdoc(σ.doc)
+    return (msg"PULL-DOC-REPLY", messageid(msg), (; outp.doc), outp.buffers)
 end
 
-function handle(μ::msg"PUSH-DOC,PATCH-DOC", 𝐴::iApplication, σ::SessionContext)
-    Protocol.onreceive!(μ, σ.doc, Server.eventlist(𝐴), σ.clients...)
+function handle(μ::msg"PUSH-DOC,PATCH-DOC", 𝐴::iApplication, σ::SessionContext, ω::WebSockets.WebSocket)
+    Protocol.onreceive!(μ, σ.doc, Server.eventlist(𝐴), ω, (i for i ∈ σ.clients if i ≢ ω)...)
     return (msg"OK", messageid(μ))
 end
 

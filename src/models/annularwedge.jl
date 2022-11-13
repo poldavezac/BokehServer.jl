@@ -2,6 +2,8 @@
 
 @model mutable struct AnnularWedge <: iAnnularWedge
 
+    decorations :: Vector{iDecoration} = iDecoration[]
+
     direction :: Model.EnumType{(:clock, :anticlock)} = :anticlock
 
     fill_alpha :: Model.AlphaSpec = 1.0
@@ -9,8 +11,6 @@
     fill_color :: Model.ColorSpec = "#808080"
 
     finish_angle :: Model.AngleSpec = "end_angle"
-
-    finish_angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     hatch_alpha :: Model.AlphaSpec = 1.0
 
@@ -25,8 +25,6 @@
     hatch_weight :: Model.NumberSpec = 1.0
 
     inner_radius :: Model.DistanceSpec = "inner_radius"
-
-    inner_radius_units :: Model.EnumType{(:screen, :data)} = :data
 
     line_alpha :: Model.AlphaSpec = 1.0
 
@@ -44,11 +42,7 @@
 
     outer_radius :: Model.DistanceSpec = "outer_radius"
 
-    outer_radius_units :: Model.EnumType{(:screen, :data)} = :data
-
     start_angle :: Model.AngleSpec = "start_angle"
-
-    start_angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     x :: Model.NumberSpec = "x"
 

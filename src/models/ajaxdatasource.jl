@@ -8,7 +8,7 @@
 
     data :: Model.DataDict = Model.DataDict()
 
-    data_url :: String
+    data_url :: String = required
 
     http_headers :: Dict{String, String} = Dict{String, String}()
 

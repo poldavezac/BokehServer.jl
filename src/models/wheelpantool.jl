@@ -5,5 +5,7 @@
     description :: Union{Nothing, String} = nothing
 
     dimension :: Model.EnumType{(:width, :height)} = :width
+
+    icon :: Union{Nothing, Model.ToolIconValue} = nothing
 end
 export WheelPanTool

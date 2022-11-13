@@ -6,7 +6,7 @@
 
     data :: Model.DataDict = Model.DataDict()
 
-    data_url :: String
+    data_url :: String = required
 
     max_size :: Union{Nothing, Int64} = nothing
 

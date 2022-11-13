@@ -6,6 +6,8 @@
 
     cy :: Model.NumberSpec = "cy"
 
+    decorations :: Vector{iDecoration} = iDecoration[]
+
     line_alpha :: Model.AlphaSpec = 1.0
 
     line_cap :: Model.LineCapSpec = :butt

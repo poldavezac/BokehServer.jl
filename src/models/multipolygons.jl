@@ -2,6 +2,8 @@
 
 @model mutable struct MultiPolygons <: iMultiPolygons
 
+    decorations :: Vector{iDecoration} = iDecoration[]
+
     fill_alpha :: Model.AlphaSpec = 1.0
 
     fill_color :: Model.ColorSpec = "#808080"

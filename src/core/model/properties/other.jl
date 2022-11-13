@@ -66,6 +66,8 @@ function bokehconvert(::Type{DashPattern}, ν::Symbol)
         Int64[]
     elseif ν == :dashed
         Int64[6]
+    elseif ν == :dash
+        Int64[6]
     elseif ν == :dotted
         Int64[2,4]
     elseif ν == :dotdash

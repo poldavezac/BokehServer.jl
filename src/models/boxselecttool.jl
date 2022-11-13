@@ -6,13 +6,13 @@
 
     dimensions :: Model.EnumType{(:width, :height, :both)} = :both
 
-    mode :: Model.EnumType{(:replace, :append, :intersect, :subtract)} = :replace
+    icon :: Union{Nothing, Model.ToolIconValue} = nothing
 
-    names :: Vector{String} = String[]
+    mode :: Model.EnumType{(:replace, :append, :intersect, :subtract)} = :replace
 
     origin :: Model.EnumType{(:corner, :center)} = :corner
 
-    overlay :: iBoxAnnotation = BoxAnnotation()
+    overlay :: iBoxAnnotation = BoxAnnotation(left_units = "canvas", line_width = 2, fill_alpha = 0.5, bottom_units = "canvas", line_dash = Any[4, 4], level = "overlay", visible = false, syncable = false, top_units = "canvas", line_alpha = 1.0, fill_color = "lightgrey", line_color = "black", right_units = "canvas")
 
     renderers :: Union{Model.EnumType{(:auto,)}, Vector{iDataRenderer}} = :auto
 

@@ -4,6 +4,7 @@ using ...Documents
 using ...Events
 using ...Models
 using ...Server
+using ...BokehServer: bokehconfig
 
 struct Standalone <: Server.iStaticRoute end
 
@@ -71,7 +72,7 @@ end
 function html(
         doc     :: iDocument;
         browser :: Bool                = true,
-        path    :: AbstractString      = browser ? Server.CONFIG.html_path : "",
+        path    :: AbstractString      = browser ? bokehconfig(:html_path) : "",
         app     :: Server.iStaticRoute = Standalone(),
         k...
 ) :: Union{Nothing, HTML}

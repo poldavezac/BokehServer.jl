@@ -3,5 +3,7 @@
 @model mutable struct ResetTool <: iResetTool
 
     description :: Union{Nothing, String} = nothing
+
+    icon :: Union{Nothing, Model.ToolIconValue} = nothing
 end
 export ResetTool

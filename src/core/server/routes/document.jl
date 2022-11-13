@@ -1,6 +1,7 @@
 module DocRoute
 using HTTP
 using JSON
+using ...BokehServer: bokehconfig
 using ...AbstractTypes
 using ...Protocol
 using ..Documents: Document
@@ -17,7 +18,7 @@ function route(http::HTTP.Stream{HTTP.Request}, app::Server.iRoute)
 end
 
 Server.staticbundle(app::Server.iApplication) = Server.staticbundle()
-Server.staticbundle(app::Server.iStaticRoute) = Server.staticbundle(Server.CONFIG.cdn, addversion = true, root = "")
+Server.staticbundle(app::Server.iStaticRoute) = Server.staticbundle(bokehconfig(:cdn), addversion = true, root = "")
 
 div(::Server.iRoute, roots::Dict{String, String}) = Templates.embed(roots)
 
@@ -28,7 +29,7 @@ function body(app::Server.iStaticRoute, doc::iDocument)
         Tuple{Server.iRoute, iDocument},
         app,
         doc;
-        data = Dict(docid => Protocol.pushdoc(doc.title, doc)),
+        data = Dict(docid => Protocol.pushdoc(doc).doc),
         docid,
     )
 end
@@ -55,7 +56,7 @@ function filetemplate(
         js_files    :: AbstractVector{<:AbstractString},
         js_raw      :: AbstractVector{<:AbstractString},
         css_files   :: AbstractVector{<:AbstractString},
-        langage     :: Symbol = Server.CONFIG.language
+        langage     :: Symbol = bokehconfig(:language)
 )
     css = [
         """<link rel="stylesheet" href="$file" type="text/css" />"""

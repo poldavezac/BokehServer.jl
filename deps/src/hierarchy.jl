@@ -1,12 +1,17 @@
 module Hierarchies
-using ..BokehServer
 using PythonCall
+using ..BokehServer
+using ..CodeCreator: modelnames, model
 
-model(name)  = pyimport("bokeh.models" => "Model").model_class_reverse_map["$name"]
-modelnames() = (pyconvert(String, i) for i ∈ pyimport("bokeh.models" => "Model").model_class_reverse_map.keys())
-
-function hierarchy(mdl::Py)
-    todos = Pair{Py, Vector{Symbol}}[mdl => Symbol[pyconvert(Symbol, mdl.__name__)]]
+function hierarchyoptions(mdl::Py)
+    clsname(cls) = let val = pyconvert(Symbol, cls.__name__)
+        if val ≡ :Action && occursin("models.ui.", pyconvert(String, cls.__module__))
+            :UIAction
+        else
+            val
+        end
+    end
+    todos = Pair{Py, Vector{Symbol}}[mdl => Symbol[clsname(mdl)]]
     if endswith(pyconvert(String, mdl.__module__), "dom") && !startswith("$(last(todos[1])[1])", "DOM")
         last(todos[1])[1] = Symbol("iDOM$(last(todos[1])[1])")
     else
@@ -16,7 +21,7 @@ function hierarchy(mdl::Py)
     while !isempty(todos)
         (child, names) = pop!(todos)
         for cls ∈ child.__bases__
-            name = pyconvert(Symbol, cls.__name__)
+            name = clsname(cls)
             if name ≡ :object
                 continue
             elseif name ≡ :Model
@@ -26,6 +31,11 @@ function hierarchy(mdl::Py)
             end
         end
     end
+    done
+end
+
+function hierarchy(mdl::Py)
+    done = hierarchyoptions(mdl)
     @assert !isempty(done)
     (length(done) ≡ 1) && return first(done)
 
@@ -51,7 +61,7 @@ function hierarchy()
     for name ∈ modelnames()
         cls = hierarchy(model(name))
         for i ∈ 2:length(cls)
-            @assert !haskey(opts, cls[i-1]) || (opts[cls[i-1]] ≡ cls[i]) "$(cls[i-1]) => $(opts[cls[i-1]]) ≢ $(cls[i])"
+            @assert !haskey(opts, cls[i-1]) || (opts[cls[i-1]] ≡ cls[i]) "$name: $(cls[i-1]) => $(opts[cls[i-1]]) ≢ $(cls[i])"
             opts[cls[i-1]] = cls[i]
         end
         push!(out, name => cls)
@@ -59,6 +69,25 @@ function hierarchy()
     return out
 end
 
-export hierarchy
+function unions()
+    allnames = Set{Symbol}()
+    for (_, i) ∈ hierarchy()
+        union!(allnames, i)
+    end
+
+    out = Dict{Symbol, Set{String}}()
+    for name ∈ modelnames()
+        opts = Set{Symbol}()
+        for i ∈ hierarchyoptions(model(name))
+            union!(opts, setdiff(Set{Symbol}(i), allnames))
+        end
+        for i ∈ opts
+            push!(get!(Set{Symbol}, out, i), name)
+        end
+    end
+    return Dict(i for i ∈ out if length(i[2]) > 1)
+end
+
+export hierarchy, unions
 end
 using .Hierarchies

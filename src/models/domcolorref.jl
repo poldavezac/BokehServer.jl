@@ -2,7 +2,7 @@
 
 @model mutable struct DOMColorRef <: iDOMColorRef
 
-    field :: String
+    field :: String = required
 
     hex :: Bool = true
 

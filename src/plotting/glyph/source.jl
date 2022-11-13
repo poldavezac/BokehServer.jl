@@ -33,7 +33,7 @@ function _👻runchecks(rend::Models.GlyphRenderer)
             ismissing(field) || hascol(field) || push!(errs, "$name.$col = \"$field\"")
         end
     end
-    isempty(errs) || throw(ErrorException("Missing or miss-spelled fields: $(join(errs, ", "))"))
+    isempty(errs) || throw(BokehException("Missing or miss-spelled fields: $(join(errs, ", "))"))
 end
 
 """
@@ -51,7 +51,7 @@ function _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
             arg = kwargs[col]
         elseif col ∈ Models.glyphargs(𝑇)
             val = Model.themevalue(𝑇, col)
-            isnothing(val) && throw(ErrorException("Missing argument $𝑇.$col"))
+            isnothing(val) && throw(BokehException("Missing argument $𝑇.$col"))
             arg = something(val)
         else
             continue
@@ -89,7 +89,7 @@ function _👻datasource!(𝐹::Function, kwargs, 𝑇::Type)
     for (col, arg, p𝑇) ∈ pairs
         cnv = Model.bokehconvert(p𝑇, arg)
         msg = if cnv isa Model.Unknown && !(arg isa AbstractArray)
-            throw(ErrorException("Not supported: `$𝑇.$col::$(p𝑇) = $arg::$(typeof(arg))"))
+            throw(BokehException("Not supported: `$𝑇.$col::$(p𝑇) = $arg::$(typeof(arg))"))
         else
             𝐹(col, arg, cnv, p𝑇)
         end
@@ -117,7 +117,7 @@ function _👻datasource!(kwargs::Dict{Symbol}, ::Missing, 𝑇::Type)
 
     _👻datasource!(kwargs, 𝑇) do col, arg, cnv, p𝑇
         if cnv isa Model.iSpec && !ismissing(cnv.field)
-            throw(ErrorException("Argument `$col` has a source-type entry, yet no source was provided"))
+            throw(BokehException("Argument `$col` has a source-type entry, yet no source was provided"))
         elseif cnv isa Model.Unknown && arg isa AbstractArray
             # no conversion for :x and :y as the indexes can be factors or numbers
             data["$col"] = col ∈ (:x, :y) ? arg : Model.datadictarray(p𝑇, arg)
@@ -139,7 +139,7 @@ function _👻datasource!(kwargs::Dict{Symbol}, src::Models.ColumnDataSource, �
     data = src.data
     _👻datasource!(kwargs, 𝑇) do col, arg, cnv, _
         if arg isa AbstractArray
-            throw(ErrorException("Argument `$col` is a vector even though a data source has also been provided"))
+            throw(BokehException("Argument `$col` is a vector even though a data source has also been provided"))
         else
             arg
         end

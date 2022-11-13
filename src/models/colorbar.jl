@@ -2,15 +2,15 @@
 
 @model mutable struct ColorBar <: iColorBar
 
-    background_fill_alpha :: Model.Percent = 0.95
+    background_fill_alpha :: Model.Percent = 1.0
 
-    background_fill_color :: Union{Nothing, Model.Color} = "#FFFFFF"
+    background_fill_color :: Union{Nothing, Model.Color} = "#808080"
 
     bar_line_alpha :: Model.Percent = 1.0
 
     bar_line_cap :: Model.LineCap = :butt
 
-    bar_line_color :: Union{Nothing, Model.Color} = nothing
+    bar_line_color :: Union{Nothing, Model.Color} = "#000000"
 
     bar_line_dash :: Model.DashPattern = Int64[]
 
@@ -24,7 +24,7 @@
 
     border_line_cap :: Model.LineCap = :butt
 
-    border_line_color :: Union{Nothing, Model.Color} = nothing
+    border_line_color :: Union{Nothing, Model.Color} = "#000000"
 
     border_line_dash :: Model.DashPattern = Int64[]
 
@@ -37,6 +37,10 @@
     color_mapper :: iColorMapper
 
     coordinates :: Union{Nothing, iCoordinateMapping} = nothing
+
+    display_high :: Union{Nothing, Float64} = nothing
+
+    display_low :: Union{Nothing, Float64} = nothing
 
     formatter :: Union{iTickFormatter, Model.EnumType{(:auto,)}} = :auto
 
@@ -64,11 +68,13 @@
 
     major_label_text_font :: String = "helvetica"
 
-    major_label_text_font_size :: Model.FontSize = "11px"
+    major_label_text_font_size :: Model.FontSize = "16px"
 
     major_label_text_font_style :: Model.FontStyle = :normal
 
     major_label_text_line_height :: Float64 = 1.2
+
+    major_label_text_outline_color :: Union{Nothing, Model.Color} = nothing
 
     major_tick_in :: Int64 = 5
 
@@ -76,7 +82,7 @@
 
     major_tick_line_cap :: Model.LineCap = :butt
 
-    major_tick_line_color :: Union{Nothing, Model.Color} = "#FFFFFF"
+    major_tick_line_color :: Union{Nothing, Model.Color} = "#000000"
 
     major_tick_line_dash :: Model.DashPattern = Int64[]
 
@@ -96,7 +102,7 @@
 
     minor_tick_line_cap :: Model.LineCap = :butt
 
-    minor_tick_line_color :: Union{Nothing, Model.Color} = nothing
+    minor_tick_line_color :: Union{Nothing, Model.Color} = "#000000"
 
     minor_tick_line_dash :: Model.DashPattern = Int64[]
 
@@ -130,11 +136,13 @@
 
     title_text_font :: String = "helvetica"
 
-    title_text_font_size :: Model.FontSize = "13px"
+    title_text_font_size :: Model.FontSize = "16px"
 
-    title_text_font_style :: Model.FontStyle = :italic
+    title_text_font_style :: Model.FontStyle = :normal
 
     title_text_line_height :: Float64 = 1.2
+
+    title_text_outline_color :: Union{Nothing, Model.Color} = nothing
 
     visible :: Bool = true
 

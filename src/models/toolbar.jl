@@ -14,8 +14,16 @@
 
     autohide :: Bool = false
 
+    classes :: Vector{String} = String[]
+
     logo :: Union{Nothing, Model.EnumType{(:normal, :grey)}} = :normal
 
-    tools :: Vector{iTool} = iTool[]
+    styles :: Union{iStyles, Dict{String, Union{Nothing, String}}} = Dict{String, Union{Nothing, String}}()
+
+    stylesheets :: Vector{Union{Dict{String, Union{iStyles, Dict{String, Union{Nothing, String}}}}, String}} = Union{Dict{String, Union{iStyles, Dict{String, Union{Nothing, String}}}}, String}[]
+
+    tools :: Vector{Union{iTool, iToolProxy}} = Union{iTool, iToolProxy}[]
+
+    visible :: Bool = true
 end
 export Toolbar

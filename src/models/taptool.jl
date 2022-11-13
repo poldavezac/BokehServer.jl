@@ -10,9 +10,9 @@
 
     gesture :: Model.EnumType{(:tap, :doubletap)} = :tap
 
-    mode :: Model.EnumType{(:replace, :append, :intersect, :subtract)} = :replace
+    icon :: Union{Nothing, Model.ToolIconValue} = nothing
 
-    names :: Vector{String} = String[]
+    mode :: Model.EnumType{(:replace, :append, :intersect, :subtract)} = :replace
 
     renderers :: Union{Model.EnumType{(:auto,)}, Vector{iDataRenderer}} = :auto
 end

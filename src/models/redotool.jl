@@ -3,5 +3,7 @@
 @model mutable struct RedoTool <: iRedoTool
 
     description :: Union{Nothing, String} = nothing
+
+    icon :: Union{Nothing, Model.ToolIconValue} = nothing
 end
 export RedoTool

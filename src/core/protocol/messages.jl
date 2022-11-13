@@ -1,25 +1,28 @@
 module Messages
 using JSON
 using HTTP.WebSockets
+using DataStructures: OrderedDict
 using ..AbstractTypes
 using ..Protocol: Buffers, PROTOCOL_VERSION
-
-const ID      = bokehidmaker()
 
 abstract type iMessage end
 
 struct RawMessage <: iMessage
     header   :: String
-    contents :: String
     meta     :: String
+    contents :: String
     buffers  :: Vector{Pair{Vector{UInt8}, Vector{UInt8}}}
 end
 
 struct Message{T} <: iMessage
-    header   :: Dict{String}
-    contents :: Dict{String}
-    meta     :: Dict{String}
+    header   :: Dict{String, Any}
+    meta     :: Dict{String, Any}
+    contents :: OrderedDict{String, Any}
     buffers  :: Buffers
+    function Message{T}(h, m, c, b) where {T}
+        @assert c isa OrderedDict{String, Any}
+        new(h, m, c, b)
+    end
 end
 
 "All possible messages"
@@ -71,7 +74,7 @@ struct ProtocolIterator
         if :msgid ∈ keys(dmeta)
             dhdr[:msgid] = "$(pop!(dmeta, :msgid))"
         elseif isnothing(get(dhdr, :msgid, nothing))
-            dhdr[:msgid] = string(ID())
+            dhdr[:msgid] = string(newid())
         else
             dhdr[:msgid] = "$(dhrd[:msgid])"
         end
@@ -137,6 +140,11 @@ message(hdr::_h"ERROR", reqid::String, text::String; meta...) = ProtocolIterator
 
 message(hdr::_h"PATCH-DOC", evts::NamedTuple, buffers::Buffers; meta...)  = ProtocolIterator(hdr, evts, meta; buffers)
 message(hdr::_h"PULL-DOC-REPLY", reqid::String, doc::NamedTuple; meta...) = ProtocolIterator(hdr, doc, meta; reqid)
+function message(hdr::_h"PULL-DOC-REPLY", reqid::String, doc::NamedTuple, buffers::Buffers; meta...)
+    @assert isempty(buffers) # javascript does not deal with this
+    ProtocolIterator(hdr, doc, meta; reqid)
+end
+
 message(hdr::_h"SERVER-INFO-REPLY", reqid::String; meta...)               = ProtocolIterator(
     hdr,
     (; version_info = (; bokeh = "$(PROTOCOL_VERSION)", server = "$(PROTOCOL_VERSION)")),
@@ -147,7 +155,7 @@ message(hdr::_h"SERVER-INFO-REPLY", reqid::String; meta...)               = Prot
 function sendmessage(ios, 𝑇::Type{<:iMessage}, args...; kwa...) :: String
     @nospecialize ios 𝑇 args kwa
     @assert !isempty(ios)
-    msgid = string(ID())
+    msgid = string(newid())
 
     itr = message(𝑇, args...; kwa...)
     for line ∈ collect(itr), io ∈ ios
@@ -205,7 +213,7 @@ function Message(raw::RawMessage)
     if isempty(raw.header)
         return Message{:EMPTY}(
             Dict{String, Any}(),
-            Dict{String, Any}(),
+            OrderedDict{String, Any}(),
             Dict{String, Any}(),
             Pair{Dict{String, Any}, Vector}[]
         )
@@ -214,7 +222,7 @@ function Message(raw::RawMessage)
     return Message{Symbol(hdr["msgtype"])}(
         hdr,
         JSON.parse(raw.meta),
-        JSON.parse(raw.contents),
+        JSON.parse(raw.contents; dicttype = OrderedDict{String, Any}),
         collect(eltype(Buffers), (JSON.parse(i)["id"] => j for (i, j) ∈ raw.buffers))
     )
 end
@@ -237,7 +245,7 @@ for args ∈ (
     precompile(sendmessage, (WebSockets.WebSocket, args..., Vararg{Any}))
 end
 
-export sendmessage, Message, @msg_str, receivemessage, isreply
+export sendmessage, @msg_str, receivemessage, isreply
 end
 
 using .Messages

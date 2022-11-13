@@ -22,6 +22,8 @@
 
     axis_label_text_line_height :: Float64 = 1.2
 
+    axis_label_text_outline_color :: Union{Nothing, Model.Color} = nothing
+
     axis_line_alpha :: Model.Percent = 1.0
 
     axis_line_cap :: Model.LineCap = :butt
@@ -71,6 +73,8 @@
     major_label_text_font_style :: Model.FontStyle = :normal
 
     major_label_text_line_height :: Float64 = 1.2
+
+    major_label_text_outline_color :: Union{Nothing, Model.Color} = nothing
 
     major_tick_in :: Int64 = 2
 

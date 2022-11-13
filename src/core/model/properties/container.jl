@@ -26,10 +26,10 @@ function bokehconvert(𝑇::Type{<:AbstractDict{𝐾, 𝑉}}, ν::AbstractDict) 
     outp   = bokehstoragetype(𝑇)()
     for (i,j) ∈ ν
         iv = bokehconvert(𝐾, i)
-        (iv isa Unknown) && return Unknown()
+        (iv isa Unknown) && return iv
 
         jv = bokehconvert(𝑉, j)
-        (jv isa Unknown) && return Unknown()
+        (jv isa Unknown) && return jv
 
         push!(outp, iv => jv)
     end
@@ -41,7 +41,7 @@ for cls ∈ (AbstractSet, AbstractVector)
         outp = bokehstoragetype(𝑇)()
         for i ∈ ν
             iv = bokehconvert(𝐼, i)
-            (iv isa Unknown) && return Unknown()
+            (iv isa Unknown) && return iv
             push!(outp, iv)
         end
         return outp
@@ -119,6 +119,21 @@ struct RestrictedKey{T} <: iProperty end
 bokehstoragetype(::Type{<:RestrictedKey}) = Symbol
 bokehconvert(𝑇::Type{<:RestrictedKey}, ν::AbstractString) = bokehconvert(𝑇, Symbol(ν))
 function bokehconvert(::Type{RestrictedKey{T}}, ν::Symbol) where {T}
-    (ν ∈ T) && throw(KeyError("Key $ν is not allowed"))
-    return ν
+    return (ν ∈ T) ? Unknown("key `$ν` is not allowed") : ν
+end
+
+struct NonEmpty{T}
+    items :: T
+end
+
+bokehstoragetype(::Type{NonEmpty{T}}) where {T} = T
+
+function bokehconvert(𝑇::Type{<:NonEmpty}, ν::AbstractVector)
+    @nospecialize 𝑇 ν
+    return isempty(ν) ? Unknown("container cannot be empty!") : bokehconvert(𝑇.parameters[1], ν)
+end
+
+function bokehread(𝑇::Type{<:NonEmpty}, µ::iHasProps, α::Symbol, ν::CONTAINERS)
+    @nospecialize 𝑇 μ ν
+    return bokehread(𝑇.parameters[1], μ, α, ν)
 end

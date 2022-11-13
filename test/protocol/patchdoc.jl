@@ -7,11 +7,11 @@ JSON = BokehServer.Protocol.Messages.JSON
     json(x) = JSON.json(BokehServer.Protocol.serialize(x))
 
     val   = json(E.ModelChangedEvent(mdl, :a, 10, 20))
-    truth = """{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"new":20}"""
+    truth = """{"attr":"a","kind":"ModelChanged","model":{"id":"1"},"new":20}"""
     @test JSON.parse(val) == JSON.parse(truth)
 
     val   = json(E.RootAddedEvent(doc, mdl, 1))
-    truth = """{"kind":"RootAdded","model":{"id":"1"}}"""
+    truth = """{"kind":"RootAdded","model":{"id":"1","name":"$(nameof(ProtocolX))","type":"object"}}"""
     @test JSON.parse(val) == JSON.parse(truth)
 
     val   = json(E.RootRemovedEvent(doc, mdl, 1))
@@ -22,16 +22,19 @@ JSON = BokehServer.Protocol.Messages.JSON
         push!(doc, mdl)
         # next change should not be sent to the client as the model is brand new
         mdl.a = 100
-        val   = JSON.json(BokehServer.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}()))
-        truth = """{"events":[{"kind":"RootAdded","model":{"id":"1"}}],"""*
-            """"references":[{"attributes":{"a":100},"id":"1","type":"$(nameof(ProtocolX))"}]}"""
+        val   = let out = BokehServer.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}())
+            JSON.json((; out.events))
+        end
+        truth = """{"events":[{"kind":"RootAdded","model":{"attributes":{"a":100},"id":"1","type":"object","name":"$(nameof(ProtocolX))"}}]}"""
         @test JSON.parse(val) == JSON.parse(truth)
     end
 
     E.eventlist!() do
         mdl.a = 10
-        val   = JSON.json(BokehServer.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([mdl.id])))
-        truth = """{"events":[{"attr":"a","hint":null,"kind":"ModelChanged","model":{"id":"1"},"new":10}],"references":[]}"""
+        val   = let out = BokehServer.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([mdl.id]))
+            JSON.json((; out.events))
+        end
+        truth = """{"events":[{"attr":"a","kind":"ModelChanged","model":{"id":"1"},"new":10}]}"""
         @test JSON.parse(val) == JSON.parse(truth)
     end
 end
@@ -45,13 +48,13 @@ end
     mdl  = ProtocolX(; id = 100,a  = 10)
     E    = BokehServer.Events
     buf  = BokehServer.Protocol.Buffers()
-    js(x)= JSON.parse(JSON.json(BokehServer.Protocol.serialize(x)))
+    js(x)= JSON.parse(JSON.json(
+        BokehServer.Protocol.serialize(x));
+        dicttype = BokehServer.Protocol.Encoding.DataStructures.OrderedDict
+    )
     @testset "add first root" begin
         E.eventlist!() do
-            cnt = Dict{String, Any}(
-                "references" => Any[js(mdl)],
-                "events" =>  Any[js(E.RootAddedEvent(doc, mdl, 1))],
-            )
+            cnt = Dict{String, Any}("events" => Any[js(E.RootAddedEvent(doc, mdl, 1))])
 
             @test isempty(doc)
             BokehServer.Protocol.patchdoc!(doc, cnt, buf)
@@ -64,23 +67,17 @@ end
 
     @testset "add root again" begin
         E.eventlist!() do
-            cnt = Dict{String, Any}(
-                "references" => Any[],
-                "events" =>  Any[js(E.RootAddedEvent(doc, mdl, 1))],
-            )
+            cnt = Dict{String, Any}("events" => Any[js(E.RootAddedEvent(doc, mdl, 1))])
 
             @test length(doc) == 1
-            @test_throws ErrorException BokehServer.Protocol.patchdoc!(doc, cnt, buf)
+            @test_throws BokehServer.BokehException BokehServer.Protocol.patchdoc!(doc, cnt, buf)
             @test length(doc) == 1
         end
     end
 
     @testset "remove root" begin
         E.eventlist!() do
-            cnt = Dict{String, Any}(
-                "references" => Any[],
-                "events" =>  Any[js(E.RootRemovedEvent(doc, mdl, 1))],
-            )
+            cnt = Dict{String, Any}("events" => Any[js(E.RootRemovedEvent(doc, mdl, 1))])
 
             @test length(doc) == 1
             BokehServer.Protocol.patchdoc!(doc, cnt, buf)
@@ -90,10 +87,7 @@ end
 
     @testset "change title" begin
         E.eventlist!() do
-            cnt = Dict{String, Any}(
-                "references" => Any[],
-                "events" => Any[js(E.TitleChangedEvent(doc, "A"))],
-            )
+            cnt = Dict{String, Any}("events" => Any[js(E.TitleChangedEvent(doc, "A"))])
 
             setfield!(doc, :title, "----")
             BokehServer.Protocol.patchdoc!(doc, cnt, buf)
@@ -104,13 +98,10 @@ end
     ymdl  = ProtocolY()
     @testset "add y root" begin
         E.eventlist!() do
-            cnt = Dict{String, Any}(
-                "references" => Any[js(ymdl), js(ymdl.a), js(mdl)],
-                "events" => Any[
-                    js(E.RootAddedEvent(doc, mdl, 1)),
-                    js(E.RootAddedEvent(doc, ymdl, 1))
-                ],
-            )
+            cnt = Dict{String, Any}("events" => Any[
+                js(E.RootAddedEvent(doc, mdl, 1)),
+                js(E.RootAddedEvent(doc, ymdl, 1))
+            ])
 
             @test isempty(doc)
             BokehServer.Protocol.patchdoc!(doc, cnt, buf)
@@ -125,7 +116,6 @@ end
         E.eventlist!() do
             other = ProtocolX()
             cnt = Dict{String, Any}(
-                "references" => Any[js(other)],
                 "events" => Any[js(E.ModelChangedEvent(ymdl, :a, nothing, other))],
             )
 
@@ -147,10 +137,7 @@ end
                 called[] = true
             end
                 
-            cnt = Dict{String, Any}(
-                "references" => Any[],
-                "events" => Any[js(BokehServer.ButtonClick(; model = btn))],
-            )
+            cnt = Dict{String, Any}("events" => Any[js(BokehServer.ButtonClick(; model = btn))])
             BokehServer.Protocol.patchdoc!(doc, cnt, buf)
             @test called[]
         end
@@ -162,7 +149,6 @@ end
             a     = [ProtocolX(;a = 1), ProtocolX(;a = 2)]
             other = ProtocolZ(; a, b = (; value = 100, transform = a[1]))
             cnt = Dict{String, Any}(
-                "references" => Any[js(other), js(other.a[1]), js(other.a[2])],
                 "events" => Any[js(BokehServer.Events.RootAddedEvent(doc, other, 1))]
             )
             BokehServer.Protocol.patchdoc!(doc, cnt, buf)
@@ -180,13 +166,15 @@ function _test_patch(𝐹::Function)
         x, truth = 𝐹(:init, nothing)
         doc      = BokehServer.Document(; roots = BokehServer.iModel[x])
         𝐹(:mutate, x)
-        val   = JSON.json(BokehServer.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([x.id])))
+        val   = let out = BokehServer.Protocol.patchdoc(E.task_eventlist().events, doc, Set{Int64}([x.id]))
+            JSON.json((; out.events))
+        end
         # the '2' has changed to a '1' !
-        @test JSON.parse(val) == JSON.parse("""{"events":[$truth],"references":[]}""")
+        @test JSON.parse(val) == JSON.parse("""{"events":[$truth]}""")
 
         x, truth = 𝐹(:init, nothing)
         doc      = BokehServer.Document(; roots = BokehServer.iModel[x])
-        cnt      = Dict{String, Any}("references" => Any[], "events" => Any[JSON.parse(truth)])
+        cnt      = Dict{String, Any}("events" => Any[JSON.parse(truth)])
         BokehServer.Protocol.patchdoc!(doc, cnt, BokehServer.Protocol.Buffers())
         @test 𝐹(:verify, x)
     end
@@ -196,7 +184,7 @@ end
     _test_patch() do state, x
         return if state ≡ :init
             x = X(; data = Dict("a" => [1, 2]))
-            x, """{"kind":"ColumnsPatched","column_source":{"id":"$(x.id)"},"patches":{"a":[[1,4]]}}"""
+            x, """{"kind":"ColumnsPatched","model":{"id":"$(x.id)"},"attr":"data","patches":{"entries":[["a",[[1,4]]]],"type":"map"}}"""
         elseif state ≡ :mutate
             merge!(x.data, "a" => 2 => 4)
         else
@@ -209,7 +197,7 @@ end
     _test_patch() do state, x
         return if state ≡ :init
             x =  BokehServer.Selection()
-            x, """{"kind":"ModelChanged","attr":"indices","hint":null,"new":[0,1,2,3,4],"model":{"id":"$(x.id)"}}"""
+            x, """{"kind":"ModelChanged","attr":"indices","new":[0,1,2,3,4],"model":{"id":"$(x.id)"}}"""
         elseif state ≡ :mutate
             x.indices = collect(1:5)
         else

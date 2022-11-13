@@ -4,7 +4,7 @@ using ..Plotting
 using ...Models
 
 function _stack(kw, stackers::AbstractVector{<:AbstractString}, spec::Symbol)
-    haskey(kw, spec) && throw(ErrorException(
+    haskey(kw, spec) && throw(BokehException(
         "Stack properties '$specs' cannot appear in keyword args"
     ))
 
@@ -26,7 +26,7 @@ function _stack(kw, stackers::AbstractVector{<:AbstractString}, spec::Symbol)
 end
 
 function _stack(kw, stackers::AbstractVector{<:AbstractString}, spec1::Symbol, spec2::Symbol)
-    any(haskey(kw, i) for i ∈ (spec1, spec2)) && throw(ErrorException(
+    any(haskey(kw, i) for i ∈ (spec1, spec2)) && throw(BokehException(
         "Stack properties '$specs' cannot appear in keyword args"
     ))
 
@@ -53,7 +53,7 @@ const _STACK_ARG = Union{AbstractVector{<:AbstractString}, Tuple{Vararg{Abstract
 
 function linestack!(plot::Models.Plot; x, y, kw...)
     return if x isa _STACK_ARG && y isa _STACK_ARG
-        throw(ErrorException("Only one of x or y may be a list of fields"))
+        throw(BokehException("Only one of x or y may be a list of fields"))
     elseif y isa _STACK_ARG
         Models.GlyphRenderer[Plotting.line!(plot; x, i...) for i ∈ _stack(kw, y, :y)]
     elseif x isa _STACK_ARG
@@ -65,7 +65,7 @@ end
 
 function areastack!(plot::Models.Plot; x, y, kw...)
     return if x isa _STACK_ARG && y isa _STACK_ARG
-        throw(ErrorException("Only one of x or y may be a list of fields"))
+        throw(BokehException("Only one of x or y may be a list of fields"))
     elseif y isa _STACK_ARG
         Models.GlyphRenderer[Plotting.varea!(plot; x, i...) for i ∈ _stack(kw, y, :y1, :y2)]
     elseif x isa _STACK_ARG
@@ -77,7 +77,7 @@ end
 
 function barstack!(plot::Models.Plot; x, y, kw...)
     return if x isa _STACK_ARG && y isa _STACK_ARG
-        throw(ErrorException("Only one of x or y may be a list of stackers"))
+        throw(BokehException("Only one of x or y may be a list of stackers"))
     elseif y isa _STACK_ARG
         Models.GlyphRenderer[Plotting.vbar!(plot; x, i...) for i ∈ _stack(kw, y, :bottom, :top)]
     elseif x isa _STACK_ARG

@@ -1,4 +1,11 @@
-
 [deps.bokeh]
 channel = "conda-forge"
 version = "2.4.3"
+
+[deps.xyzservices]
+channel = "conda-forge"
+version = "2022.6.0"
+
+[deps.pandas]
+channel = "conda-forge"
+version = "1.4.2"

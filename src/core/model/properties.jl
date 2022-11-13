@@ -1,4 +1,7 @@
-struct Unknown end
+struct Unknown <: iBokehException
+    msg::String
+end
+Unknown() = Unknown("")
 @inline bokehstoragetype(@nospecialize(T::Type)) = T
 @inline bokehunwrap(@nospecialize(ν))            = ν
 

@@ -56,6 +56,8 @@
 
     label_text_line_height :: Float64 = 1.2
 
+    label_text_outline_color :: Union{Nothing, Model.Color} = nothing
+
     label_width :: Int64 = 20
 
     level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
@@ -89,6 +91,8 @@
     title_text_font_style :: Model.FontStyle = :italic
 
     title_text_line_height :: Float64 = 1.2
+
+    title_text_outline_color :: Union{Nothing, Model.Color} = nothing
 
     visible :: Bool = true
 

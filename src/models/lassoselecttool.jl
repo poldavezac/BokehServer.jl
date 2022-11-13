@@ -4,11 +4,11 @@
 
     description :: Union{Nothing, String} = nothing
 
+    icon :: Union{Nothing, Model.ToolIconValue} = nothing
+
     mode :: Model.EnumType{(:replace, :append, :intersect, :subtract)} = :replace
 
-    names :: Vector{String} = String[]
-
-    overlay :: iPolyAnnotation = PolyAnnotation()
+    overlay :: iPolyAnnotation = PolyAnnotation(line_width = 2, fill_alpha = 0.5, line_dash = Any[4, 4], level = "overlay", xs_units = "canvas", visible = false, syncable = false, line_alpha = 1.0, fill_color = "lightgrey", ys_units = "canvas", line_color = "black")
 
     renderers :: Union{Model.EnumType{(:auto,)}, Vector{iDataRenderer}} = :auto
 

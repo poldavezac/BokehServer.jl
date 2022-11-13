@@ -26,9 +26,7 @@
 
     location :: Union{Nothing, Float64} = nothing
 
-    location_units :: Model.EnumType{(:screen, :data)} = :data
-
-    render_mode :: Model.EnumType{(:canvas, :css)} = :canvas
+    location_units :: Model.EnumType{(:canvas, :screen, :data)} = :data
 
     visible :: Bool = true
 

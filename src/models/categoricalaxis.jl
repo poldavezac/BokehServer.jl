@@ -22,6 +22,8 @@
 
     axis_label_text_line_height :: Float64 = 1.2
 
+    axis_label_text_outline_color :: Union{Nothing, Model.Color} = nothing
+
     axis_line_alpha :: Model.Percent = 1.0
 
     axis_line_cap :: Model.LineCap = :butt
@@ -64,6 +66,8 @@
 
     group_text_line_height :: Float64 = 1.2
 
+    group_text_outline_color :: Union{Nothing, Model.Color} = nothing
+
     level :: Model.EnumType{(:image, :underlay, :glyph, :guide, :annotation, :overlay)} = :image
 
     major_label_orientation :: Union{Float64, Model.EnumType{(:horizontal, :vertical)}} = :horizontal
@@ -89,6 +93,8 @@
     major_label_text_font_style :: Model.FontStyle = :normal
 
     major_label_text_line_height :: Float64 = 1.2
+
+    major_label_text_outline_color :: Union{Nothing, Model.Color} = nothing
 
     major_tick_in :: Int64 = 2
 
@@ -157,6 +163,8 @@
     subgroup_text_font_style :: Model.FontStyle = :bold
 
     subgroup_text_line_height :: Float64 = 1.2
+
+    subgroup_text_outline_color :: Union{Nothing, Model.Color} = nothing
 
     ticker :: iTicker = CategoricalTicker()
 

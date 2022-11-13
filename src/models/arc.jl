@@ -2,11 +2,11 @@
 
 @model mutable struct Arc <: iArc
 
+    decorations :: Vector{iDecoration} = iDecoration[]
+
     direction :: Model.EnumType{(:clock, :anticlock)} = :anticlock
 
     finish_angle :: Model.AngleSpec = "end_angle"
-
-    finish_angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     line_alpha :: Model.AlphaSpec = 1.0
 
@@ -24,11 +24,7 @@
 
     radius :: Model.DistanceSpec = "radius"
 
-    radius_units :: Model.EnumType{(:screen, :data)} = :data
-
     start_angle :: Model.AngleSpec = "start_angle"
-
-    start_angle_units :: Model.EnumType{(:deg, :rad, :grad, :turn)} = :rad
 
     x :: Model.NumberSpec = "x"
 

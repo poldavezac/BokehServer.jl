@@ -1,32 +1,41 @@
 module Defaults
+using PythonCall
 using ..BokehServer
 using ..BokehServer.Model.Dates
 using ..BokehServer.Themes.JSON
-using PythonCall
+using ..CodeCreator: modelnames, modelsmap
 
-modelsmap()  = pyimport("bokeh.models" => "Model").model_class_reverse_map
-modelnames() = (pyconvert(String, i) for i ∈ modelsmap().keys())
-model(name)  = name == "FigureOptions" ? pyimport("bokeh.plotting.figure" => name) : modelsmap()["$name"]
+function _getdefaultandname(cls, attr, prop)
+    dflt = get(cls.__overridden_defaults__, "$attr", prop._default)
+    name = pyconvert(Symbol, dflt.__class__.__name__)
+
+    if name ≡ :function
+        dflt = dflt()
+        name = pyconvert(Symbol, dflt.__class__.__name__)
+    end
+    return (dflt, name)
+end
+
 
 macro default(type, code)
     :(function parsedefault(T::Type{<:$type}, cls, attr::Symbol, prop)
-        dflt = get(cls.__overridden_defaults__, "$attr", prop._default)
-        name = pyconvert(Symbol, dflt.__class__.__name__)
-        if name ≡ :function
-            dflt = dflt()
-            name = pyconvert(Symbol, dflt.__class__.__name__)
-        end
+        (dflt, name) = _getdefaultandname(cls, attr, prop)
+        applicable(_parsedefault, Val(name), dflt) && return _parsedefault(Val(name), dflt)
 
-        (name ≡ :UndefinedType) && return nothing
-        (name ≡ :NoneType) && return Some(nothing)
-
-        mdl = pyconvert(String, dflt.__class__.__module__)
-        if startswith(mdl, "bokeh.")
-            return Some(Expr(:call, pyconvert(Symbol, dflt.__class__.__name__)))
-        end
         $code
         return missing
     end)
+end
+
+_parsedefault(::Val{:UndefinedType}, _...) = nothing
+_parsedefault(::Val{:NoneType}, _...)      = Some(nothing)
+_parsedefault(::Val{:timedelta}, _...)     = nothing
+_parsedefault(::Val{:bytes}, dflt)         = Some(pyconvert(Vector{UInt8}, dflt))
+
+function _parsedefault(::Val{:InstanceDefault}, dflt)
+    name = pyconvert(Symbol, dflt._model.__name__)
+    kwa  = JSON.parse(pyconvert(String, pyimport("json").dumps(dflt._kwargs)))
+    return Some(Expr(:call, name, (Expr(:kw, Symbol(i), j) for (i, j) ∈ kwa)...))
 end
 
 @default BokehServer.Model.EnumType (name ≡ :str) && return Some(pyconvert(Symbol, dflt))
@@ -36,14 +45,8 @@ parsedefault(::Type{BokehServer.Model.HatchPatternType}, cls, ::Symbol, prop) = 
 parsedefault(::Type{BokehServer.Model.HatchPatternSpec}, cls, ::Symbol, prop) = Some(:blank)
 
 function parsedefault(T::Union, cls, attr::Symbol, prop)
-    dflt = get(cls.__overridden_defaults__, "$attr", prop._default)
-    name = pyconvert(Symbol, dflt.__class__.__name__)
-    if name ≡ :function
-        dflt = dflt()
-        name = pyconvert(Symbol, dflt.__class__.__name__)
-    end
-    (name ≡ :UndefinedType) && return nothing
-    (name ≡ :NoneType) && return Some(nothing)
+    (dflt, name) = _getdefaultandname(cls, attr, prop)
+    applicable(_parsedefault, Val(name), dflt) && return _parsedefault(Val(name), dflt)
     for eT ∈ BokehServer.Model.UnionIterator(T)
         opt = parsedefault(eT, cls, attr, prop)
         ismissing(opt) || return opt
@@ -53,6 +56,19 @@ end
 
 struct _FakeProp
     _default::PythonCall.Py
+end
+
+@default BokehServer.Model.StringSpec begin
+    return if name ≡ :Value
+         (; value = pyconvert(String, dflt.value))
+    elseif name ≡ :Field
+        (; field = pyconvert(String, dflt.field))
+    elseif name ≡ :str
+        val = pyconvert(String, dflt)
+        "$attr" ≡ val ? (; field = val) : (; value = val)
+    else
+        throw(ErrorException("Not implemented: $name $dflt"))
+    end
 end
 
 @default Tuple if name ≡ :tuple && length(dflt) ≡ length(T.parameters)
@@ -73,7 +89,6 @@ __DUMMY__ = let cls = @BokehServer.wrap mutable struct gensym() <: BokehServer.M
 end
 
 @default Any begin
-    name ≡ :timedelta && return nothing
     name ≡ :str && isempty(dflt) && return Some("")
     mdl = pyconvert(String, dflt.__class__.__module__)
     if startswith(mdl, "bokeh.")
@@ -98,18 +113,23 @@ parsedefault(::Symbol, cls, attr::Symbol, prop) = parsedefault(Any, cls, attr, p
 "given a bokeh object, find an expression to recreate it"
 function _parsejson(obj::Py)
     cls  = pyconvert(Symbol, obj.__class__.__name__)
-    dico = pyconvert(Dict, obj.to_json(false))
-    pop!(dico, "id")
-    isempty(dico) && return Some(Expr(:call, cls))
-
-    for (i, j) ∈ collect(dico)
-        dico[i] = if j isa Py && pyconvert(Symbol, j.__class__.__name__) ≡ :dict && haskey(j, "id")
-            something(_parsejson(getproperty(obj, i)))
-        else
-            JSON.parse(pyconvert(String, pyimport("json").dumps(j)))
+    dico = pyconvert(Dict{String, Any}, obj.to_serializable(pyimport("bokeh.core.serialization").Serializer()))
+    expr = Expr(:call, cls)
+    if get(dico, "type", nothing) ∈ ("field", "value", "expr")
+        @assert length(dico) == 2
+        return Some(dico[dico["type"]])
+    elseif haskey(dico, "attributes")
+        dico = pyconvert(Dict{String, Any}, dico["attributes"])
+        for (i, j) ∈ collect(dico)
+            dico[i] = if j isa Py && pyconvert(Symbol, j.__class__.__name__) ≡ :dict && haskey(j, "id")
+                something(_parsejson(getproperty(obj, i)))
+            else
+                JSON.parse(pyconvert(String, pyimport("json").dumps(j)))
+            end
         end
+        push!(expr.args, Expr(:parameters, (Expr(:kw, Symbol(i), j) for (i, j) ∈ dico)...))
     end
-    return Some(Expr(:call, cls, Expr(:parameters, (Expr(:kw, Symbol(i), j) for (i, j) ∈ dico)...)))
+    return Some(expr)
 end
 
 end

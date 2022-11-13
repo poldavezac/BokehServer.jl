@@ -45,13 +45,18 @@ color(r, g, b, a)                                         = Color(r, g, b, a)
 color(r, g, b)                                            = Color(r, g, b, 0xff)
 color(ν::Union{NTuple{4,<:Integer}, NTuple{3,<:Integer}}) = Color(ν...)
 color(ν::Int32)                                           = Color(reinterpret(UIn8, Int32[ν])...)
+color(ν::Colors.Colorant) = color((
+    convert(UInt8, round(typemax(UInt8)*i))
+    for i ∈ (Colors.red(ν), Colors.green(ν), Colors.blue(ν), Colors.alpha(ν))
+)...)
+color(ν::Color) = ν
 
 Color(r, g, b)                                            = Color(r, g, b, 0xff)
 Color(ν::Union{NTuple{4,<:Integer}, NTuple{3,<:Integer}}) = Color(ν...)
 Color(ν::Int32)                                           = Color(reinterpret(UIn8, Int32[ν])...)
 function Color(ν::AbstractString)
     c = color(ν)
-    ismissing(ν) && throw(ErrorException("unknown color $ν"))
+    ismissing(ν) && throw(BokehException("unknown color $ν"))
     return c
 end
 

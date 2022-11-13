@@ -3,5 +3,7 @@
 @model mutable struct UndoTool <: iUndoTool
 
     description :: Union{Nothing, String} = nothing
+
+    icon :: Union{Nothing, Model.ToolIconValue} = nothing
 end
 export UndoTool

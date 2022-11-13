@@ -31,8 +31,9 @@ end
 
 @testset "send PATCHDOC" begin
     val   = collect(BokehServer.Protocol.Messages.message(
-        BokehServer.Protocol.Messages.msg"PATCH-DOC", (; a = "AAA"), ["A"=>UInt8['B']])
-    )
+        BokehServer.Protocol.Messages.msg"PATCH-DOC", (; a = "AAA"), ["A"=>UInt8['B']];
+        msgid = 1001
+    ))
     @test BokehServer.Protocol.JSON.parse(val[1]) == Dict{String, Any}(
         "msgid"=>"1001", "msgtype" => "PATCH-DOC", "num_buffers" => 1
     )

@@ -142,7 +142,7 @@ function addaxis!(
     isxaxis = items.axis ≡ :x
     ismissing(location) && (location = isxaxis ? :below : :left)
     if !isnothing(location) && (location ∉ _LOCATIONS)
-        throw(ErrorException("Location should be Nothing or $_LOCATIONS"))
+        throw(BokehException("Location should be Nothing or $_LOCATIONS"))
     end
     fname(x) = isxaxis ? x : Symbol(replace("$x", "x" => "y"))
 
@@ -351,7 +351,7 @@ function resetaxis!(
         location  :: Union{Nothing, Missing, Symbol} = missing,
         dotrigger :: Bool                            = true,
 )
-    old = getaxis(fig, items.isaxis; items.rangename, items.axisname)
+    old = getaxis(fig, items.axis; items.rangename, items.axisname)
     popaxis!(fig, old; dotrigger)
     addaxis!(fig, items; location, dotrigger)
 end

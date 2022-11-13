@@ -8,6 +8,8 @@
 
     factor :: Model.Percent = 0.1
 
+    icon :: Union{Nothing, Model.ToolIconValue} = nothing
+
     maintain_focus :: Bool = true
 end
 export ZoomOutTool

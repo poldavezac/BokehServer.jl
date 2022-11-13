@@ -2,21 +2,23 @@
 
 @model mutable struct Image <: iImage
 
-    color_mapper :: iColorMapper = LinearColorMapper()
+    anchor :: Union{Tuple{Union{Model.Percent, Model.EnumType{(:start, :center, :end, :top, :bottom)}}, Union{Model.Percent, Model.EnumType{(:start, :center, :end, :left, :right)}}}, Model.EnumType{(:top_left, :top_center, :top_right, :center_left, :center_center, :center_right, :bottom_left, :bottom_center, :bottom_right, :top, :left, :center, :right, :bottom)}} = :bottom_left
+
+    color_mapper :: iColorMapper = LinearColorMapper(palette = "Greys9")
+
+    decorations :: Vector{iDecoration} = iDecoration[]
 
     dh :: Model.DistanceSpec = "dh"
-
-    dh_units :: Model.EnumType{(:screen, :data)} = :data
 
     dilate :: Bool = false
 
     dw :: Model.DistanceSpec = "dw"
 
-    dw_units :: Model.EnumType{(:screen, :data)} = :data
-
-    global_alpha :: Model.NumberSpec = 1.0
+    global_alpha :: Model.AlphaSpec = 1.0
 
     image :: Model.NumberSpec = "image"
+
+    origin :: Model.EnumType{(:bottom_left, :top_left, :bottom_right, :top_right)} = :bottom_left
 
     x :: Model.NumberSpec = "x"
 

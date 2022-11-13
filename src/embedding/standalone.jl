@@ -8,7 +8,7 @@ the different document roots.
 """
 function standalone(models::Vararg{iModel}; app = nothing)
     roots  = Server.makerootids(app, models...)
-    script = let doc = pushdoc(Server.CONFIG.title, models)
+    script = let doc = pushdoc(Server.CONFIG.title, models).doc
         docid = Server.makeid(app)
         Server.Templates.scripttag(Server.Templates.onload(Templates.safely(Templates.docjs(
             string("'{\"", docid, "\":", JSON.json(doc), "}'"),

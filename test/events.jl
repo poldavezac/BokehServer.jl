@@ -8,6 +8,21 @@ EventsY = @BokehServer.wrap mutable struct gensym() <: BokehServer.iModel
     a::EventsX = EventsX(; a = -1)
 end
 
+@testset "event compare" begin
+    m1 = EventsX()
+    m2 = EventsX()
+    args = [m1, :a, 1, 10]
+    e1 = BokehServer.Events.ModelChangedEvent(args...)
+    for (i, j) ∈ enumerate((m2, :b, 2, 11))
+        a2 = copy(args)
+        a2[i] = j
+        e2 = BokehServer.Events.ModelChangedEvent(a2...)
+        @test !BokehServer.Model.compare(e1, e2)
+    end
+    e2 = BokehServer.Events.ModelChangedEvent(args...)
+    @test BokehServer.Model.compare(e1, e2)
+end
+
 @testset "create model events" begin
     obj = EventsX()
 

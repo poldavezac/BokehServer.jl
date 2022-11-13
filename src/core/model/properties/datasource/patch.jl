@@ -1,6 +1,6 @@
 macro _𝑑𝑠_applicable(code)
     esc(:(if !applicable($(code.args...))
-        throw(ErrorException("Unknown patch format $key => $patch" * $(", see $code") * " with arr = $(typeof(arr))"))
+        throw(BokehException("Unknown patch format $key => $patch" * $(", see $code") * " with arr = $(typeof(arr))"))
     else
         $code
     end))
@@ -48,7 +48,7 @@ function patch!(
     agg = Dict{String, Vector{Pair}}()
     for dico ∈ patches, (attr, vect) ∈ dico
         arr = get(γ.values, attr, nothing)
-        isnothing(arr) && throw(ErrorException("Can only patch existing columns"))
+        isnothing(arr) && throw(BokehException("Can only patch existing columns"))
 
         arragg = get!(()->Pair[], agg, attr)
         for (key, patch) ∈ vect
@@ -84,7 +84,7 @@ function _𝑑𝑠_slice(𝑎, 𝑥)
     end
 end
 
-_𝑑𝑠_err(𝑘, 𝑣) = throw(ErrorException("Unable to apply path $𝑘 => $𝑣"))
+_𝑑𝑠_err(𝑘, 𝑣) = throw(BokehException("Unable to apply path $𝑘 => $𝑣"))
 
 function _𝑑𝑠_convert(𝑎::AbstractVector, key::Integer, patch)
     (1 ≤ key ≤ length(𝑎)) || _𝑑𝑠_err(key, patch)

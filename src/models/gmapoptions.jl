@@ -2,15 +2,15 @@
 
 @model mutable struct GMapOptions <: iGMapOptions
 
-    lat :: Float64
+    lat :: Float64 = required
 
-    lng :: Float64
+    lng :: Float64 = required
 
     map_type :: Model.EnumType{(:satellite, :roadmap, :terrain, :hybrid)} = :roadmap
 
     scale_control :: Bool = false
 
-    styles :: Model.JSONString
+    styles :: Union{Nothing, Model.JSONString} = nothing
 
     tilt :: Int64 = 45
 

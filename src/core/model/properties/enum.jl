@@ -28,20 +28,30 @@ macro enum_str(x)
     EnumType{tuple(Symbol.(strip.(split(x, ',')))...)}
 end
 
-const SpatialUnits = EnumType{(:data, :screen)}
-const AngleUnits   = EnumType{(:rad, :deg, :grad, :turn)}
-const LineCap      = EnumType{(:butt, :round, :square)}
-const LineDash     = EnumType{(:solid, :dashed, :dotted, :dotdash, :dashdot)}
-const LineJoin     = EnumType{(:miter, :round, :bevel)}
-const TextAlign    = EnumType{(:left, :right, :center)}
-const TextBaseline = EnumType{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)}
-const FontStyle    = EnumType{(:normal, :italic, :bold, Symbol("bold italic"))}
-const MarkerType   = EnumType{(
+const VerticalLocation   = EnumType{(:above, :below)}
+const HorizontalLocation = EnumType{(:left, :right)}
+const CoordinateUnits    = EnumType{(:data, :canvas, :screen)}
+const SpatialUnits       = EnumType{(:data, :screen)}
+const AngleUnits         = EnumType{(:rad, :deg, :grad, :turn)}
+const LineCap            = EnumType{(:butt, :round, :square)}
+const LineDash           = EnumType{(:solid, :dashed, :dotted, :dotdash, :dashdot)}
+const LineJoin           = EnumType{(:miter, :round, :bevel)}
+const TextAlign          = EnumType{(:left, :right, :center)}
+const TextBaseline       = EnumType{(:top, :middle, :bottom, :alphabetic, :hanging, :ideographic)}
+const FontStyle          = EnumType{(:normal, :italic, :bold, Symbol("bold italic"))}
+const MarkerType         = EnumType{(
     :circle, :asterisk, :circle_cross, :circle_dot, :circle_x,
     :circle_y, :cross, :dash, :diamond, :diamond_cross, :diamond_dot,
     :dot, :hex, :hex_dot, :inverted_triangle, :plus, :square,
     :square_cross, :square_dot, :square_pin, :square_x, :star, :star_dot,
     :triangle, :triangle_dot, :triangle_pin, :x, :y
+)}
+const ToolIcon = EnumType{(
+    :append_mode, :box_edit, :box_select, :box_zoom, :clear_selection, :copy,
+    :crosshair, :freehand_draw, :help, :hover, :intersect_mode, :lasso_select,
+    :line_edit, :pan, :point_draw, :poly_draw, :poly_edit, :polygon_select,
+    :range, :redo, :replace_mode, :reset, :save, :subtract_mode, :tap_select,
+    :undo, :wheel_pan, :wheel_zoom, :xpan, :ypan, :zoom_in, :zoom_out,
 )}
 const HatchPatternType = EnumType{(
     :blank,
@@ -63,7 +73,9 @@ const HatchPatternType = EnumType{(
     :criss_cross,
 )}
 
-for 𝑇 ∈ (:LineCap, :LineDash, :LineJoin, :MarkerType, :TextAlign, :TextBaseline, :HatchPatternType, :FontStyle, :AngleUnits, :SpatialUnits)
+for 𝑇 ∈ (:LineCap, :LineDash, :LineJoin, :MarkerType, :TextAlign,
+         :TextBaseline, :HatchPatternType, :FontStyle, :AngleUnits,
+         :SpatialUnits, :ToolIcon, :HorizontalLocation, :VerticalLocation)
     @eval Base.show(io::IO, ::Type{$𝑇}) = print(io::IO, $("BokehServer.Model.$𝑇"))
 end
 

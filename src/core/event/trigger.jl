@@ -20,7 +20,7 @@ function trigger!(λ::iEventList, ε::TitleChangedEvent)
     push!(λ, ε)
 end
 
-trigger!(λ::Events.iEventList, ε::iActionEvent) = push!(λ, ε)
+trigger!(λ::Events.iEventList, ε::iUIEvent) = push!(λ, ε)
 
 function trigger(args...)
     @assert task_hasevents() "No event list was set: doc is readonly in this task!"
@@ -29,7 +29,7 @@ end
 
 function testcantrigger()
     isempty(task_hasevents()) || return
-    throw(ErrorException(if isinteractive()
+    throw(BokehException(if isinteractive()
         """ No event list was set: doc is readonly in this task!
         In a `Pluto` or `Jupyter` environment, add a cell with the 
         following: `BokehServer.Embeddings.notebook()`

@@ -2,6 +2,8 @@
 
 @model mutable struct Patch <: iPatch
 
+    decorations :: Vector{iDecoration} = iDecoration[]
+
     fill_alpha :: Model.Percent = 1.0
 
     fill_color :: Union{Nothing, Model.Color} = "#808080"

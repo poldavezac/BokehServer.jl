@@ -52,7 +52,7 @@ function stream!(
         end
         for (i, j) ∈ 𝑑
     )
-    keys(data) ⊇ keys(γ.values) || throw(ErrorException("`stream!` requires new data for every column"))
+    keys(data) ⊇ keys(γ.values) || throw(BokehException("`stream!` requires new data for every column"))
 
     _𝑑𝑠_check(data)
     merge!(γ.values, data)

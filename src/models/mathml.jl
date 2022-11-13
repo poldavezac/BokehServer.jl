@@ -2,6 +2,6 @@
 
 @model mutable struct MathML <: iMathML
 
-    text :: String
+    text :: String = required
 end
 export MathML

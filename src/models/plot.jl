@@ -4,13 +4,11 @@
 
     above :: Vector{iRenderer} = iRenderer[]
 
-    align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:start, :center, :end)}} = :start
+    align :: Union{Tuple{Model.EnumType{(:start, :center, :end)}, Model.EnumType{(:start, :center, :end)}}, Model.EnumType{(:auto, :start, :center, :end)}} = :auto
 
     aspect_ratio :: Union{Nothing, Float64, Model.EnumType{(:auto,)}} = nothing
 
     aspect_scale :: Float64 = 1.0
-
-    background :: Union{Nothing, Model.Color} = nothing
 
     background_fill_alpha :: Model.Percent = 1.0
 
@@ -24,6 +22,10 @@
 
     center :: Vector{iRenderer} = iRenderer[]
 
+    classes :: Vector{String} = String[]
+
+    context_menu :: Union{Nothing, iMenu} = nothing
+
     css_classes :: Vector{String} = String[]
 
     disabled :: Bool = false
@@ -36,6 +38,10 @@
 
     extra_y_scales :: Dict{String, iScale} = Dict{String, iScale}()
 
+    flow_mode :: Model.EnumType{(:block, :inline)} = :block
+
+    frame_align :: Union{Bool, NamedTuple{(:left, :right, :top, :bottom), NTuple{4, Bool}}} = true
+
     frame_height :: Union{Nothing, Int64} = nothing
 
     frame_width :: Union{Nothing, Int64} = nothing
@@ -45,6 +51,8 @@
     height_policy :: Model.EnumType{(:auto, :fixed, :fit, :min, :max)} = :auto
 
     hidpi :: Bool = true
+
+    hold_render :: Bool = false
 
     inner_height :: Model.ReadOnly{Int64} = 0
 
@@ -60,7 +68,7 @@
 
     lod_timeout :: Int64 = 500
 
-    margin :: Union{Nothing, NTuple{4, Int64}} = (0, 0, 0, 0)
+    margin :: Union{Nothing, Int64, Tuple{Int64, Int64}, NTuple{4, Int64}} = nothing
 
     match_aspect :: Bool = false
 
@@ -102,23 +110,27 @@
 
     output_backend :: Model.EnumType{(:canvas, :svg, :webgl)} = :canvas
 
-    plot_height :: Model.Alias{:height}
-
-    plot_width :: Model.Alias{:width}
-
     renderers :: Vector{iRenderer} = iRenderer[]
 
     reset_policy :: Model.EnumType{(:standard, :event_only)} = :standard
+
+    resizable :: Union{Bool, Model.EnumType{(:width, :height, :both)}} = false
 
     right :: Vector{iRenderer} = iRenderer[]
 
     sizing_mode :: Union{Nothing, Model.EnumType{(:stretch_width, :stretch_height, :stretch_both, :scale_width, :scale_height, :scale_both, :fixed)}} = nothing
 
-    title :: Union{Nothing, iTitle} = Title()
+    styles :: Union{iStyles, Dict{String, Union{Nothing, String}}} = Dict{String, Union{Nothing, String}}()
+
+    stylesheets :: Vector{Union{Dict{String, Union{iStyles, Dict{String, Union{Nothing, String}}}}, String}} = Union{Dict{String, Union{iStyles, Dict{String, Union{Nothing, String}}}}, String}[]
+
+    title :: Union{Nothing, iTitle} = Title(text = "")
 
     title_location :: Union{Nothing, Model.EnumType{(:above, :below, :left, :right)}} = :above
 
     toolbar :: iToolbar = Toolbar()
+
+    toolbar_inner :: Bool = false
 
     toolbar_location :: Union{Nothing, Model.EnumType{(:above, :below, :left, :right)}} = :right
 

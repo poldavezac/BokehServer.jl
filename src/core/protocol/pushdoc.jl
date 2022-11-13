@@ -1,29 +1,18 @@
-function pushdoc(title :: AbstractString, roots, 𝑅::Serialize.iRules = Serialize.Rules())
-    return Dict{String, Any}(
-        "defs"  => Nothing[],
-        "roots" => Dict{String, Any}(
-            "references" => Dict{String, Any}[serialize(i, 𝑅) for i ∈ values(bokehmodels(roots))],
-            "root_ids"   => string.(bokehid.(roots)),
+function pushdoc(title :: AbstractString, roots; deferred :: Bool = false)
+    𝑅 = Encoder(; deferred)
+    return (;
+        doc = Dict{String, Any}(
+            "defs"    => Nothing[],
+            "roots"   => [serialize(i, 𝑅) for i ∈ roots],
+            "title"   => "$title",
+            "version" => "$(PROTOCOL_VERSION)",
         ),
-        "title"   => "$title",
-        "version" => "$(PROTOCOL_VERSION)",
+        buffers = 𝑅.buffers
     )
 end
+pushdoc(self::iDocument; k...) = pushdoc(self.title, self; k...)
+pushdoc!(self::iDocument, μ::AbstractDict{String, Any}, 𝐵::Buffers) = deserialize!(self, μ, 𝐵)
 
-pushdoc(self::iDocument, 𝑅::Serialize.iRules = Serialize.Rules()) = (; doc = pushdoc(self.title, self, 𝑅))
-
-function pushdoc!(self::iDocument, μ::Dict{String}, 𝐵::Buffers)
-    docmsg   = μ["doc"]
-    newroots = let models = deserialize!(
-            Dict{Int64, iHasProps}(),
-            docmsg["roots"]["references"],
-            𝐵
-        )
-        [models[parse(Int64, i)] for i ∈ docmsg["roots"]["root_ids"]]
-    end
-
-    self.title = docmsg["title"]
-    empty!(self)
-    push!(self, newroots...)
-    return self
+function onreceive!(μ::msg"PULL-DOC-REPLY,PUSH-DOC", 𝐷::iDocument, λ::Events.iEventList, a...)
+    patchdoc(()->pushdoc!(𝐷, μ.contents, µ.buffers), 𝐷, λ, a...)
 end
