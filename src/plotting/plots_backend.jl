@@ -4,6 +4,7 @@ import ..Model
 import ..Models
 import ..Plots
 import ..Plotting
+import ...Events
 
 Plots.eval(:(@Plots.init_backend Bokeh)) 
 
@@ -143,8 +144,10 @@ listmarker() = Plots._allMarkers
 listscale() = (:identity, :log10)
 
 function create(plt::Plot{BokehBackend})
-    create_plots(plt)
-    create_layout(plt)
+    Events.eventlist!(Events.NullEventList()) do
+        create_plots(plt)
+        create_layout(plt)
+    end
     return plt.o
 end
 
@@ -292,6 +295,16 @@ function set_framestyle(plt::Plot{BokehBackend}, sp::Subplot{BokehBackend})
     end
 end
 
+function is_factor_range(sp, pos::Symbol)
+    axissym = Plots.get_attr_symbol(pos, :axis)
+    axis = sp[axissym]
+    return (
+        !isempty(axis[:discrete_values])
+        && all(i isa AbstractString for i in axis[:discrete_values])
+    )
+end
+
+
 function set_axis(pos::Symbol, plt::Plot{BokehBackend}, sp::Subplot{BokehBackend})
     axinfo = Plotting.getaxis(sp.o, pos)
     axissym = Plots.get_attr_symbol(pos, :axis)
@@ -310,17 +323,23 @@ function set_axis(pos::Symbol, plt::Plot{BokehBackend}, sp::Subplot{BokehBackend
         end
     end
 
+    if is_factor_range(sp, pos)
+        rng = Models.FactorRange(; factors = collect(axis[:discrete_values]))
+        Plotting.resetaxis!(
+            sp.o,
+            Plotting.createaxis(pos; range = rng)
+        )
+    elseif axis[:ticks] isa AbstractVector
+        for ax ∈ axinfo.axes
+            ax.ticker = Models.FixedTicker(ticks = axis[:ticks])
+        end
+    end
+
     for ax ∈ axinfo.axes
         @font ax.major_label Plots.tickfont(axis)
         @font ax.axis_label Plots.guidefont(axis)
         ax.axis_line_color = color(axis[:foreground_color_axis])
         ax.visible = !isnothing(axis[:ticks]) && axis[:showaxis] && sp[:framestyle] ≢ :none
-    end
-
-    if axis[:ticks] isa AbstractVector
-        for ax ∈ axinfo.axes
-            ax.ticker = Models.FixedTicker(ticks = axis[:ticks])
-        end
     end
 
     for grid ∈ axinfo.grids
@@ -521,7 +540,7 @@ end
 function add_series(::Val{:hexbin}, plt::Plot{BokehBackend}, series::Series)
     oks = isfinite.(series[:x]) .&& isfinite.(series[:y])
     xv = series[:x][oks]
-    yv = series[:y][okx]
+    yv = series[:y][oks]
     bins = series[:bins] === :auto ? 100 : series[:bins]
     sizex = (maximum(xv) - minimum(xv)) / bins
     sizey = (maximum(xv) - minimum(xv)) / bins
@@ -529,33 +548,34 @@ function add_series(::Val{:hexbin}, plt::Plot{BokehBackend}, series::Series)
     rend = Plotting.hexbin!(
         series[:subplot].o,
         xv,
-        yv;
+        yv,
+        sizex;
         legend_label= series[:label],
         weights      = series[:weights],
         mincount     = get(series[:extra_kwargs], :mincnt, nothing),
-        fill_alpha   = series[:fillalpha],
+        fill_alpha   = isnothing(series[:fillalpha]) ? 1. : series[:fillalpha],
         line_width   = linewidth(plt, series[:linewidth]),
-        palette      = series[:fillcolor],
-        size         = sizex,
         aspect_scale = sizex/sizey,
     )
     rend.glyph.fill_color = (;
-        field = "z",
-        transform = find_lincmap(sp.o, series, series[:z]),
+        field = "c",
+        transform = find_lincmap(series[:subplot], series, rend.data_source.data["c"]),
     )
     return rend
 end
 
 function add_series(::Val{:heatmap}, plt::Plot{BokehBackend}, series::Series)
     sp   = series[:subplot]
+
+    x = is_factor_range(sp, :x) ? series[:x] .+ .5 : series[:x]
+    y = is_factor_range(sp, :y) ? series[:y] .+ .5 : series[:y]
+
     x, y = Plots.heatmap_edges(
-        series[:x], sp[:xaxis][:scale], series[:y], sp[:yaxis][:scale], size(series[:z])
+        x, sp[:xaxis][:scale], y, sp[:yaxis][:scale], size(series[:z])
     )
     z = series[:z].surf
     width = sum(x[2:end] .- x[1:end-1]) / length(x)
     height = sum(y[2:end] .- y[1:end-1]) / length(y)
-    # Plots.expand_extrema!(sp[:xaxis], x)
-    # Plots.expand_extrema!(sp[:yaxis], y)
 
     source = Models.Source(
         "x" => repeat(x[1:end-1]; inner=size(z, 2)),
@@ -565,27 +585,15 @@ function add_series(::Val{:heatmap}, plt::Plot{BokehBackend}, series::Series)
 
     z = reshape(z, :)
 
-    if series[:x] isa AbstractArray{<:AbstractString}
-        Plotting.resetaxis!(
-            sp.o,
-            Plotting.createaxis(:x; type = FactorRange(series[:x]))
-        )
-    end
-    if series[:y] isa AbstractArray{<:AbstractString}
-        Plotting.resetaxis!(
-            sp.o,
-            Plotting.createaxis(:y; type = FactorRange(series[:y]))
-        )
-    end
-
+    fill_color = (; field = "z", transform = find_lincmap(sp, series, z))
     Plotting.rect!(
         sp.o;
         x = "x", y = "y",
         source, width, height,
         legend_label= series[:label],
         fill_alpha = isnothing(series[:fillalpha]) ? 1 : series[:fillalpha],
-        fill_color = (; field = "z", transform = find_lincmap(sp, series, z)),
-        line_color = (; field = "z", transform = find_lincmap(sp, series, z)),
+        fill_color,
+        line_color = fill_color,
         line_width = linewidth(plt, series),
     )
 end
@@ -726,13 +734,14 @@ function add_fillrange(plt::Plot{BokehBackend}, series::Series)
             Plots._cycle(fillrange[1], rng), Plots._cycle(fillrange[2], rng), view(series[:y], rng)
         end
 
+        fill_alpha = @alpha(fill)
         fs = fillstyle(series, i)
         (Plots.isvertical(series) ? Plotting.harea! : Plotting.varea!)(
             series[:subplot].o, args...;
             legend_label= series[:label],
             line_alpha = @alpha(line),
-            fill_alpha = @alpha(fill),
             line_color = @color(line),
+            fill_alpha,
             fill_color = @color(fill),
             hatch_color = @color(fill),
             hatch_alpha = isnothing(fs) ? 0. : fill_alpha,
@@ -862,4 +871,6 @@ end
 
 # Display/show the plot (open a GUI window, or browser page, for example).
 Plots._display(plt::Plot{BokehBackend}) = Plotting.html(()-> create(plt))
+
+Plotting.figure(plt::Plot{BokehBackend}) = create(plt)
 end

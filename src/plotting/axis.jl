@@ -303,7 +303,7 @@ function popaxis!(
         fig       :: Models.Plot, items #= NamedTuple created by getaxis =#;
         dotrigger :: Bool = true
 )
-    fname(x) = items.axis ≡ :x ? x : Symbol(replace("$x", "x" => "y"))
+    fname(x) = items.axis ≡ :x ? x : Symbol(replace("$x", "_x" => "_y"))
     for field ∈ (:extra_x_scales, :extra_x_ranges)
         dic = getproperty(fig, fname(field))
         haskey(dic, items.rangename) && pop!(dic, items.rangename; dotrigger)
