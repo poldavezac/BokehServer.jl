@@ -43,7 +43,7 @@ end
 
 const _𝑏𝑢𝑓_T  = tuple((AbstractArray{i} for i ∈ AbstractTypes.NumberElTypeDataDict)...)
 
-function _𝑏𝑢𝑓_encode(@nospecialize(η::AbstractVector), 𝑅::Encoder) :: Union{JSDict, Vector{Any}}
+function _𝑏𝑢𝑓_encode(@nospecialize(η::AbstractArray), 𝑅::Encoder) :: Union{JSDict, Vector{Any}}
     return if isempty(η)
         return Any[]
     elseif η isa Union{_𝑏𝑢𝑓_T...}
@@ -64,14 +64,7 @@ function _𝑏𝑢𝑓_encode(@nospecialize(η::AbstractVector), 𝑅::Encoder) 
             "shape"  => size(η),
         )
     elseif η isa Union{(AbstractVector{<:𝑇} for 𝑇 ∈ _𝑏𝑢𝑓_T)...}
-        sz = size(first(η))
-        if all(size(i) ≡ sz for i ∈ @view η[2:end])
-            x = copy(reshape(first(η), :))
-            foreach(Base.Fix1(append!, x), @view η[2:end])
-            _𝑏𝑢𝑓_encode(reshape(x, :, sz...), 𝑅)
-        else
-            Any[_𝑏𝑢𝑓_encode(i, 𝑅) for i ∈ η]
-        end
+        Any[_𝑏𝑢𝑓_encode(i, 𝑅) for i ∈ η]
     else
         Any[encode(i, 𝑅) for i ∈ η]
     end
@@ -152,7 +145,6 @@ end
         JSDict("type" => "set", "endtries" => [encode(i, 𝑅) for i ∈ η])
     end
 end
-
 
 @inline function _𝑒𝑛𝑐_dataspec(@nospecialize(η::Model.iSpec), 𝑅::Encoder) :: JSDict
     out = let itm = η.item

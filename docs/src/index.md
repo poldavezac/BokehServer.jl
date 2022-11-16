@@ -128,11 +128,11 @@ BokehServer.figure
 The following types of plots are available, with and without the `!`:
 
 ```@raw html
-    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.2.min.js"></script>
-    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-2.4.2.min.js"></script>
-    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.2.min.js"></script>
-    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.2.min.js"></script>
-    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-mathjax-2.4.2.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-VERSION.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-VERSION.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-VERSION.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-VERSION.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-mathjax-VERSION.min.js"></script>
 ```
 
 BOXPLOT
@@ -185,6 +185,8 @@ BokehServer.circle!
 
 ELLIPSE
 
+OVAL
+
 ```@docs
 BokehServer.ellipse!
 ```
@@ -235,12 +237,6 @@ BokehServer.multiline!
 
 ```@docs
 BokehServer.multipolygons!
-```
-
-OVAL
-
-```@docs
-BokehServer.oval!
 ```
 
 ```@docs

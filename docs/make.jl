@@ -11,7 +11,7 @@ PATH  = "docs/build/index.html"
 REGEX = r"<body>(.*)</body>"s
 
 function addplot(𝐹::Function, key::String; k...)
-    @info "plot: $key"
+    @info "Plot: $key"
     html = BokehServer.html(browser = false) do
         plot = BokehServer.figure(;
            title            = nothing,
@@ -32,6 +32,18 @@ function addplot(𝐹::Function, key::String; k...)
 end
 
 makedocs(sitename="BokehServer Documentation")
+
+let data = read(PATH, String) 
+    open(PATH, "w") do io
+        vers = eval(Meta.parse(first(
+            i
+            for i in split(read(joinpath(@__DIR__, "..", "src", "core", "protocol.jl"), String))
+            if i[1] == 'v' && i[2]=='"' && i[end]=='"'
+        )))
+        @info "Version: $vers"
+        write(io, replace(data, "-VERSION" => "-$(vers)"))
+    end
+end
 
 addplot("MULTILINE") do plt
     x = range(-2, 2, length = 9)

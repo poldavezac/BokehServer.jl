@@ -3,11 +3,16 @@ using Pkg.Artifacts
 using CodecBzip2
 using SHA
 using Tar
+VERS = eval(Meta.parse(first(
+    i
+    for i in split(read(joinpath(@__DIR__, "..", "src", "core", "protocol.jl"), String))
+    if i[1] == 'v' && i[2]=='"' && i[end]=='"'
+)))
 
 artifact_toml = joinpath(@__DIR__, "..", "Artifacts.toml")
 
 for (name, url_base) ∈ (
-    "javascript" => "https://anaconda.org/bokeh/bokeh/3.0.1/download/noarch/bokeh-3.0.1-py_0.tar.bz2",
+    "javascript" => "https://anaconda.org/bokeh/bokeh/$(VERS)/download/noarch/bokeh-$(VERS)-py_0.tar.bz2",
     #"nodejs" => "https://nodejs.org/dist/v16.17.1/node-v16.17.1-linux-x64.tar.xz"
 )
     js_hash       = artifact_hash(name, artifact_toml)
