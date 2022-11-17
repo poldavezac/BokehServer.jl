@@ -182,4 +182,4 @@ addplot("AREASTACK") do plt
     )
 end
 
-deploydocs(; repo="poldavezac/BokehServer.jl", devbranch = "develop")
+deploydocs(; repo="poldavezac/BokehServer.jl", devbranch = "main")
