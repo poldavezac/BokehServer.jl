@@ -245,7 +245,8 @@ BokehServer.Server.makeid(::DummyStaticRoute) = "a"
     #     end
     # end
     truth = read(joinpath(@__DIR__, "standalone.html"), String)
-    @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(out.content)))
+    for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(out.content)))
+        i = replace(i, "VERS" => string(BokehServer.Protocol.PROTOCOL_VERSION))
         @test i == j
     end
 end

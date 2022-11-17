@@ -22,7 +22,7 @@ end
         print(io, out)
     end
     truth = read(joinpath(@__DIR__, "custom.js"), String)
-    @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(out)))
+    for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(out)))
         @test i == j
     end
 
@@ -31,7 +31,7 @@ end
         print(io, out)
     end
     truth = read(joinpath(@__DIR__, "bundle.js"), String)
-    @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(out)))
+    for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(out)))
         @test i == j
     end
 end

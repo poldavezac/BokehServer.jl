@@ -9,7 +9,7 @@
         end
     end
     truth   = read(joinpath(@__DIR__, "error.html"), String)
-    @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(value)))
+    for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(value)))
         if '@' ∈ i
             @test '@' ∈ j
         else
@@ -64,7 +64,8 @@ push!(app.sessions.sessions,  "1"=>BokehServer.Server.SessionContext("1", "2"))
         TestApp(), "b", Dict("bokeh-autoload-element" => "aaa")
     )
     truth   = read(joinpath(@__DIR__, "autoload.html"), String)
-    @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(value)))
+    for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(value)))
+        i = replace(i, "VERS" => string(BokehServer.Protocol.PROTOCOL_VERSION))
         @test i == j
     end
 end
@@ -94,7 +95,7 @@ end
     session = BokehServer.Server.SessionContext("a", "b")
     value   = BokehServer.Server.DocRoute.body(TestApp(), session)
     truth   = read(joinpath(@__DIR__, "document.html"), String)
-    @testset for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(value)))
+    for (i,j) ∈ zip(eachline(IOBuffer(truth)), eachline(IOBuffer(value)))
         @test i == j
     end
 end
