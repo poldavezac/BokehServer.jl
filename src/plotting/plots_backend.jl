@@ -188,14 +188,16 @@ function create_layout(plt::Plot{BokehBackend})
         return
     end
 
-    items = Plotting.Layouts.LayoutPlotEntry[]
     for sp ∈ plt.subplots
-        pcts = Float64[f(sp.bbox).value for f in (Plots.top, Plots.left, Plots.height, Plots.width)]
-        pcts ./= Float64[figh, figw, figh, figw]
-        args = [Int64(round(i*1e3)) for i ∈ pcts]
-        push!(items, (sp.o, args...))
+        sp.o.width = Int64(round(Plots.mm2px(Plots.width(sp.bbox).value)))
+        sp.o.height = Int64(round(Plots.mm2px(Plots.height(sp.bbox).value)))
+        sp.o.width_policy = :fixed
+        sp.o.height_policy = :fixed
     end
-    plt.o = Plotting.layout(items; width = figw, height = figh)
+    _toplot(x::Plots.GridLayout) = length(x.grid) == 1 ? x.o : _toplot.(x.grid)
+    _toplot(x::Plots.Subplot) = x.o
+    _toplot(x::Plots.EmptyLayout) = Models.Spacer()
+    plt.o = Plotting.layout(_toplot.(plt.layout.grid))
 end
 
 function axis_kw(sp::Subplot{BokehBackend}, pos::Symbol, key::Symbol)
