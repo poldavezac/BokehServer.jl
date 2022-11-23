@@ -1,7 +1,7 @@
 name = "BokehServer"
 uuid = "b7fe046f-2d24-4718-8c03-fdde6cae2a8c"
 authors = ["Pol d'Avezac <pdavezac@yahoo.fr>"]
-version = "1.0.1"
+version = "1.0.0"
 
 [deps]
 Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
@@ -20,12 +20,12 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [compat]
-CodecZlib="0"
+CodecZlib="0.7"
 ColorSchemes="3"
-Colors="0"
-DataStructures="0"
+Colors="0.12"
+DataStructures="0.18"
 HTTP="1"
-JSON="0"
+JSON="0.21"
 Requires="1"
-StatsBase="0"
+StatsBase="0.33"
 julia = "1"
